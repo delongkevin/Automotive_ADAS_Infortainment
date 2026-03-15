@@ -621,3 +621,315 @@ long lFctn_T32_ReadVariable(char aAddress[], int &aVariableValue, char aMappedRe
        return lRetApiExitCode[0];
     }
 }
+
+
+// ============================================================
+// AUTO-DETECT TRACE32 INSTALLATION
+// ============================================================
+
+/*! long lFctn_T32_FindExeInDir(char aDir[], char aFoundExePath[])
+*  \brief Internal helper – searches a directory for a known Trace32 executable.
+*         Tries common exe names in order of automotive-project likelihood.
+*
+*  \param[in]  aDir         - Directory to search (must include trailing backslash).
+*  \param[out] aFoundExePath - Full path to the first matching exe, or "" if none found.
+*
+*  \return  Ok    (1) : A T32 executable was found in aDir.
+*  \return  NotOk (0) : No known T32 executable was found in aDir.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 15.03.26              Copilot         Created – part of T32 auto-detect feature.
+*/
+long lFctn_T32_FindExeInDir(char aDir[], char aFoundExePath[])
+{
+  char chExePath[256];
+  dword dwHandle;
+
+  // ARM Cortex-M/A (most common in automotive)
+  snprintf(chExePath, elcount(chExePath), "%st32marm.exe",    aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  // ARM 64-bit
+  snprintf(chExePath, elcount(chExePath), "%st32marm64.exe",  aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  // PowerPC / TriCore (Aurix)
+  snprintf(chExePath, elcount(chExePath), "%st32mppc.exe",    aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  // RISC-V 32-bit
+  snprintf(chExePath, elcount(chExePath), "%st32mrisc.exe",   aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  // RISC-V 64-bit
+  snprintf(chExePath, elcount(chExePath), "%st32mrisc64.exe", aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  // STM32 / generic STM
+  snprintf(chExePath, elcount(chExePath), "%st32mstm.exe",    aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  strncpy(aFoundExePath, "", 1);
+  return NotOk;
+}
+
+
+/*! long lFctn_T32_CheckInstallDir(char aDir[], char aFoundExePath[], char aFoundConfigPath[])
+*  \brief Internal helper – verifies that a complete T32 installation exists in aDir:
+*         config.t32 must be present AND at least one known T32 executable must exist
+*         in the same directory.  On success the output parameters are populated.
+*
+*  \param[in]  aDir             - Directory to check (must include trailing backslash).
+*  \param[out] aFoundExePath    - Full path to the first T32 exe found.
+*  \param[out] aFoundConfigPath - Full path to config.t32 in aDir.
+*
+*  \return  Ok    (1) : Both config.t32 and a T32 exe were found in aDir.
+*  \return  NotOk (0) : config.t32 or a T32 exe is missing from aDir.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 15.03.26              Copilot         Created – part of T32 auto-detect feature.
+*/
+long lFctn_T32_CheckInstallDir(char aDir[], char aFoundExePath[], char aFoundConfigPath[])
+{
+  char chConfigPath[256];
+  dword dwHandle;
+  long lExeResult;
+
+  // Check that config.t32 exists in this directory.
+  snprintf(chConfigPath, elcount(chConfigPath), "%sconfig.t32", aDir);
+  dwHandle = openFileRead(chConfigPath, 0);
+  if (dwHandle == 0)
+    return NotOk;
+  fileClose(dwHandle);
+
+  // config.t32 found – now look for a known T32 executable.
+  lExeResult = lFctn_T32_FindExeInDir(aDir, aFoundExePath);
+  if (lExeResult != Ok)
+    return NotOk;
+
+  strncpy(aFoundConfigPath, chConfigPath, elcount(aFoundConfigPath));
+  return Ok;
+}
+
+
+/*! long lFctn_T32_AutoDetect(char aFoundExePath[], char aFoundConfigPath[])
+*  \brief Searches the standard Trace32 installation directories for a valid
+*         T32 installation (config.t32 + a T32 executable).  Directories are
+*         tried in order of decreasing likelihood:
+*           1. C:\T32\bin\
+*           2. C:\T32\
+*           3. C:\t32\bin\  (lower-case variant)
+*           4. C:\t32\
+*
+*         When a valid installation is found the output parameters are set and
+*         the function returns Ok so the caller can launch T32 or read the port
+*         from config.t32 via lFctn_T32_ParseConfigPort().
+*
+*  \param[out] aFoundExePath    - Full path to the first T32 exe found (e.g. "C:\T32\bin\t32marm.exe").
+*  \param[out] aFoundConfigPath - Full path to config.t32 (e.g. "C:\T32\bin\config.t32").
+*
+*  \return  Ok    (1) : Installation found; output parameters are populated.
+*  \return  NotOk (0) : No T32 installation found in any of the candidate directories.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 15.03.26              Copilot         Created – auto-detects T32 install from standard paths.
+*/
+long lFctn_T32_AutoDetect(char aFoundExePath[], char aFoundConfigPath[])
+{
+  char chDir[64];
+  byte bDebugFlag;
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_T32_AutoDetect() entered.");
+
+  // Candidate 1: C:\T32\bin\ – default for Lauterbach installer (64-bit)
+  strncpy(chDir, "C:\\T32\\bin\\", elcount(chDir));
+  if (lFctn_T32_CheckInstallDir(chDir, aFoundExePath, aFoundConfigPath) == Ok)
+  {
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "T32 found in '%s'.", chDir);
+    return Ok;
+  }
+
+  // Candidate 2: C:\T32\ – root of Lauterbach install
+  strncpy(chDir, "C:\\T32\\", elcount(chDir));
+  if (lFctn_T32_CheckInstallDir(chDir, aFoundExePath, aFoundConfigPath) == Ok)
+  {
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "T32 found in '%s'.", chDir);
+    return Ok;
+  }
+
+  // Candidate 3: C:\t32\bin\ – lower-case variant
+  strncpy(chDir, "C:\\t32\\bin\\", elcount(chDir));
+  if (lFctn_T32_CheckInstallDir(chDir, aFoundExePath, aFoundConfigPath) == Ok)
+  {
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "T32 found in '%s'.", chDir);
+    return Ok;
+  }
+
+  // Candidate 4: C:\t32\ – lower-case root
+  strncpy(chDir, "C:\\t32\\", elcount(chDir));
+  if (lFctn_T32_CheckInstallDir(chDir, aFoundExePath, aFoundConfigPath) == Ok)
+  {
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "T32 found in '%s'.", chDir);
+    return Ok;
+  }
+
+  write("lFctn_T32_AutoDetect: T32 not found. Checked C:\\T32\\bin, C:\\T32, C:\\t32\\bin, C:\\t32.");
+  strncpy(aFoundExePath,    "", 1);
+  strncpy(aFoundConfigPath, "", 1);
+  return NotOk;
+}
+
+
+/*! long lFctn_T32_ParseConfigPort(char aConfigPath[])
+*  \brief Reads a Trace32 config.t32 file and extracts the NETASSIST PORT number.
+*         The file is parsed line-by-line; the first line that begins with
+*         "PORT=" (case-sensitive, no leading whitespace) wins.
+*
+*  \param[in] aConfigPath - Full path to config.t32
+*                           (e.g. "C:\\T32\\bin\\config.t32").
+*
+*  \return  > 0  : The PORT value read from config.t32.
+*  \return -1 (Error) : File could not be opened or no PORT= line was found.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 15.03.26              Copilot         Created – parses NETASSIST PORT from config.t32.
+*/
+long lFctn_T32_ParseConfigPort(char aConfigPath[])
+{
+  dword dwHandle;
+  char chLine[256];
+  char chPortStr[16];
+  long lPort;
+  int nPosPort;
+  int nDigit;
+  int nSrcIdx;
+  char cChar;
+  byte bDebugFlag;
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+  lPort = Error;
+
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_T32_ParseConfigPort() entered.");
+
+  dwHandle = openFileRead(aConfigPath, 0);
+  if (dwHandle == 0)
+  {
+    write("lFctn_T32_ParseConfigPort: cannot open '%s'.", aConfigPath);
+    return Error;
+  }
+
+  while (fileGetString(chLine, elcount(chLine), dwHandle) != 0)
+  {
+    // strstr returns the 0-based index of "PORT=" within chLine, or -1.
+    // We require the match to be at position 0 (line must start with PORT=)
+    // to avoid matching comment lines that contain the word "PORT=".
+    nPosPort = strstr(chLine, "PORT=");
+    if (nPosPort == 0)
+    {
+      // Extract decimal digits following "PORT="
+      nSrcIdx = 5;  // first character after "PORT="
+      for (nDigit = 0; nDigit < elcount(chPortStr) - 1; nDigit++)
+      {
+        cChar = chLine[nSrcIdx + nDigit];
+        if (cChar < '0' || cChar > '9')
+          break;
+        chPortStr[nDigit] = cChar;
+      }
+      chPortStr[nDigit] = '\0';
+
+      if (strlen(chPortStr) > 0)
+      {
+        lPort = atol(chPortStr);
+        if ((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal, "Parsed PORT=%d from '%s'.", lPort, aConfigPath);
+        break;
+      }
+    }
+  }
+
+  fileClose(dwHandle);
+
+  if (lPort <= 0)
+    write("lFctn_T32_ParseConfigPort: PORT= not found in '%s'.", aConfigPath);
+
+  return lPort;
+}
+
+
+/*! void vFctn_T32_SyncT32ini(long aPort)
+*  \brief Updates the t32.ini file (read by T32_API.exe at startup) so that
+*         T32_API.exe connects to the correct NETASSIST port.  The file is
+*         completely rewritten to ensure no stale values remain.
+*
+*         t32.ini is expected to live alongside T32_API.exe in the
+*         AutomationDependent\GenericLibraries\ directory.  The path is
+*         derived using vFctn_T32_ConfigPathCreate().
+*
+*  \param[in] aPort - The NETASSIST port number to write (e.g. 20000).
+*                     Ignored (and a warning logged) when <= 0.
+*
+*  \return No return.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 15.03.26              Copilot         Created – syncs t32.ini with the port detected in config.t32.
+*/
+void vFctn_T32_SyncT32ini(long aPort)
+{
+  char chGenericLibsDir[512];
+  char chT32iniFullPath[600];
+  dword dwHandle;
+  char chLine[64];
+  byte bDebugFlag;
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+  writeDbgLevel(DebugFuncCalls, "Function vFctn_T32_SyncT32ini() entered.");
+
+  if (aPort <= 0)
+  {
+    write("vFctn_T32_SyncT32ini: invalid port %d – t32.ini not updated.", aPort);
+    return;
+  }
+
+  // Build the path to the GenericLibraries directory (where t32.ini lives).
+  vFctn_T32_ConfigPathCreate(chGenericLibsDir);
+  strncat(chGenericLibsDir, "TestSuites\\AutomationDependent\\GenericLibraries\\", elcount(chGenericLibsDir));
+
+  snprintf(chT32iniFullPath, elcount(chT32iniFullPath), "%st32.ini", chGenericLibsDir);
+
+  // setWritePath + openFileWrite("filename", 0) rewrites the file.
+  setWritePath(chGenericLibsDir);
+  dwHandle = openFileWrite("t32.ini", 0);  // 0 = create / overwrite
+
+  if (dwHandle == 0)
+  {
+    write("vFctn_T32_SyncT32ini: WARNING – could not open '%s' for writing.", chT32iniFullPath);
+    return;
+  }
+
+  snprintf(chLine, elcount(chLine), "NODE=localhost\n");
+  filePutString(chLine, strlen(chLine), dwHandle);
+  snprintf(chLine, elcount(chLine), "PORT=%d\n", aPort);
+  filePutString(chLine, strlen(chLine), dwHandle);
+  snprintf(chLine, elcount(chLine), "PACKLEN=1024\n");
+  filePutString(chLine, strlen(chLine), dwHandle);
+
+  fileClose(dwHandle);
+
+  write("vFctn_T32_SyncT32ini: t32.ini updated with PORT=%d at '%s'.", aPort, chT32iniFullPath);
+}
