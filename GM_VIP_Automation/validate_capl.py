@@ -44,9 +44,10 @@ Checks performed
                              calls the second Go() silently resumes past it,
                              causing the test to pass or fail non-deterministically.
 12. Hardcoded absolute paths – SysExec / sysExec calls that embed a Windows
-                             drive-letter path (e.g. "C:\\Automation\\...").
-                             Such calls fail on any machine other than the one
-                             they were written on; use automation_root instead.
+                             drive-letter path anywhere in their arguments
+                             (e.g. "C:\\Automation\\..." or "python C:\\...").
+                             Handles multi-line calls.  Use automation_root
+                             as the working-directory instead.
 
 Usage
 -----
@@ -684,26 +685,88 @@ def check_consecutive_go_calls(filepath: Path, text: str) -> list[str]:
 # automation_root as the working-directory argument and use a relative path
 # or script name as the command.
 #
-_SYSEXEC_ABS_RE = re.compile(
-    r'\bsysExec\s*\(',                # SysExec / sysExec (case variants)
+# The check handles:
+#  • Drive-letter paths anywhere inside a string argument, including
+#    mid-string positions: SysExec("python C:\\Automation\\...", ...)
+#  • Multi-line calls where the absolute path appears on a continuation
+#    line: SysExec("cmd", "/c C:\\...", automation_root)  (split across lines)
+#
+_SYSEXEC_CALL_RE = re.compile(
+    r'\bsysExec\s*\(',                # SysExec / sysExec (case-insensitive)
     re.IGNORECASE,
 )
-_ABS_PATH_RE = re.compile(
-    r'"[A-Za-z]:[/\\]',               # "C:\" or "C:/"  inside any string argument
+_ABS_PATH_IN_CALL_RE = re.compile(
+    r'[A-Za-z]:[/\\]',               # drive letter + path separator anywhere
 )
 
 
 def check_sysexec_hardcoded_paths(filepath: Path, text: str) -> list[str]:
-    """Return an error for every SysExec call that passes a hardcoded absolute path."""
+    """Return an error for every SysExec call that passes a hardcoded absolute path.
+
+    Scans each SysExec/sysExec call (potentially spanning multiple lines) for a
+    Windows drive-letter path embedded anywhere in the argument list.
+
+    Implementation notes:
+    - Parenthesis depth tracking skips ``(``/``)`` inside string literals, so
+      strings like ``"cmd (shell)"`` do not disturb the call-boundary detection.
+    - CAPL string literals do not use ``\\"`` for an escaped quote character;
+      the simplified ``"``-boundary tracking is sufficient for this codebase.
+    - After the closing ``)`` of one call, scanning resumes on the next line
+      so back-to-back single-line calls are each evaluated independently.
+    """
     issues = []
-    for lineno, line in enumerate(text.splitlines(), start=1):
-        if _SYSEXEC_ABS_RE.search(line) and _ABS_PATH_RE.search(line):
+    lines = text.splitlines()
+    n = len(lines)
+    i = 0
+    while i < n:
+        m = _SYSEXEC_CALL_RE.search(lines[i])
+        if not m:
+            i += 1
+            continue
+
+        call_start_lineno = i + 1            # 1-indexed for diagnostics
+        call_start_line = lines[i]
+
+        # Accumulate all source lines that belong to this call by tracking
+        # parenthesis depth.  We start scanning from the matched 'sysExec('
+        # position so the opening '(' is the first character counted.
+        accumulated: list[str] = []
+        depth = 0
+        in_string = False
+        closed = False
+        j = i
+        while j < n:
+            line = lines[j]
+            accumulated.append(line)
+            start_col = m.start() if j == i else 0
+            for ch in line[start_col:]:
+                if in_string:
+                    # Simplified string tracking — sufficient for CAPL source where
+                    # escaped quotes (\") are not used inside string literals.
+                    if ch == '"':
+                        in_string = False
+                elif ch == '"':
+                    in_string = True
+                elif ch == '(':
+                    depth += 1
+                elif ch == ')':
+                    depth -= 1
+                    if depth == 0:
+                        closed = True
+                        break        # paren balanced — call complete
+            if closed:
+                break
+            j += 1
+
+        call_text = '\n'.join(accumulated)
+        if _ABS_PATH_IN_CALL_RE.search(call_text):
             issues.append(
-                f"  {filepath}:{lineno}: SysExec call contains a hardcoded absolute "
-                f"path — use automation_root as the working-directory argument and a "
-                f"relative path/script name instead so the suite is portable: "
-                f"{line.strip()[:120]}{'...' if len(line.strip()) > 120 else ''}"
+                f"  {filepath}:{call_start_lineno}: SysExec call contains a hardcoded "
+                f"absolute path — use automation_root as the working-directory argument "
+                f"and a relative path/script name instead so the suite is portable: "
+                f"{call_start_line.strip()[:120]}{'...' if len(call_start_line.strip()) > 120 else ''}"
             )
+        i = j + 1
     return issues
 
 
