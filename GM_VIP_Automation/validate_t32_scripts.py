@@ -21,14 +21,16 @@ Checks performed
         bench operation.
 
 3.  CMM script syntax (per executable .cmm file)
-        a)  Balanced IF / ELSE / ENDIF  --  mismatched blocks cause PRACTICE
-            to raise a syntax error at runtime; undetected without execution.
+        a)  Balanced block delimiters  --  every standalone '(' that opens a
+            PRACTICE IF/ELSE body must have a matching standalone ')'.
+            Mismatched blocks cause PRACTICE to raise a syntax error at
+            runtime; they are undetectable without execution.
         b)  At least one ENDDO statement  --  executable scripts must return
             an exit code.  A missing ENDDO causes T32_API.exe to exit with
             code 0 unconditionally, silently hiding failures.
-        c)  ENDDO exit codes are valid integers  --  only integer literals are
-            accepted; ENDDO with no argument or a non-integer argument causes
-            T32_API.exe to report an ambiguous exit code.
+        c)  ENDDO exit codes are valid integers  --  bare ENDDO (no argument)
+            is accepted and returns 0 by convention; only a non-integer token
+            after ENDDO is flagged.
         README-only .cmm files (those containing only comment lines) are
         skipped for syntax checks (b) and (c).
 
@@ -88,19 +90,16 @@ def _is_readme_cmm(text: str) -> bool:
     return True
 
 
-def _strip_cmm_comments(text: str) -> str:
-    """Remove PRACTICE ; line comments, preserving line count."""
-    result = []
-    for line in text.splitlines(keepends=True):
-        # Remove trailing ; comment (not inside a string literal)
-        idx = line.find(';')
-        if idx >= 0:
-            # Only strip if not inside a quoted string (simple heuristic)
-            pre = line[:idx]
-            result.append(pre + '\n' if '\n' in line else pre)
-        else:
-            result.append(line)
-    return ''.join(result)
+def _strip_cmm_line_comment(line: str) -> str:
+    """Strip a PRACTICE inline ';' comment from a single line.
+    Only strips the first ';' that is not inside a double-quoted string."""
+    in_string = False
+    for i, ch in enumerate(line):
+        if ch == '"':
+            in_string = not in_string
+        elif ch == ';' and not in_string:
+            return line[:i]
+    return line
 
 
 # ---------------------------------------------------------------------------
@@ -149,14 +148,11 @@ def check_required_cmm(t32_root: Path) -> List[str]:
 # Check 3 – CMM syntax
 # ---------------------------------------------------------------------------
 
-_IF_RE    = re.compile(r'^\s*IF\b',    re.IGNORECASE | re.MULTILINE)
-_ELSE_RE  = re.compile(r'^\s*ELSE\b',  re.IGNORECASE | re.MULTILINE)
-_ENDIF_RE = re.compile(r'^\s*\)',      re.MULTILINE)    # closing ) of IF block
 _ENDDO_RE = re.compile(r'^\s*ENDDO\b', re.IGNORECASE | re.MULTILINE)
 
 # PRACTICE IF blocks are:  IF (cond)\n(\n  body\n)
 # The closing ')' terminates the block (ELSE is optionally between two blocks).
-# We track a depth counter and look for ENDDO at top-level.
+# We track a depth counter by counting standalone '(' / ')' lines.
 
 def _check_cmm_syntax(fp: Path) -> List[str]:
     """Return error strings for syntax problems in a single CMM file."""
@@ -169,21 +165,20 @@ def _check_cmm_syntax(fp: Path) -> List[str]:
         return []   # documentation placeholder – skip syntax checks
 
     errors: List[str] = []
-    rel = fp.name
 
-    # --- (a) IF/ELSE/ENDIF (closing ')') balance --------------------------
+    # --- (a) balanced block delimiters '(' / ')' --------------------------
+    # Strip inline comments before analysing so that a ';' comment containing
+    # a lone '(' or ')' is not mistaken for a real block delimiter.
     depth = 0
     for lineno, line in enumerate(raw.splitlines(), start=1):
-        stripped = line.strip()
-        if not stripped or stripped.startswith(';'):
+        code = _strip_cmm_line_comment(line).strip()
+        if not code:
             continue
-        # In PRACTICE, IF (cond)\n(\n…\n) uses '(' to open and ')' to close.
-        # Count standalone '(' that follow an IF on the line above.
-        # We use a simple heuristic: a line that is just '(' opens a block;
-        # a line that is just ')' closes a block.
-        if stripped == '(':
+        # In PRACTICE, IF (cond)\n(\n…\n) uses a standalone '(' to open and
+        # a standalone ')' to close a block body.
+        if code == '(':
             depth += 1
-        elif stripped == ')':
+        elif code == ')':
             depth -= 1
             if depth < 0:
                 errors.append(
@@ -194,7 +189,7 @@ def _check_cmm_syntax(fp: Path) -> List[str]:
 
     if depth > 0:
         errors.append(
-            f"[FAIL] {fp.name}: {depth} unclosed IF block(s) "
+            f"[FAIL] {fp.name}: {depth} unclosed block(s) "
             "(missing closing ')')."
         )
 
@@ -209,14 +204,12 @@ def _check_cmm_syntax(fp: Path) -> List[str]:
 
     # --- (c) ENDDO exit codes are valid integers --------------------------
     for lineno, line in enumerate(raw.splitlines(), start=1):
-        stripped = line.strip()
-        if not stripped.upper().startswith('ENDDO'):
+        code = _strip_cmm_line_comment(line).strip()
+        if not code.upper().startswith('ENDDO'):
             continue
-        # Strip inline comment
-        stripped = stripped.split(';')[0].strip()
-        # ENDDO alone (no argument) is technically valid PRACTICE but
-        # returns 0 by convention; flag only ENDDO with a non-integer token.
-        parts = stripped.split()
+        # bare ENDDO (no argument) returns 0 by convention – that is fine.
+        # Only flag a non-integer token after ENDDO.
+        parts = code.split()
         if len(parts) >= 2:
             arg = parts[1]
             try:
@@ -455,6 +448,7 @@ def main() -> int:
 
         # Also check the standalone BVT script in misc/
         bvt_cmm = root / 'misc' / 'bvt_t32_check.cmm'
+        bvt_errs: List[str] = []
         if bvt_cmm.is_file():
             bvt_errs = _check_cmm_syntax(bvt_cmm)
             for e in bvt_errs:
