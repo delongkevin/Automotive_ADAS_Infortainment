@@ -1,0 +1,25 @@
+
+; Environment variables
+OS=
+SYS=C:\T32
+; TMP=C:\Users\jameoldg\AppData\Local\Temp
+; or for dynamic use of the environment variable
+; TMP=${environment_variable_name}
+
+; Printer settings 
+PRINTER=WINDOWS
+
+;uncomment the following 2 lines if you use PowerTrace, PowerNexus, PowerDebugEthernet or
+;PowerDebugInterface USB with onhost driver executable (t32m*) via USB interface
+;please refer the installation manual (file icd_quick_installation.pdf) about more details
+;concerning USB driver installation
+PBI=ICD
+USB
+NODE=
+CONNECTIONMODE=AUTOCONNECT
+
+RCL=NETASSIST
+PORT=20000
+PACKLEN=1024
+
+;SCREEN=OFF

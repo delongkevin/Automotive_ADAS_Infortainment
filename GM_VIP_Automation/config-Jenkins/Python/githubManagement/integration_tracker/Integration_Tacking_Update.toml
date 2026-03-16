@@ -1,0 +1,7 @@
+
+# Path starting from `/` is relative to the repository root, otherwise relative to the config file
+
+[config]
+final_reviewers_json = "/.github/final_reviewers.json"
+xlsx_output_location = "~/Magna/USF-L2H7890_GM_FPM_VIP_Project - Documents/General/KP03 - Product Engineering/40_Software/Trackers/L2H7890_GM_PR_Tracker.xlsx"
+#xlsx_output_location = "https://magna.sharepoint.com/teams/USF-L2H7890_GM_FPM_VIP_Project/Shared%20Documents/General/KP03%20-%20Product%20Engineering/40_Software/Trackers/L2H7890_GM_PR_Tracker.xlsx"

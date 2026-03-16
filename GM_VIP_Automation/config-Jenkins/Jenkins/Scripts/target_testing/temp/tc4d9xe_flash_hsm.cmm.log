@@ -1,0 +1,23 @@
+Unique String At Start Of Flashing
+Initialization of the following memories was skipped since they are already initialized:
+  CPU0.DSPR, CPU0.PSPR
+Initialization of the following memories was skipped since they are already initialized:
+  CPU0.DSPR, CPU0.PSPR
+Initialization of the following memories was skipped since they are already initialized:
+  CPUcs.DSPR, CPUcs.PSPR
+loading ELF
+file 'C:\Kevin_GM_VIP_Repo\L2H7890_Software\bin\HSM\HSM.elf' (ELF) loaded.
+loading ELF
+file 'C:\Kevin_GM_VIP_Repo\L2H7890_Software\bin\HSM\HSM.elf' (ELF) loaded. 12248 bytes dropped.
+loading ELF
+file 'C:\Kevin_GM_VIP_Repo\L2H7890_Software\bin\HSM\HSM.elf' (ELF) loaded. 182690 bytes dropped.
+loading ELF
+file 'C:\Kevin_GM_VIP_Repo\L2H7890_Software\bin\HSM\HSM.elf' (ELF) loaded. 188822 bytes dropped.
+  CRC32  : D:AEC01800--AEC0180B = 719D8798 (1906149272)
+UCB check passed
+loading ELF
+file 'C:\Kevin_GM_VIP_Repo\L2H7890_Software\bin\HSM\HSM.elf' (ELF) loaded. 182690 bytes dropped.
+loading ELF
+file 'C:\Kevin_GM_VIP_Repo\L2H7890_Software\bin\HSM\HSM.elf' (ELF/DWARF2) loaded.
+Programming Script Completed.
+Warning: file C:\var\jenkins\workspace\ftware_L2H7890_VIP_BL_M2.5_1.0.3@2\sw\hsm\asr\Os\Implementation\Os_Trap.c not found

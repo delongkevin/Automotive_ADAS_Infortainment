@@ -1,0 +1,19 @@
+Subject: [PATCH] Remove Sleep from missing CAN message.
+---
+Index: sw/app/hwio/can_hwio/Implementation/Hwio_can.c
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/sw/app/hwio/can_hwio/Implementation/Hwio_can.c b/sw/app/hwio/can_hwio/Implementation/Hwio_can.c
+--- a/sw/app/hwio/can_hwio/Implementation/Hwio_can.c	(revision 70230278a0a19280141e141472a90deeb2de999d)
++++ b/sw/app/hwio/can_hwio/Implementation/Hwio_can.c	(date 1770928597474)
+@@ -473,7 +473,7 @@
+             DEBUG_PRINT( "PN frame detection error wakeup event found in transceiver %d\r\n", trcvidx );
+         }
+         /* check CW flag */
+-        else if ( trcvIntrupts->Int_SysStatus.regBit.CW == 1u )
++        else if ( 1u == 1u )
+         {
+             /* confirms that the CAN transceiver is out of sleep mode because of valid wake up frame */
+             TrcvLastWakeupEvent[trcvidx] = HWIO_CANTRCV_WU_BY_BUS;

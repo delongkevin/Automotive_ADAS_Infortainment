@@ -1,0 +1,29 @@
+{
+    "config_version": "1.0",
+    "packages": {
+        "7zip": {
+            "ver_1.0": "7-ZipPortable.zip"
+        },
+        "ccache": {
+            "ver_4.10.2": "ccache.zip"
+        },
+        "cmake": {
+            "ver_3.31.0": "cmake.zip"
+        },
+        "git": {
+            "ver_1.4": "git_1.4.zip"
+        },
+        "Java": {
+            "jdk8u292-b10-jre": "OpenJDK8U-jre_x64_windows_hotspot_8u292b10.zip"
+        },
+        "Mend": {
+            "ver_2025.03.06": "Mend.zip"
+        },
+        "ninja": {
+            "ver_1.12.1": "ninja.zip"
+        },
+        "python": {
+            "ver_3.9.9": "python.zip"
+        }
+    }
+}

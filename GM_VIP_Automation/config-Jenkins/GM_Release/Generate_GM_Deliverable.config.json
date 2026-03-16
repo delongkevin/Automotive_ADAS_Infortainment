@@ -1,0 +1,21 @@
+{
+  "test_dirs" : [
+    "app/testapp",
+    "boot/Test",
+    "platform/components/Test/ECC"
+  ],
+  "private_libs": {
+    "EYEQ": [
+      "app/EyeQApp",
+      "magna_basesw/EQStack"
+    ],
+    "Features": [
+      "app/Features"
+    ],
+    "Platform": [
+      "platform"
+    ]
+  }
+}
+
+

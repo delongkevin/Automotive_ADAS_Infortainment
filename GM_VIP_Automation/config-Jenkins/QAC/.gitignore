@@ -1,0 +1,11 @@
+# Generated Items
+cip/
+logs/
+output/
+reports/
+*.stamp
+*.status
+*lock
+*.hash
+
+/copies/

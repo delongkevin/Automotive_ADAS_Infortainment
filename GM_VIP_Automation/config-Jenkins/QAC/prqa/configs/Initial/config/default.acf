@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<acf xmlversion="2.0.0">
+  <components>
+    <component name="qac" target="C" version="11.8.0"/>
+    <component name="m3cm" target="C" version="5.8.0"/>
+    <component name="certccm" target="C" version="3.8.0"/>
+    <component name="dataflow" target="C_CPP" version="1.8.0"/>
+    <component name="mta" target="C_CPP" version="4.8.0"/>
+    <component name="rcma" target="C_CPP" version="4.8.0"/>
+  </components>
+  <component_settings>
+    <input_to component="qac" target="C" version="11.8.0">
+      <option name="-systemdefine " argument="__pack2hw=int"/>
+    </input_to>
+  </component_settings>
+</acf>

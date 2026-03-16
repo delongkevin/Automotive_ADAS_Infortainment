@@ -1,0 +1,36 @@
+# Note: Consideration should be made on splitting this into the respective directories the required scripts are.
+
+
+# Local Jenkins scripts
+PyGithub>=2.7.0
+GitPython~=3.1.44
+
+# D2H5630_Jenkins_Libraries
+lxml
+pyodbc
+
+# For Release Note Generation
+Jinja2~=3.1.6
+tabulate
+pypandoc-binary
+python-docx
+
+# For Map File Analysis
+openpyxl
+
+# MEND
+virtualenv
+
+# VectorCAST
+tqdm
+python-dotenv
+
+# KPIs
+influxdb-client
+
+# On-Target Testing
+lauterbach.trace32.rcl
+natsort
+psutil
+pyserial
+pywin32; sys_platform == "win32"

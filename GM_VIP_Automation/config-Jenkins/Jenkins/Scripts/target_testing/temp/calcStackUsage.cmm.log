@@ -1,0 +1,41 @@
+Unique String At Start Of Flashing
+Starting Stack Calc Script...
+Waiting for 0x1E seconds before starting stack analysis...
+Stack Timer: 0x1E s remaining
+Stack Timer: 0x1D s remaining
+Stack Timer: 0x1C s remaining
+Stack Timer: 0x1B s remaining
+Stack Timer: 0x1A s remaining
+Stack Timer: 0x19 s remaining
+Stack Timer: 0x18 s remaining
+Stack Timer: 0x17 s remaining
+Stack Timer: 0x16 s remaining
+Stack Timer: 0x15 s remaining
+Stack Timer: 0x14 s remaining
+Stack Timer: 0x13 s remaining
+Stack Timer: 0x12 s remaining
+Stack Timer: 0x11 s remaining
+Stack Timer: 0x10 s remaining
+Stack Timer: 0x0F s remaining
+Stack Timer: 0x0E s remaining
+Stack Timer: 0x0D s remaining
+Stack Timer: 0x0C s remaining
+Stack Timer: 0x0B s remaining
+Stack Timer: 0x0A s remaining
+Stack Timer: 0x9 s remaining
+Stack Timer: 0x8 s remaining
+Stack Timer: 0x7 s remaining
+Stack Timer: 0x6 s remaining
+Stack Timer: 0x5 s remaining
+Stack Timer: 0x4 s remaining
+Stack Timer: 0x3 s remaining
+Stack Timer: 0x2 s remaining
+Stack Timer: 0x1 s remaining
+========== STACK USAGE ==========
+CPU0.ustack: Used = 0x1A20 bytes, Free = 0x49E0 bytes, Percent Used = 66%
+CPU1.ustack: Used = 0x404 bytes, Free = 0x5FFC bytes, Percent Used = 10%
+CPU2.ustack: Used = 0x368 bytes, Free = 0x6098 bytes, Percent Used = 8%
+CPU3.ustack: Used = 0x414 bytes, Free = 0x5FEC bytes, Percent Used = 10%
+CPU4.ustack: Used = 0xBE0 bytes, Free = 0x4420 bytes, Percent Used = 38%
+CPU5.ustack: Used = 0x34C bytes, Free = 0x4CB4 bytes, Percent Used = 10%
+========== STACK USAGE CHECK DONE ==========

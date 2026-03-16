@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This file is API generated -->
+<settings version="2">
+ <setting name="create_CCT" value="no"/>
+ <setting name="last_config" value="Initial"/>
+ <setting name="sync_command" value=""/>
+ <setting name="sync_custom_mnemonics" value=""/>
+ <setting name="sync_details" value="C:\git\L2H7890_Software\build\APPL\compile_commands.json"/>
+ <setting name="sync_target" value=""/>
+ <setting name="sync_type" value="JSON"/>
+ <setting name="sync_working_directory" value="C:\git\L2H7890_Software\build\APPL"/>
+ <component_directories/>
+ <root_paths/>
+ <editor_settings/>
+ <analysis_settings/>
+ <file_tree_settings/>
+ <log_settings/>
+ <feedback_settings/>
+ <license_servers/>
+</settings>

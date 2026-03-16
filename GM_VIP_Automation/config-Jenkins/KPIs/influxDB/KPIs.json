@@ -1,0 +1,17 @@
+{
+  "Connection": {
+    "type": "InfluxDB",
+    "host": "http://eah-ubjenkins09:8086",
+    "token": "xq703Aj0ma3s6uo9tg2p2INeIcbWse_bWOq-E9pXSbAL7MkC-kBoqCFOJspSsMXjZqlSV2seswpKFesXwx475Q==",
+    "org": "asi",
+    "bucket": "kpis"
+  },
+  "Point": {
+    "Name": "L2H7890_Software",
+    "Tags": {
+      "branch": ""
+    },
+    "Fields": {
+    }
+  }
+}

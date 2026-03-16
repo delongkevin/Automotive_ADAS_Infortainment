@@ -1,0 +1,15 @@
+{
+    "source": "tools/External/Blobs",
+    "packages": {
+        "tasking": {
+            "v10.2r1": "v10.2r1.zip",
+            "v10.2r1_eclipse": "v10.2r1_eclipse.zip"
+        },
+      "gcc": {
+            "v15.1.0": "v15.1.0.zip"
+        },
+        "gnu_utils": {
+            "v1.1.0": "v1.1.0.zip"
+        }
+    }
+}

@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<prqaproject xmlversion="3.0.0" qafversion="4.5.0">
+ <!-- Config file information... -->
+ <configurations>
+  <cosmetic_name name="QAC"/>
+  <languageFamily name="C/C++"/>
+  <processMonitor>
+   <includeOptionSyntax>
+    <option string="-I"/>
+    <option string="/I"/>
+   </includeOptionSyntax>
+   <defineOptionSyntax>
+    <option string="-D"/>
+    <option string="/D"/>
+   </defineOptionSyntax>
+   <flagScript string=""/>
+   <settingsOptionSyntax>
+    <option string="@" compiler="Visual Studio" extension=".rsp" literal_quotes="no"/>
+    <option string="-@" compiler="Windriver" extension="" literal_quotes="no"/>
+    <option string="--Via" compiler="Greenhills" extension="__i" literal_quotes="no"/>
+   </settingsOptionSyntax>
+   <excludeStrings/>
+   <fileFilterStrings/>
+  </processMonitor>
+  <exclusionPattern method="CSV"/>
+  <root_paths>
+   <root_path path="${PROJECT_ROOT}\..\.." name="SOURCE_ROOT"/>
+  </root_paths>
+  <default_config name="Initial"/>
+  <!-- Individual Configs... -->
+  <config name="Initial">
+   <baselinedSourceRoot baseline="OFF"/>
+   <baselineSnapshot date="" id="" name=""/>
+   <acf name="default.acf"/>
+   <rcf name="CYS4000.rcf"/>
+   <ccts>
+    <cct name="L2H7890_Software_1.0.0.generated_cct_C.cct" target="C" default="yes"/>
+    <cct name="Auto_generate_C++.cct" target="C++" default="yes"/>
+   </ccts>
+  </config>
+ </configurations>
+ <!-- Mapping of extension to target_language... -->
+ <file_extensions>
+  <language target="C">
+   <extension ext=".c"/>
+  </language>
+  <language target="C">
+   <extension ext=".C"/>
+  </language>
+  <language target="C++">
+   <extension ext=".cpp"/>
+  </language>
+  <language target="C++">
+   <extension ext=".cxx"/>
+  </language>
+  <language target="C++">
+   <extension ext=".cc"/>
+  </language>
+  <language target="C++">
+   <extension ext=".CPP"/>
+  </language>
+  <language target="C++">
+   <extension ext=".CXX"/>
+  </language>
+  <language target="C++">
+   <extension ext=".CC"/>
+  </language>
+ </file_extensions>
+ <!-- Files in project... -->
+ <folders>
+  <folder id="${SOURCE_ROOT}/sw/app/asr">
+   <defines/>
+   <includes/>
+   <options>
+    <analysis_option component="qac" name="-thirdparty" value="-"/>
+   </options>
+  </folder>
+  <folder id="${SOURCE_ROOT}/sw/platform/MCAL">
+   <defines/>
+   <includes/>
+   <options>
+    <analysis_option component="qac" name="-thirdparty" value="-"/>
+   </options>
+  </folder>
+  <folder id="${SOURCE_ROOT}/sw/platform/components/Test">
+   <defines/>
+   <includes/>
+   <options>
+    <analysis_option component="qac" name="-thirdparty" value="-"/>
+   </options>
+  </folder>
+  <folder id="${SOURCE_ROOT}/sw/platform/iLLD">
+   <defines/>
+   <includes/>
+   <options>
+    <analysis_option component="qac" name="-thirdparty" value="-"/>
+   </options>
+  </folder>
+ </folders>
+ <files>
+  <!-- Explicit files... -->
+ </files>
+</prqaproject>

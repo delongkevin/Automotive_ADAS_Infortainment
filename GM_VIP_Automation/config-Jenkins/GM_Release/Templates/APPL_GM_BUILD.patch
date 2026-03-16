@@ -1,0 +1,66 @@
+Index: config/GM_Release/GM_Release_Prep/Private/HWIOAPPL_GM/Makefile
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/config/GM_Release/GM_Release_Prep/Private/HWIOAPPL_GM/Makefile b/config/GM_Release/GM_Release_Prep/Private/HWIOAPPL_GM/Makefile
+--- a/config/GM_Release/GM_Release_Prep/Private/HWIOAPPL_GM/Makefile	(revision 8ac6b0a081396b8ad365cc0087bb5dec7a51a78d)
++++ b/config/GM_Release/GM_Release_Prep/Private/HWIOAPPL_GM/Makefile	(date 1768412040616)
+@@ -10,12 +10,12 @@
+ # ----------------------------
+ # Common Makefile inclusion
+ # ----------------------------
+-include ../common.mk
++include ../../HWIODeliverable/common.mk
+
+ # ----------------------------
+ # Project Specific Flag Updates
+ # ----------------------------
+-BASE_MACROS += -DAPP_SW=GM_VIP_APPL
++BASE_MACROS += -DAPP_SW=GM_VIP_APPL -DBUILD_INCLUDES_GMLIB
+
+ TARGET_SPECIFIC_CFLAGS = \
+     -DAdc_Config=Adc_Config_EcucPartition \
+@@ -45,7 +45,11 @@
+
+
+ TARGET_LDFLAGS = \
+-    HWIOAPPL.lsl \
++    -MDLINK_GM_LIB \
++    $(REPO_ROOT)/sw/common/linker/Lcf_Windriver_Tricore_Tc_4D7_APPL.lsl \
++    -Xpreprocess-lecl \
++    -@O=build.txt \
++    -mapfile $(TESTAPP_EXE:.elf=.map) \
+     -Xremove-unused-sections \
+
+ # ----------------------------
+@@ -516,7 +520,7 @@
+ 	./Test/app/testapp/test_wakeup_hwio/Implementation/test_wakeup_hwio.c \
+ 	./Test/app/testapp/test_wdt_hwio/Implementation/test_wdt_hwio.c
+
+-EXTERNAL_LIBS = ./Source/app/asr/Os/Implementation/RTAOS.a  ./Products/HWIOAPPL_EYEQ.a ./Products/HWIOAPPL_FEATURES.a ./Products/HWIOAPPL_PLATFORM.a
++EXTERNAL_LIBS = ./Source/app/asr/Os/Implementation/RTAOS.a  ./../../HWIODeliverable/HWIOAPPL/Products/HWIOAPPL_EYEQ.a ./../../HWIODeliverable/HWIOAPPL/Products/HWIOAPPL_FEATURES.a ./../../HWIODeliverable/HWIOAPPL/Products/HWIOAPPL_PLATFORM.a
+
+ # ----------------------------
+ # Names & Directories
+@@ -532,8 +536,7 @@
+ # ----------------------------
+ # Build mode flags aggregation
+ # ----------------------------
+-Magna_testhwioappl: INCLUDES += $(TEST_INCLUDES)
+-Magna_testhwioappl: MAGNA_CFLAGS = $(BASE_MACROS) $(MAGNA_TESTMACRO_CFLAGS_0) $(MAGNA_WDG_MACRO) $(MAGNA_TESTMACRO_CFLAGS_1) $(MAGNA_TESTMACRO_CFLAGS_2) $(MAGNA_TESTMACRO_CFLAGS_3)
++Magna_testhwioappl: MAGNA_CFLAGS = $(BASE_MACROS)
+ hwioappl: MAGNA_CFLAGS = $(BASE_MACROS)
+
+ CFLAGS = $(MAGNA_CFLAGS) $(BASE_CFLAGS) $(TARGET_SPECIFIC_CFLAGS)
+@@ -545,8 +548,8 @@
+ OBJS := $(OBJS:.c=.o)
+ OBJS := $(OBJS:.s=.o)
+
+-TESTOBJS = $(TEST_SRCS:$(TEST_SRCDIR)%=$(TEST_OBJDIR)%)
+-TESTOBJS := $(TESTOBJS:.c=.o)
++GM_OBJS := $(wildcard $(GM_OBJDIR)/*.o)
++TESTOBJS = $(GM_OBJS)
+ 
+ # ----------------------------
+ # Helpers

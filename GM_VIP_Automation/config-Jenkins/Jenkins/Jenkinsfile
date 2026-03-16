@@ -1,0 +1,814 @@
+#!groovy
+import java.util.Map
+import groovy.transform.Field
+import io.jenkins.plugins.analysis.core.model.AnalysisResult
+import net.sf.json.JSONArray
+
+//  TODO: This project is in a Core/Application relationship.
+//      - https://elc-github.magna.global/Magna-Electronics/D2H7510_Platform_TC4
+//      - https://elc-github.magna.global/Magna-Electronics/L2H7890_Software
+//      Accordingly, changes to CI/CD should be upstreamed and downstreamed frequently so the two are aligned
+
+// @Library('D2H5630_Jenkins_Libraries@v1.5.0') _
+
+@Field def QAC_Map = [:]
+@Field def Compiler_Map = [:]
+
+// Pipeline state flags (set by simplify_actions_from_parameters)
+@Field boolean is_mainline = false
+@Field boolean is_merge = false
+@Field boolean is_head = false
+@Field boolean is_tag = false
+@Field boolean is_branch = false
+
+// Pipeline action flags (set by simplify_actions_from_parameters)
+@Field boolean ACTION_RUN_QAC = false
+@Field boolean ACTION_QAC_REPORTS = false
+@Field boolean ACTION_UPLOAD_TO_QAV = false
+@Field boolean ACTION_RUN_VECTORCAST = false
+@Field boolean ACTION_BUILD_HWIO_GEN = false
+@Field boolean ACTION_RUN_BVT = false
+@Field boolean ACTION_RUN_SCA = false
+
+def badge_CompilerViolations = addEmbeddableBadgeConfiguration(id: "badge_compiler", subject: "Compile", status: 'TBD', color: 'grey')
+def badge_QACViolations      = addEmbeddableBadgeConfiguration(id: "badge_qac", subject: "QAC", status: 'TBD', color: 'grey')
+def badge_BVT                = addEmbeddableBadgeConfiguration(id: "badge_bvt", subject: "BVT", status: 'TBD', color: 'grey')
+
+
+// ============================================================================
+// Original Helper Methods
+// ============================================================================
+
+def simplify_actions_from_parameters() {
+    def mainline_branches = ["develop", "master", "main"]
+    is_mainline = mainline_branches.any { env.BRANCH_NAME?.startsWith(it) }
+    is_merge = env.BRANCH_NAME.contains("-merge")
+    is_head = env.BRANCH_NAME.contains("-head")
+    is_tag = env.TAG_NAME != null
+    is_branch = !is_tag && !env.BRANCH_NAME.contains("PR-")
+    boolean second_merge_run = (env.BUILD_NUMBER == '2') && is_merge  // The first build always fails, so the second build of a merge should run all required steps
+
+    ACTION_RUN_QAC        = params.force_run_PR_Required_Steps || second_merge_run || is_mainline || is_tag || params.force_run_QAC != "(Default) Don't Run"
+    ACTION_QAC_REPORTS    = is_tag || params.force_run_QAC == "Run and Report" || params.force_run_QAC == "Run and Upload To QAV"
+    ACTION_UPLOAD_TO_QAV  = params.force_run_QAC == "Run and Upload To QAV"
+
+    ACTION_RUN_VECTORCAST = is_tag || params.force_run_VectorCAST
+    ACTION_BUILD_HWIO_GEN = params.force_run_PR_Required_Steps || second_merge_run || is_mainline || is_tag || params.force_run_HWIO_GEN || params.run_Sca
+    ACTION_RUN_BVT        = params.force_run_PR_Required_Steps || second_merge_run || is_mainline || is_tag || params.force_on_target_test
+
+    ACTION_RUN_SCA        = params.run_Sca
+}
+
+
+// ============================================================================
+// Stage Logic Methods (extracted to reduce pipeline bytecode size)
+// ============================================================================
+
+def baseSetupSteps() {
+    if (env.BUILD_NUMBER == '1') {
+        build(job: env.JOB_NAME, wait: false)
+        currentBuild.result = 'ABORTED'
+        error('Aborting the first build because it does not respect default parameters. Queueing up another build.')
+    }
+
+    simplify_actions_from_parameters()
+
+    setupNode()
+
+    if (is_head) {
+        if (params.run_merge_conflict_resolution) {
+            pwsh(label: "Checking if there are PR merge conflicts, resolve if so", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/Jenkins/Scripts/gitManagement/Git-Merge-Pointers.py'", returnStatus: true)
+            currentBuild.result = 'ABORTED'
+            error('Merge conflict resolution attempted - impacting local workspace. Aborting build to allow for clean retry.')
+        }
+
+        JSONArray isBranchEventBuildCause = currentBuild.getBuildCauses('jenkins.branch.BranchEventCause')
+        if (isBranchEventBuildCause) {
+            currentBuild.result = 'ABORTED'
+            error('Not building HEAD job unless explicitly requested - reducing node load.')
+        }
+    }
+
+    pwsh(label: "Creating default folders", script: """
+        New-Item -ItemType Directory -Path '${env.WORKSPACE}/artifacts' -Force
+        New-Item -ItemType Directory -Path '${env.WORKSPACE}/${env.ArtifactsDevs}' -Force
+        New-Item -ItemType Directory -Path '${env.WORKSPACE}/${env.ArtifactsGM}' -Force
+    """)
+
+    if (changeRequest()) {
+        lock(resource: "${env.CHANGE_ID}") {
+            withCredentials([
+                string(credentialsId: 'svc_MEE_CI_D2H7510_Github_Api', variable: 'GITHUB_TOKEN'),
+                usernamePassword(credentialsId: 'svc_mee_ci_d2h7510 at eah-ubjenkins09 (user pass)', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')
+            ]) {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    pwsh(label: "PR Handler", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/scripts/Python/githubManagement/updatePR.py'")  // Going down when codebeamer is offline
+                }
+            }
+        }
+    }
+
+    def titlePattern = '^#[0-9]{8,}.*\$'
+    if (env.CHANGE_TITLE != null && !env.CHANGE_TITLE.matches(titlePattern)) {
+        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+            error "The merge-request title doesn't match rule\n" +
+            "\tCurrent Title: ${env.CHANGE_TITLE}\n" +
+            "\tExpected Rules (regex): ${titlePattern}"
+        }
+    }
+
+    setup_scm_mining()
+
+    pwsh(label: "Pulling LFS files", script: """
+        cd ${env.WORKSPACE}/tools; git lfs pull --include External/Blobs/gnu_utils/v1.1.0.zip
+        cd ${env.WORKSPACE}; git lfs pull
+    """)
+}
+
+def hwioDeliverableSteps(String target) {
+    if (target != 'HSM') {
+        pwsh(label: "Build HWIO${target}", script: "${env.PY_EXE} '${env.WORKSPACE}/config/GM_Release/Generate_GM_Deliverable.py' --target ${target}")
+        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+            pwsh(label: "Check if build was successful", script: "if (-not (Test-Path '${env.WORKSPACE}/config/GM_Release/GM_Release_Prep/HWIODeliverable/HWIO${target}/Products/*.hex')) { throw 'No HWIO${target}.hex deliverable found!' }")
+            pwsh(label: "Check if build was successful", script: "if (-not (Test-Path '${env.WORKSPACE}/config/GM_Release/GM_Release_Prep/HWIODeliverable/HWIO${target}/Products/*.s19')) { throw 'No HWIO${target}.s19 deliverable found!' }")
+        }
+    } else {
+        /* Copy HSM directly from bin to deliverable structure */
+        pwsh(label: "Creating HWIOAPPL/Products folder", script: "New-Item -ItemType Directory -Path '${env.WORKSPACE}/${env.ArtifactsGM}/HWIODeliverable/HWIOAPPL/Products' -Force")
+        pwsh(label: "Copying HSM elf to HWIOAPPL/Products", script: "Copy-Item -Path '${env.WORKSPACE}/bin/${target}/*.elf' -Destination '${env.WORKSPACE}/${env.ArtifactsGM}/HWIODeliverable/HWIOAPPL/Products/HSM.elf'")  // TODO: To be renamed w/ P/N and DLS once provided
+
+        pwsh(label: "Creating HWIOHSM/Products folder", script: "New-Item -ItemType Directory -Path '${env.WORKSPACE}/${env.ArtifactsGM}/HWIODeliverable/HWIO${target}/Products' -Force")
+        pwsh(label: "Copying HSM elf to HWIOHSM/Products", script: "Copy-Item -Path '${env.WORKSPACE}/bin/${target}/*.elf' -Destination '${env.WORKSPACE}/${env.ArtifactsGM}/HWIODeliverable/HWIO${target}/Products/Magna_Testhsm.elf'")
+        pwsh(label: "Copying HSM map to HWIOHSM/Products", script: "Copy-Item -Path '${env.WORKSPACE}/bin/${target}/*.map' -Destination '${env.WORKSPACE}/${env.ArtifactsGM}/HWIODeliverable/HWIO${target}/Products/Magna_Testhsm.map'")
+        pwsh(label: "Copying HSM hex to HWIOHSM/Products", script: "Copy-Item -Path '${env.WORKSPACE}/bin/${target}/*.hex' -Destination '${env.WORKSPACE}/${env.ArtifactsGM}/HWIODeliverable/HWIO${target}/Products/Magna_Testhsm.hex'")
+    }
+}
+
+def bvtSteps(def badge) {
+    unstash 'bins'
+    pwsh(label: "Creating the GEP_Build_Verification_Test_Results folders", script: """
+        New-Item -ItemType Directory -Path '${env.GEP_Build_Verification_Test_Results}' -Force
+    """)
+    lock(resource: "${env.NODE_NAME}_ECU") {
+        // ===== APPL Target Testing =====
+        timeout(45) {
+            catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                pwsh(label: "Flashing APPL target", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/Jenkins/Scripts/target_testing/main.py' --report_folder '${env.GEP_Build_Verification_Test_Results}'")
+            }
+        }
+
+        // ===== APPL_GM Target Testing =====
+        timeout(15) {
+            catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                pwsh(label: "Flashing APPL_GM target", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/Jenkins/Scripts/target_testing/main_gm.py' --report_folder '${env.GEP_Build_Verification_Test_Results}'")
+            }
+        }
+    }
+    // Parse UART logs
+    int log_app = pwsh(label: "Parsing APPL UART log", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/Jenkins/Scripts/target_testing/uart_parser.py' --log '${env.GEP_Build_Verification_Test_Results}/uart.log' --log_type appl", returnStatus: true)
+    int log_agm = pwsh(label: "Parsing GM__ UART log", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/Jenkins/Scripts/target_testing/uart_parser.py' --log '${env.GEP_Build_Verification_Test_Results}/uart_appl_gm.log' --log_type appl_gm", returnStatus: true)
+    int log_aeq = pwsh(label: "Parsing EyeQ UART log", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/Jenkins/Scripts/target_testing/uart_parser.py' --log '${env.GEP_Build_Verification_Test_Results}/uart_appl_gm_EQ.log' --log_type appl_gm_eq", returnStatus: true)
+    if (log_app == 0 && log_agm == 0 && log_aeq == 0) {
+        badge.setStatus("OK"); badge.setColor("green")
+    } else {
+        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+            error "BVT Failed - Check logs for details. APPL log result: ${log_app}, APPL_GM log result: ${log_agm}, APPL_GM_EQ log result: ${log_aeq}"
+        }
+        badge.setStatus("NOK"); badge.setColor("red")
+    }
+}
+
+def wrappingUpSteps() {
+    pwsh(label: "Creating folders for GEP_Build_Verification_Test_Scripts", script: "New-Item -ItemType Directory -Path '${env.GEP_Build_Verification_Test_Scripts}/Flash_and_Smoke_Test' -Force")
+    pwsh(label: "Copying BVT scripts", script: "Copy-Item -Path '${env.WORKSPACE}/config/Jenkins/Scripts/target_testing/*' -Destination '${env.WORKSPACE}/${env.GEP_Build_Verification_Test_Scripts}/Flash_and_Smoke_Test/' -Recurse")
+    pwsh(label: "GEP_Internal_Software_Release_Notification", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/Jenkins/Scripts/GEP/Internal_Software_Release_Notification/ReleaseNotification_WorkProduct.py' --output-folder '${env.GEP_Internal_Software_Release_Notification}'")
+    pwsh(label: "GEP_Software_Integration_KPI_Report", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/Jenkins/Scripts/GEP/Integration_Approval/IntegrationApproval_WorkProduct.py' --output-folder ${env.GEP_Software_Integration_KPI_Report}")
+    pwsh(label: "Creating the GEP_Integrated_Software folder", script: "New-Item -ItemType Directory -Path '${env.GEP_Integrated_Software}' -Force")
+    pwsh(label: "GEP_Integrated_Software", script: "Set-Content -Path '${env.GEP_Integrated_Software}/Integrated_Software.txt' -Value 'This bundle... contains the requested binaries, generated files, logs, etc.'")
+    pwsh(label: "Creating the GEP_Official_Branches folder", script: "New-Item -ItemType Directory -Path '${env.GEP_Official_Branches}' -Force")
+    pwsh(label: "GEP_Official_Branches", script: "Set-Content -Path '${env.GEP_Official_Branches}/Official_Branches.txt' -Value 'The official branch of this repo is `develop`.'")
+    pwsh(label: "GEP_Static_Analysis_Results link", script: "Set-Content -Path '${env.GEP_Static_Analysis_Results}/GEP_Static_Code_Analysis_Results.txt' -Value 'GEP_Static_Code_Analysis_Results can be found in ${env.GEP_Static_Code_Analysis_Results}'")
+    // TODO: GEP_Static_Analysis_Results - Trend lines can be grabbed from QAV, else from the REST endpoint "warnings-ng/api/json"
+    if (ACTION_RUN_BVT) {
+        unstash 'bvt_results'
+        pwsh(label: "Copying the UART log to the KPIs folder", script: "Copy-Item -Path '${env.GEP_Build_Verification_Test_Results}/*.txt' -Destination '${env.GEP_Software_Integration_KPI_Report}/'")
+    }
+    if (ACTION_RUN_VECTORCAST) {
+        unstash 'vectorcast_results'
+    }
+    pwsh(label: 'Prepare KPI report folder', script: """
+        New-Item -ItemType Directory -Path '${env.GEP_Software_Integration_KPI_Report}' -Force
+        Copy-Item -Path '${env.KPIs_FILE}' -Destination '${env.GEP_Software_Integration_KPI_Report}/KPIs.json'
+        Get-Content '${env.KPIs_FILE}'
+    """)
+}
+
+// ============================================================================
+// Original Helper Methods
+// ============================================================================
+
+def setupNode() {
+    script {
+        //  Values
+        String Python = isUnix() ? "${env.WORKSPACE}/.venv/bin/python3" : "${env.WORKSPACE}\\.venv\\Scripts\\python.exe"
+
+        // Paths
+        def shortId = UUID.randomUUID().toString().replaceAll("-", "").take(8)
+        env.SUBPATH = isUnix() ? "${env.WORKSPACE}" : "C:\\usr_tmp\\${shortId}"
+        if (!isUnix()) { pwsh("New-Item -ItemType Junction -Path ${env.SUBPATH} -Value ${env.WORKSPACE}") }
+
+        // Environment
+        retry(3) {
+            checkout scm
+        }
+        pwsh(label: "Clearing old submodules", script: "git submodule deinit -f --all", returnStatus: true)
+        pwsh(label: 'Set Up Submodules From Remote', script: '''
+          $ref = if ($IsWindows) { 'C:/multirepository-cache.git' } else { '/home/public/Projects/L2H7890_Software/multirepository-cache.git' }
+          git submodule update --init --jobs 8 --recursive --force --reference $ref
+        ''')  // TODO: Consider controlling the reference repo via this Jenkins script.
+        pwsh(label: "Ensure submodules are clean 🧼", script: "git submodule foreach --recursive git reset --hard")
+        pwsh(label: "Install Packager Files", script: "& '${env.WORKSPACE}/scripts/Packager/installPackagerFiles.ps1'")
+        retry(3) {
+            pwsh(label: "Setup Python virtual environment", script: "& '${env.WORKSPACE}/scripts/Python/setup.ps1'")
+        }  // Seemingly randomly getting `The term '...\.venv\Scripts\Activate.ps1' is not recognized...` on Windows computers.  Maybe a FS queue issue in NTFS?
+
+        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+            pwsh(label: "Checking for aligned submodules", script:  "& '${env.WORKSPACE}/config/Jenkins/Scripts/gitManagement/check_aligned_submodules.ps1'")
+        }
+        pwsh(label: "Checkout Submodules per job type", script: "${Python} ${env.WORKSPACE}/config/Jenkins/Scripts/gitManagement/advanced-submodule-checkout.py")
+    }
+}
+
+def cleanupNode() {
+    pwsh(label: "List modified files", script: "git status --porcelain")
+    pwsh(label: "List modified files in submodules", script: "git submodule foreach git status --porcelain")
+    pwsh(label: "Clearing old submodules", script: "git submodule deinit -f --all", returnStatus: true)
+    pwsh(label: "Garbage Collect main", script: "git gc")
+    pwsh(label: "Garbage Collect submodules", script: "git submodule foreach 'git gc'")
+    cleanWs(deleteDirs: true, notFailBuild: true, patterns: [[pattern: '.git/**', type: 'EXCLUDE']])
+}
+
+def setup_scm_mining(mainline = "develop_l2h7890") {
+    /*
+    `discoverReferenceBuild` supposedly grabs the right reference in multi-branch jobs, but it doesn't seem to extend to 'organization jobs'
+    This function is a workaround for that limitation.
+    */
+    String jenkins_job_root = env.JOB_NAME.split('/')[0]
+    String repository_name = pwsh(script: 'git remote get-url origin', returnStdout: true).trim().split('/')[-1].replace('.git', '')  // Note: Probably better to retrieve from JOB_NAME to accommodate projects with deferred git cloning.
+    String reference_branch = env.CHANGE_TARGET ?: mainline  // Reference against the target branch if a PR, else the specified mainline
+    discoverReferenceBuild(considerRunningBuild: true, referenceJob: "${jenkins_job_root}/${repository_name}/${reference_branch}")  // Job - Repo - Branch
+    mineRepository()
+    gitDiffStat()
+}
+
+def add_to_influxDB_point_fields(String baseFilePath, String additionalFilePath) {
+    script {
+        if (!fileExists(additionalFilePath)) {
+            echo "ERROR: File ${additionalFilePath} does not exist. Skipping addition to InfluxDB point fields."
+            return
+        }  // check if additionalFilePath exists
+        retry(3) {
+            Map baseFile = readJSON(file: baseFilePath)
+            Map additionFile = readJSON(file: additionalFilePath)
+            baseFile.Point.Fields.putAll(additionFile)
+            writeJSON(file: baseFilePath, json: baseFile, pretty: 4)
+        }  // Simple retry in case it's simultaneously being written to.
+    }
+}
+
+def syncDir(Map args) {
+    def src = args.src
+    def dst = args.dest
+    script {
+        if (isUnix()) {
+            sh(label: "Syncing ${src} to ${dst}", script: "rsync -a --delete '${src}/' '${dst}/'", returnStatus: true)  // Capture return Status to prevent error'ing on parrallel rsync processes
+        } else {
+            pwsh """
+                robocopy "${src}" "${dst}" /MIR /R:1 /W:1 /NFL /NDL /NJH /NJS | Out-Null
+                if (\$LASTEXITCODE -ge 8) { exit \$LASTEXITCODE }
+            """
+        }
+    }
+}
+
+
+def buildTarget(target, env, params) {
+    pwsh(label: "Create ${target} build folder", script: "New-Item -ItemType Directory -Path ${env.WORKSPACE}/${env.ArtifactsDevs}/bin/${target} -Force")
+    pwsh(label: "Run ${target} clean", script: "${env.SUBPATH}/scripts/clean.ps1 -Target ${target}")
+    pwsh(label: "Gen ${target} build", script: "${env.SUBPATH}/scripts/gen.ps1 -Target ${target} ${params.Gen_Parameters}")
+    pwsh(label: "Building ${target}", script: "${env.SUBPATH}/scripts/build.ps1 -Target ${target} | Tee-Object -FilePath ${env.WORKSPACE}/${env.ArtifactsDevs}/bin/${target}/build.log")
+    pwsh(label: "Check for ${target} success", script: "if (-not (Test-Path '${env.WORKSPACE}/bin/${target}/*.elf')) { throw 'No ELF file found!' }")
+    pwsh(label: "Running Map File Analysis", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/scripts/Map_File_Analysis/Windriver/MapFileAnalysis.py' '${env.WORKSPACE}/bin/${target}/' --output_folder '${env.GEP_Static_Analysis_Results}/MemoryReport/${__TARGET}'")
+}
+
+def qacTarget(target, env, params) {
+    pwsh(label: "${target} - Setting up QAC environment, creating and copying files/folders", script: """
+        New-Item -ItemType Directory -Path ${QAC_CONFIG_PATH} -Force
+        Copy-Item -Path ${env.WORKSPACE}/config/QAC/* -Destination ${QAC_CONFIG_PATH} -Recurse -Force
+        New-Item -ItemType Directory -Path ${env.QAC_REPORT_PATH} -Force
+        New-Item -ItemType File -Path ${QAC_CONFIG_PATH}/prqa/configs/Initial/output/_PROJECT_ROOT/cma -Force
+    """)
+
+    if (isUnix()) {
+        sh(label: "Fixing CCT files for WindRiver pathing in Linux", script: "find ${QAC_CONFIG_PATH} -type f -name '*.cct' -exec sed -i 's#C:##g' {} + -print")
+    }
+
+    pwsh(label: "${target} - Checking QAC is Installed", script: "if (Test-Path '${env.QA_CLI}') { exit 0 } else { exit 1 }")
+    pwsh(label: "${target} - Setting QAC License Server", script: "& '${env.QA_CLI}' config license-server --add 5055@Eahmselcapp04.magna.global")
+    pwsh(label: "${target} - Checking QAC License", script: "& '${env.QA_CLI}' config license-server --check", returnStatus: true)
+    pwsh(label: "${target} - QAC Sync", script: "& '${env.QA_CLI}' sync --qaf-project '${QAC_CONFIG_PATH}' --type JSON build/${target}/compile_commands.json")
+
+    script {
+        lock(resource: "QAC_${env.NODE_NAME}") {
+            timeout(time: 40, unit: 'MINUTES') {
+                boolean qacAnalyzeFailure = pwsh(label: "${target} - Running QAC Analyze", script: "& '${env.QA_CLI}' analyze --jobs 28 --qaf-project '${QAC_CONFIG_PATH}' --file-based-analysis --force-complete --retry 5 --assemble-support-analytics", returnStatus: true)
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    if (qacAnalyzeFailure) {
+                        error "QAC Analysis failed for ${target}. Please check the logs for details."
+                    }
+                }
+            }
+        }
+    }
+
+    def reportTypes = ["RCR"]
+    if (ACTION_QAC_REPORTS) {
+        reportTypes += ["CRR", "HMR", "MCR", "MDR", "SCR", "SUR"]
+    }
+    for (String reportType : reportTypes) {
+        retry(3) {
+            pwsh(label: "${target} - Generating QAC Report: ${reportType}", script: "& '${env.QA_CLI}' report --qaf-project '${QAC_CONFIG_PATH}' --type ${reportType} --jobs 28 --output-path '${env.QAC_REPORT_PATH}' --ignore")  // --ignore added to deal with some mild instability between analysis and reporting.  Excluded in the other reports to ensure release checks are complete.
+        }  // Ocasional instability on report generation encountered
+    }  // Different reports to generate
+
+    pwsh(label: "${target} - Fixing Windriver pathing in results_data.xml", script: "(Get-Content ${env.QAC_REPORT_PATH}/results_data.xml) -replace 'C:/WINDRI~1/COMPIL~1/DIAB-5~1.0/', 'C:/WindRiver/compilers/diab-5.9.9.0/' | Set-Content ${env.QAC_REPORT_PATH}/results_data.xml")
+    pwsh(label: "${target} - Formatting QAC Reports for Jenkins", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/Jenkins/Scripts/Format_QAC_For_Jenkins.py' ${env.QAC_REPORT_PATH}")
+
+    pwsh(label: "${target} - Filter out MISRAC-ADVISORY from violations.log", script: "Get-Content '${env.QAC_REPORT_PATH}/violations.log' | Where-Object { \$_ -notmatch 'MISRAC-ADVISORY' } | Set-Content '${env.QAC_REPORT_PATH}/violations.reduced.log'")
+    pwsh(label: "${target} - Filter out /cma from violations.reduced.log", script: "Get-Content '${env.QAC_REPORT_PATH}/violations.reduced.log' | Where-Object { \$_ -notmatch '/cma' } | Set-Content '${env.QAC_REPORT_PATH}/violations.reduced2.log'")
+    AnalysisResult result_recordIssues = recordIssues(
+        ignoreQualityGate: true,
+        //qualityGates: [[criticality: 'NOTE', threshold: 1, type: 'NEW', unstable: true]],  // NOTE: Manually writing gate to exclude low severity
+        enabledForFailure: true,
+        tools: [groovyScript(parserId: 'QACustom', id: "QAC-${target}", name: "QAC-${target}", pattern: "${QAC_REPORT_PATH}/violations.reduced2.log")],
+        sourceCodeRetention: 'NEVER'  // NOTE: QAC reports don't include line numbers, uploading files won't be useful.
+    )[0]
+
+    int newIssues = result_recordIssues.getNewSize()
+    int newLowSeverity = result_recordIssues.getNewLowPrioritySize()
+    int newNormalAndHigherSeverity = newIssues - newLowSeverity
+    QAC_Map["${target}"] = newNormalAndHigherSeverity
+
+    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+        if (newNormalAndHigherSeverity > 0) {
+            error "New QAC Violations found: ${newNormalAndHigherSeverity}"
+        }
+    }
+
+    if (ACTION_UPLOAD_TO_QAV) {
+        String qavProjectName
+        String uniqueString
+        String repository_name = pwsh(script: 'git remote get-url origin', returnStdout: true).trim().split('/')[-1].replace('.git', '')
+        if (env.TAG_NAME) {
+            qavProjectName = "${repository_name}_${target}_tag"
+            uniqueString = "${env.TAG_NAME}"
+        } else if (is_mainline) {
+            qavProjectName = "${repository_name}_${target}_mainline"
+            uniqueString = "${qavProjectName}_${env.BUILD_NUMBER}"
+        } else {
+            qavProjectName = "${repository_name}_${target}_dev"
+            String shortGitCommit = pwsh(script: "git rev-parse --short=8 HEAD", returnStdout: true).trim()  // env.GIT_COMMIT is not available when doing `checkout scm` manually.
+            String shortRandomId = UUID.randomUUID().toString().replaceAll("-", "").take(4)  // Prevent collision for QAV re-uploads.
+            uniqueString = "${qavProjectName}_${shortGitCommit}_${shortRandomId}"
+        }
+        pwsh(label: "${target} - Uploading to QAV", script: "& '${env.QA_CLI}' upload -q --qaf-project '${QAC_CONFIG_PATH}' --username upload -p \"\" --snapshot-name '${uniqueString}' --upload-project ${qavProjectName} --upload-source ALL -a RELATIVE -U eahmsqav10.magna.global:8080")
+    }
+} // qacTarget
+
+def dockerAgent = [
+    reuseNode          : true,
+    dir                : 'config/Docker',
+    filename           : 'Dockerfile',
+    additionalBuildArgs: '' +
+    '--build-arg USERNAME=svc_mee_ci_d2h7510 ' +  // Username is used for licenses, should be abstracted from running node.
+    '--build-arg UID=$(id -u) ' +  // UID/GID is used for filesystem permissions.  Keeping them the same as the agent allows for shared r/w access.
+    '--build-arg GID=$(id -g) ',
+    args               : '' +
+    '-v /etc/ssl/certs:/etc/ssl/certs ' +
+    '-v /home/public:/home/public ' +
+    '-v /home/public/tools/QAC_2024.4:/QAC ' +
+    '-v /Windriver:/Windriver '
+] // dockerAgent
+
+pipeline {
+    parameters {
+        booleanParam(name: 'force_run_PR_Required_Steps',
+            defaultValue: false,
+            description: 'Enabling this parameter will run the full set of required actions/tests for a PR to be merged')
+        choice(name: 'force_run_QAC',
+            choices: ["(Default) Don't Run", "Run", "Run and Report", "Run and Upload To QAV"],
+            description: "Select whether to run QAC or not")
+        booleanParam(name: 'force_run_VectorCAST',
+            defaultValue: false,
+            description: 'Force this pipeline to run VectorCAST')
+        booleanParam(name: 'force_run_HWIO_GEN',
+            defaultValue: false,
+            description: 'Enable this to build HWIO_GEN')
+        booleanParam(name: 'force_on_target_test',
+            defaultValue: false,
+            description: 'Enable this to run BVT on target tests')
+        separator(name: 'Integration_Scope', sectionHeader: 'Integration Scope')
+        booleanParam(name: 'run_Sca',
+            defaultValue: false,
+            description: 'Enable this to run SCA - https://saas.whitesourcesoftware.com/Wss/WSS.html and magna.cybellum.com')
+        string(name: 'Gen_Parameters',
+            defaultValue: '-Toolchain Windriver -milestone NA -Version 000 -LogLevel LOG_DEBUG -Board GM_VIP_A2',
+            description: '''Parameters to pass into the "gen.ps1" script.
+                `-Link_GM_Lib` and `-Extwdg` are being set according to build mode (GM Lib vs Test App)
+                Please refer to [Script's README.md](https://elc-github.magna.global/Magna-Electronics/L2H7890_Software/blob/develop/README.md) for more information.
+            ''')  // TODO: Consider overwriting from a TAG name.
+        booleanParam(name: 'run_merge_conflict_resolution',
+            defaultValue: false,
+            description: 'Enable this to run automatic merge conflict resolution scripts if this is a -head branch')
+    } // parameters
+    agent {
+        label 'linux && l2h7890'
+    } // agent
+    triggers {
+        cron(env.BRANCH_NAME?.startsWith('develop') ? 'H 00 * * *' : '')
+    } // triggers
+    environment {
+        PY_EXE = ".venv/Scripts/python"  // VENV setup scripts creates a sym/junct link between `Scripts` and `bin` for cross-platform compatibility.
+
+        GIT_LFS_SKIP_SMUDGE = '1'
+        KPIs_FILE = "${env.WORKSPACE}/config/KPIs/influxDB/KPIs.json"
+
+        // Artifacts Folders
+        ArtifactsDevs = "artifacts/Devs"
+        ArtifactsGM   = "artifacts/GM_Deliverable"
+
+        // [GEP WorkProducts](https://magnaelectronics.stages.digital/stages/#/workspace/558/_vv/process/artifact/_2lTBQFNKWg-GvLHDGxl79A)
+        // [Project WorkProduct Tracker](https://codebeamer.magna.global/cb/tracker/140498382) --> L2HH890_VIP_Software Development --> L2H7890_VIP_Software Integration
+        GEP_Security_Scan_Report                   = "artifacts/GEP/L2H7890_VIP_Security_Scan_Report"                   // SCA
+        GEP_Software_Integration_List              = "artifacts/GEP/L2H7890_VIP_Software_Integration_List"              // (todo - need to implement integration tasks)
+        GEP_Build_Verification_Test_Scripts        = "artifacts/GEP/L2H7890_VIP_Build_Verification_Test_Scripts"        // Just copy test items to the artifacts folder...
+        GEP_Static_Analysis_Results                = "artifacts/GEP/L2H7890_VIP_Static_Analysis_Results"                // QAC and Memory Report
+        GEP_Internal_Software_Release_Notification = "artifacts/GEP/L2H7890_VIP_Internal_Software_Release_Notification" // SW Unit Ver.s, Flash Inst, GH link
+        GEP_Software_Integration_Strategy          = "artifacts/GEP/L2H7890_VIP_Software_Integration_Strategy"          // (todo - need to write the doc)
+        GEP_Software_Integration_Approval          = "artifacts/GEP/L2H7890_VIP_Software_Integration_Approval"          // Details for review and approval of each integration
+        GEP_Build_Verification_Test_Results        = "artifacts/GEP/L2H7890_VIP_Build_Verification_Test_Results"        // BVT Results
+        GEP_Software_Integration_KPI_Report        = "artifacts/GEP/L2H7890_VIP_Software_Integration_KPI_Report"        // KPIs. Stack Usage, ??? (todo - need to identify other KPIs)
+        // GEP_Software_Integration_Environment    = "artifacts/GEP/L2H7890_VIP_Software_Integration_Environment"       // Literal Environments like physical machines (todo - documentation)
+        // GEP_Software_Build_Environment          = "artifacts/GEP/L2H7890_VIP_Software_Build_Environment"             // Same as above? (todo)
+        GEP_Integrated_Software                    = "artifacts/GEP/L2H7890_VIP_Integrated_Software"                    // Literally the output from this pipeline.
+        GEP_Official_Branches                      = "artifacts/GEP/L2H7890_VIP_Official_Branches"                      // Literally just informing the mainline.
+        GEP_Static_Code_Analysis_Results           = "artifacts/GEP/L2H7890_VIP_Static_Code_Analysis_Results"           // (todo) HIS, Magna Coding Standard, justifications+approvals, trend-line
+        GEP_Software_Unit_Test_Report_Results      = "artifacts/GEP/L2H7890_VIP_Software_Unit_Test_Report_Results"      // Unit tests (todo) Need aLOT more details.  Each uni test id etc, results of each, historical trends
+        GEP_Software_Bill_of_Materials             = "artifacts/GEP/L2H7890_VIP_Software_Bill_of_Materials"              // (todo) grab from SCA.
+    } // environment
+    options {
+        ansiColor('xterm')
+        buildDiscarder logRotator(artifactDaysToKeepStr: '7')
+        //disableConcurrentBuilds()
+        //disableResume()
+        parallelsAlwaysFailFast()
+        quietPeriod(20)  /* Time for GitHub to properly hold the commit before Jenkins runs. */
+        skipDefaultCheckout()  /* We are handling SCM checkout ourselves.  Force pushes are causing build failures. */
+        timeout(time: 3, unit: 'HOURS')
+        timestamps()  /* Prepend all console output generated by the Pipeline with timestamps */
+    } // options
+    stages {
+        stage('Base Setup') {
+            steps {
+                script {
+                    baseSetupSteps()
+                }
+            } // steps - Git and PR Setup
+        } // stage - Git and PR Setup
+        stage('Matrix Agent') {
+            agent { dockerfile dockerAgent }
+            stages {
+                stage('Build Setup') {
+                    steps {
+                        pwsh(label: "Set up the build environment", script: "& '${env.WORKSPACE}/scripts/setup_env.ps1'")
+                    }
+                } // stage - Job Setup
+                stage('Build Matrix') {
+                    matrix {
+                        axes {
+                            axis {
+                                name '__TARGET'
+                                values 'APPL', 'APPL_GM', 'BOOT', 'RPGM', 'HSM'
+                            }
+                        } // axes - Matrix_Pipeline
+                        stages {
+                            stage('Build') {
+                                steps {
+                                    script {
+                                        lock(resource: "${BUILD_TAG}___build_${__TARGET}".minus("_GM")) {
+                                            // Note, GM Build sleeps if not receiving wake CAN events
+                                            if (__TARGET == "APPL_GM") { pwsh(label: "Applying GM patch for ${__TARGET}", script: "git apply ${env.WORKSPACE}/config/Jenkins/Patches/disable_can_sleep_from_no_wake.patch") }
+                                            buildTarget(__TARGET, env, params)
+                                            if (__TARGET == "APPL_GM") { pwsh(label: "Reverting GM patch for ${__TARGET}", script: "git apply -R ${env.WORKSPACE}/config/Jenkins/Patches/disable_can_sleep_from_no_wake.patch") }
+                                        }  // Silly lock since versionInfo will clash if on the same target
+                                    } // script - Build
+                                } // steps - Build
+                                post {
+                                    always {
+                                        pwsh(label: "Cleaning up the build log", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/Jenkins/Scripts/compilers/log_refactor_WindRiver.py' '${env.WORKSPACE}/${env.ArtifactsDevs}/bin/${__TARGET}/build.log' '${env.SUBPATH}', '${env.WORKSPACE}'")
+                                        pwsh(label: "Add the bin folder to the artifacts", script: "Copy-Item -Path ${env.WORKSPACE}/bin/${__TARGET}/* -Destination ${env.WORKSPACE}/${env.ArtifactsDevs}/bin/${__TARGET} -Recurse -Force")
+                                        pwsh(label: "Copy compile_commands.json to artifacts", script: "Copy-Item -Path ${env.WORKSPACE}/build/${__TARGET}/compile_commands.json -Destination ${env.WORKSPACE}/${env.ArtifactsDevs}/bin/${__TARGET}/compile_commands.json -Force")
+                                        script {
+                                            AnalysisResult result_recordIssues = recordIssues(
+                                                ignoreQualityGate: true,
+                                                qualityGates: [[criticality: 'NOTE', threshold: 1, type: 'NEW', unstable: true]],
+                                                enabledForFailure: true,
+                                                tools: [diabC(id: "Compiler-${__TARGET}", name: "Compiler-${__TARGET}", pattern: "${env.ArtifactsDevs}/bin/${__TARGET}/build.log")],
+                                                sourceCodeRetention: 'MODIFIED'  // NOTE: Due to latency to the master, uploading source adds amount of time to the pipeline.
+                                            )[0]
+
+                                            Map jsonContent = readJSON(file: "${env.KPIs_FILE}")
+                                            jsonContent.Point.Fields["compiler_warnings"] = (jsonContent.Point.Fields["compiler_warnings"] ?: 0) + result_recordIssues.getTotalNormalPrioritySize()
+                                            jsonContent.Point.Fields["compiler_errors"] = (jsonContent.Point.Fields["compiler_errors"] ?: 0) + result_recordIssues.getTotalHighPrioritySize() + result_recordIssues.getTotalErrorsSize()
+                                            writeJSON(file: "${env.KPIs_FILE}", json: jsonContent)
+
+                                            int newIssueCount = result_recordIssues.getNewSize()
+                                            int newErrorSize = result_recordIssues.getNewErrorSize()
+                                            Compiler_Map["${__TARGET}"] = newIssueCount + newErrorSize
+                                        }
+                                    } // always - Build
+                                } // post - Build
+                            } // stage - Build
+                            stage("QAC") {
+                                when {
+                                    expression { ACTION_RUN_QAC }
+                                } // when - QAC
+                                environment {
+                                    QAC_YEAR_VERSION = "2024.4"
+                                    QAC_VERSION = "4.8.0"
+                                    M3CM_VERSION = "5.8.0"
+                                    CCM_VERSION = "3.8.0"
+                                    QAC_REPORT_PATH = "${env.GEP_Static_Code_Analysis_Results}/QAC/${__TARGET}"
+                                    QAC_CONFIG_PATH = "${env.WORKSPACE}/tmp/${__TARGET}/QAC"
+                                } // environment - QAC
+                                options {
+                                    timeout(time: 2, unit: 'HOURS')
+                                } // options - QAC
+                                steps {
+                                    script {
+                                        env.QA_CLi = isUnix() ?
+                                                "/QAC/Helix-QAC-2024.4/common/bin/qacli" :
+                                                "C:\\Perforce\\Helix-QAC-2024.4\\common\\bin\\qacli.exe"
+                                        if (isUnix()) {
+                                            sh(label: "Setting up QAC Config", script: "mkdir -p ~/.config/Perforce/")
+                                            sh(label: "Setting up QAC installed_components.ini", script: """
+                                                echo "[PRODUCTS]" > ~/.config/Perforce/installed_components.ini
+                                                echo "m3cm-${M3CM_VERSION}  = /QAC/m3cm-${M3CM_VERSION}" >> ~/.config/Perforce/installed_components.ini
+                                                echo "certccm-${CCM_VERSION} = /QAC/certccm-${CCM_VERSION}" >> ~/.config/Perforce/installed_components.ini
+                                            """)
+                                            sh(label: "Setting up QAC installed_packages", script: """
+                                                echo "{'product': 'Helix-QAC', 'version': '${QAC_VERSION}', 'build': '0', 'location': '/QAC/Helix-QAC-${QAC_YEAR_VERSION}'}" > ~/.config/Perforce/installed_packages
+                                                echo "{'product': 'm3cm', 'version': '${M3CM_VERSION}', 'build': '0', 'location': '/QAC/m3cm-${M3CM_VERSION}'}" >> ~/.config/Perforce/installed_packages
+                                                echo "{'product': 'certccm', 'version': '${CCM_VERSION}', 'build': '0', 'location': '/QAC/certccm-${CCM_VERSION}'}" >> ~/.config/Perforce/installed_packages
+                                            """)
+                                        }
+                                        qacTarget(__TARGET, env, params)
+                                    }
+                                } // steps - QAC
+                                post {
+                                    always {
+                                        add_to_influxDB_point_fields("${env.KPIs_FILE}", "${env.QAC_REPORT_PATH}/metrics.json")
+                                        script {
+                                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, includes: '**/*.html', keepAll: true, reportDir: "${QAC_REPORT_PATH}", reportFiles: 'QAC_*.html', reportName: "QAC Report(s) - ${__TARGET}", reportTitles: "QAC Report - ${__TARGET}"])
+                                        }
+                                    }
+                                    cleanup {
+                                        pwsh(label: "Removing QAC folders not needed to report", script: "Remove-Item -Recurse -Force '${env.QAC_REPORT_PATH}/_SOURCE_ROOT','${env.QAC_REPORT_PATH}/data' -ErrorAction SilentlyContinue")
+                                        pwsh(label: "Removing QAC file types not needed to report", script: "Get-ChildItem -Path '${env.QAC_REPORT_PATH}' -Recurse -Include '*.lst','*.via' | Remove-Item -Force -ErrorAction SilentlyContinue")
+                                    }
+                                } // post - QAC
+                            } // stage - QAC
+                            stage("HWIO_Deliverable") {
+                                when {
+                                    expression {
+                                        ACTION_BUILD_HWIO_GEN && !__TARGET.endsWith("_GM")
+                                    }
+                                }
+                                steps {
+                                    script {
+                                        hwioDeliverableSteps(__TARGET)
+                                    }
+                                }
+                                post {
+                                    always {
+                                        pwsh(label: "Creating the prep folder for HWIO deliverable", script: "New-Item -ItemType Directory -Path '${env.WORKSPACE}/config/GM_Release/GM_Release_Prep' -Force")
+                                        syncDir( src: "${env.WORKSPACE}/config/GM_Release/GM_Release_Prep/", dest: "${env.WORKSPACE}/${env.ArtifactsGM}/" )
+                                    }
+                                }
+                            } // stage - HWIO_Deliverable
+                        } // stages - Matrix_Pipeline
+                    } // matrix - Matrix_Pipeline
+                    post {
+                        always {
+                            script {
+                                if (ACTION_RUN_BVT) {
+                                    stash includes: 'bin/', name: 'bins'  // While stash generally shouldn't be used, this should only last for a few seconds and use ~20MB.
+                                }
+                            }
+                        }
+                        cleanup {
+                            script {
+                                if (ACTION_BUILD_HWIO_GEN) {
+                                    pwsh(label: "Removing the gnu_utils junction link", script: "Remove-Item -Path '${env.WORKSPACE}/config/GM_Release/GM_Release_Prep/gnu_utils' -Force -Confirm:\$False", returnStatus: true)
+                                    pwsh(label: "Creating the tools folder in artifacts", script: "New-Item -ItemType Directory -Path '${env.WORKSPACE}/${env.ArtifactsGM}/tools/00_TRACE32' -Force")
+                                    pwsh(label: "Copying TRACE32 tools to artifacts", script: "Copy-Item -Path '${env.WORKSPACE}/tools/00_TRACE32/*' -Destination '${env.WORKSPACE}/${env.ArtifactsGM}/tools/00_TRACE32/' -Recurse -Force")
+                                    pwsh(label: "Setting T32 flag for repo struct as false", script: """
+                                        Get-ChildItem -Path ${env.WORKSPACE}/${env.ArtifactsGM} -Recurse -Filter *.cmm | ForEach-Object {
+                                            (Get-Content \$_.FullName) | ForEach-Object {
+                                                if (\$_ -like '*FLAG:isRepoStructure*') { \$_ -replace 'TRUE', 'FALSE' } else { \$_ }
+                                            } | Set-Content \$_.FullName
+                                        }
+                                    """)
+                                }
+                            }
+                        }
+                    } // post - Matrix_Pipeline
+                } // stage - Matrix_Pipeline
+            } // stages - Matrix Agent
+        } // stage - Matrix Agent
+        stage('Parallel Tests and Checks') {
+            parallel {
+                stage('Build GM_Lib APPL w/ Private libs') {
+                    when {
+                        expression {
+                            ACTION_BUILD_HWIO_GEN
+                        }
+                    }
+                    steps {
+                        script {
+                            // config/GM_Release/GM_Release_Prep/build.ps1
+                            pwsh(label: "Building GM_Lib APPL with Private libs", script: "& '${env.WORKSPACE}/config/GM_Release/GM_Release_Prep/build.ps1' 'APPL_GM'")
+                        }
+                    }
+                    post {
+                        always {
+                            syncDir( src: "${env.WORKSPACE}/config/GM_Release/GM_Release_Prep/", dest: "${env.WORKSPACE}/${env.ArtifactsGM}/" )
+                        }
+                    }
+                }
+                stage('Results_Compiler') {
+                    steps {
+                        script {
+                            String results_string = Compiler_Map.keySet().toSorted().collect { Compiler_Map[it] }.join('/')
+                            int results_total = Compiler_Map.values().sum()
+                            badge_CompilerViolations.setStatus(results_string)
+                            badge_CompilerViolations.setColor(results_total > 0 ? "yellow" : "green")
+                        }
+                    } // steps - Results_Compiler
+                } // stage - Results_Compiler
+                stage('Results_QAC') {
+                    when {
+                        expression { ACTION_RUN_QAC }
+                    } // when - Results_QAC
+                    steps {
+                        script {
+                            String results_string = QAC_Map.keySet().toSorted().collect { QAC_Map[it] }.join('/')
+                            int results_total = QAC_Map.values().sum()
+                            badge_QACViolations.setStatus(results_string)
+                            badge_QACViolations.setColor(results_total > 0 ? "yellow" : "green")
+                        }
+                    } // steps - Results_QAC
+                } // stage - Results_QAC
+                stage('VectorCAST') {
+                    agent { label 'windows && L2H7890' }
+                    when {
+                        expression { ACTION_RUN_VECTORCAST }
+                    } // when - VectorCAST
+                    steps {
+                        setupNode()
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            lock(resource: "VCAST_${env.NODE_NAME}", quantity: 1) {
+                                timeout(time: 3, unit: 'HOURS') {
+                                    pwsh(label: "Running VectorCAST", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/VCAST/VectorCAST_Multithreaded.py' --report_dir '${env.GEP_Software_Unit_Test_Report_Results}'")
+                                }
+                            }
+                        }
+                    } // steps - VectorCAST
+                    post {
+                        always {
+                            stash includes: "${env.GEP_Software_Unit_Test_Report_Results}/**", name: 'vectorcast_results', allowEmpty: true
+                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: "${env.GEP_Software_Unit_Test_Report_Results}", reportFiles: 'VectorCAST_Report.html', reportName: 'VectorCAST Report', reportTitles: ''])
+                        } // always - VectorCAST
+                        cleanup {
+                            cleanupNode()
+                        }
+                    } // post - VectorCAST
+                } // stage - VectorCAST
+                stage('BVT') {
+                    when {
+                        expression { ACTION_RUN_BVT }
+                    }
+                    agent { label "USFWS3F75YS3" }
+                    steps {
+                        script {
+                            setupNode()
+                            catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                                bvtSteps(badge_BVT)
+                            }
+                        }
+                    }
+                    post {
+                        always {
+                            pwsh(label: "Printing the APPL UART log", script: "Get-Content -Path '${env.GEP_Build_Verification_Test_Results}/uart.log'", returnStatus: true)
+                            pwsh(label: "Printing the APPL_GM UART log", script: "Get-Content -Path '${env.GEP_Build_Verification_Test_Results}/uart_appl_gm.log'", returnStatus: true)
+                            pwsh(label: "Printing the APPL_GM EyeQ UART log", script: "Get-Content -Path '${env.GEP_Build_Verification_Test_Results}/uart_appl_gm_EQ.log'", returnStatus: true)
+
+                            pwsh(label: "Zipping BVT logs", script: "Compress-Archive -Path '${env.GEP_Build_Verification_Test_Results}/*.log' -DestinationPath '${env.WORKSPACE}/bvt_logs.zip' -Force")
+                            archiveArtifacts artifacts: 'bvt_logs.zip', fingerprint: false, allowEmptyArchive: true
+                            stash name: 'bvt_results', includes: "${env.GEP_Build_Verification_Test_Results}/", allowEmpty: true
+                        }
+                        cleanup {
+                            cleanupNode()
+                        }
+                        failure {
+                            script {
+                                pwsh(label: "Zipping Command logs for debugging", script: "Compress-Archive -Path '${env.WORKSPACE}/config/Jenkins/Scripts/target_testing/temp/*.log' -DestinationPath '${env.WORKSPACE}/bvt_command_logs.zip' -Force")
+                                archiveArtifacts artifacts: 'bvt_command_logs.zip', fingerprint: false, allowEmptyArchive: true
+                            }
+                        }
+                    } // post - BVT
+                } // stage - BVT
+                stage('Mend') {
+                    when {
+                        expression { ACTION_RUN_SCA }
+                    } // when - Mend
+                    agent { dockerfile dockerAgent }
+                    steps {
+                        script {
+                            // TODO: In the future, the mend scripting should capture the wanted reports.
+                            pwsh(label: "Create GEP_Security_Scan_Report directory", script: "New-Item -ItemType Directory -Path ${env.GEP_Security_Scan_Report} -Force")
+                            pwsh(label: "Running MEND SCA", script: "& '${env.WORKSPACE}/scripts/Mend/mend.ps1' -ScanRoot=${env.WORKSPACE}/config/GM_Release/GM_Release_Prep/HWIODeliverable -ReportDir=${env.GEP_Security_Scan_Report}")
+                            pwsh(label: "Write Stub message", script: "New-Item -ItemType File -Path ${env.GEP_Security_Scan_Report}/Stub.md -Value 'Please visit the [Mend website](https://saas.whitesourcesoftware.com/Wss/WSS.html#!project;id=16690105) to generate and download the reports. This will be automated in the future.'")
+                        }
+                    } // steps - Mend
+                } // stage - Mend
+                stage('Cybellum') {
+                    when {
+                        expression {
+                            ACTION_RUN_SCA
+                        }
+                    } // when - Cybellum
+                    agent {
+                        dockerfile dockerAgent
+                    }
+                    steps {
+                        script {
+                            pwsh(label: "Create GEP_Security_Scan_Report directory", script: "New-Item -ItemType Directory -Path ${env.GEP_Security_Scan_Report} -Force")
+                            catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                                pwsh(label: "Running Cybellum SCA", script: "& '${env.WORKSPACE}/config/Cybellum/cybellumcli_wrapper.ps1'")
+                            }  // Cybellum runs fail while there are ongoing analysesm so back-to-back runs will fail
+                            pwsh(label: "Write Stub message", script: "New-Item -ItemType File -Path ${env.GEP_Security_Scan_Report}/Cybellum_Stub.md -Value 'Please visit the [Cybellum website](https://magna.cybellum.com) to generate and download the reports. This will be automated in the future.'")
+                        }
+                    } // steps - Cybellum
+                }  // stage - Cybellum
+                stage('Misc') {
+                    steps {
+                        pwsh(label: "Creating the tools folder", script: "New-Item -ItemType Directory -Path '${env.WORKSPACE}/${env.ArtifactsDevs}/tools/00_TRACE32' -Force")
+                        pwsh(label: "Copying TRACE32 tools", script: "Copy-Item -Path '${env.WORKSPACE}/tools/00_TRACE32/*' -Destination '${env.WORKSPACE}/${env.ArtifactsDevs}/tools/00_TRACE32/' -Recurse -Force")
+                        pwsh(label: "Copying the customer doc folder into T32 tools as GMLib", script: "Copy-Item -Path '${env.WORKSPACE}/sw/customer/doc/' -Destination '${env.WORKSPACE}/${env.ArtifactsDevs}/tools/00_TRACE32/GMLib/' -Recurse -Force")
+                    } // steps - Misc
+                } // stage - Misc
+            } // parallel
+        }
+        stage('Wrapping Up') {
+            agent { dockerfile dockerAgent }
+            steps {
+                script {
+                    wrappingUpSteps()
+                }
+            }  // steps - Wrapping Up
+        } // stage - Parallel Tests and Checks
+    } // stages - pipeline
+    post {
+        always {
+            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                pwsh(label: "Uploading KPIs to InfluxDB", script: "& '${env.PY_EXE}' '${env.WORKSPACE}/config/KPIs/influxDB/influxDB_upload.py' ${env.KPIs_FILE}")
+            }
+
+            pwsh(label: "Get the release notes", script: "${env.PY_EXE} ./scripts/ReleaseNote_Generator/ReleaseNote_Generator.py", returnStatus: true)
+
+            // pwsh(label: "Clean up empty folders", script: """Get-ChildItem -Path "${env.WORKSPACE}/artifacts" -Recurse -Directory | Sort-Object { \$_.FullName.Split('\\').Count } -Descending | Where-Object { \$_.GetFileSystemInfos().Count -eq 0 } | Remove-Item -Force -ErrorAction SilentlyContinue""")
+            pwsh(label: "Remove unwanted files", script: """Get-ChildItem -Path "${env.WORKSPACE}/artifacts" -Recurse -Filter "trace32_tc4.zip" | Remove-Item -Force""")
+            script {
+                String artifact_name = env.TAG_NAME ?: env.JOB_BASE_NAME.replace('%2F', '__')
+                pwsh(label: "Zip the artifacts", script: "& '7z' a -t7z -mx=8 -mmt=on '${env.WORKSPACE}/${artifact_name}.7z' '${env.WORKSPACE}/artifacts/*'")
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                    archiveArtifacts artifacts: "${artifact_name}.7z", fingerprint: false, allowEmptyArchive: true
+                }  // To bypass failure for when Jfrog license is down.  Shouldn't impact testing.
+            }  // Zip and Upload artifacts
+        } // always - post
+        cleanup {
+            cleanupNode()
+        } // cleanup - post
+    } // post
+} // pipeline
