@@ -891,7 +891,7 @@ long lFctn_T32_ParseConfigPort(char aConfigPath[])
 */
 void vFctn_T32_SyncT32ini(long aPort)
 {
-  char chGenericLibsDir[512];
+  char chGenericLibsDir[1024];
   char chT32iniFullPath[600];
   dword dwHandle;
   char chLine[64];
@@ -908,7 +908,13 @@ void vFctn_T32_SyncT32ini(long aPort)
 
   // Build the path to the GenericLibraries directory (where t32.ini lives).
   vFctn_T32_ConfigPathCreate(chGenericLibsDir);
-  strncat(chGenericLibsDir, "TestSuites\\AutomationDependent\\GenericLibraries\\", elcount(chGenericLibsDir));
+  {
+    int nRemaining = elcount(chGenericLibsDir) - strlen(chGenericLibsDir) - 1;
+    if (nRemaining > 0)
+    {
+      strncat(chGenericLibsDir, "TestSuites\\AutomationDependent\\GenericLibraries\\", nRemaining);
+    }
+  }
 
   snprintf(chT32iniFullPath, elcount(chT32iniFullPath), "%st32.ini", chGenericLibsDir);
 
