@@ -594,6 +594,107 @@ void E_DBGR_CheckConnection()
 }
 
 /// <GENERIC>
+/*! void A_DBGR_EnsureT32Running_AutoDetect()
+*  \brief Zero-argument variant of A_DBGR_EnsureT32Running() that automatically
+*         discovers the Trace32 installation without requiring the caller to
+*         hard-code any paths.
+*
+*         Algorithm:
+*           1. Searches standard installation directories for a config.t32 and
+*              a matching T32 executable via lFctn_T32_AutoDetect().  Directories
+*              searched (in order): C:\T32\bin, C:\T32, C:\t32\bin, C:\t32.
+*           2. Parses the NETASSIST PORT= value from the found config.t32 using
+*              lFctn_T32_ParseConfigPort() and rewrites t32.ini with the correct
+*              port via vFctn_T32_SyncT32ini() so that every T32_API.exe call
+*              connects to the right socket without any API errors.
+*           3. Delegates to A_DBGR_EnsureT32Running(exePath, configPath) which
+*              checks the T32 state and launches Trace32 if it is not yet running.
+*
+*         Call this function at the start of a testcase or in a testcase setup
+*         block when the T32 installation path is unknown or may vary between
+*         test benches.
+*
+*  \return no return
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+*
+* 15.03.26              Copilot         Created – zero-arg wrapper using lFctn_T32_AutoDetect().
+*/
+export testfunction A_DBGR_EnsureT32Running_AutoDetect()
+{
+  char chFoundExePath[256];
+  char chFoundConfigPath[256];
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  long lDetectResult;
+  long lPort;
+  byte bResultAction;
+  byte bDebugFlag;
+
+  bDebugFlag = NotOk;
+  writeDbgLevel(DebugFuncCalls, "Function A_DBGR_EnsureT32Running_AutoDetect() entered.");
+
+  // Step 1: report the auto-detect action.
+  snprintf(chAction, elcount(chAction), "Auto-detect Trace32 installation and synchronize t32.ini.");
+  bResultAction = bFctn_REPORTAction(chAction);
+
+  if (!bResultAction)
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "ERROR: %s.", chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    return;
+  }
+
+  // Step 2: search for a T32 installation.
+  lDetectResult = lFctn_T32_AutoDetect(chFoundExePath, chFoundConfigPath);
+
+  if (lDetectResult != Ok)
+  {
+    snprintf(chFailText, elcount(chFailText),
+             "Trace32 installation not found. "
+             "Checked: C:\\T32\\bin, C:\\T32, C:\\t32\\bin, C:\\t32. "
+             "Verify that Trace32 is installed and config.t32 is present.");
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "FAIL: %s.", chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    return;
+  }
+
+  write("A_DBGR_EnsureT32Running_AutoDetect: found exe='%s', config='%s'.",
+        chFoundExePath, chFoundConfigPath);
+
+  // Step 3: parse PORT= from config.t32 and sync t32.ini so T32_API.exe
+  // uses the correct NETASSIST port (prevents API connection errors).
+  lPort = lFctn_T32_ParseConfigPort(chFoundConfigPath);
+  if (lPort > 0)
+  {
+    write("A_DBGR_EnsureT32Running_AutoDetect: config.t32 PORT=%d. Updating t32.ini.", lPort);
+    vFctn_T32_SyncT32ini(lPort);
+    snprintf(chPassText, elcount(chPassText),
+             "Trace32 installation detected at '%s'. t32.ini synchronized with PORT=%d.",
+             chFoundConfigPath, lPort);
+  }
+  else
+  {
+    write("A_DBGR_EnsureT32Running_AutoDetect: PORT not found in config.t32 – t32.ini not updated.");
+    snprintf(chPassText, elcount(chPassText),
+             "Trace32 installation detected at '%s'. PORT not in config.t32; t32.ini unchanged.",
+             chFoundConfigPath);
+  }
+
+  vFctn_REPORTActionEvaluation(chPassText, PASS);
+
+  // Step 4: delegate to A_DBGR_EnsureT32Running which checks the T32 state
+  // and launches Trace32 if it is not yet running.
+  A_DBGR_EnsureT32Running(chFoundExePath, chFoundConfigPath);
+}
+
+
+/// <GENERIC>
 /*! void A_DBGR_EnsureT32Running(char aT32ExePath[], char aT32ConfigFile[])
 *  \brief Ensures that Trace32 is connected before running test cases.
 *         Checks the current T32 state.  If the state is Down (0) or Error (-1)
