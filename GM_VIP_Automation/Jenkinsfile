@@ -77,6 +77,7 @@ pipeline {
         REL_CANOE_CFG    = 'GM_VIP_RBS\\GM_VIP_SWtest.cfg'
         REL_REPORT_DIR   = 'Test Reports'
         REL_BVT_T32      = 'misc\\bvt_t32_check.cmm'
+        REL_T32_CONFIG   = 'config-Jenkins\\Jenkins\\Scripts\\target_testing\\config.t32'
         REL_FIRMWARE     = 'firmware\\firmware.hex'
         REL_SIMULATE     = 'simulate_tests.py'
         REL_EMAIL        = 'email_report.py'
@@ -251,7 +252,28 @@ $found.FullName
                     env.T32_REMOTE_EXE = t32Exe ?: ''
                     if (t32Exe) { echo "t32rem.exe found  : ${env.T32_REMOTE_EXE}" }
 
-                    // 5. Warn about agent node variables not discoverable via PATH
+                    // 5. Read the NETASSIST port from config.t32 so the BVT
+                    //    stage uses the same port as the committed config file
+                    //    instead of a hardcoded constant.
+                    def t32ConfigPath = "${env.AUTO_ROOT}\\${env.REL_T32_CONFIG}"
+                    def t32Port = '20000'  // safe default matching config.t32
+                    try {
+                        def configContent = readFile(t32ConfigPath)
+                        def portMatch = (configContent =~ /(?m)^PORT=(\d+)/)
+                        if (portMatch) {
+                            t32Port = portMatch[0][1]
+                            echo "config.t32 PORT   : ${t32Port} (read from ${t32ConfigPath})"
+                        } else {
+                            echo "WARNING: PORT= not found in config.t32 at ${t32ConfigPath}. " +
+                                 "Defaulting to port ${t32Port}."
+                        }
+                    } catch (ignored) {
+                        echo "WARNING: Cannot read config.t32 at ${t32ConfigPath}. " +
+                             "Defaulting to port ${t32Port}."
+                    }
+                    env.T32_PORT = t32Port
+
+                    // 6. Warn about agent node variables not discoverable via PATH
                     if (params.RUN_ON_BENCH) {
                         def missing = []
                         if (!env.POWERSUPPLY_PORT) {
@@ -271,6 +293,7 @@ $found.FullName
                     echo "  AUTO_ROOT        : ${env.AUTO_ROOT}"
                     echo "  CANoe64.exe      : ${env.CANOE_EXE_RESOLVED  ?: '(not in PATH)'}"
                     echo "  t32rem.exe       : ${env.T32_REMOTE_EXE      ?: '(not in PATH)'}"
+                    echo "  T32_PORT         : ${env.T32_PORT}"
                     echo "  POWERSUPPLY_PORT : ${env.POWERSUPPLY_PORT     ?: '(not set)'}"
                     echo "======================================================"
                 }
@@ -610,7 +633,7 @@ except Exception as e:
                             returnStatus: true
                         ) == 0
                         if (scriptExists) {
-                            bat "\"${env.T32_REMOTE_EXE}\" localhost port=20000 \"DO \\\"%BVT_T32_SCRIPT%\\\"\""
+                            bat "\"${env.T32_REMOTE_EXE}\" localhost port=${env.T32_PORT} \"DO \\\"%BVT_T32_SCRIPT%\\\"\""
                         } else {
                             echo "BVT CHECK 2 SKIP: bvt_t32_check.cmm not found at " +
                                  "${env.BVT_T32_SCRIPT}. " +

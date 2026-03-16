@@ -498,8 +498,8 @@ long lFctn_T32_ReadRegister_AddressValue(char aAddress[], int64 &aRegisterValue,
 
   if (lRetApiExitCode[0] == 0)
     { 
-       strncat(chAuxiliar, chApiMessage, strlen(chApiMessage)+strlen(chAuxiliar)+1); //Concat the prefix '0x' to the returning value; //len indicates the maximum length of the composite string, including the terminating "\0".
-       aRegisterValue = (int)atodbl(chAuxiliar); //Convert the returned string to int64
+       strncat(chAuxiliar, chApiMessage, elcount(chAuxiliar)); //Concat the prefix '0x' to the returning value; len = dest capacity (elcount), not chars-to-append.
+       aRegisterValue = (int64)atodbl(chAuxiliar); //Convert the returned string to int64 (must be int64 cast, not int, to preserve all 64 bits)
        strncpy(chAuxiliar,"0x",3); //Reset the auxiliar string 
       
        snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Register value was read successfully: 0x%lX.", aRegisterValue);

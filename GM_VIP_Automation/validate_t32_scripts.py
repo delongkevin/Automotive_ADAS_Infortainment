@@ -56,6 +56,17 @@ Checks performed
         c)  vFctn_T32_CommandCreate_Cmm_Commands appends the expected sub-path:
             "TestSuites\\AutomationDependent\\Generic_Tools\\Lauterbach\\TC4_Aurix\\Cmm_Commands\\"
 
+6.  Jenkins config.t32 validity
+        Parses the config.t32 committed under
+        config-Jenkins/Jenkins/Scripts/target_testing/ and verifies:
+        a)  The file is present (it drives T32 auto-detect and t32.ini sync).
+        b)  RCL=NETASSIST is declared – required for T32_API.exe socket
+            connectivity; without it every API call will fail to connect.
+        c)  PORT= is present and contains a valid integer > 0.
+        d)  PACKLEN= is present and contains a valid integer > 0.
+        Also reports the parsed PORT value; the Jenkinsfile BVT stage reads
+        this value from config.t32 at runtime via env.T32_PORT.
+
 Usage
 -----
     python validate_t32_scripts.py [--root <GM_VIP_Automation folder>]
@@ -369,6 +380,127 @@ def check_capl_integration(t32_ctrl_root: Path) -> List[str]:
 
 
 # ---------------------------------------------------------------------------
+# Check 6 – Jenkins config.t32 validity
+# ---------------------------------------------------------------------------
+
+#: Path of the config.t32 shipped with the Jenkins CI setup, relative to
+#: the GM_VIP_Automation root.
+_JENKINS_CONFIG_T32_REL = (
+    Path('config-Jenkins')
+    / 'Jenkins'
+    / 'Scripts'
+    / 'target_testing'
+    / 'config.t32'
+)
+
+#: Directives that must appear in config.t32 (key only; value is validated
+#: separately for PORT and PACKLEN).
+_REQUIRED_CONFIG_T32_KEYS: List[str] = [
+    'RCL',
+    'PORT',
+    'PACKLEN',
+]
+
+_CONFIG_T32_KV_RE = re.compile(r'^([A-Z_]+)=(.*)$')
+
+
+def _parse_config_t32(fp: Path) -> Tuple[Dict[str, str], List[str]]:
+    """Parse key=value directives from a config.t32 file.
+    Comment lines (starting with ';') and bare keyword lines (no '=') are
+    skipped.  Returns ({key: value_str}, [error strings])."""
+    try:
+        raw = fp.read_text(encoding='latin-1', errors='replace')
+    except OSError as exc:
+        return {}, [f"[FAIL] Could not read {fp}: {exc}"]
+
+    directives: Dict[str, str] = {}
+    for line in raw.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith(';'):
+            continue
+        m = _CONFIG_T32_KV_RE.match(stripped)
+        if m:
+            directives[m.group(1)] = m.group(2).strip()
+    return directives, []
+
+
+def check_jenkins_config_t32(root: Path) -> List[str]:
+    """Validate config-Jenkins/Jenkins/Scripts/target_testing/config.t32."""
+    cfg_path = root / _JENKINS_CONFIG_T32_REL
+    errors: List[str] = []
+
+    # (a) File must exist.
+    if not cfg_path.is_file():
+        errors.append(
+            f"[FAIL] Jenkins config.t32 not found: {cfg_path}\n"
+            "       This file drives T32 auto-detect (lFctn_T32_AutoDetect) and\n"
+            "       t32.ini synchronisation (vFctn_T32_SyncT32ini).  Add it under\n"
+            "       config-Jenkins/Jenkins/Scripts/target_testing/config.t32."
+        )
+        return errors
+
+    directives, parse_errors = _parse_config_t32(cfg_path)
+    if parse_errors:
+        return parse_errors
+
+    # (b) RCL=NETASSIST must be declared.
+    rcl_val = directives.get('RCL', '')
+    if rcl_val.upper() != 'NETASSIST':
+        errors.append(
+            f"[FAIL] config.t32: RCL={rcl_val!r} – expected 'NETASSIST'.\n"
+            "       T32_API.exe communicates via the NETASSIST socket protocol;\n"
+            "       any other RCL mode will cause every API call to fail."
+        )
+
+    # (c) PORT= must be present and a valid integer > 0.
+    port_str = directives.get('PORT', '')
+    if not port_str:
+        errors.append(
+            "[FAIL] config.t32: PORT= directive is missing or empty.\n"
+            "       The NETASSIST port must be specified so T32_API.exe and\n"
+            "       the bench CAPL code (vFctn_T32_SyncT32ini) can connect."
+        )
+    else:
+        try:
+            port_val = int(port_str)
+            if port_val <= 0:
+                errors.append(
+                    f"[FAIL] config.t32: PORT={port_val} is not > 0."
+                )
+            else:
+                # Informational – surfaced so operators can cross-check the
+                # hardcoded Jenkinsfile BVT port.
+                print(f"  [INFO] config.t32 PORT={port_val} "
+                      "(detected in config.t32 and used by the Jenkinsfile BVT stage).")
+        except ValueError:
+            errors.append(
+                f"[FAIL] config.t32: PORT={port_str!r} is not a valid integer."
+            )
+
+    # (d) PACKLEN= must be present and a valid integer > 0.
+    packlen_str = directives.get('PACKLEN', '')
+    if not packlen_str:
+        errors.append(
+            "[FAIL] config.t32: PACKLEN= directive is missing or empty.\n"
+            "       PACKLEN controls the NETASSIST packet size; its absence\n"
+            "       can cause fragmented or dropped API responses."
+        )
+    else:
+        try:
+            packlen_val = int(packlen_str)
+            if packlen_val <= 0:
+                errors.append(
+                    f"[FAIL] config.t32: PACKLEN={packlen_val} is not > 0."
+                )
+        except ValueError:
+            errors.append(
+                f"[FAIL] config.t32: PACKLEN={packlen_str!r} is not a valid integer."
+            )
+
+    return errors
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -489,6 +621,16 @@ def main() -> int:
         msg = f"  [FAIL] controlLib/T32 directory not found: {t32_ctrl_root}"
         print(msg)
         all_errors.append(msg)
+
+    # ------------------------------------------------------------------
+    print()
+    print("--- Check 6: Jenkins config.t32 validity ---")
+    errs = check_jenkins_config_t32(root)
+    for e in errs:
+        print(f"  {e}")
+    all_errors.extend(errs)
+    if not errs:
+        print("  [OK]   config.t32 has RCL=NETASSIST, PORT, and PACKLEN.")
 
     # ------------------------------------------------------------------
     print()
