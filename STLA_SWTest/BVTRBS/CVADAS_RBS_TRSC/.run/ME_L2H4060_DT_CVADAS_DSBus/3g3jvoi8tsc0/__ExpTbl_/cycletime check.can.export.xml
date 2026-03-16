@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="Windows-1252"?>
-<tclibrary>
-  <function name="RX_Messages_Cycletimecheck" id="1739467846" comment="" signature="void RX_Messages_Cycletimecheck()" file="C:\_mks\KP03_ProductEngineering\40_Software\35_Test\01_TestScripts\MY26_DT_CT_Sanity\L2H4060_SWQT_vTestProjects_SanityTest\SanityTest\cycletime check.can" SourceFilePersistencyGuid="thk40eqebn84" IsPrivate="false" IsNetSignatureAndDefinedInExternalDll="true">
-    <document_position><![CDATA[<OffsetDocumentPosition xmlns:SerializedType="Vector.ITE.Document.OffsetDocumentPosition"><Offset>84</Offset></OffsetDocumentPosition>]]></document_position>
-    <implementation_language lang="CAPL" />
-  </function>
-</tclibrary>

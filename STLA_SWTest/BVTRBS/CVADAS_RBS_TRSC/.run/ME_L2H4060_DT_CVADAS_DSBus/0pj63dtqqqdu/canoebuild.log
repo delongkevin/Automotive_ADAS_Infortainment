@@ -1,8 +1,0 @@
-"12:26:03.697";"Starting build";"mode = make"
-"12:26:03.741";"Load test unit";""
-"12:26:03.946";"Transformation of test system variables";""
-"12:26:04.086";"Initialization of parameter scopes";""
-"12:26:04.180";"Compile CAPL file";"C:\Users\Tester\Downloads\L2H4060_SWTest-master_MY27\L2H4060_SWTest-master_MY27\BVTRBS\03_VariantDependent\Customer\CVADAS_RBS_TRSC\.run\ME_L2H4060_DT_CVADAS_DSBus\0pj63dtqqqdu\SWQT_All.can"
-"12:26:04.400";"Compilation of VTT";"C:\Users\Tester\Downloads\L2H4060_SWTest-master_MY27\L2H4060_SWTest-master_MY27\BVTRBS\03_VariantDependent\Customer\CVADAS_RBS_TRSC\.run\ME_L2H4060_DT_CVADAS_DSBus\0pj63dtqqqdu\SanityTest.vtt"
-"12:26:04.400";"Code generation for VTT File";"C:\Users\Tester\Downloads\L2H4060_SWTest-master_MY27\L2H4060_SWTest-master_MY27\BVTRBS\03_VariantDependent\Customer\CVADAS_RBS_TRSC\.run\ME_L2H4060_DT_CVADAS_DSBus\0pj63dtqqqdu\SanityTest.vtt"
-"12:26:04.429";"Build finished";"result = NOK"

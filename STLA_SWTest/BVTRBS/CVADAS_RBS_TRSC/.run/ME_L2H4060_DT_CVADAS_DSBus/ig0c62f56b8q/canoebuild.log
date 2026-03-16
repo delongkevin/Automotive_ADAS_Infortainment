@@ -1,7 +1,0 @@
-"15:00:10.339";"Starting build";"mode = make"
-"15:00:10.387";"Load test unit";""
-"15:00:10.428";"Copy edit source";"D:\L2H4060_SWTest\BVTRBS\CVADAS_RBS_TRSC\.run\ME_L2H4060_DT_CVADAS_DSBus\ig0c62f56b8q\CPULoad_DiagParams.vparam"
-"15:00:10.474";"Transformation of test system variables";""
-"15:00:10.610";"Initialization of parameter scopes";""
-"15:00:10.688";"Load VTT Tree";"D:\L2H4060_SWTest\BVTRBS\CVADAS_RBS_TRSC\.run\ME_L2H4060_DT_CVADAS_DSBus\ig0c62f56b8q\CPU_Load_withStack.vxtx"
-"15:00:10.696";"Build finished";"result = OK"

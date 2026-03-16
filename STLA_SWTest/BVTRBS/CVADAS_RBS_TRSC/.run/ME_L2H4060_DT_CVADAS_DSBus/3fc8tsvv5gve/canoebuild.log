@@ -1,6 +1,0 @@
-"15:00:07.795";"Starting build";"mode = make"
-"15:00:08.724";"Load test unit";""
-"15:00:09.109";"Transformation of test system variables";""
-"15:00:09.251";"Initialization of parameter scopes";""
-"15:00:09.724";"Load VTT Tree";"D:\L2H4060_SWTest\BVTRBS\CVADAS_RBS_TRSC\.run\ME_L2H4060_DT_CVADAS_DSBus\3fc8tsvv5gve\SanityTest.vxtx"
-"15:00:09.734";"Build finished";"result = OK"
