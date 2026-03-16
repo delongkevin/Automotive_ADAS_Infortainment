@@ -17,10 +17,15 @@
 #        .NET 8.0 build with all required runtime files and symbols intact.
 #        This catches the "Unknown symbol 'dotnetT32dllLib'" CAPL compile
 #        error before the DLL reaches a test bench.
-#   4. Test Simulation     – simulate_tests.py
+#   4. T32 Script Validation – validate_t32_scripts.py
+#        Validates Lauterbach Trace32 PRACTICE (.cmm) scripts and the CAPL
+#        integration layer (cT32.cin / ccT32.cin) without physical hardware.
+#        Catches CMM syntax errors, missing scripts, stale path strings, and
+#        out-of-range constant values before they reach the bench.
+#   5. Test Simulation     – simulate_tests.py
 #        Discovers every testcase definition in the CAPL source files and
 #        generates JUnit-compatible XML reports without physical hardware.
-#   5. Simulation Report   – merge_reports.py
+#   6. Simulation Report   – merge_reports.py
 #        Merges the per-suite simulated XMLs into a single HTML report and
 #        uploads it as a build artifact.
 #
@@ -190,12 +195,46 @@ jobs:
             --root GM_VIP_Automation
 
   # ---------------------------------------------------------------------------
-  # Job 4 – Test Simulation + Report
+  # Job 4 – T32 Script Validation
+  # ---------------------------------------------------------------------------
+  # Validates Lauterbach Trace32 PRACTICE (.cmm) scripts and the T32/CAPL
+  # integration layer without requiring physical hardware or a Trace32
+  # installation.  Catches CMM syntax errors, missing scripts, stale path
+  # strings and invalid constant values before they reach the bench.
+  # ---------------------------------------------------------------------------
+  t32-validate:
+    name: T32 Script Validation (Lauterbach)
+    runs-on: ubuntu-latest
+    needs: capl-validate
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install --upgrade pip
+
+      - name: Validate T32 PRACTICE scripts and integration layer
+        # Checks CMM script syntax, required file presence, T32 constant
+        # validity, and CAPL path consistency -- all without hardware.
+        run: |
+          python GM_VIP_Automation/validate_t32_scripts.py \
+            --root GM_VIP_Automation
+
+  # ---------------------------------------------------------------------------
+  # Job 5 – Test Simulation + Report
   # ---------------------------------------------------------------------------
   simulate:
     name: Simulate Test Cases
     runs-on: ubuntu-latest
-    needs: [capl-validate, dotnet-build, dotnetdll-validate]
+    needs: [capl-validate, dotnet-build, dotnetdll-validate, t32-validate]
     permissions:
       contents: read
 

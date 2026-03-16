@@ -16,8 +16,10 @@
 #   1. capl-validate  – static analysis gate (bracket balance, includes, etc.)
 #   2. dotnet-build   – compile dotnetT32dll.dll from source (.NET 8.0) and
 #                       validate the resulting binary
-#   3. simulate-all   – simulate every test suite and generate the HTML report
-#   4. summary        – print a concise pass/fail table to the run log and
+#   3. t32-validate   – validate Lauterbach Trace32 PRACTICE scripts and the
+#                       T32/CAPL integration layer (no hardware required)
+#   4. simulate-all   – simulate every test suite and generate the HTML report
+#   5. summary        – print a concise pass/fail table to the run log and
 #                       create a job summary visible in the GitHub Actions UI
 #
 # Artifacts retained
@@ -126,12 +128,39 @@ jobs:
             --root GM_VIP_Automation
 
   # ---------------------------------------------------------------------------
-  # Job 3 – Full Test Simulation
+  # Job 3 – T32 Script Validation
+  # ---------------------------------------------------------------------------
+  t32-validate:
+    name: T32 Script Validation (Lauterbach)
+    runs-on: ubuntu-latest
+    needs: capl-validate
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install --upgrade pip
+
+      - name: Validate T32 PRACTICE scripts and integration layer
+        run: |
+          python GM_VIP_Automation/validate_t32_scripts.py \
+            --root GM_VIP_Automation
+
+  # ---------------------------------------------------------------------------
+  # Job 4 – Full Test Simulation
   # ---------------------------------------------------------------------------
   simulate-all:
     name: Simulate All Test Suites
     runs-on: ubuntu-latest
-    needs: [capl-validate, dotnet-build]
+    needs: [capl-validate, dotnet-build, t32-validate]
     permissions:
       contents: read
 
@@ -199,7 +228,7 @@ jobs:
   summary:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [capl-validate, dotnet-build, simulate-all]
+    needs: [capl-validate, dotnet-build, t32-validate, simulate-all]
     if: always()
     permissions:
       contents: read
@@ -227,6 +256,7 @@ jobs:
           echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
           echo "| CAPL Validation    | ${{ needs.capl-validate.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| dotnet Build (.NET 8) | ${{ needs.dotnet-build.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| T32 Script Validation | ${{ needs.t32-validate.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Test Simulation    | ${{ needs.simulate-all.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           if [ -f summary-output/simulation_summary.txt ]; then
