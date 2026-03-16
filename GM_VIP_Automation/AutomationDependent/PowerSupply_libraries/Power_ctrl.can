@@ -22,19 +22,20 @@ includes
 
 variables
 {
-  dword port_open,ret,ret1;
-  char buffer1[100];
-  char buffer2[100];
-  int i;
-  byte buffer[100];
-  byte buffer3[20];  // Large enough for BK Precision GETD response (9 data bytes + CR)
-  byte buffer4[10];
+  // No shared mutable I/O buffers — all RS232 buffers are now local to each function
+  // to prevent data corruption from concurrent callers.
 }
 
 export testfunction Set_voltage(int port, float volt)  // Set output voltage on BK Precision 1687b.
                                                        // port: pass powersupply_port from config.cin
                                                        // volt: desired voltage in Volts (e.g. 12.0)
 {
+  char  buffer1[100];
+  byte  buffer[100];
+  byte  buffer3[20];
+  dword ret, ret1;
+  int   i;
+
   RS232_Initialize(port);
   // BK Precision 1687b: VOLTnnn where nnn = voltage x 10 (zero-padded 3-digit integer)
   // e.g. 12.0 V -> VOLT120\r
@@ -73,6 +74,13 @@ export testfunction Set_voltage(int port, float volt)  // Set output voltage on 
 export testfunction Read_voltage(int port)  // Read actual output voltage from BK Precision 1687b.
                                             // port: pass powersupply_port from config.cin
 {
+  char  buffer1[100];
+  char  buffer2[100];
+  byte  buffer[100];
+  byte  buffer3[20];  // Large enough for BK Precision GETD response (9 data bytes + CR)
+  dword ret, ret1;
+  int   i;
+
   RS232_Initialize(port);
   // BK Precision 1687b: GETD returns actual display values
   // Response format: VVVVAAAAOM\r (9 data bytes + CR = 10 bytes total)
@@ -113,6 +121,13 @@ export testfunction Read_voltage(int port)  // Read actual output voltage from B
 export testfunction Read_current(int port)  // Read actual output current from BK Precision 1687b.
                                             // port: pass powersupply_port from config.cin
 {
+  char  buffer1[100];
+  char  buffer2[100];
+  byte  buffer[100];
+  byte  buffer3[20];  // Large enough for BK Precision GETD response (9 data bytes + CR)
+  dword ret, ret1;
+  int   i;
+
   RS232_Initialize(port);
   // BK Precision 1687b: GETD returns actual display values
   // Response format: VVVVAAAAOM\r (9 data bytes + CR = 10 bytes total)
@@ -153,6 +168,12 @@ export testfunction Power_OFF_ON(int port, int ctrl)  // Turn power output ON or
                                                       // port: pass powersupply_port from config.cin
                                                       // ctrl: 0 = turn output OFF (SOUT0), 1 = turn output ON (SOUT1)
 {
+  char  buffer1[100];
+  byte  buffer[100];
+  byte  buffer3[20];
+  dword ret, ret1;
+  int   i;
+
   RS232_Initialize(port);
   // BK Precision 1687b: SOUT1 = output ON, SOUT0 = output OFF
   // Each command receives an "OK\r" (3-byte) acknowledgment from the supply.
@@ -210,7 +231,8 @@ void RS232_Initialize(int port)
 // Three attempts with a 200 ms gap between them cover the worst-case scenario where
 // two successive timer ticks occur before the port is released.
 {
-  int attempt;
+  dword port_open;
+  int   attempt;
   for(attempt = 1; attempt <= 3; attempt++)
   {
     RS232Close(port);         // safe no-op on an already-closed port

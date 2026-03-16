@@ -1171,14 +1171,12 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
 
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
+  A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN");  // ARM before Go_Safe so init-time function cannot be missed
   A_DBGR_Go_Safe();
-
-  testWaitForTimeoutSilent(500);  // Allow ECU to run past some init before setting breakpoints
 
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();");
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();");
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN");
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN");
 
 
@@ -1303,8 +1301,7 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   A_DBGR_BreakpointDeleteAll();
 // A_DBGR_RnGo(); 
   A_DBGR_R();
-  A_DBGR_Go();
-  A_DBGR_Go(); 
+  A_DBGR_Go_Safe();
   E_DBGR_CheckState(T32_State_Running);
   
 
@@ -1463,8 +1460,7 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   A_DBGR_BreakpointDeleteAll();
 // A_DBGR_RnGo(); 
   A_DBGR_R();
-  A_DBGR_Go();
-  A_DBGR_Go(); 
+  A_DBGR_Go_Safe();
   E_DBGR_CheckState(T32_State_Running);
   
 

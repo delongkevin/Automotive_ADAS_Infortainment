@@ -56,7 +56,7 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_0_when_t
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
    
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Run the Software and capture UART log using python
   /***************************************************************************************************************/
@@ -198,6 +198,8 @@ testcase Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditio
   /***************************************************************************************************************/
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
+  A_DBGR_Go_Safe();
+  testWaitForTimeoutSilent(500);  // Allow ECU startup UART before cutting power
   /***************************************************************************************************************/
                                               // Test Step 1 Disconnect the Battery
   /***************************************************************************************************************/
@@ -289,11 +291,10 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   //TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
   //TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set the power supply voltage to a value less than 3.7V to simulate a voltage level where MCU turns off.
   /***************************************************************************************************************/
@@ -405,7 +406,7 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
@@ -625,7 +626,7 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
@@ -881,8 +882,7 @@ testcase Verify_Controller_Reset_when_Battery_Voltage_is_between_3_3V_and_4_5V_f
   snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
   
   A_DBGR_R();
-  A_DBGR_Go();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set the battery voltage to a value between 3.3 Volts and 4.5 Volts.
   /***************************************************************************************************************/
@@ -939,8 +939,7 @@ testcase Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Ba
   snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
   
   A_DBGR_R();
-  A_DBGR_Go();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set the battery voltage to a value between 3.3 Volts and 4.5 Volts.
   /***************************************************************************************************************/
