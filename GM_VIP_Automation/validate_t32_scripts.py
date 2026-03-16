@@ -443,24 +443,27 @@ def check_jenkins_config_t32(root: Path) -> List[str]:
     if parse_errors:
         return parse_errors
 
-    # (b) RCL=NETASSIST must be declared.
+    # (b) All required directives must be present.
+    for key in _REQUIRED_CONFIG_T32_KEYS:
+        if key not in directives:
+            errors.append(
+                f"[FAIL] config.t32: required directive '{key}=' is missing.\n"
+                "       RCL, PORT, and PACKLEN are all mandatory for "
+                "T32_API.exe to connect via NETASSIST."
+            )
+
+    # (c) RCL must be NETASSIST.
     rcl_val = directives.get('RCL', '')
-    if rcl_val.upper() != 'NETASSIST':
+    if rcl_val and rcl_val.upper() != 'NETASSIST':
         errors.append(
             f"[FAIL] config.t32: RCL={rcl_val!r} – expected 'NETASSIST'.\n"
             "       T32_API.exe communicates via the NETASSIST socket protocol;\n"
             "       any other RCL mode will cause every API call to fail."
         )
 
-    # (c) PORT= must be present and a valid integer > 0.
+    # (d) PORT= must be a valid integer > 0 (presence already checked above).
     port_str = directives.get('PORT', '')
-    if not port_str:
-        errors.append(
-            "[FAIL] config.t32: PORT= directive is missing or empty.\n"
-            "       The NETASSIST port must be specified so T32_API.exe and\n"
-            "       the bench CAPL code (vFctn_T32_SyncT32ini) can connect."
-        )
-    else:
+    if port_str:
         try:
             port_val = int(port_str)
             if port_val <= 0:
@@ -468,8 +471,8 @@ def check_jenkins_config_t32(root: Path) -> List[str]:
                     f"[FAIL] config.t32: PORT={port_val} is not > 0."
                 )
             else:
-                # Informational – surfaced so operators can cross-check the
-                # hardcoded Jenkinsfile BVT port.
+                # Informational – this value is read by the Jenkinsfile BVT stage
+                # at runtime into env.T32_PORT via the PORT regex in Discover Paths.
                 print(f"  [INFO] config.t32 PORT={port_val} "
                       "(detected in config.t32 and used by the Jenkinsfile BVT stage).")
         except ValueError:
@@ -477,15 +480,9 @@ def check_jenkins_config_t32(root: Path) -> List[str]:
                 f"[FAIL] config.t32: PORT={port_str!r} is not a valid integer."
             )
 
-    # (d) PACKLEN= must be present and a valid integer > 0.
+    # (e) PACKLEN= must be a valid integer > 0 (presence already checked above).
     packlen_str = directives.get('PACKLEN', '')
-    if not packlen_str:
-        errors.append(
-            "[FAIL] config.t32: PACKLEN= directive is missing or empty.\n"
-            "       PACKLEN controls the NETASSIST packet size; its absence\n"
-            "       can cause fragmented or dropped API responses."
-        )
-    else:
+    if packlen_str:
         try:
             packlen_val = int(packlen_str)
             if packlen_val <= 0:

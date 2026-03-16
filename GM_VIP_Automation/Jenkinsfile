@@ -259,7 +259,7 @@ $found.FullName
                     def t32Port = '20000'  // safe default matching config.t32
                     try {
                         def configContent = readFile(t32ConfigPath)
-                        def portMatch = (configContent =~ /(?m)^PORT=(\d+)/)
+                        def portMatch = (configContent =~ /(?m)^\s*PORT\s*=\s*(\d+)/)
                         if (portMatch) {
                             t32Port = portMatch[0][1]
                             echo "config.t32 PORT   : ${t32Port} (read from ${t32ConfigPath})"

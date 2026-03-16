@@ -502,7 +502,7 @@ long lFctn_T32_ReadRegister_AddressValue(char aAddress[], int64 &aRegisterValue,
        aRegisterValue = (int64)atodbl(chAuxiliar); //Convert the returned string to int64 (must be int64 cast, not int, to preserve all 64 bits)
        strncpy(chAuxiliar,"0x",3); //Reset the auxiliar string 
       
-       snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Register value was read successfully: 0x%lX.", aRegisterValue);
+       snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Register value was read successfully: 0x%I64X.", aRegisterValue);
       
        if ( (byte)DebugFuncInternal & bDebugFlag)
           writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
@@ -552,7 +552,7 @@ long lFctn_T32_Register_Check_Bit_Status(char aAddress[], byte aBit_Number, enum
       iRegisterValue = iRegisterValue >> (aBit_Number-1);  //shift the value untill the specified bit number is on the first position so when the Bitwise AND is used the result will be 1/0
 
       if ( (byte)DebugFuncInternal & bDebugFlag)
-        writeDbgLevel (DebugFuncInternal, "Register Value = 0x%lX and Bit number value after Bitwise AND with 0x1 applied =%X.",iRegisterValue ,(iRegisterValue & bBitwiseMask));
+        writeDbgLevel (DebugFuncInternal, "Register Value = 0x%I64X and Bit number value after Bitwise AND with 0x1 applied =%X.",iRegisterValue ,(iRegisterValue & bBitwiseMask));
   
       if((iRegisterValue & bBitwiseMask) == aBitStatus) //if the bit is setted to expected value 0 or 1
       {       
