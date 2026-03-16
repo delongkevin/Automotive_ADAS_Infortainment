@@ -309,7 +309,6 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_fu
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  // TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
   /***************************************************************************************************************/    
                                               // Test Step 1  Call the function Test_SetHWIO_PowerDown by setting StartPowerDown to 1 then check transceiver is in the SLEEP mode and PMIC to STANDBY mode
   /***************************************************************************************************************/

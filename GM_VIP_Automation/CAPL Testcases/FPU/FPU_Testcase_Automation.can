@@ -17287,7 +17287,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_N
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\2");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\2");
   
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at test_exc_address = GetHWIO_Ptr_FP_Exception(coreId);; inside Test_Float(void) function."); 
@@ -17446,8 +17445,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -17494,9 +17491,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperations3 value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperations3 is 0.0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_VariableCheck("VeTEST_InvalidOperations3",0.0,Equal);
   
@@ -17628,8 +17622,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");   
 
   /*******************************************************************************************************************************************************/    
@@ -17669,9 +17661,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations5",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations5 = %ld", VeTEST_InvalidOperations_value_NAN);  
@@ -17796,8 +17785,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");    
 
   /*******************************************************************************************************************************************************/    
@@ -17839,8 +17826,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -17880,9 +17865,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations8",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations8 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -18007,8 +17989,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -18050,8 +18030,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -18091,9 +18069,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations11",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations11 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -18218,8 +18193,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
 
   /*******************************************************************************************************************************************************/    
@@ -18262,7 +18235,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go();    
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -18304,7 +18276,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");   
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -18348,7 +18319,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -18390,8 +18360,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();  
   A_DBGR_VariableRead("VeTEST_InvalidOperations16",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations16 = %ld", VeTEST_InvalidOperations_value_NAN);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -18515,8 +18483,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -18566,7 +18532,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -18615,7 +18580,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11"); 
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
@@ -18673,8 +18637,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
   write ("test_exc_address = %ld", test_exc_address_value);
@@ -18796,7 +18758,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_N
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\2");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\2");
   
@@ -18956,8 +18917,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -19004,9 +18963,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperations3 value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperations3 is 0.0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_VariableCheck("VeTEST_InvalidOperations3",0.0,Equal);
   
@@ -19138,8 +19094,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");   
 
   /*******************************************************************************************************************************************************/    
@@ -19179,9 +19133,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations5",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations5 = %ld", VeTEST_InvalidOperations_value_NAN);  
@@ -19306,8 +19257,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");    
 
   /*******************************************************************************************************************************************************/    
@@ -19349,8 +19298,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -19390,9 +19337,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations8",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations8 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -19517,8 +19461,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -19560,8 +19502,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -19601,9 +19541,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations11",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations11 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -19728,8 +19665,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
 
   /*******************************************************************************************************************************************************/    
@@ -19772,7 +19707,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go();    
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -19814,7 +19748,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");   
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -19858,7 +19791,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -19900,8 +19832,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();  
   A_DBGR_VariableRead("VeTEST_InvalidOperations16",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations16 = %ld", VeTEST_InvalidOperations_value_NAN);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -20025,8 +19955,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -20076,7 +20004,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -20125,7 +20052,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11"); 
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
@@ -20183,8 +20109,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
   write ("test_exc_address = %ld", test_exc_address_value);
@@ -20306,7 +20230,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_N
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\2");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\2");
   
@@ -20466,8 +20389,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -20514,9 +20435,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperations3 value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperations3 is 0.0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_VariableCheck("VeTEST_InvalidOperations3",0.0,Equal);
   
@@ -20648,8 +20566,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");   
 
   /*******************************************************************************************************************************************************/    
@@ -20689,9 +20605,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations5",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations5 = %ld", VeTEST_InvalidOperations_value_NAN);  
@@ -20816,8 +20729,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");    
 
   /*******************************************************************************************************************************************************/    
@@ -20859,8 +20770,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -20900,9 +20809,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations8",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations8 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -21027,8 +20933,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -21070,8 +20974,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -21111,9 +21013,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations11",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations11 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -21238,8 +21137,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
 
   /*******************************************************************************************************************************************************/    
@@ -21282,7 +21179,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go();    
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -21324,7 +21220,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");   
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -21368,7 +21263,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -21410,8 +21304,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();  
   A_DBGR_VariableRead("VeTEST_InvalidOperations16",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations16 = %ld", VeTEST_InvalidOperations_value_NAN);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -21535,8 +21427,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -21586,7 +21476,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -21635,7 +21524,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11"); 
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
@@ -21693,8 +21581,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
   write ("test_exc_address = %ld", test_exc_address_value);
@@ -21816,7 +21702,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_N
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\2");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\2");
   
@@ -21976,8 +21861,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -22024,9 +21907,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperations3 value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperations3 is 0.0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_VariableCheck("VeTEST_InvalidOperations3",0.0,Equal);
   
@@ -22158,8 +22038,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");   
 
   /*******************************************************************************************************************************************************/    
@@ -22199,9 +22077,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations5",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations5 = %ld", VeTEST_InvalidOperations_value_NAN);  
@@ -22326,8 +22201,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");    
 
   /*******************************************************************************************************************************************************/    
@@ -22369,8 +22242,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -22410,9 +22281,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations8",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations8 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -22537,8 +22405,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -22580,8 +22446,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -22621,9 +22485,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations11",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations11 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -22748,8 +22609,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
 
   /*******************************************************************************************************************************************************/    
@@ -22792,7 +22651,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go();    
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -22834,7 +22692,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");   
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -22878,7 +22735,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -22920,8 +22776,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();  
   A_DBGR_VariableRead("VeTEST_InvalidOperations16",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations16 = %ld", VeTEST_InvalidOperations_value_NAN);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -23045,8 +22899,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -23096,7 +22948,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -23145,7 +22996,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11"); 
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
@@ -23203,8 +23053,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
   write ("test_exc_address = %ld", test_exc_address_value);
@@ -23326,7 +23174,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_N
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\2");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\2");
   
@@ -23486,8 +23333,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -23534,9 +23379,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperations3 value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperations3 is 0.0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_VariableCheck("VeTEST_InvalidOperations3",0.0,Equal);
   
@@ -23668,8 +23510,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");   
 
   /*******************************************************************************************************************************************************/    
@@ -23709,9 +23549,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations5",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations5 = %ld", VeTEST_InvalidOperations_value_NAN);  
@@ -23836,8 +23673,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");    
 
   /*******************************************************************************************************************************************************/    
@@ -23879,8 +23714,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -23920,9 +23753,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations8",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations8 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -24047,8 +23877,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -24090,8 +23918,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -24131,9 +23957,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations11",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations11 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -24258,9 +24081,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
 
   /*******************************************************************************************************************************************************/    
@@ -24303,7 +24123,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go();    
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -24345,7 +24164,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");   
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -24389,7 +24207,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -24431,8 +24248,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();  
   A_DBGR_VariableRead("VeTEST_InvalidOperations16",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations16 = %ld", VeTEST_InvalidOperations_value_NAN);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -24556,9 +24371,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -24608,7 +24420,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -24657,7 +24468,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11"); 
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
@@ -24715,8 +24525,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
   write ("test_exc_address = %ld", test_exc_address_value);
@@ -24838,7 +24646,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_N
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\2");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\2");
   
@@ -24998,8 +24805,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -25046,9 +24851,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLO
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperations3 value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperations3 is 0.0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_VariableCheck("VeTEST_InvalidOperations3",0.0,Equal);
   
@@ -25180,8 +24982,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");   
 
   /*******************************************************************************************************************************************************/    
@@ -25221,9 +25021,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations5",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations5 = %ld", VeTEST_InvalidOperations_value_NAN);  
@@ -25348,8 +25145,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");    
 
   /*******************************************************************************************************************************************************/    
@@ -25391,8 +25186,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -25432,9 +25225,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations8",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations8 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -25559,8 +25349,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -25602,8 +25390,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -25643,9 +25429,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("VeTEST_InvalidOperations11",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations11 = %ld", VeTEST_InvalidOperations_value_NAN);
@@ -25770,9 +25553,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
 
   /*******************************************************************************************************************************************************/    
@@ -25815,7 +25595,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go();    
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -25857,7 +25636,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");   
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -25901,7 +25679,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
   
   /*******************************************************************************************************************************************************/    
@@ -25943,8 +25720,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
-  A_DBGR_Go();  
   A_DBGR_VariableRead("VeTEST_InvalidOperations16",VeTEST_InvalidOperations_value_NAN);
   write ("VeTEST_InvalidOperations16 = %ld", VeTEST_InvalidOperations_value_NAN);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -26068,9 +25843,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go(); 
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -26120,7 +25892,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11"); 
    
   /*******************************************************************************************************************************************************/    
@@ -26169,7 +25940,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );  
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11"); 
-  A_DBGR_Go(); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
@@ -26227,8 +25997,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
   write ("test_exc_address = %ld", test_exc_address_value);
@@ -26986,7 +26754,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -27010,7 +26777,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -27038,7 +26804,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("resetinfo.ResetSrc",ResetSrc_value);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -27219,7 +26984,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");  
 
   /*******************************************************************************************************************************************************/    
@@ -27259,7 +27023,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
@@ -27450,7 +27213,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -27491,7 +27253,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -27531,7 +27292,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -28672,7 +28432,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -28696,7 +28455,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -28724,7 +28482,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("resetinfo.ResetSrc",ResetSrc_value);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -28905,7 +28662,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");  
 
   /*******************************************************************************************************************************************************/    
@@ -28945,7 +28701,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
@@ -29136,7 +28891,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -29177,7 +28931,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -29217,7 +28970,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -30356,7 +30108,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -30380,7 +30131,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -30408,7 +30158,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("resetinfo.ResetSrc",ResetSrc_value);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -30589,7 +30338,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");  
 
   /*******************************************************************************************************************************************************/    
@@ -30629,7 +30377,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
@@ -30820,7 +30567,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -30861,7 +30607,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -30901,7 +30646,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -32040,7 +31784,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -32064,7 +31807,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -32092,7 +31834,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("resetinfo.ResetSrc",ResetSrc_value);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -32273,7 +32014,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");  
 
   /*******************************************************************************************************************************************************/    
@@ -32313,7 +32053,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
@@ -32504,7 +32243,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -32545,7 +32283,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -32585,7 +32322,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -33083,7 +32819,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "verify Configure FPU_Core4 mode"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_VariableSet("FPU_Core4","1");
   E_DBGR_VariableCheck("FPU_Core4",1,Equal);
   
@@ -33231,7 +32966,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chActionText, elCount(chActionText), "Configure FPU_Core4 mode"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify Configure FPU_Core4 mode"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableSet("FPU_Core4","1");
   E_DBGR_VariableCheck("FPU_Core4",1,Equal);
@@ -33732,7 +33466,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -33756,7 +33489,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -33784,7 +33516,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("resetinfo.ResetSrc",ResetSrc_value);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -33965,7 +33696,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");  
 
   /*******************************************************************************************************************************************************/    
@@ -34005,7 +33735,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
@@ -34196,7 +33925,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -34237,7 +33965,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -34277,8 +34004,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -34776,7 +34501,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "verify Configure FPU_Core5 mode"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_VariableSet("FPU_Core5","1");
   E_DBGR_VariableCheck("FPU_Core5",1,Equal);
   
@@ -34924,7 +34648,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chActionText, elCount(chActionText), "Configure FPU_Core5 mode"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify Configure FPU_Core5 mode"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableSet("FPU_Core5","1");
   E_DBGR_VariableCheck("FPU_Core5",1,Equal);
@@ -35425,7 +35148,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
   /*******************************************************************************************************************************************************/    
@@ -35449,7 +35171,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   
@@ -35477,7 +35198,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chActionText, elCount(chActionText), "Verify the test_exc_address and test_exc_cnt value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "test_exc_address is 0xXXXXXXXX and test_exc_cnt is 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  A_DBGR_Go();
   A_DBGR_Go();
   A_DBGR_VariableRead("resetinfo.ResetSrc",ResetSrc_value);
   A_DBGR_VariableRead("test_exc_address",test_exc_address_value); 
@@ -35658,7 +35378,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");  
 
   /*******************************************************************************************************************************************************/    
@@ -35698,7 +35417,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
@@ -35889,7 +35607,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
 
   /*******************************************************************************************************************************************************/    
@@ -35930,7 +35647,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
   A_DBGR_Go();
-  A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
    
   /*******************************************************************************************************************************************************/    
@@ -35970,8 +35686,6 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\11");  
-  A_DBGR_Go();
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("Test_Float\\11");
   

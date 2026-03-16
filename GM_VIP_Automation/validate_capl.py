@@ -38,6 +38,15 @@ Checks performed
                              with a closing ')' but have no terminating ';'
                              (a common copy-paste mistake that causes a parse
                              error on the *next* line rather than the culprit).
+11. Consecutive Go() calls  – two or more A_DBGR_Go() calls appearing on
+                             adjacent (non-blank) lines.  If the ECU reaches
+                             the previously-armed breakpoint between the two
+                             calls the second Go() silently resumes past it,
+                             causing the test to pass or fail non-deterministically.
+12. Hardcoded absolute paths – SysExec / sysExec calls that embed a Windows
+                             drive-letter path (e.g. "C:\\Automation\\...").
+                             Such calls fail on any machine other than the one
+                             they were written on; use automation_root instead.
 
 Usage
 -----
@@ -622,6 +631,83 @@ def check_missing_semicolons(filepath: Path, text: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# Check 11 – consecutive A_DBGR_Go() calls (debugger race condition)
+# ---------------------------------------------------------------------------
+#
+# Two A_DBGR_Go() calls on adjacent non-blank lines is almost always a bug:
+# if the ECU hits the previously-armed breakpoint between the first and
+# second Go() the second call silently resumes past the halted ECU, so the
+# matching E_DBGR_BreakpointCheckForHalt never sees the halt.  The result
+# is non-deterministic pass/fail depending on ECU execution speed.
+#
+# A_DBGR_Go_Safe() (which blocks until the ECU reaches Running state) is
+# the correct single-call pattern for precondition resets; a second bare
+# Go() immediately afterwards has no valid use case.
+#
+
+def check_consecutive_go_calls(filepath: Path, text: str) -> list[str]:
+    """Return an error for every pair of back-to-back A_DBGR_Go() calls."""
+    issues = []
+    lines = text.splitlines()
+    _go_re = re.compile(r'\bA_DBGR_Go\s*\(\s*\)\s*;')
+    n = len(lines)
+    i = 0
+    while i < n:
+        if _go_re.search(lines[i]):
+            # Walk forward over blank lines to find the next non-blank line
+            j = i + 1
+            while j < n and not lines[j].strip():
+                j += 1
+            if j < n and _go_re.search(lines[j]):
+                issues.append(
+                    f"  {filepath}:{j + 1}: consecutive A_DBGR_Go() call — "
+                    f"the preceding Go() on line {i + 1} may have already resumed "
+                    f"past an armed breakpoint; use A_DBGR_Go_Safe() for precondition "
+                    f"resets or remove the duplicate Go()"
+                )
+                # Advance past the second hit so we report each pair once
+                i = j
+            else:
+                i += 1
+        else:
+            i += 1
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Check 12 – hardcoded absolute paths inside SysExec / sysExec calls
+# ---------------------------------------------------------------------------
+#
+# SysExec / sysExec calls that embed a Windows drive-letter path (e.g.
+# "C:\Automation\..." or "C:\\Users\\...") fail immediately on any machine
+# other than the one they were written on.  The correct pattern is to pass
+# automation_root as the working-directory argument and use a relative path
+# or script name as the command.
+#
+_SYSEXEC_ABS_RE = re.compile(
+    r'\bsysExec\s*\(',                # SysExec / sysExec (case variants)
+    re.IGNORECASE,
+)
+_ABS_PATH_RE = re.compile(
+    r'"[A-Za-z]:[/\\]',               # "C:\" or "C:/"  inside any string argument
+)
+
+
+def check_sysexec_hardcoded_paths(filepath: Path, text: str) -> list[str]:
+    """Return an error for every SysExec call that passes a hardcoded absolute path."""
+    issues = []
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        if _SYSEXEC_ABS_RE.search(line) and _ABS_PATH_RE.search(line):
+            issues.append(
+                f"  {filepath}:{lineno}: SysExec call contains a hardcoded absolute "
+                f"path — use automation_root as the working-directory argument and a "
+                f"relative path/script name instead so the suite is portable: "
+                f"{line.strip()[:120]}{'...' if len(line.strip()) > 120 else ''}"
+            )
+    return issues
+
+
+# ---------------------------------------------------------------------------
 # Main driver
 # ---------------------------------------------------------------------------
 
@@ -687,6 +773,8 @@ def main() -> int:
         file_issues += check_snprintf_format_args(fp, cleaned)
         file_issues += check_variables_block(fp, cleaned)
         file_issues += check_missing_semicolons(fp, cleaned)
+        file_issues += check_consecutive_go_calls(fp, cleaned)
+        file_issues += check_sysexec_hardcoded_paths(fp, raw)   # raw: string literals intact
 
         if file_issues:
             print(f"[FAIL] {fp.relative_to(root)}")

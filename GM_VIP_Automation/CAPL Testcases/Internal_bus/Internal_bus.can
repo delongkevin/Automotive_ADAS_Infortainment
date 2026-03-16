@@ -289,7 +289,6 @@ testcase Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initial
   snprintf( chActionText, elCount(chActionText), "Run the software "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
-  A_DBGR_Go();
   
   /***************************************************************************************************************/    
                                               // Test Step 3 verify INTERNAL_BUS_STATUS is having 2.

@@ -187,7 +187,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_Block
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\124");  
   A_DBGR_Go();
-   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\124");
   
   snprintf( chActionText, elCount(chActionText), "Verify Readstatus  value in trace32 watch window"); 
@@ -428,7 +427,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_Blocking_Mode()
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\32");  
   A_DBGR_Go();
-   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\32");
   
   
@@ -973,7 +971,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_Bl
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\124");  
   A_DBGR_Go();
-   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\124");
   
   snprintf( chActionText, elCount(chActionText), "Verify Readstatus  value in trace32 watch window"); 
