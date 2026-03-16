@@ -1,0 +1,187 @@
+"""
+GM VIP Automation Framework – Framework Configuration
+=====================================================
+All tunable constants are centralised here so that they can be overridden
+at runtime (e.g. from a test-bench configuration file or environment
+variables) without touching source code.
+
+Usage
+-----
+Import the singleton :data:`settings` object and read / write attributes::
+
+    from GM_VIP_Automation_Framework.config import settings
+
+    settings.t32_exe_path = r"C:\\T32\\t32marm.exe"
+    settings.rcl_port = 20001
+
+Alternatively, override individual settings via environment variables before
+importing the framework::
+
+    T32_EXE_PATH=C:/T32/t32marm.exe
+    T32_RCL_PORT=20001
+    T32_RCL_PROTOCOL=UDP
+"""
+
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import List, Optional
+
+
+@dataclass
+class T32Settings:
+    """Mutable settings bag for the GM VIP Automation Framework.
+
+    All attributes can be overridden by the corresponding environment variable
+    (see *env_var* comments next to each field).
+    """
+
+    # ------------------------------------------------------------------
+    # Trace32 process / installation
+    # ------------------------------------------------------------------
+
+    #: Full path to the Trace32 executable (e.g. ``t32marm.exe``).
+    #: env: T32_EXE_PATH
+    t32_exe_path: str = field(
+        default_factory=lambda: os.environ.get("T32_EXE_PATH", r"C:\T32\bin\t32marm.exe")
+    )
+
+    #: Full path to the Trace32 config file (``config.t32``).
+    #: env: T32_CONFIG_PATH
+    t32_config_path: str = field(
+        default_factory=lambda: os.environ.get("T32_CONFIG_PATH", r"C:\T32\config.t32")
+    )
+
+    #: Ordered list of directories to probe during auto-detect.
+    #: env: T32_SEARCH_DIRS  (colon-separated on Unix, semicolon-separated on Windows)
+    t32_search_dirs: List[str] = field(
+        default_factory=lambda: _parse_search_dirs(
+            os.environ.get(
+                "T32_SEARCH_DIRS",
+                r"C:\T32\bin;C:\T32;C:\t32\bin;C:\t32",
+            )
+        )
+    )
+
+    #: Trace32 executable file names to look for during auto-detect.
+    t32_exe_names: List[str] = field(
+        default_factory=lambda: [
+            "t32marm.exe",
+            "t32marm64.exe",
+            "t32mppc.exe",
+            "t32mrisc.exe",
+            "t32mrisc64.exe",
+        ]
+    )
+
+    # ------------------------------------------------------------------
+    # Remote Control Link (RCL / pyrcl) connection
+    # ------------------------------------------------------------------
+
+    #: Port number for the Trace32 RCL connection.
+    #: env: T32_RCL_PORT
+    rcl_port: int = field(
+        default_factory=lambda: int(os.environ.get("T32_RCL_PORT", "20000"))
+    )
+
+    #: Protocol for the RCL connection (``"UDP"`` or ``"TCP"``).
+    #: env: T32_RCL_PROTOCOL
+    rcl_protocol: str = field(
+        default_factory=lambda: os.environ.get("T32_RCL_PROTOCOL", "UDP")
+    )
+
+    #: Timeout in seconds for individual RCL API calls.
+    #: env: T32_RCL_TIMEOUT_S
+    rcl_timeout_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_RCL_TIMEOUT_S", "1.0"))
+    )
+
+    #: Maximum seconds to wait for T32 to accept a connection after launch.
+    #: env: T32_CONNECT_MAX_WAIT_S
+    connect_max_wait_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_CONNECT_MAX_WAIT_S", "60.0"))
+    )
+
+    # ------------------------------------------------------------------
+    # ECU state poll timeouts (seconds)
+    # ------------------------------------------------------------------
+
+    #: Maximum seconds to wait for the ECU to enter a *not-running* (halted)
+    #: state (used by breakpoint-check and variable operations).
+    #: env: T32_HALT_TIMEOUT_S
+    halt_timeout_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_HALT_TIMEOUT_S", "20.0"))
+    )
+
+    #: Maximum seconds to wait for the ECU to enter *running* state after GO.
+    #: env: T32_RUN_TIMEOUT_S
+    run_timeout_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_RUN_TIMEOUT_S", "3.0"))
+    )
+
+    #: Poll interval in seconds when waiting for ECU state transitions.
+    #: env: T32_POLL_INTERVAL_S
+    poll_interval_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_POLL_INTERVAL_S", "0.2"))
+    )
+
+    # ------------------------------------------------------------------
+    # Breakpoint set retry logic  (mirrors CAPL cc_nT32_BP* constants)
+    # ------------------------------------------------------------------
+
+    #: Maximum number of BREAK.SET attempts before giving up.
+    #: env: T32_BP_MAX_RETRIES
+    bp_max_retries: int = field(
+        default_factory=lambda: int(os.environ.get("T32_BP_MAX_RETRIES", "10"))
+    )
+
+    #: Delay in seconds between BREAK.SET retry attempts.
+    #: env: T32_BP_RETRY_INTERVAL_S
+    bp_retry_interval_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_BP_RETRY_INTERVAL_S", "0.5"))
+    )
+
+    #: Attempt number at which a ``SYMBOL.RELOAD`` is issued mid-retry to
+    #: recover from slow ELF symbol-table loading.
+    #: env: T32_BP_SYMBOL_RELOAD_AT
+    bp_symbol_reload_at: int = field(
+        default_factory=lambda: int(os.environ.get("T32_BP_SYMBOL_RELOAD_AT", "5"))
+    )
+
+    #: Seconds to wait after issuing ``SYMBOL.RELOAD`` before retrying.
+    #: env: T32_SYMBOL_RELOAD_WAIT_S
+    symbol_reload_wait_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_SYMBOL_RELOAD_WAIT_S", "5.0"))
+    )
+
+    # ------------------------------------------------------------------
+    # CMM script execution
+    # ------------------------------------------------------------------
+
+    #: Default timeout in seconds for CMM script execution.
+    #: env: T32_CMM_TIMEOUT_S
+    cmm_timeout_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_CMM_TIMEOUT_S", "60.0"))
+    )
+
+    #: Temporary directory used for CMM area log files.
+    #: env: T32_TEMP_DIR
+    temp_dir: Path = field(
+        default_factory=lambda: Path(os.environ.get("T32_TEMP_DIR", ""))
+        if os.environ.get("T32_TEMP_DIR")
+        else Path(__file__).parent / "_tmp"
+    )
+
+
+def _parse_search_dirs(raw: str) -> List[str]:
+    """Split a semicolon or colon-delimited string into a list of paths."""
+    sep = ";" if ";" in raw else ":"
+    return [d.strip() for d in raw.split(sep) if d.strip()]
+
+
+# Module-level singleton – import and modify this object to configure the framework.
+settings = T32Settings()
+
+__all__ = ["T32Settings", "settings"]
