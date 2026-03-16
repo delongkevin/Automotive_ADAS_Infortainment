@@ -66,6 +66,13 @@ namespace dotnetT32dllLib
         // ReadToEnd() deadlock that occurs when both pipes fill their OS buffers
         // before the process exits.  A hard timeout kills the process if it does
         // not exit within T32_PROCESS_TIMEOUT_MS to prevent CANoe from hanging.
+        //
+        // No path pre-validation is performed: exePath is passed directly to
+        // ProcessStartInfo.FileName, which accepts both absolute and relative
+        // paths.  Relative paths are resolved by the OS relative to the process
+        // working directory (CANoe's working directory, typically the bench
+        // configuration folder).  WorkingDirectory is intentionally left unset
+        // so that CANoe manages process context via its .NET 8.0 backend.
         // There is NO retry: if the process fails the caller receives a non-zero
         // exit code and the CAPL test step is marked FAIL.
         // -----------------------------------------------------------------------
@@ -76,35 +83,17 @@ namespace dotnetT32dllLib
             string errorMessage  = "";
             int processExitCode  = -1;
 
-            // Validate that exePath yields a non-empty, existing working directory
-            // before attempting to start the process.  An empty result means exePath
-            // is relative (e.g. "T32_API.exe") or a bare drive root, both of which
-            // would reproduce the original "cannot start process with working directory"
-            // failure.  Fail fast here with a clear diagnostic rather than silently
-            // using an empty or unrelated directory.
-            string workingDir = System.IO.Path.GetDirectoryName(exePath);
-            string pathError  = null;
-            if (string.IsNullOrEmpty(workingDir))
-                pathError = $"Cannot determine working directory from exePath '{exePath}'. " +
-                            "Provide an absolute path to T32_API.exe.";
-            else if (!System.IO.Directory.Exists(workingDir))
-                pathError = $"Working directory '{workingDir}' (derived from exePath '{exePath}') does not exist.";
-
-            if (pathError != null)
-            {
-                message = pathError;
-                if (exitCode != null && exitCode.Length > 0)
-                    exitCode[0] = -1;
-                return -1;
-            }
-
             try
             {
                 ProcessStartInfo psi = new ProcessStartInfo
                 {
                     FileName               = exePath,
                     Arguments              = command,
-                    WorkingDirectory       = workingDir,
+                    // WorkingDirectory is intentionally not set: the process
+                    // inherits CANoe's working directory so that relative paths
+                    // such as "../AutomationDependent/GenericLibraries/T32_API.exe"
+                    // are resolved correctly by the OS.  CANoe manages the
+                    // .NET 8.0 execution context via Execution.WaitForTask.
                     UseShellExecute        = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError  = true,
