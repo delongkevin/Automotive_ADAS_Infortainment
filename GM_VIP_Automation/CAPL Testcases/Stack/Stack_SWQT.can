@@ -5061,7 +5061,6 @@ testcase To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whe
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_Run_StackOverflow_Tests\\52");
   A_DBGR_Go();
-  A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "Set the Before_clear_fault_status  variable value to 1"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify Before_clear_fault_status variable value to 1");
   E_DBGR_VariableCheck("Before_clear_fault_status",1,Equal);
@@ -5156,7 +5155,6 @@ testcase To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whe
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set MEMPROT_HWIO_Run_StackOverflow_Tests\\52  Reading the STACK_PROTECTION_STATUS After reset condition"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_Run_StackOverflow_Tests\\52");
-  A_DBGR_Go();
   A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "Set the Before_clear_fault_status  variable value to 1"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify Before_clear_fault_status variable value to 1");
@@ -5253,7 +5251,6 @@ testcase To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whe
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_Run_StackOverflow_Tests\\52");
   A_DBGR_Go();
-  A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "Set the Before_clear_fault_status  variable value to 1"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify Before_clear_fault_status variable value to 1");
   E_DBGR_VariableCheck("Before_clear_fault_status",1,Equal);
@@ -5348,7 +5345,6 @@ testcase To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whe
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set MEMPROT_HWIO_Run_StackOverflow_Tests\\52  Reading the STACK_PROTECTION_STATUS After reset condition"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_Run_StackOverflow_Tests\\52");
-  A_DBGR_Go();
   A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "Set the Before_clear_fault_status  variable value to 1"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify Before_clear_fault_status variable value to 1");
@@ -5445,7 +5441,6 @@ testcase To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whe
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_Run_StackOverflow_Tests\\52");
   A_DBGR_Go();
-  A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "Set the Before_clear_fault_status  variable value to 1"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify Before_clear_fault_status variable value to 1");
   E_DBGR_VariableCheck("Before_clear_fault_status",1,Equal);
@@ -5541,7 +5536,6 @@ testcase To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whe
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_Run_StackOverflow_Tests\\52");
   A_DBGR_Go();
-  A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "Set the Before_clear_fault_status  variable value to 1"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify Before_clear_fault_status variable value to 1");
   E_DBGR_VariableCheck("Before_clear_fault_status",1,Equal);
@@ -5636,7 +5630,6 @@ testcase To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whe
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set MEMPROT_HWIO_Run_StackOverflow_Tests\\52  Reading the STACK_PROTECTION_STATUS After reset condition"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_Run_StackOverflow_Tests\\52");
-  A_DBGR_Go();
   A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "Set the Before_clear_fault_status  variable value to 1"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify Before_clear_fault_status variable value to 1");

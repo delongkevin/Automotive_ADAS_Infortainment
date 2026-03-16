@@ -160,7 +160,6 @@ testcase ToVerify_MngCNDD_CanRxInitInterface_Initialization_with_Minimum_Message
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
   A_DBGR_Go();
-  A_DBGR_Go();
 
   /***************************************************************************************************************/
                                               // Test Step 5 Verify that the transmitted message with minimum message length using canoe.
@@ -195,11 +194,10 @@ testcase ToVerify_MngCNDD_CanRxInitInterface_Initialization_with_Minimum_Message
 
 testcase Flashing()
 {
-sysExec("C:\\Automation\\GM_VIP_Automation\\LauterbachFlash.bat", "Commandline", "C:\\Automation\\GM_VIP_Automation");
+  SysExec("cmd", "/c LauterbachFlash.bat", automation_root);
 //  write("result = %d",result);
 
-
-  SysExec("python C:\\Automation\\GM_VIP_Automation\\Serial.py", "Commandline", "C:\\Users\\suresing\\AppData\\Local\\Programs\\Python\\Python313");
+  SysExec("powershell", "-ExecutionPolicy Bypass -File ./serial_logging.ps1", automation_root);
 }
 
 testcase To_verify_MngCNDD_CanRxInit_Interface_that_the_CAN_controller_for_CANB_CAN8_is_initialized_correctly()
@@ -321,7 +319,6 @@ testcase To_verify_MngCNDD_CanRxInit_Interface_that_the_CAN_controller_for_CANB_
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in SetCANR_h_CanIfRxIndication");
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
-  A_DBGR_Go();
   A_DBGR_Go();
 
   /***************************************************************************************************************/
@@ -515,7 +512,6 @@ testcase To_verify_MngCNDD_CanRxInit_Interface_that_the_CAN_controller_for_CANA_
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in SetCANR_h_CanIfRxIndication");
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
-  A_DBGR_Go();
   A_DBGR_Go();
 
   /***************************************************************************************************************/
@@ -716,7 +712,6 @@ testcase To_Verify_MngCNDD_CanRxInit_Interface_Initialization_with_Minimum_Messa
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
   A_DBGR_Go();
-  A_DBGR_Go();
 
   /***************************************************************************************************************/
                                               // Test Step 5 Verify that the transmitted message with minimum message length using canoe.
@@ -870,7 +865,6 @@ testcase To_Verify_MngCNDD_CanRxInit_Interface_Initialization_with_Maximum_Messa
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
   A_DBGR_Go();
-  A_DBGR_Go();
 
   /***************************************************************************************************************/
                                               // Test Step 5 Verify that the transmitted message with minimum message length using canoe.
@@ -1023,7 +1017,6 @@ testcase To_Verify_MngCNDD_CanRxInit_Interface_Initialization_with_Maximum_Messa
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
   A_DBGR_Go();
-  A_DBGR_Go();
 
   /***************************************************************************************************************/
                                               // Test Step 5 Verify that the transmitted message with minimum message length using canoe.
@@ -1175,7 +1168,6 @@ testcase To_Verify_MngCNDD_CanRxInit_Interface_Initialization_with_Extended_Mess
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in SetCANR_h_CanIfRxIndication");
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
-  A_DBGR_Go();
   A_DBGR_Go();
 
   /***************************************************************************************************************/
@@ -1330,7 +1322,6 @@ testcase To_Verify_MngCNDD_CanRxInit_Interface_Initialization_with_Extended_Mess
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
   A_DBGR_Go();
-  A_DBGR_Go();
 
   /***************************************************************************************************************/
                                               // Test Step 5 Verify that the transmitted message with minimum message length using canoe.
@@ -1475,7 +1466,6 @@ testcase To_Verify_MngCNDD_CanRxInit_Interface_Initialization_with_Standard_Mess
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in SetCANR_h_CanIfRxIndication");
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
-  A_DBGR_Go();
   A_DBGR_Go();
 
   /***************************************************************************************************************/
@@ -1633,7 +1623,6 @@ testcase To_Verify_MngCNDD_CanRxInit_Interface_Initialization_with_Standard_Mess
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in SetCANR_h_CanIfRxIndication");
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
-  A_DBGR_Go();
   A_DBGR_Go();
 
   /***************************************************************************************************************/
@@ -3784,7 +3773,6 @@ testcase Verify_the_interface_MngCNDD_CanMainRead_for_CANA_CAN2()
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCNDD_e_CanControllerMode");
   A_DBGR_Go();
-  A_DBGR_Go();
 
   snprintf( chActionText, elCount(chActionText), " Verify Breakpoint should hit in SetCNDD_e_CanControllerMode ");
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in SetCNDD_e_CanControllerMode function");
@@ -3950,7 +3938,6 @@ testcase Verify_the_interface_MngCNDD_CanMainRead_for_CANB_CAN8()
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in SetCNDD_e_CanControllerMode");
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCNDD_e_CanControllerMode");
-  A_DBGR_Go();
   A_DBGR_Go();
 
   snprintf( chActionText, elCount(chActionText), " Verify Breakpoint should hit in SetCNDD_e_CanControllerMode ");
@@ -4892,7 +4879,6 @@ testcase To_Verify_CntrlCNDD_h_CanWrt_Interface_should_not_transmitted_Message_b
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCNDD_e_CanControllerMode");
   A_DBGR_Go();
-  A_DBGR_Go();
 
   snprintf( chActionText, elCount(chActionText), " Verify Breakpoint should hit in SetCNDD_e_CanControllerMode ");
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in SetCNDD_e_CanControllerMode function");
@@ -4954,7 +4940,6 @@ testcase Verify_DsblCNDD_CanInterrupts_Interface_by_Disabling_CAN_Interrupts_for
 
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
-  A_DBGR_Go();
   A_DBGR_Go();
   /***************************************************************************************************************/
                                               // Test Step 1 Define PDU info and call DsblCNDD_CanInterrupts.
@@ -5033,7 +5018,6 @@ testcase Verify_DsblCNDD_CanInterrupts_Interface_by_Disabling_CAN_Interrupts_for
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
   A_DBGR_Go();
-  A_DBGR_Go();
   /***************************************************************************************************************/
                                               // Test Step 1 Define PDU info and call DsblCNDD_CanInterrupts.
   /***************************************************************************************************************/
@@ -5110,7 +5094,6 @@ testcase Verify_Re_enabling_CAN_Interrupts_After_Disabling_for_CANA_CAN2()
 
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
-  A_DBGR_Go();
   A_DBGR_Go();
   /***************************************************************************************************************/
                                               // Test Step 1 Define PDU info and call DsblCNDD_CanInterrupts.
@@ -5239,7 +5222,6 @@ testcase Verify_Re_enabling_CAN_Interrupts_After_Disabling_for_CANB_CAN8()
   snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state");
   //TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
   /***************************************************************************************************************/
                                               // Test Step 1 Define PDU info and call DsblCNDD_CanInterrupts.
   /***************************************************************************************************************/
@@ -5353,7 +5335,6 @@ testcase Verify_DsblCNDD_CanInterrupts_Interface_by_Disabling_CAN_Interrupts_for
   snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state");
   //TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
   /***************************************************************************************************************/
                                               // Test Step 1 Define PDU info and call DsblCNDD_CanInterrupts.
   /***************************************************************************************************************/
@@ -5448,7 +5429,6 @@ testcase Verify_EnblCNDD_CanInterrupts_interface_by_Enabling_CAN_Interrupts_for_
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
   A_DBGR_Go();
-  A_DBGR_Go();
   /***************************************************************************************************************/
                                               // Test Step 1 Define PDU info and call EnblCNDD_CanInterrupts.
   /***************************************************************************************************************/
@@ -5525,7 +5505,6 @@ testcase Verify_EnblCNDD_CanInterrupts_interface_by_Enabling_CAN_Interrupts_for_
 
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
-  A_DBGR_Go();
   A_DBGR_Go();
   /***************************************************************************************************************/
                                               // Test Step 1 Define PDU info and call DsblCNDD_CanInterrupts.
@@ -6148,7 +6127,6 @@ testcase To_verify_MngCNDD_CanRxInit_Interface_that_the_CAN_controller_for_CANA_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("SetCANR_h_CanIfRxIndication");
   A_DBGR_Go();
-  A_DBGR_Go();
 
   /***************************************************************************************************************/
                                               // Test Step 5 Verify that the transmitted message with minimum message length using canoe.
@@ -6598,7 +6576,6 @@ testcase Verify_MngCNDD_CanTrcvMain_interface_Functionality_for_CANB_CAN8()
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set SetCNDD_e_CanTrcvOpMode");
 
   A_DBGR_Go();
-  A_DBGR_Go();
 
   snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in SetCNDD_e_CanTrcvOpMode ");
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in SetCNDD_e_CanTrcvOpMode function");
@@ -6844,7 +6821,6 @@ testcase Verify_the_interface_GetCNDD_Cnt_CanTxBufMax_Maximum_Tx_Buffer_Fill_Lev
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
   A_DBGR_Go();
-  A_DBGR_Go();
   /***************************************************************************************************************/
                                               // Test Step 1 Define PDU info and call DsblCNDD_CanInterrupts.
   /***************************************************************************************************************/
@@ -6915,7 +6891,6 @@ testcase Verify_the_interface_GetCNDD_Cnt_CanTxBufMax_Maximum_Tx_Buffer_Fill_Lev
 
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
-  A_DBGR_Go();
   A_DBGR_Go();
   /***************************************************************************************************************/
                                               // Test Step 1 Define PDU info and call DsblCNDD_CanInterrupts.
@@ -6999,7 +6974,6 @@ testcase Verify_the_interface_GetCNDD_Cnt_CanRxBufMax_Maximum_RX_Buffer_Fill_Lev
 
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
-  A_DBGR_Go();
   A_DBGR_Go();
   /***************************************************************************************************************/
              // Test Step 1 Disable MngCNDD_CanMainRead function.
@@ -7182,7 +7156,6 @@ testcase Verify_the_interface_GetCNDD_Cnt_CanRxBufMax_by_initializing_3_msgs_and
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
   A_DBGR_Go();
-  A_DBGR_Go();
   /***************************************************************************************************************/
              // Test Step 1 Disable MngCNDD_CanMainRead function.
   /***************************************************************************************************************/
@@ -7253,7 +7226,6 @@ testcase Verify_the_interface_GetCNDD_Cnt_CanRxBufMax_by_initializing_3_msgs_and
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
   A_DBGR_Go();
-  A_DBGR_Go();
   /***************************************************************************************************************/
              // Test Step 1 Disable MngCNDD_CanMainRead function.
   /***************************************************************************************************************/
@@ -7323,7 +7295,6 @@ testcase Verify_the_interface_GetCNDD_Cnt_CanRxBufMax_by_initializing_64_OPEN_ma
 
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
-  A_DBGR_Go();
   A_DBGR_Go();
   /***************************************************************************************************************/
              // Test Step 1 Disable MngCNDD_CanMainRead function.
@@ -7510,7 +7481,6 @@ testcase Verify_the_interface_GetCNDD_Cnt_CanRxBufMax_by_initializing_64_OPEN_ma
 
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
-  A_DBGR_Go();
   A_DBGR_Go();
   /***************************************************************************************************************/
              // Test Step 1 Disable MngCNDD_CanMainRead function.

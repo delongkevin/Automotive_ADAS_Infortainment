@@ -328,7 +328,7 @@ export void Power_Cycle_Immediate_Return(long waitTime)
   testStep("","Wait for %dms", waitTime);
   testWaitForTimeout(waitTime);
   Power_Supply_ON();
-  
+  testWaitForTimeout(3000);  // Allow minimum ECU application boot before returning
 }
 
 double Get_Comparison_Score(char image1[], char image2[], char resolution[])
@@ -2325,8 +2325,8 @@ export void Disable_CAN_Communcation_NoSleep()
   $CmdIgnSts = 0;
   testStep("", "$CmdIgnSts set to 'lock'");
   
-  testStep("", "Wait for 250ms");
-  testWaitForTimeout(250);
+  testStep("", "Wait for 3000ms for NM PrepareBusSleep + BusSleep phases");
+  testWaitForTimeout(3000);
   
   @sysvar::IL::Klemme15=0;
   @sysvar::IL::Klemme30=0;
@@ -2351,8 +2351,8 @@ export void Disable_CAN_Communication()
   $CmdIgnSts = 0;
   testStep("", "$CmdIgnSts set to 'lock'");
   
-  testStep("", "Wait for 250ms");
-  testWaitForTimeout(250);
+  testStep("", "Wait for 3000ms for NM PrepareBusSleep + BusSleep phases");
+  testWaitForTimeout(3000);
   
   @sysvar::IL::Klemme15=0;
   @sysvar::IL::Klemme30=0;
@@ -2377,12 +2377,10 @@ export void Disable_CAN_Communication()
     }
   }
   
-  if(j >= 6) testStepFail("", "ECU failed to sleep in 27 seconds");
-  while(j < 6)
+  if(j >= 6)
   {
-    testStep("", "Wait for 5 seconds");
-    testWaitForTimeout(5000);
-    j++;
+    testStepFail("", "ECU failed to sleep in 27 seconds");
+    testWaitForTimeout(5000);  // Minimum settle before next test proceeds
   }
 }
 

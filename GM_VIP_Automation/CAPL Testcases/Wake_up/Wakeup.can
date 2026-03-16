@@ -92,13 +92,14 @@ variables
   const long cc_dwWakeup_TimerFlushDelay       = 1000;
 
   /* Power-cycle OFF hold: capacitor discharge between power-off and
-   * power-on (500 ms).
+   * power-on (2000 ms).
    * Necessary: ECU bulk capacitor discharge measured at ~450 ms;
-   * 500 ms ensures the supply rail falls below the ECU reset threshold
-   * before restoration. */
-  const long cc_dwWakeup_PowerCycleOffTime     = 500;
+   * 2000 ms provides ample margin to ensure the supply rail falls well
+   * below the ECU reset threshold before restoration, preventing
+   * spurious wakeup-source register carry-over across power cycles. */
+  const long cc_dwWakeup_PowerCycleOffTime     = 2000;
 
-  /* Stress iteration count – both stress test cases run this many
+  /* Stress iteration count ï¿½ both stress test cases run this many
    * wakeup/sleep or power-reset cycles (50 iterations). */
   const int  cc_nWakeup_StressIterations       = 50;
 
@@ -308,7 +309,6 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_fu
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  // TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  A_DBGR_Go();
   /***************************************************************************************************************/    
                                               // Test Step 1  Call the function Test_SetHWIO_PowerDown by setting StartPowerDown to 1 then check transceiver is in the SLEEP mode and PMIC to STANDBY mode
   /***************************************************************************************************************/
@@ -328,6 +328,7 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_fu
                                               // Test Step  Run the Software and capture UART log using python
   /***************************************************************************************************************/
   SysExec("powershell", "-ExecutionPolicy Bypass -File ./serial_logging.ps1", automation_root);
+  A_GENERIC_SetTimeout(cc_dwWakeup_UARTCaptureDelay, "waiting for PS1 serial port open");
   /***************************************************************************************************************/    
                                               // Test Step 2 Disconnect the Battery and verify battery is disconnected
   /***************************************************************************************************************/
@@ -1324,6 +1325,7 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
                                               // Test Step  Run the Software and capture UART log using python
   /***************************************************************************************************************/
   SysExec("powershell", "-ExecutionPolicy Bypass -File ./serial_logging.ps1", automation_root);
+  A_GENERIC_SetTimeout(cc_dwWakeup_UARTCaptureDelay, "waiting for PS1 serial port open");
   /***************************************************************************************************************/    
                                               // Test Step 2 Disconnect the Battery and verify battery is disconnected
   /***************************************************************************************************************/

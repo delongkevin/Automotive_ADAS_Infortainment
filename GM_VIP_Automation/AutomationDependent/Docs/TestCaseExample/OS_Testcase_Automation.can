@@ -15353,7 +15353,6 @@ testcase Testcase_to_verify_functionality_of_interface_CntrlRBSR_CntrlrReset_to_
   A_DBGR_VariableSet("coreId", "0");
   A_DBGR_BreakpointSet("CntrlRBSR_CntrlrReset");
   A_DBGR_Go(); 
-  A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("CntrlRBSR_CntrlrReset");
  
 }
@@ -15473,7 +15472,6 @@ testcase Testcase_to_verify_functionality_of_interface_CntrlRBSR_CntrlrReset_to_
   A_DBGR_VariableSet("coreId", "1");
   A_DBGR_BreakpointSet("CntrlRBSR_CntrlrResetCPU1");
   A_DBGR_Go(); 
-   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("CntrlRBSR_CntrlrResetCPU1");
  
 }
@@ -15592,7 +15590,6 @@ testcase Testcase_to_verify_functionality_of_interface_CntrlRBSR_CntrlrReset_to_
   A_DBGR_VariableSet("coreId", "2");  
   A_DBGR_BreakpointSet("CntrlRBSR_CntrlrResetCPU2");
   A_DBGR_Go(); 
-   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("CntrlRBSR_CntrlrResetCPU2");
  
 }
@@ -15712,7 +15709,6 @@ testcase Testcase_to_verify_functionality_of_interface_CntrlRBSR_CntrlrReset_to_
   A_DBGR_VariableSet("coreId", "3");  
   A_DBGR_BreakpointSet("CntrlRBSR_CntrlrResetCPU3");
   A_DBGR_Go(); 
-   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("CntrlRBSR_CntrlrResetCPU3");
  
 }
@@ -15832,7 +15828,6 @@ testcase Testcase_to_verify_functionality_of_interface_CntrlRBSR_CntrlrReset_to_
   A_DBGR_VariableSet("coreId", "4");  
   A_DBGR_BreakpointSet("CntrlRBSR_CntrlrResetCPU4");
   A_DBGR_Go();
-   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("CntrlRBSR_CntrlrResetCPU4");
  
 }
@@ -15951,7 +15946,6 @@ testcase Testcase_to_verify_functionality_of_interface_CntrlRBSR_CntrlrReset_to_
   A_DBGR_VariableSet("coreId", "5");
   A_DBGR_BreakpointSet("CntrlRBSR_CntrlrResetCPU5"); 
   A_DBGR_Go(); 
-   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("CntrlRBSR_CntrlrResetCPU5");
  
 }

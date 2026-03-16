@@ -1269,7 +1269,6 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Update()
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
-  A_DBGR_Go();
   testWaitForTimeout(10000);
   E_DBGR_BreakpointCheckForHalt("cybersec_features_test\\2");
   
@@ -1292,7 +1291,6 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Update()
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymBlkDecryptUpdate( CsmConf_CsmJob_CsmJob_DecryptECB_She_Key_004, App_au8Aes128EcbCiphertext_2, APP_AES128_ECB_CIPHER_TEXT_SIZE_2, App_au8Aes128EcbResult, &App_u32Aes128EcbResultSize )"); 
  // TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\32");
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\32");
   
@@ -1358,7 +1356,6 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Start()
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
-  A_DBGR_Go();
   testWaitForTimeout(10000);
 
 
@@ -1383,7 +1380,6 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Start()
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymBlkDecryptStart( CsmConf_CsmJob_CsmJob_DecryptECB_She_Key_004, &key )"); 
   //TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\31");
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\31");
   
@@ -1449,7 +1445,6 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Finish()
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
-  A_DBGR_Go();
   testWaitForTimeout(10000);
   E_DBGR_BreakpointCheckForHalt("cybersec_features_test\\2");
   
@@ -1472,7 +1467,6 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Finish()
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymBlkDecryptFinish( CsmConf_CsmJob_CsmJob_DecryptECB_She_Key_004 )"); 
   //TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\33");
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\33");
   
@@ -1539,7 +1533,6 @@ testcase   To_Verify_CSM_Symmetric_Encrypt_Update()
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
-  A_DBGR_Go();
   testWaitForTimeout(10000);
   E_DBGR_BreakpointCheckForHalt("cybersec_features_test\\2");
   
@@ -1562,7 +1555,6 @@ testcase   To_Verify_CSM_Symmetric_Encrypt_Update()
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymEncryptUpdate( CsmConf_CsmJob_CsmJob_EncryptCBC_She_Key_004, App_au8Aes128CbcPlaintext_1, APP_AES128_CBC_PLAIN_TEXT_SIZE_1, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize )"); 
   //TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_SymKeyWrapSym\\24");
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_SymKeyWrapSym\\24");
   
@@ -1628,7 +1620,6 @@ testcase   To_Verify_CSM_Symmetric_Decrypt_Update()
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
-  A_DBGR_Go();
   testWaitForTimeout(10000);
   E_DBGR_BreakpointCheckForHalt("cybersec_features_test\\2");
   
@@ -1651,7 +1642,6 @@ testcase   To_Verify_CSM_Symmetric_Decrypt_Update()
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymDecryptUpdate( CsmConf_CsmJob_CsmJob_DecryptCBC_She_Key_004, App_au8Aes128CbcCiphertext_1, APP_AES128_CBC_CIPHER_TEXT_SIZE_1, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize )"); 
   //TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\80");
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\80");
   
@@ -1713,7 +1703,6 @@ testcase To_Verify_CSM_Symmetric_Decrypt_Finish()
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
-  A_DBGR_Go();
   testWaitForTimeout(10000);
   E_DBGR_BreakpointCheckForHalt("cybersec_features_test\\2");
   
@@ -1736,7 +1725,6 @@ testcase To_Verify_CSM_Symmetric_Decrypt_Finish()
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymDecryptFinish( CsmConf_CsmJob_CsmJob_DecryptCBC_She_Key_004, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize )"); 
  // TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\81");
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\81");
   
@@ -1798,7 +1786,6 @@ testcase To_Verify_CSM_Symmetric_Decrypt_Start()
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
-  A_DBGR_Go();
   testWaitForTimeout(10000);
   E_DBGR_BreakpointCheckForHalt("cybersec_features_test\\2");
   
@@ -1821,7 +1808,6 @@ testcase To_Verify_CSM_Symmetric_Decrypt_Start()
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymDecryptStart( CsmConf_CsmJob_CsmJob_DecryptCBC_She_Key_004, &key, &initvector, initvectorlen )"); 
  // TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\79");
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\79");
   
@@ -1883,7 +1869,6 @@ testcase To_Verify_CSM_Symmetric_Encrypt_Finish()
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
-  A_DBGR_Go();
   testWaitForTimeout(10000);
   E_DBGR_BreakpointCheckForHalt("cybersec_features_test\\2");
   
@@ -1906,7 +1891,6 @@ testcase To_Verify_CSM_Symmetric_Encrypt_Finish()
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymEncryptFinish( CsmConf_CsmJob_CsmJob_EncryptCBC_She_Key_004, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize )"); 
  // TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_SymKeyWrapSym\\25");
-  A_DBGR_Go();
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_SymKeyWrapSym\\25");
   
@@ -1967,7 +1951,6 @@ testcase To_Verify_CSM_Symmetric_Encrypt_Start()
   //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
-  A_DBGR_Go();
   testWaitForTimeout(10000);
   E_DBGR_BreakpointCheckForHalt("cybersec_features_test\\2");
   
@@ -1991,7 +1974,6 @@ testcase To_Verify_CSM_Symmetric_Encrypt_Start()
  // TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_SymKeyWrapSym\\23");
   A_DBGR_Go();
-   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_SymKeyWrapSym\\23");
   
   

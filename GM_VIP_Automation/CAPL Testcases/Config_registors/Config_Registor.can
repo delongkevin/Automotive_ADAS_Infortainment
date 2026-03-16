@@ -65,6 +65,7 @@ testcase Verify_that_FAILED_REGISTER_ID_initialized_to_default_values_during_Pow
   
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
+  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\4");
   A_DBGR_Go_Safe();
 
   /***************************************************************************************************************/    
@@ -73,7 +74,7 @@ testcase Verify_that_FAILED_REGISTER_ID_initialized_to_default_values_during_Pow
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\4 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister\\4"); 
   
-  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\4");  
+  E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\4");
 
   /***************************************************************************************************************/    
                                               // Test Step 2 Verify that Failed_Register_ID variable is initialized to default values                                                   
@@ -119,6 +120,7 @@ testcase Verify_that_FAILED_BIT_ID_initialized_to_default_values_during_PowerUp_
   
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
+  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\5");
   A_DBGR_Go_Safe();
 
   /***************************************************************************************************************/    
@@ -127,7 +129,7 @@ testcase Verify_that_FAILED_BIT_ID_initialized_to_default_values_during_PowerUp_
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\5 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister\\5"); 
   
-  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\5");  
+  E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\5");
 
   /***************************************************************************************************************/    
                                               // Test Step 2 Verify that Failed_BIT_ID variable is initialized to default values                                                   
@@ -174,6 +176,7 @@ testcase Verify_that_FAILED_REGISTER_RECOVER_STATUS_initialized_to_default_value
   
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
+  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\6");
   A_DBGR_Go_Safe();
 
   /***************************************************************************************************************/    
@@ -182,7 +185,7 @@ testcase Verify_that_FAILED_REGISTER_RECOVER_STATUS_initialized_to_default_value
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\6 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister\\6"); 
   
-  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\6");  
+  E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\6");
 
   /***************************************************************************************************************/    
                                               // Test Step 2 Verify that Failed_Register_Recover_Status variable is initialized to default values                                                   
@@ -229,6 +232,7 @@ testcase Verify_PerfmHWIO_b_ConfigRegTest_interface_for_test_status_returning_1_
   
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
+  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\4");
   A_DBGR_Go_Safe();
 
   /***************************************************************************************************************/    
@@ -237,7 +241,7 @@ testcase Verify_PerfmHWIO_b_ConfigRegTest_interface_for_test_status_returning_1_
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister"); 
   
-  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\4");  
+  E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\4");
   /***************************************************************************************************************/
                                               // Test Step 2 Verify the interface returns 1 when the configuration register value is the same as the expected value.                                        
   /***************************************************************************************************************/
@@ -283,6 +287,7 @@ testcase Verify_the_interface_GetHWIO_e_FailedRegID_returns_the_ID_as_0_when_no_
   
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
+  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\4");
   A_DBGR_Go_Safe();
 
   /***************************************************************************************************************/    
@@ -291,7 +296,7 @@ testcase Verify_the_interface_GetHWIO_e_FailedRegID_returns_the_ID_as_0_when_no_
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\4 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister"); 
   
-  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\4");  
+  E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\4");
   /***************************************************************************************************************/
                                               // Test Step 2 Verify the interface returns 0 when the test is passed.                                      
   /***************************************************************************************************************/
@@ -337,6 +342,7 @@ testcase Verify_the_interface_GetHWIO_e_FailedBitID_returns_the_ID_as_0_when_the
   
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
+  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\5");
   A_DBGR_Go_Safe();
 
   /***************************************************************************************************************/    
@@ -345,7 +351,7 @@ testcase Verify_the_interface_GetHWIO_e_FailedBitID_returns_the_ID_as_0_when_the
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\5 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister"); 
   
-  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\5");  
+  E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\5");
   /***************************************************************************************************************/
                                               // Test Step 2 Verify the interface returns 0 when the test is passed.                                      
   /***************************************************************************************************************/
@@ -391,6 +397,7 @@ testcase Verify_the_interface_GetHWIO_b_FailedRegRecovSt_returns_the_recovery_st
   
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
+  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\6");
   A_DBGR_Go_Safe();
 
   /***************************************************************************************************************/    
@@ -399,7 +406,7 @@ testcase Verify_the_interface_GetHWIO_b_FailedRegRecovSt_returns_the_recovery_st
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\6 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister"); 
   
-  A_DBGR_BreakpointSet_AbortOnFail("Test_ConfigRegister\\6");  
+  E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\6");
   /***************************************************************************************************************/
                                               // Test Step 2 Verify the interface returns 0 when the test is passed.                                      
   /***************************************************************************************************************/
