@@ -1,5 +1,0 @@
-MCU2_0_CPU_Load.txt IDLE true MCU2_0 Iterations "Task Idle Time" false
-MCU2_1_CPU_Load.txt IDLE true "MCU2_1 Task:" Iterations "Task Idle Time" false
-A72_CPU_Load.txt "CPU 0 idle:" true A72 Capture_Load_Read "CPU 0" false
-A72_CPU_Load.txt "CPU 1 idle:" true A72 Capture_Load_Read "CPU 1" false
-A72_CPU_Load.txt "Mem Avail:" false "Memory Usage (in mB)" Iterations Usage false

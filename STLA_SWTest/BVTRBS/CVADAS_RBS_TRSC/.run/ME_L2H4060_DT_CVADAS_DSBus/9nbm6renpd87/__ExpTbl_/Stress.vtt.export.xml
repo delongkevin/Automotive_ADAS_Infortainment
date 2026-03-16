@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="Windows-1252"?>
-<tclibrary>
-  <testcase name="ImageCaptureCompare" id="0" comment="" signature="" file="C:\MY26_DT_CT_Sanity\L2H4060_SWQT_vTestProjects_SanityTest\Stress\Stress.vtt" SourceFilePersistencyGuid="sgcvpsf00492" IsPrivate="true" IsNetSignatureAndDefinedInExternalDll="true" guid="49c561a1-453b-453b-ad8b-3303e49c2529">
-    <document_position><![CDATA[<XPathDocumentPosition xmlns:SerializedType="Vector.ITE.Document.XPathDocumentPosition"><XPath>/ttroot/ttlib[1]/tc_definitions[1]/tc_definition[1]/name[1]</XPath></XPathDocumentPosition>]]></document_position>
-    <implementation_language lang="TTE" />
-  </testcase>
-</tclibrary>

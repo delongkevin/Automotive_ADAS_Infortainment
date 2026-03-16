@@ -569,7 +569,7 @@ except Exception as e:
             steps {
                 script {
                     if (!env.CANOE_EXE) {
-                        error "SWQT Test Suite: CANoe64.exe not found in PATH. " +
+                        error "SWQT Test Suite: CANoe64.exe not found in PATH on ${env.NODE_NAME}. " +
                               "Add the CANoe Exec64 folder to PATH on this bench PC."
                     }
                 }

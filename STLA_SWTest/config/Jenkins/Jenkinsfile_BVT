@@ -1,113 +1,225 @@
+// =============================================================================
+// STLA CVADAS ADAS SW Test – Jenkins Declarative Pipeline
+// =============================================================================
+//
+// Project   : L2H4060 CVADAS BEV (ADAS Camera / Surround-View System)
+// CANoe cfg : BVTRBS\CVADAS_RBS_TRSC\
+//               ME_L2H4060_DT_CVADAS_DSBus.cfg
+//
+// PATH RULE – how tool and file paths work in this pipeline
+// ---------------------------------------------------------
+// The project root directory is discovered at runtime by scanning for a
+// sentinel file (config\Packager\config_package.json).  The pipeline works
+// regardless of what the project folder is named on disk.
+//   - Everything INSIDE it is referenced as STLA_ROOT\<subpath>
+//     where STLA_ROOT is discovered at runtime in the Discover Paths stage.
+//   - STLA_REL is the relative path from the Jenkins workspace to STLA_ROOT
+//     (empty string when the workspace IS the project root, which is the
+//     most common case when the repo is checked out directly).
+//   - No drive letters or hardcoded folder names are written here.
+//
+// External tools (CANoe, Python, OdxPdxFlasher, T32) must be in the
+// Windows PATH on each agent node.  The pipeline uses the Windows "where"
+// command to resolve them – configure tool folders in PATH on each PC:
+//   CANoe64.exe       – add the CANoe Exec64 folder to PATH
+//   python.exe        – add the Python install folder to PATH
+//   OdxPdxFlasher.exe – add the flasher install folder to PATH (bench PCs)
+//   t32rem.exe        – add the Lauterbach T32 folder to PATH (bench PCs)
+//
+// Agent-node environment variables (Manage Jenkins → Nodes → <node>)
+// -------------------------------------------------------------------
+//   POWERSUPPLY_PORT   – COM port for the bench power supply (e.g. COM4)
+//                        Required on windows-bench nodes only.
+//   BENCH_STAGING_DIR  – optional staging copy path on the bench PC
+//
+// Agent labels
+// ------------
+//   windows-agent      – any Windows PC with Python and git in PATH.
+//                        Stages: Checkout, Validate, Simulate
+//   windows-bench      – dedicated ADAS bench PC (default bench label).
+//                        Same as windows-agent PLUS CANoe64.exe, t32rem.exe,
+//                        OdxPdxFlasher.exe in PATH, ECU connected,
+//                        POWERSUPPLY_PORT set on the node.
+//                        Stages: Flash ECU, BVT/Sanity, SWQT Tests, Reports
+//   L2H4060_SWTest     – named bench node for the L2H4060 CVADAS bench.
+//                        Select via the buildMachine parameter (default).
+//
+// Upstream-triggered builds
+// -------------------------
+//   Set upstreamJobName to the full Jenkins job path of the upstream build
+//   job and BuildNumber to the build number to trace which software is under
+//   test.  Both are informational and surfaced in the build log.
+//
+// Jenkins shared library
+// ----------------------
+// This pipeline uses @Library('L2H4060_Shared_Lib@v1.0.6') for the
+// qualityGate.executeCANoeTest() helper.  Configure that library in
+// Manage Jenkins → Configure System → Global Pipeline Libraries.
+//
+// Stage order
+// -----------
+//   Checkout → Discover Paths → Simulate (validation, no hardware)
+//   → Flash ECU → BVT / Sanity → SWQT Tests → CPU Load Test → Reports
+// =============================================================================
+
 @Library('L2H4060_Shared_Lib@v1.0.6') _
-def commitMsgExtract = 'UNKNOWN'
-def gitTag = ''
-def odisflash = ''
-def buildJob = ''
-def output = ''
-def outputFile = ''
-def flash_output = ''
-to_users = 'Saibhargav.Thottempudi@magna.com'
 
 pipeline {
-    parameters {
-        string(name: 'ReleaseBuild',
-            defaultValue: 'master',
-            description: 'The name of the release build.'
-        )
-        string(name: 'upstreamJobName',
-            defaultValue: 'L2H4060/job/L2H4060_BS_branches/job/L2H4060_Software/job',
-            description: 'The name of the upstream job.'
-        )
-        choice(name: 'buildMachine',
-                choices: ['L2H4060_SWTest'],
-                description: 'What build machine/label should be used?'
-        )
-        string(name: 'BuildNumber',
-            defaultValue: '251',
-            description: 'Only required for manual Trigger!'
-        )
-        string(name: 'flashingTimeout',
-            defaultValue: '3000',
-            description: 'Flashing process timeout? (in seconds)'
-        )
-        string(name: 'BVTTimeout',
-            defaultValue: '30000',
-            description: 'Testing process timeout? (in seconds)'
-        )
-        booleanParam(name: 'flashTarget',
-            defaultValue:   true,
-            description: 'Flash the ECU with Bootloader/Application binaries?'
-        )
-        booleanParam(name: 'enableBVT',
-            defaultValue:   true,
-            description: 'Execute Build Verification Testing?'
-        )
-        booleanParam(name: 'enableQuickSanity',
-            defaultValue:   false,
-            description: 'Execute ECU Bring Up / PR Sanity Testing?'
-        )
-        booleanParam(name: 'CPU_Load_Test',
-            defaultValue:   true,
-            description: 'Execute CPU Load Test?'
-        )
-        booleanParam(name: 'enableRobustness',
-            defaultValue:   false,
-            description: 'Execute Robustness / Feature Testing?'
-        )
-        booleanParam(name: 'SIMULATE',
-            defaultValue:   true,
-            description: 'Generate a simulated test report (no bench hardware required)?'
-        )
-        booleanParam(name: 'RUN_ON_BENCH',
-            defaultValue:   true,
-            description: 'Run bench stages (Flash, BVT, SWQT)?'
-        )
-        string(name: 'Mail_To',
-            defaultValue: 'Kevin.Delong@magna.com Azharul.Haque@magna.com saibhargav.thottempudi@magna.com gopinath.ramanathan@magna.com',
-            description: 'Email notification send to'
-        )
 
-    }
+    agent { label 'windows-agent' }
+
+    // -------------------------------------------------------------------------
+    // Sub-paths inside the project root – no drive letters, no install paths.
+    // STLA_ROOT and STLA_REL are populated in Discover Paths.
+    // -------------------------------------------------------------------------
     environment {
-        PYTHONPATH = 'C:/prjtools/automationBookshelf/2022_Bookshelf_1005'
-        FLASHING_EXE = "C:/prjtools/OdxPdxFlasher/v1.1.0/OdxPdxFlasher.exe"
-        PAGEPYTHONPATH = "C:/prjtools/python/ver_3.7.6_p7/python.exe"
-        GIT_PYTHON_GIT_EXECUTABLE = 'C:/prjtools/git/ver_1.3/bin/git.exe'
-        PY_EXE = "C:/prjtools/python/ver_3.7.6_p7/python.exe"
-        CANOE_CONTROL = '_bookshelf/autotest/CANoe/CANoeControl.py'
-        CANOE_TEST_CONTROL = '_bookshelf/autotest/CANoe/CANoeTestControl.py'
-        PATH = "C:/prjtools/python/ver_3.7.6_p7/python.exe;$PATH"
-        CURL_EXE = 'C:/prjtools/git/ver_1.3/mingw64/bin/curl.exe'
-        ZIP_EXE = 'C:/prjtools/7zip/ver_1.0/App/7-Zip64/7z.exe'
-        CONFIG_READER = 'Scripts\\ConfigurationManager.py'
-        FULL_PDX_NAME = 'FL_85E907217B_XXXX_DEV_V001_E.pdx'
+        STLA_ROOT = ''   // absolute path – set dynamically in Discover Paths
+        STLA_REL  = ''   // relative path workspace→project; '' when same
+
+        // Sub-paths relative to the project root
+        REL_CANOE_CFG    = 'BVTRBS\\CVADAS_RBS_TRSC\\ME_L2H4060_DT_CVADAS_DSBus.cfg'
+        REL_SIMULATE     = 'simulate_tests.py'
+        REL_REPORT_DIR   = 'BVTRBS\\CVADAS_RBS_TRSC'
+        REL_SIM_OUT      = 'Test Reports\\simulation'
+        REL_CHECK_PORT   = 'BVTRBS\\CVADAS_RBS_TRSC\\Check_Port.py'
+        REL_CPU_PARSER   = 'BVTRBS\\CVADAS_RBS_TRSC\\CPU_Load_Graph_Parser.py'
+        REL_ARG_PARSER   = 'config\\Jenkins\\arg_parser.py'
+
+        // JUnit test results pattern – uses ** so it resolves correctly
+        // whether the project root is the workspace root or a subdirectory.
+        JUNIT_PATTERN    = '**/BVTRBS/CVADAS_RBS_TRSC/*_jenkins.xml'
+
+        // Non-path constants
+        FLASH_TIMEOUT_S  = '3000'
+        BVT_TIMEOUT_S    = '30000'
+        TEST_TIMEOUT_S   = '4500'
+
+        // Project-specific constants (preserved from Jenkinsfile_BVT)
+        FULL_PDX_NAME    = 'FL_85E907217B_XXXX_DEV_V001_E.pdx'
         // CT server path that supplies Python support files needed by CANoe
-        CT_PYTHON_SRC = 'C:\\JS\\CT_Server_Standard_files_Continous_Testing\\python'
-        SED_EXE = 'C:/prjtools/git/ver_1.3/usr/bin/sed.exe'
-        DIR_CYGWIN = 'C:\\prjtools\\cygwin\\ver_2.8.2\\bin'
-        JENKINS_URL = "https://eahubjenkins02.magna.global:8443/view/L2H4060/job"
-        // STLA_ROOT is set dynamically in Discover Paths
-        STLA_ROOT = ''
+        CT_PYTHON_SRC    = 'C:\\JS\\CT_Server_Standard_files_Continous_Testing\\python'
+        JENKINS_URL      = 'https://eahubjenkins02.magna.global:8443/view/L2H4060/job'
     }
-    agent {
-        label params.buildMachine
-    }
-   // triggers {
-   //     cron(env.BRANCH_NAME == 'develop' ? '00 18 * * *' : '')
-   // }
+
     options {
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '15', artifactNumToKeepStr: '5'))
         timeout(time: 3, unit: 'HOURS')
-        buildDiscarder(logRotator(numToKeepStr: '15', artifactNumToKeepStr: '5'))
+        disableConcurrentBuilds()
+        timestamps()
     }
+
+    parameters {
+        string(
+            name:         'ReleaseBuild',
+            defaultValue: 'main',
+            description:  'Branch or tag name being tested.'
+        )
+        booleanParam(
+            name:         'SIMULATE',
+            defaultValue: true,
+            description:  'Generate a simulated test report from vTestStudio definitions. ' +
+                          'Runs on windows-agent only – no bench hardware required. ' +
+                          'Provides a pre-flight report before a bench run.'
+        )
+        booleanParam(
+            name:         'RUN_ON_BENCH',
+            defaultValue: true,
+            description:  'Run bench stages (Flash, BVT, SWQT Tests). ' +
+                          'Uncheck for a simulation-only build.'
+        )
+        booleanParam(
+            name:         'flashTarget',
+            defaultValue: true,
+            description:  'Flash the ECU with bootloader / application binaries before testing.'
+        )
+        booleanParam(
+            name:         'enableBVT',
+            defaultValue: true,
+            description:  'Execute Sanity / Build Verification Test after flashing.'
+        )
+        booleanParam(
+            name:         'enableQuickSanity',
+            defaultValue: false,
+            description:  'Execute PR_Sanity (quick smoke) test unit.'
+        )
+        booleanParam(
+            name:         'enableRobustness',
+            defaultValue: false,
+            description:  'Execute Robustness (Stress) test unit.'
+        )
+        booleanParam(
+            name:         'CPU_Load_Test',
+            defaultValue: true,
+            description:  'Execute CPU Load test unit and parse results.'
+        )
+        booleanParam(
+            name:         'SKIP_TEST_SUITE',
+            defaultValue: false,
+            description:  'Stop after BVT without running the full SWQT test suite.'
+        )
+        choice(
+            name:         'buildMachine',
+            choices:      ['L2H4060_SWTest', 'windows-bench'],
+            description:  'Jenkins agent label for all bench stages (Flash, BVT, SWQT, Reports). ' +
+                          'Must match a configured node in Manage Jenkins → Nodes. ' +
+                          'L2H4060_SWTest is the dedicated CVADAS bench PC.'
+        )
+        string(
+            name:         'upstreamJobName',
+            defaultValue: 'L2H4060/job/L2H4060_BS_branches/job/L2H4060_Software/job',
+            description:  'Full Jenkins job path of the upstream build that triggered this test run. ' +
+                          'Informational – surfaced in the build log for traceability.'
+        )
+        string(
+            name:         'BuildNumber',
+            defaultValue: '251',
+            description:  'Upstream build number under test. Required when triggered manually.'
+        )
+        string(
+            name:         'Mail_To',
+            defaultValue: 'Kevin.Delong@magna.com Azharul.Haque@magna.com saibhargav.thottempudi@magna.com gopinath.ramanathan@magna.com',
+            description:  'Space-separated list of email recipients for build notifications.'
+        )
+    }
+
+    // =========================================================================
     stages {
+
+        // ---------------------------------------------------------------------
+        stage('Checkout') {
+        // ---------------------------------------------------------------------
+            steps {
+                cleanWs()
+                checkout scm
+                echo "Branch        : ${env.BRANCH_NAME ?: params.ReleaseBuild}"
+                echo "Commit        : ${env.GIT_COMMIT}"
+                echo "Bench node    : ${params.buildMachine}"
+                echo "Upstream job  : ${params.upstreamJobName}"
+                echo "Build number  : ${params.BuildNumber}"
+            }
+        }
+
+        // ---------------------------------------------------------------------
         stage('checkBuildEnvironment') {
+        // ---------------------------------------------------------------------
+        // Validates the bench node environment (CANoe version, shared library
+        // presence, config package) using the setEnvironment shared-library
+        // helper.  Mirrors the first stage in Jenkinsfile_BVT so that
+        // environment problems are caught before any bench hardware is used.
+        // Runs on the bench node so the same toolchain is validated.
+        // ---------------------------------------------------------------------
+            when { expression { params.RUN_ON_BENCH == true } }
+            agent { label params.buildMachine }
             steps {
                 script {
-                    setEnvironment.executecheckBuildEnv(configPackageJsonPath: "config/Packager/config_package.json")
+                    setEnvironment.executecheckBuildEnv(
+                        configPackageJsonPath: 'config/Packager/config_package.json'
+                    )
                 }
             }
         }
 
+        // ---------------------------------------------------------------------
         stage('Discover Paths') {
         // ---------------------------------------------------------------------
         // 1. Discovers the project root by looking for a sentinel file that
@@ -118,29 +230,22 @@ pipeline {
         //    (present in every valid checkout of this repository)
         //
         //    Priority order:
-        //      a) Workspace root itself (most common: repo checked out directly)
+        //      a) Workspace root (most common: repo checked out directly)
         //      b) First immediate subdirectory containing the sentinel
         //         (covers multi-repo workspaces)
         //      c) Workspace root as last-resort fallback
         //
-        // 2. Derives every sub-path used by downstream stages so nothing is
-        //    hardcoded elsewhere in the pipeline.
-        // 3. Echoes a directory-hierarchy summary for easy log reading.
+        // 2. Resolves external tools (CANoe64, t32rem, OdxPdxFlasher) via PATH.
+        // 3. Warns about missing node variables before consuming bench time.
         //
-        // NOTE: fileExists() is unreliable with absolute Windows paths on some
-        // Jenkins versions.  All existence checks use bat(returnStatus:true)
-        // with "if not exist" which is always correct on Windows.
-        // The workspace path is injected into PowerShell via withEnv to avoid
-        // special-character escaping issues.
+        // NOTE: The workspace path is injected into PowerShell via withEnv to
+        // avoid special-character escaping issues and to avoid relying on
+        // $env:WORKSPACE being present in the PowerShell environment (behaviour
+        // varies by Jenkins version).  All existence checks use bat(returnStatus)
+        // because fileExists() is unreliable with absolute paths on Windows.
         // ---------------------------------------------------------------------
             steps {
                 script {
-                    // Pre-initialise to workspace-based defaults so that
-                    // post.always blocks have valid (non-empty) values even
-                    // if this stage fails before env.STLA_ROOT is set.
-                    env.REPORT_DIR_FULL = "${env.WORKSPACE}\\BVTRBS\\CVADAS_RBS_TRSC"
-                    env.SIM_OUT_FULL    = "${env.WORKSPACE}\\Test Reports\\simulation"
-                    env.STLA_REL        = ''
 
                     def wsPath   = env.WORKSPACE
                     // Sentinel file that uniquely identifies the project root.
@@ -193,314 +298,504 @@ if ($match) { Write-Output $match.FullName }
 
                     env.STLA_ROOT = projectRoot
                     env.STLA_REL  = projectRel
+                    echo "STLA_ROOT        : ${env.STLA_ROOT}"
+                    echo "STLA_REL         : ${env.STLA_REL ?: '(workspace root)'}"
 
-                    // Derive all sub-paths from STLA_ROOT (single source of truth)
-                    env.REPORT_DIR_FULL = "${env.STLA_ROOT}\\BVTRBS\\CVADAS_RBS_TRSC"
-                    env.SIM_OUT_FULL    = "${env.STLA_ROOT}\\Test Reports\\simulation"
+                    // Derive full paths
+                    env.CANOE_CFG_FULL  = "${env.STLA_ROOT}\\${env.REL_CANOE_CFG}"
+                    env.REPORT_DIR_FULL = "${env.STLA_ROOT}\\${env.REL_REPORT_DIR}"
+                    env.SIM_OUT_FULL    = "${env.STLA_ROOT}\\${env.REL_SIM_OUT}"
+                    echo "CANoe cfg        : ${env.CANOE_CFG_FULL}"
+                    echo "Report dir       : ${env.REPORT_DIR_FULL}"
 
-                    echo """
-======================================================
-  Project Root Discovery
-======================================================
-  STLA_ROOT : ${env.STLA_ROOT}
-  STLA_REL  : ${env.STLA_REL ?: '(workspace root)'}
-  |
-  +-- BVTRBS\\CVADAS_RBS_TRSC\\
-  |     CANoe config + hardware test reports
-  |     -> ${env.REPORT_DIR_FULL}
-  |
-  +-- Test Reports\\simulation\\
-  |     Simulation output  (JUnit XML + HTML summary)
-  |     -> ${env.SIM_OUT_FULL}
-  |
-  +-- config\\Jenkins\\
-  |     Pipeline files (this Jenkinsfile)
-  |
-  +-- simulate_tests.py
-        Virtual bench simulation script
-======================================================"""
+                    // Resolve CANoe64.exe via Windows PATH
+                    def canoeExe = ''
+                    try {
+                        canoeExe = bat(script: '@where CANoe64.exe',
+                                       returnStdout: true).trim().readLines().first().trim()
+                    } catch (ignored) {
+                        echo "INFO: CANoe64.exe not found in PATH. " +
+                             "Add the CANoe Exec64 folder to PATH on bench PCs."
+                    }
+                    env.CANOE_EXE = canoeExe ?: ''
+                    if (canoeExe) echo "CANoe64.exe      : ${env.CANOE_EXE}"
+
+                    // Resolve t32rem.exe via Windows PATH
+                    def t32Exe = ''
+                    try {
+                        t32Exe = bat(script: '@where t32rem.exe',
+                                     returnStdout: true).trim().readLines().first().trim()
+                    } catch (ignored) {
+                        echo "INFO: t32rem.exe not found in PATH."
+                    }
+                    env.T32_EXE = t32Exe ?: ''
+
+                    // Resolve OdxPdxFlasher.exe via Windows PATH
+                    def flashExe = ''
+                    try {
+                        flashExe = bat(script: '@where OdxPdxFlasher.exe',
+                                       returnStdout: true).trim().readLines().first().trim()
+                    } catch (ignored) {
+                        echo "INFO: OdxPdxFlasher.exe not found in PATH."
+                    }
+                    env.FLASH_EXE = flashExe ?: ''
+
+                    // Warn about node variables only needed on the bench
+                    if (params.RUN_ON_BENCH && !env.POWERSUPPLY_PORT) {
+                        echo "WARNING: POWERSUPPLY_PORT not set on this node. " +
+                             "Set it in Manage Jenkins → Nodes → <node> → Environment variables."
+                    }
+
+                    echo "======================================================"
+                    echo "  STLA Discovery Summary"
+                    echo "  STLA_ROOT        : ${env.STLA_ROOT}"
+                    echo "  STLA_REL         : ${env.STLA_REL ?: '(workspace root)'}"
+                    echo "  CANoe64.exe      : ${env.CANOE_EXE      ?: '(not in PATH)'}"
+                    echo "  t32rem.exe       : ${env.T32_EXE        ?: '(not in PATH)'}"
+                    echo "  OdxPdxFlasher   : ${env.FLASH_EXE       ?: '(not in PATH)'}"
+                    echo "  POWERSUPPLY_PORT : ${env.POWERSUPPLY_PORT ?: '(not set)'}"
+                    echo "======================================================"
                 }
             }
         }
 
+        // ---------------------------------------------------------------------
         stage('Simulate Test Cases') {
         // ---------------------------------------------------------------------
-        // simulate_tests.py lives at the project root (STLA_ROOT\simulate_tests.py).
-        // It discovers vTestStudio test sequences from .vtt.export.xml files
-        // in the CANoe .run cache and generates JUnit XML + HTML reports
-        // without any ECU hardware.
+        // Runs on windows-agent – no bench hardware required.
         //
-        // Exit codes from simulate_tests.py:
-        //   0 – simulation complete (reports written; zero sequences found is
-        //       a valid first-run state when .run cache does not yet exist).
-        //   non-zero – fatal error (root directory not found, parse failure,
-        //              Python/argparse error).  Any non-zero exit marks UNSTABLE.
+        // simulate_tests.py (located at the project root):
+        //   1. Discovers test sequences from the vTestStudio .vtt.export.xml
+        //      files in the .run cache directory.
+        //   2. Writes per-suite JUnit XMLs to Test Reports\simulation\junit\.
+        //   3. Writes an HTML summary to Test Reports\simulation\.
+        //
+        // This gives stakeholders a pre-flight report of all STLA test cases
+        // before any bench time is consumed.
         // ---------------------------------------------------------------------
-            when {
-                expression { params.SIMULATE == true }
-            }
+            when { expression { params.SIMULATE == true } }
             steps {
                 script {
                     def rc = bat(
                         script: """
-                            python "%STLA_ROOT%\\simulate_tests.py" ^
+                            python "%STLA_ROOT%\\%REL_SIMULATE%" ^
                                    --root    "%STLA_ROOT%" ^
                                    --out-dir "%SIM_OUT_FULL%"
                         """,
                         returnStatus: true
                     )
                     if (rc != 0) {
-                        echo "Simulation ERROR: simulate_tests.py exited with code ${rc}. " +
-                             "Check output above for details (root not found, " +
-                             "XML parse failure, or Python/argparse error). " +
-                             "Marking build UNSTABLE."
+                        echo "Simulation WARNING: simulate_tests.py exited ${rc}. " +
+                             "Check output above. Marking build UNSTABLE."
                         currentBuild.result = 'UNSTABLE'
                     }
                 }
             }
             post {
                 always {
-                    // Use a broad glob so the path resolves whether STLA_ROOT is
-                    // a subfolder of the workspace or the workspace root itself.
                     junit(
-                        testResults:       '**/simulation/junit/*.xml',
-                        allowEmptyResults: true
+                        testResults:       '**/Test Reports/simulation/junit/*.xml',
+                        allowEmptyResults: true,
+                        keepLongStdio:     true
                     )
                     archiveArtifacts(
                         artifacts:         '**/Test Reports/simulation/**/*',
                         allowEmptyArchive: true
                     )
+                    publishHTML(target: [
+                        allowMissing:          true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll:               true,
+                        reportDir:             env.SIM_OUT_FULL,
+                        reportFiles:           'simulation_report.html',
+                        reportName:            'STLA Simulation Report',
+                        reportTitles:          'STLA CVADAS Simulated Test Results'
+                    ])
                 }
             }
         }
 
-        stage('flashTarget') {
+        // ---------------------------------------------------------------------
+        stage('Flash ECU') {
+        // ---------------------------------------------------------------------
+        // Flashes the ADAS ECU using the CANoe Flashing test unit, which drives
+        // OdxPdxFlasher via the CANoe automation interface.
+        //
+        // CANoe test unit: 'Flashing'
+        // CANoe cfg      : CANOE_CFG_FULL (resolved in Discover Paths)
+        //
+        // Skipped when flashTarget=false or RUN_ON_BENCH=false.
+        // ---------------------------------------------------------------------
             when {
                 allOf {
-                    expression { params.RUN_ON_BENCH == true }
-                    expression { params.flashTarget == true }
+                    expression { params.RUN_ON_BENCH  == true }
+                    expression { params.flashTarget   == true }
                 }
             }
+            agent { label params.buildMachine }
             steps {
-                echo 'Flash Target stage triggered'
+                echo "======================================================"
+                echo "  Flash ECU – CANoe test unit: Flashing"
+                echo "  CANoe cfg : ${env.CANOE_CFG_FULL}"
+                echo "  Timeout   : ${env.FLASH_TIMEOUT_S} s"
+                echo "======================================================"
                 sleep 20
                 script {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        qualityGate.executeCANoeTest(CANoeCFGFileName: 'BVTRBS\\CVADAS_RBS_TRSC\\ME_L2H4060_DT_CVADAS_DSBus.cfg',
-                        CANoeTestUnitNames: 'Flashing', timeouts: """${params.flashingTimeout}""")
+                        qualityGate.executeCANoeTest(
+                            CANoeCFGFileName:    env.CANOE_CFG_FULL,
+                            CANoeTestUnitNames: 'Flashing',
+                            timeouts:            env.FLASH_TIMEOUT_S
+                        )
                     }
                 }
             }
         }
 
-        stage('executeBVT') {
+        // ---------------------------------------------------------------------
+        stage('BVT – Sanity') {
+        // ---------------------------------------------------------------------
+        // Build Verification Test using the CANoe Sanity test unit.
+        // Validates that the ECU is alive and communicating after flashing.
+        // Aborts the pipeline if the ECU is unresponsive.
+        //
+        // Also checks the bench power-supply COM port (pyserial) when
+        // POWERSUPPLY_PORT is set on the agent node.
+        //
+        // CANoe test unit: 'Sanity'
+        // Skipped when enableBVT=false or RUN_ON_BENCH=false.
+        // ---------------------------------------------------------------------
             when {
                 allOf {
                     expression { params.RUN_ON_BENCH == true }
-                    expression { params.enableBVT == true }
+                    expression { params.enableBVT    == true }
                 }
             }
+            agent { label params.buildMachine }
             steps {
+                echo "======================================================"
+                echo "  BVT – Sanity"
+                echo "  COM port : ${env.POWERSUPPLY_PORT ?: '(not set)'}"
+                echo "======================================================"
+
+                // COM port reachability check (pyserial)
+                bat """
+                    python -c "
+import sys, os
+try:
+    import serial
+except ImportError:
+    print('BVT COM CHECK SKIP: pyserial not installed')
+    sys.exit(0)
+port = os.environ.get('POWERSUPPLY_PORT', '')
+if not port:
+    print('BVT COM CHECK SKIP: POWERSUPPLY_PORT not set')
+    sys.exit(0)
+try:
+    s = serial.Serial(port, 9600, timeout=2)
+    s.close()
+    print('BVT COM CHECK PASS: port reachable -', port)
+except Exception as e:
+    print('BVT COM CHECK FAIL:', e)
+    sys.exit(1)
+"
+                """
+
+                // CANoe Sanity test unit
                 script {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        qualityGate.executeCANoeTest(CANoeCFGFileName: 'BVTRBS\\CVADAS_RBS_TRSC\\ME_L2H4060_DT_CVADAS_DSBus.cfg',
-                        CANoeTestUnitNames: 'Sanity', timeouts: """${params.BVTTimeout}""")
+                        qualityGate.executeCANoeTest(
+                            CANoeCFGFileName:    env.CANOE_CFG_FULL,
+                            CANoeTestUnitNames: 'Sanity',
+                            timeouts:            env.BVT_TIMEOUT_S
+                        )
                     }
+                }
+            }
+            post {
+                failure {
+                    echo "BVT FAILED – check ECU power, CAN/ETH wiring, and T32 probe."
                 }
             }
         }
 
-        stage('QuickSanity') {
+        // ---------------------------------------------------------------------
+        stage('Quick Sanity (PR)') {
+        // ---------------------------------------------------------------------
+        // Lightweight smoke test for pull-request / PR-gated builds.
+        // CANoe test unit: 'PR_Sanity'
+        // Skipped unless enableQuickSanity=true.
+        // ---------------------------------------------------------------------
             when {
                 allOf {
-                    expression { params.RUN_ON_BENCH == true }
+                    expression { params.RUN_ON_BENCH      == true }
                     expression { params.enableQuickSanity == true }
                 }
             }
+            agent { label params.buildMachine }
             steps {
                 script {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        qualityGate.executeCANoeTest(CANoeCFGFileName: 'BVTRBS\\CVADAS_RBS_TRSC\\ME_L2H4060_DT_CVADAS_DSBus.cfg',
-                        CANoeTestUnitNames: 'PR_Sanity', timeouts: """${params.flashingTimeout}""")
+                        qualityGate.executeCANoeTest(
+                            CANoeCFGFileName:    env.CANOE_CFG_FULL,
+                            CANoeTestUnitNames: 'PR_Sanity',
+                            timeouts:            env.FLASH_TIMEOUT_S
+                        )
                     }
                 }
             }
         }
 
-        stage('Robustness') {
+        // ---------------------------------------------------------------------
+        stage('SWQT Test Suite') {
+        // ---------------------------------------------------------------------
+        // Full Software Qualification Test suite.
+        // Launches CANoe with the CVADAS configuration and runs all test modules.
+        //
+        // CANoe flags:
+        //   /Start          – open the project
+        //   /RunTestModules – run all configured test modules
+        //   /Quit           – close when the run finishes
+        //
+        // Skipped when RUN_ON_BENCH=false OR SKIP_TEST_SUITE=true.
+        // ---------------------------------------------------------------------
             when {
                 allOf {
-                    expression { params.RUN_ON_BENCH == true }
+                    expression { params.RUN_ON_BENCH    == true  }
+                    expression { params.SKIP_TEST_SUITE == false }
+                }
+            }
+            agent { label params.buildMachine }
+            steps {
+                script {
+                    if (!env.CANOE_EXE) {
+                        error "SWQT Test Suite: CANoe64.exe not found in PATH on ${env.NODE_NAME}. " +
+                              "Add the CANoe Exec64 folder to PATH on this bench PC."
+                    }
+                }
+                echo "Launching CANoe SWQT test suite…"
+                bat """
+                    if exist "%REPORT_DIR_FULL%" (
+                        del /Q /F "%REPORT_DIR_FULL%\\*.xml" 2>NUL
+                    ) else (
+                        mkdir "%REPORT_DIR_FULL%"
+                    )
+                """
+                bat """
+                    "%CANOE_EXE%" /Start ^
+                                  /RunTestModules ^
+                                  /Quit ^
+                                  "%CANOE_CFG_FULL%"
+                """
+                echo "CANoe SWQT run complete."
+            }
+            post {
+                always {
+                    junit(
+                        testResults:       env.JUNIT_PATTERN,
+                        allowEmptyResults: true,
+                        keepLongStdio:     true
+                    )
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Robustness') {
+        // ---------------------------------------------------------------------
+        // Robustness / stress test – runs the CANoe Robustness test unit.
+        // Opt-in: skipped unless enableRobustness=true.
+        // ---------------------------------------------------------------------
+            when {
+                allOf {
+                    expression { params.RUN_ON_BENCH     == true }
                     expression { params.enableRobustness == true }
                 }
             }
+            agent { label params.buildMachine }
             steps {
                 script {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        qualityGate.executeCANoeTest(CANoeCFGFileName: 'BVTRBS\\CVADAS_RBS_TRSC\\ME_L2H4060_DT_CVADAS_DSBus.cfg',
-                        CANoeTestUnitNames: 'Robustness', timeouts: """${params.BVTTimeout}""")
+                        qualityGate.executeCANoeTest(
+                            CANoeCFGFileName:    env.CANOE_CFG_FULL,
+                            CANoeTestUnitNames: 'Robustness',
+                            timeouts:            env.BVT_TIMEOUT_S
+                        )
                     }
                 }
             }
         }
 
-        stage('CPU_Load_Test') {
+        // ---------------------------------------------------------------------
+        stage('CPU Load Test') {
+        // ---------------------------------------------------------------------
+        // Runs the CANoe CPU_Load_Test unit then parses the output log with
+        // CPU_Load_Graph_Parser.py to produce per-core graphs and an HTML
+        // report flagging any core that exceeds 80 % load.
+        //
+        // Skipped when CPU_Load_Test=false or RUN_ON_BENCH=false.
+        // ---------------------------------------------------------------------
             when {
                 allOf {
-                    expression { params.RUN_ON_BENCH == true }
+                    expression { params.RUN_ON_BENCH  == true }
                     expression { params.CPU_Load_Test == true }
                 }
             }
+            agent { label params.buildMachine }
             steps {
+                // Execute CANoe CPU load test unit
                 script {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        qualityGate.executeCANoeTest(CANoeCFGFileName: 'BVTRBS\\CVADAS_RBS_TRSC\\ME_L2H4060_DT_CVADAS_DSBus.cfg',
-                        CANoeTestUnitNames: 'CPU_Load_Test', timeouts: """${params.BVTTimeout}""")
+                        qualityGate.executeCANoeTest(
+                            CANoeCFGFileName:    env.CANOE_CFG_FULL,
+                            CANoeTestUnitNames: 'CPU_Load_Test',
+                            timeouts:            env.BVT_TIMEOUT_S
+                        )
+                    }
+                }
+                // Parse CPU load log and generate graphs + HTML report
+                bat "python \"%STLA_ROOT%\\%REL_CPU_PARSER%\""
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Aggregate Reports') {
+        // ---------------------------------------------------------------------
+        // Collects all CANoe XML reports, runs the arg_parser.py post-processor,
+        // and publishes the consolidated HTML report.
+        //
+        // Runs when bench stages executed, regardless of test outcome.
+        // ---------------------------------------------------------------------
+            when { expression { params.RUN_ON_BENCH == true } }
+            agent { label params.buildMachine }
+            steps {
+                // Copy CT server Python support files into the report directory
+                // (mirrors the xcopy in Jenkinsfile_BVT; OK to fail if path absent)
+                bat """
+                    xcopy /E /I /Y "%CT_PYTHON_SRC%" "%REPORT_DIR_FULL%" || exit 0
+                """
+                bat """
+                    python "%STLA_ROOT%\\%REL_ARG_PARSER%"
+                """
+            }
+            post {
+                always {
+                    publishHTML(target: [
+                        allowMissing:          true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll:               true,
+                        reportDir:             env.REPORT_DIR_FULL,
+                        reportFiles:           'index.html',
+                        reportName:            'STLA CVADAS SWQT Report',
+                        reportTitles:          'L2H4060 CVADAS SWQT Results'
+                    ])
+                    archiveArtifacts(
+                        artifacts:         '**/BVTRBS/CVADAS_RBS_TRSC/*.html,' +
+                                           '**/BVTRBS/CVADAS_RBS_TRSC/*.xml,' +
+                                           '**/BVTRBS/CVADAS_RBS_TRSC/*.jpg,' +
+                                           '**/BVTRBS/CVADAS_RBS_TRSC/*.txt,' +
+                                           '**/BVTRBS/CVADAS_RBS_TRSC/**/*.gif,' +
+                                           '**/BVTRBS/CVADAS_RBS_TRSC/**/*.avi,' +
+                                           '**/BVTRBS/CVADAS_RBS_TRSC/**/*.png,' +
+                                           '**/BVTRBS/CVADAS_RBS_TRSC/**/*.csv,' +
+                                           '**/Software_Test_Report.html',
+                        allowEmptyArchive: true
+                    )
+                    junit(
+                        testResults:       env.JUNIT_PATTERN,
+                        allowEmptyResults: true,
+                        healthScaleFactor: 1.0
+                    )
+                    script {
+                        def rp = env.STLA_REL ? "${env.STLA_REL}/" : ''
+                        qualityGate.executerecordCANoeTestResult(
+                            CanoeTestReportName:  'Report_*',
+                            CanoeTestReportsPath: "${rp}BVTRBS/CVADAS_RBS_TRSC"
+                        )
                     }
                 }
             }
         }
 
-        stage('Parse Data') {
-            when {
-                expression { params.RUN_ON_BENCH == true }
-            }
-            steps {
-                script {
-                    def pythonPath = "python"
-                    def scriptPath = "${env.STLA_ROOT}\\config\\Jenkins\\arg_parser.py"
-                    // Copy CT server Python support files into the report directory.
-                    // Repeated in post.always as a safety net in case this stage fails.
-                    bat """
-                    xcopy /E /I /Y "%CT_PYTHON_SRC%" "%REPORT_DIR_FULL%" || exit 0
-                    """
-                    bat(script: "${pythonPath} ${scriptPath}")
+    } // end stages
+    // =========================================================================
+
+    post {
+        success {
+            echo "Pipeline PASSED – all stages completed successfully."
+            script {
+                if (params.Mail_To?.trim()) {
+                    emailext(
+                        mimeType:           'text/html',
+                        body:               _emailBody(currentBuild.currentResult, env.STLA_REL ?: ''),
+                        subject:            "${JOB_NAME} : ${params.ReleaseBuild} : ${BUILD_NUMBER} – SUCCESS",
+                        to:                 params.Mail_To,
+                        attachmentsPattern: '**/Software_Test_Report.html'
+                    )
                 }
             }
         }
-    }
-
-
-post {
-    always {
-        script {
-            // Build workspace-relative path prefix.
-            // STLA_REL is '' when the project is the workspace root (most common),
-            // or 'MyFolderName' when the project lives in a subdirectory.
-            def rp = env.STLA_REL ? "${env.STLA_REL}/" : ''
-
-            // Safety-net xcopy: ensures Python support files are present even
-            // when the Parse Data stage fails or is skipped.
-            // Guard: only run when REPORT_DIR_FULL is set (non-empty) to avoid
-            // "Invalid drive specification" errors if Discover Paths failed.
-            if (params.RUN_ON_BENCH && env.REPORT_DIR_FULL?.trim()) {
-                bat """
-                xcopy /E /I /Y "%CT_PYTHON_SRC%" "%REPORT_DIR_FULL%" || exit 0
-                """
+        unstable {
+            echo "Pipeline UNSTABLE – review warnings (simulation errors, missing tools, etc.)."
+        }
+        failure {
+            echo "Pipeline FAILED – review stage logs above."
+            script {
+                if (params.Mail_To?.trim()) {
+                    emailext(
+                        mimeType:           'text/html',
+                        body:               _emailBody(currentBuild.currentResult, env.STLA_REL ?: ''),
+                        subject:            "${JOB_NAME} : ${params.ReleaseBuild} : ${BUILD_NUMBER} – FAILED",
+                        to:                 params.Mail_To,
+                        attachmentsPattern: '**/Software_Test_Report.html'
+                    )
+                }
             }
-
-            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true,
-                         keepAll: false,
-                         reportDir:   "${rp}BVTRBS/CVADAS_RBS_TRSC",
-                         reportFiles: 'index.html',
-                         reportName:  'L2H4060 CVADAS SWQT Report',
-                         reportTitles: 'SWQT results'])
-
-            archiveArtifacts allowEmptyArchive: true,
-                artifacts: "${rp}BVTRBS/CVADAS_RBS_TRSC/*.html"
-            archiveArtifacts allowEmptyArchive: true,
-                artifacts: "${rp}BVTRBS/CVADAS_RBS_TRSC/*.xml"
-            archiveArtifacts allowEmptyArchive: true,
-                artifacts: "${rp}BVTRBS/CVADAS_RBS_TRSC/*.jpg"
-            archiveArtifacts allowEmptyArchive: true,
-                artifacts: "${rp}BVTRBS/CVADAS_RBS_TRSC/*.txt"
-            archiveArtifacts allowEmptyArchive: true,
-                artifacts: "${rp}BVTRBS/CVADAS_RBS_TRSC/**/*.gif," +
-                           "${rp}BVTRBS/CVADAS_RBS_TRSC/**/*.avi," +
-                           "${rp}BVTRBS/CVADAS_RBS_TRSC/**/*.png," +
-                           "${rp}BVTRBS/CVADAS_RBS_TRSC/**/*.csv"
-            archiveArtifacts allowEmptyArchive: true,
-                artifacts: '**/Software_Test_Report.html'
-
-            junit allowEmptyResults: true, healthScaleFactor: 1.0,
-                testResults: "${rp}BVTRBS/CVADAS_RBS_TRSC/*_jenkins.xml"
-
-            qualityGate.executerecordCANoeTestResult(
-                CanoeTestReportName:  "Report_*",
-                CanoeTestReportsPath: "${rp}BVTRBS/CVADAS_RBS_TRSC"
-            )
         }
-        catchError(buildResult: currentBuild.currentResult, stageResult: 'SUCCESS') {
-            cleanWs(disableDeferredWipeout: true)
-        }
-    }
-
-    failure {
-        script {
-            def emailBody = generateEmailBody(currentBuild.currentResult, env.STLA_REL ?: '')
-            emailext (
-                mimeType: 'text/html',
-                attachmentsPattern: "**/Software_Test_Report.html",
-                body: emailBody,
-                subject: "${JOB_NAME} : ${params.ReleaseBuild} : ${BUILD_NUMBER} Result : FAILED",
-                to: "${params.Mail_To}",
-                replyTo: "${to_users}"
-            )
-        }
-    }
-
-    success {
-        script {
-            def emailBody = generateEmailBody(currentBuild.currentResult, env.STLA_REL ?: '')
-            emailext (
-                mimeType: 'text/html',
-                attachmentsPattern: "**/Software_Test_Report.html",
-                body: emailBody,
-                subject: "${JOB_NAME} : ${params.ReleaseBuild} : ${BUILD_NUMBER} Result : SUCCESS",
-                to: "${params.Mail_To}",
-                replyTo: "${to_users}"
-            )
+        always {
+            echo "Build: ${env.JOB_NAME} #${env.BUILD_NUMBER} | Result: ${currentBuild.currentResult}"
         }
     }
 }
-}
 
-def generateEmailBody(String status, String relPath = '') {
+// =============================================================================
+// Helper – HTML e-mail body
+// relPath: value of STLA_REL ('' when project root == workspace root)
+// =============================================================================
+def _emailBody(String status, String relPath = '') {
     def color = (status == 'SUCCESS') ? 'green' : 'red'
     def rp    = relPath ? "${relPath}/" : ''
     return """<!DOCTYPE html>
 <html>
 <head>
-    <style>
-        body { font-family: Arial, sans-serif; color: #333; }
-        h2 { color: #0073e6; }
-        .status { font-size: 16px; font-weight: bold; padding: 8px; color: white;
-                  background-color: ${color}; }
-        .report-link { font-size: 14px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f4f4f4; }
-        .container { padding: 20px; }
-    </style>
+  <style>
+    body  { font-family: Arial, sans-serif; color: #333; }
+    h2    { color: #0073e6; }
+    .status { font-size:16px; font-weight:bold; padding:8px; color:white; background-color:${color}; }
+    .report-link { font-size:14px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th,td { padding:10px; text-align:left; border-bottom:1px solid #ddd; }
+    th    { background-color:#f4f4f4; }
+    .container { padding:20px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Jenkins Build Report: L2H4060 CVADAS BEV SWQT</h2>
-        <p class="status">Build Status: ${status}</p>
-
-        <table>
-            <tr><th>Build Number</th><td>${BUILD_NUMBER}</td></tr>
-            <tr><th>Test Job</th><td>${JOB_NAME}</td></tr>
-            <tr><th>Release Build</th><td>${params.ReleaseBuild}</td></tr>
-            <tr><th>Upstream Build</th><td>${params.upstreamJobName} #${params.BuildNumber}</td></tr>
-            <tr><th>Execution Report</th><td><a href="${BUILD_URL}">View Build Logs</a></td></tr>
-            <tr><th>Live Console</th><td><a href="${BUILD_URL}console">View Live Console</a></td></tr>
-            <tr><th>Software Test Report</th><td><a href="${BUILD_URL}artifact/${rp}BVTRBS/CVADAS_RBS_TRSC/Software_Test_Report.html">View Test Report</a></td></tr>
-        </table>
-
-        <p>For any issues, please contact <a href="mailto:Kevin.Delong@magna.com">Kevin Delong</a>.</p>
-        <p>Regards,<br>Jenkins</p>
-    </div>
+  <div class="container">
+    <h2>Jenkins Build Report: L2H4060 CVADAS BEV SWQT</h2>
+    <p class="status">Build Status: ${status}</p>
+    <table>
+      <tr><th>Build Number</th><td>${BUILD_NUMBER}</td></tr>
+      <tr><th>Test Job</th><td>${JOB_NAME}</td></tr>
+      <tr><th>Release Build</th><td>${params.ReleaseBuild}</td></tr>
+      <tr><th>Upstream Build</th><td>${params.upstreamJobName} #${params.BuildNumber}</td></tr>
+      <tr><th>Execution Report</th><td><a href="${BUILD_URL}">View Build Logs</a></td></tr>
+      <tr><th>Live Console</th><td><a href="${BUILD_URL}console">View Live Console</a></td></tr>
+      <tr><th>Software Test Report</th>
+          <td><a href="${BUILD_URL}artifact/${rp}BVTRBS/CVADAS_RBS_TRSC/Software_Test_Report.html">View Test Report</a></td></tr>
+    </table>
+    <p>For any issues, please contact <a href="mailto:Kevin.Delong@magna.com">Kevin Delong</a>.</p>
+    <p>Regards,<br>Jenkins</p>
+  </div>
 </body>
 </html>""".stripIndent()
 }
