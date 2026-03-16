@@ -393,6 +393,14 @@ _JENKINS_CONFIG_T32_REL = (
     / 'config.t32'
 )
 
+#: Directives that must appear in config.t32 (key only; value is validated
+#: separately for PORT and PACKLEN).
+_REQUIRED_CONFIG_T32_KEYS: List[str] = [
+    'RCL',
+    'PORT',
+    'PACKLEN',
+]
+
 _CONFIG_T32_KV_RE = re.compile(r'^([A-Z_]+)=(.*)$')
 
 
