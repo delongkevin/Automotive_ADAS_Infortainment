@@ -1,0 +1,9 @@
+<map id="A_CAN_SaveLogDataToCSVFile" name="A_CAN_SaveLogDataToCSVFile">
+<area shape="rect" id="node1" title="Function that executes the action to save in a CSV file, the specified number of log entries from the..." alt="" coords="5,70,216,97"/>
+<area shape="rect" id="node2" href="$group__c_c_a_n.html#ga040061195ad669b9c4cbd35466e84b30" title="Function that saves in a CSV file, the specified number of log entries from the already populated CAL..." alt="" coords="264,45,495,71"/>
+<area shape="rect" id="node7" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="275,95,484,122"/>
+<area shape="rect" id="node3" href="$group__c_c_o_n_v_data_conversion.html#ga04fdfabf3f2093239d85ed91dd3e9aa7" title="Converts the exactly number of bytes(given in aByteDLC) from a byte array to a hex encoded strings ar..." alt="" coords="543,5,749,47"/>
+<area shape="rect" id="node4" href="$group__b_r_e_a_d_f_i_l_e.html#ga0ee1e356841c101f35410c53ac673b12" title=" " alt="" coords="551,71,741,112"/>
+<area shape="rect" id="node5" href="$group__b_r_e_a_d_f_i_l_e.html#ga4e260ee8c583989b29bca4d6805bc26a" title="This function opens a file for writing in it." alt="" coords="797,53,1047,79"/>
+<area shape="rect" id="node6" href="$group__b_r_e_a_d_f_i_l_e.html#ga97224209c746e60365544f0fbdaa113b" title="This function write a string in a specific file, given by a file handler." alt="" coords="831,103,1013,130"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="vFctn_TestMainPanel_LoadConf" name="vFctn_TestMainPanel_LoadConf">
+<area shape="rect" id="node1" title=" " alt="" coords="5,71,152,112"/>
+<area shape="rect" id="node2" href="$group__b_r_e_a_d_f_i_l_e.html#ga2b527d8836b7a18e4deb97b756fc6314" title="Function opens an ini file and reads a string entry." alt="" coords="215,5,414,47"/>
+<area shape="rect" id="node3" href="$group__b_r_e_a_d_f_i_l_e.html#ga99f88f9d1b1e898e2c9c6b7b2419f707" title="Function opens an ini file and writes a number entry." alt="" coords="200,71,429,112"/>
+<area shape="rect" id="node4" href="$group__b_r_e_a_d_f_i_l_e.html#gaa2f411dcf05539923bc880e7732d47a9" title="Function opens an ini file and reads a number entry." alt="" coords="217,136,412,177"/>
+</map>

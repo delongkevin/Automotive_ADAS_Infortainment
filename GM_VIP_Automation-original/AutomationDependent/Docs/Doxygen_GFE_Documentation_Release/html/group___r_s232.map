@@ -1,0 +1,8 @@
+<map id="RS232" name="RS232">
+<area shape="rect" id="node1" title=" " alt="" coords="120,80,181,105"/>
+<area shape="rect" id="node2" href="$group__b_r_s232.html" title=" " alt="" coords="252,5,320,31"/>
+<area shape="rect" id="node3" href="$group__b_r_s232_receive.html" title=" " alt="" coords="229,55,343,80"/>
+<area shape="rect" id="node5" href="$group__bc_r_s232.html" title=" " alt="" coords="249,104,323,129"/>
+<area shape="rect" id="node6" href="$group__bv_r_s232.html" title=" " alt="" coords="249,153,323,179"/>
+<area shape="rect" id="node4" href="$group__base_lib.html" title=" " alt="" coords="5,80,72,105"/>
+</map>

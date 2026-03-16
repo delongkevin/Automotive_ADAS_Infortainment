@@ -1,0 +1,5 @@
+<map id="A_CAN_StopLoggingMessages" name="A_CAN_StopLoggingMessages">
+<area shape="rect" id="node1" title="Function that executes the action to disable the CAN message logging mechanism (disabling the logging..." alt="" coords="5,31,209,57"/>
+<area shape="rect" id="node2" href="$group__c_c_a_n.html#ga6fc290c07cfb6bbc2aa376ef67351acb" title="Function that disables the CAN message logging mechanism (disabling the logging functionality is only..." alt="" coords="257,5,481,32"/>
+<area shape="rect" id="node3" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="265,56,474,83"/>
+</map>

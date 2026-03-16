@@ -1,0 +1,4 @@
+<map id="A_DIAG_SendPrimitiveData" name="A_DIAG_SendPrimitiveData">
+<area shape="rect" id="node1" title="Function that modify all of the primitive data, of a provided diag request, send it with the data fro..." alt="" coords="5,13,188,39"/>
+<area shape="rect" id="node2" href="$group__c_c_o_n_v_data_conversion.html#ga2834d672944e56726a28b5b491fc9719" title="Converts byte array to a hex encoded strings array." alt="" coords="236,5,443,47"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="iFctn_CAN_StopLoggingMessages" name="iFctn_CAN_StopLoggingMessages">
+<area shape="rect" id="node1" title="Function that disables the CAN message logging mechanism (disabling the logging functionality is only..." alt="" coords="257,5,481,32"/>
+<area shape="rect" id="node2" href="$group__ts_c_a_n.html#gad0a1e344693cd9ac19f4c838923d5248" title="Function that executes the action to disable the CAN message logging mechanism (disabling the logging..." alt="" coords="5,5,209,32"/>
+</map>

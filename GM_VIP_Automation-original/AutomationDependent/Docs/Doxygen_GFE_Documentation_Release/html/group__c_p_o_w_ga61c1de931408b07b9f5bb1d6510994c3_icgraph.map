@@ -1,0 +1,4 @@
+<map id="bFctn_POWSelectPowerSupply" name="bFctn_POWSelectPowerSupply">
+<area shape="rect" id="node1" title="Function selects from ini file which Power Supply to set active (0, 1... 8)." alt="" coords="195,5,401,32"/>
+<area shape="rect" id="node2" href="$group__ts_p_o_w_e_r.html#gafb057f5b7ba3d0c6de4d4110d9db0a20" title="Function sets power supply voltage." alt="" coords="5,5,147,32"/>
+</map>

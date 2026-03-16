@@ -1,0 +1,39 @@
+; reset.cmm
+; Lauterbach Trace32 reset script for Infineon Aurix TC4xx
+;
+; Performs a hardware reset of the ECU and resumes execution.
+; Used as a precondition action to bring the ECU to a known starting state.
+;
+; Usage from T32 remote API:
+;   T32_API.exe "DO <absolute_path>\reset.cmm"
+;
+; Exit codes:
+;   0 - Reset completed, CPU is running.
+;   1 - Reset failed or CPU did not resume after reset.
+
+; -----------------------------------------------------------------------
+; 1. Issue a system reset (holds the CPU in reset state)
+; -----------------------------------------------------------------------
+SYStem.RESetTarget
+
+; -----------------------------------------------------------------------
+; 2. Resume execution after reset
+; -----------------------------------------------------------------------
+Go
+
+; Allow the CPU time to start up
+WAIT 500ms
+
+; -----------------------------------------------------------------------
+; 3. Verify the CPU is running after reset
+; -----------------------------------------------------------------------
+IF STATE.RUN()
+(
+  PRINT "T32 RESET PASS: CPU is running after reset."
+  ENDDO 0
+)
+ELSE
+(
+  PRINT "T32 RESET FAIL: CPU did not resume after reset. CPU state: " STATE()
+  ENDDO 1
+)

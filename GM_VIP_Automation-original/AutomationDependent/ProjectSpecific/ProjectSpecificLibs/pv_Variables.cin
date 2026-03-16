@@ -1,0 +1,18 @@
+/*@!Encoding:1252*/
+//  ====================================================
+//   MAGNA - Variable for DCU_EQ6
+//  ====================================================
+//
+//  File name: pvDCU_EQ6_Variables.cin
+//
+//  Created(DD.MM.YYYY): 29.01.2025
+//
+//  Description: Variables for DCU_EQ6 project
+//          
+//  References: This file should be included in test modules
+//  --------------------------------------------------------------------
+variables
+{
+
+}
+

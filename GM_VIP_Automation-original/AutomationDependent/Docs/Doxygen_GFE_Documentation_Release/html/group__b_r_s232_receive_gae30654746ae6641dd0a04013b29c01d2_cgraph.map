@@ -1,0 +1,4 @@
+<map id="bFctn_RS232GetData" name="bFctn_RS232GetData">
+<area shape="rect" id="node1" title="Function gets from buffer data received on RS232." alt="" coords="5,13,155,39"/>
+<area shape="rect" id="node2" href="$group__c_c_o_n_v_data_conversion.html#ga04fdfabf3f2093239d85ed91dd3e9aa7" title="Converts the exactly number of bytes(given in aByteDLC) from a byte array to a hex encoded strings ar..." alt="" coords="203,5,409,47"/>
+</map>

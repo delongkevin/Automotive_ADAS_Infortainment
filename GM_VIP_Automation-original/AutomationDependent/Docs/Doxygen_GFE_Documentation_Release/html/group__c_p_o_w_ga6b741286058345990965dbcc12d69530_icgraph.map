@@ -1,0 +1,6 @@
+<map id="lFctn_POW_ReadActualVoltage" name="lFctn_POW_ReadActualVoltage">
+<area shape="rect" id="node1" title="Function send the command (V?) for reading the voltage of the source." alt="" coords="240,78,448,105"/>
+<area shape="rect" id="node2" href="$_power_supply_8can.html#a214b46e2ae7f5e99766453037445fd9f" title=" " alt="" coords="15,5,182,47"/>
+<area shape="rect" id="node3" href="$_power_supply_8can.html#aa3a5fcccfc16e9e30a1cd1af521400f1" title=" " alt="" coords="17,71,181,112"/>
+<area shape="rect" id="node4" href="$_power_supply_8can.html#a14fdcb3fb65265d44742caed8155d579" title=" " alt="" coords="5,136,192,177"/>
+</map>

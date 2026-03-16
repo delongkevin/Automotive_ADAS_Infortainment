@@ -1,0 +1,23 @@
+/*@!Encoding:1252*/
+
+/*!
+* @defgroup tscGENERIC tscGENERIC
+* @defgroup GENERIC GENERIC
+* @ingroup testSupportLib
+* @{
+* @addtogroup tscGENERIC
+* @{
+*/ 
+
+variables
+{
+  enum debugGENERIC {tsc_eGENERICDebugOff,tsc_eGENERICDebugFuncCalls,tsc_eGENERICDebugFuncParam,tsc_eGENERICDebugFuncInternal};
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup testSupportLib
+*   \brief GENERIC test support library constants.
+*/

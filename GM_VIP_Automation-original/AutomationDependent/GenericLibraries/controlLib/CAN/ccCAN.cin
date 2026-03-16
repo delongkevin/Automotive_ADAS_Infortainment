@@ -1,0 +1,86 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup ccCAN ccCAN
+* @defgroup CAN CAN
+* @ingroup controlLib
+* @{
+* @addtogroup ccCAN
+* @{
+*/ 
+
+
+variables
+{
+  enum cc_eDebugCAN {cc_eCANDebugOff = 0,
+                     cc_eCANDebugFuncCalls = 1,
+                     cc_eCANDebugFuncParam = 2,
+                     cc_eCANDebugFuncInternal = 3
+                    };
+  
+  enum cc_eResultCAN {cc_eCAN_ERR = -1,
+                      cc_eCAN_NOK = 0,
+                      cc_eCAN_OK = 1, 
+                      cc_eCAN_ERR_BUS_CONTEXT = 2, 
+                      cc_eCAN_ERR_TIMEOUT_TOO_SMALL = 3, 
+                      cc_eCAN_ERR_NUM_EL_TOO_BIG = 4, 
+                      cc_eCAN_ERR_CAN_CHANNEL = 5,
+                      cc_eCAN_ERR_CAN_CHANNEL_UNAVAILABLE = 6, 
+                      cc_eCAN_ARRAY_NOT_SAME_SIZE = 7, 
+                      cc_eCAN_LOG_NOT_STARTED = 8,
+                      cc_eCAN_CONVERT_ERROR = 9,
+                      cc_eCAN_MSG_NO_FOUND = 10
+                      };
+  
+  enum cc_eNumbersCAN {cc_eCAN_ZERO = 0, 
+                       cc_eCAN_ONE = 1, 
+                       cc_eCAN_TWO = 2, 
+                       cc_eCAN_THREE = 3, 
+                       cc_eCAN_FOUR = 4, 
+                       cc_eCAN_FIVE = 5, 
+                       cc_eCAN_SIX = 6, 
+                       cc_eCAN_SEVEN = 7
+                       };
+  
+  enum cc_ePresentAbsentCAN {cc_eCAN_ABSENT = 0, 
+                             cc_eCAN_PRESENT = 1
+                            };
+  
+  enum cc_eStartStopLogCAN {cc_eCAN_STOPLOG =0, 
+                            cc_eCAN_STARTLOG = 1 
+                           };
+  
+  enum cc_eCanTYPE {cc_eCAN_NORMAL = 0,
+                    cc_eCAN_FD = 1
+                   };
+  
+  const byte cc_bCANMaxNumberOfBytes = 8;
+  
+  const byte cc_bCANFDMaxNumberOfBytes = 64;
+  
+  const qword cc_qwNoMaxElConverted = 100000;
+  
+  const qword cc_qwTransformNSInMS = 1000000;
+  
+  const word cc_wPrintedArrayElements = 128;
+  
+  const word cc_wMaxCANChannel = 32;
+  
+  const word cc_wDefaultTimeout = 15000;
+  
+  // This debug flag will be used to enable/disable the debug messages in all functions of the current module
+  // 0x00 - No debug messages displayed (only function calls).
+  // 0x01 - Only function call messages displayed (this will always displayed).
+  // 0x02 - Function parameter + 0x01.
+  // 0x04 - Internal function actions + 0x01 and 0x02.
+  // 0xFF - All of the above (function calls, function parameters, internal function actions).
+  const byte cc_bCAN_GlobalDebugFlag = 0x01;
+}
+
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief CAN control library constants.
+*/

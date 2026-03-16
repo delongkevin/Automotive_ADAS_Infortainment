@@ -1,0 +1,41 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup tscDIAG tscDIAG
+* @defgroup DIAGNOSTICS DIAGNOSTICS
+* @ingroup testSupportLib
+* @{
+* @addtogroup tscDIAG
+* @{
+*/ 
+
+variables
+{
+  enum tsc_eResultDIAG {tsc_eDIAG_NOK = 0, tsc_eDIAG_OK = 1};
+  
+  enum tsc_eFeatureStateDIAG {tsc_eDIAG_Disable = 0, tsc_eDIAG_Enable = 1};
+  
+  enum tsc_eErrorCodesDIAG {tsc_eDIAG_ECUTimeOut = 0, tsc_eDIAG_ResponseExpected = 1, tsc_eDIAG_ResponseNotExpected = -1};
+
+  enum tsc_eResponseCodeDIAG { tsc_eDIAG_PositiveResponse = 0, tsc_eDIAG_NoResponse = 0x03, 
+							                 tsc_eDIAG_NRC10 = 0x10, tsc_eDIAG_NRC11 = 0x11, tsc_eDIAG_NRC12 = 0x12, tsc_eDIAG_NRC13 = 0x13,
+							                 tsc_eDIAG_NRC21 = 0x21, tsc_eDIAG_NRC22 = 0x22, tsc_eDIAG_NRC24 = 0x24, 
+							                 tsc_eDIAG_NRC31 = 0x31, tsc_eDIAG_NRC33 = 0x33, tsc_eDIAG_NRC35 = 0x35, tsc_eDIAG_NRC36 = 0x36, tsc_eDIAG_NRC37 = 0x37, 
+							                 tsc_eDIAG_NRC70 = 0x70, tsc_eDIAG_NRC71 = 0x71, tsc_eDIAG_NRC72 = 0x72, tsc_eDIAG_NRC73 = 0x73, tsc_eDIAG_NRC78 = 0x78, tsc_eDIAG_NRC7E = 0x7E , tsc_eDIAG_NRC7F = 0x7F };
+
+  // This debug flag will be used to enable/disable the debug messages in all functions of the current module
+  // 0x00 - No debug messages displayed (only function calls).
+  // 0x01 - Only function call messages displayed (this will always displayed).
+  // 0x02 - Function parameter + 0x01.
+  // 0x04 - Internal function actions + 0x01 and 0x02.
+  // 0xFF - All of the above (function calls, function parameters, internal function actions).
+  const byte tscDIAG_GlobalDebugFlag = 0x01;
+}
+
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup testSupportLib
+*   \brief DIAG test support library constants.
+*/

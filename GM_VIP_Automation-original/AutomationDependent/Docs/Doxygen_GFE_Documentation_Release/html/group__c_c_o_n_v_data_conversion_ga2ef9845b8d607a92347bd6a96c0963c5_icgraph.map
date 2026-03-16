@@ -1,0 +1,6 @@
+<map id="bFctn_CONV_GetSubString" name="bFctn_CONV_GetSubString">
+<area shape="rect" id="node1" title=" " alt="" coords="517,31,701,57"/>
+<area shape="rect" id="node2" href="$group__ts_b_u_s.html#gafbda92cd873dc70c8283ad38a4d91139" title="Function that sets the context of the required bus." alt="" coords="292,5,429,32"/>
+<area shape="rect" id="node3" href="$group__c_c_a_n.html#gaca9e18a27a7905abe6fac327654c6d9b" title="Function evaluate if a can messageID is present on the bus in a specific time or not." alt="" coords="252,56,469,83"/>
+<area shape="rect" id="node4" href="$group__ts_c_a_n.html#ga53397af48f7f4f910b036733df5ee025" title="Function evaluate if a can messageID is present on the bus in a specific time or not." alt="" coords="5,56,204,83"/>
+</map>

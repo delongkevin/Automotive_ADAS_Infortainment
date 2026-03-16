@@ -1,0 +1,21 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup tscDTC tscDTC
+* @defgroup DTC DTC
+* @ingroup testSupportLib
+* @{
+* @addtogroup tscDTC
+* @{
+*/ 
+variables
+{
+  const byte tsc_bDUT_GlobalDebugFlag = 0x01;
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup testSupportLib
+*   \brief DTC test support library constants.
+*/

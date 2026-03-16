@@ -1,0 +1,59 @@
+/*@!Encoding:1252*/
+
+variables
+{
+//  ====================================================
+//   VEONEER - Diag Services definition
+//  ====================================================
+//
+//  File name: L2L3_CCU_DiagServices_Common.cin
+//
+//  Created(DD.MM.YYYY): 19.04.2022
+//
+//  Description: Common Diag services definition for L2L3_CCU
+//          
+//  References: Only the services which are present in all variants
+//  --------------------------------------------------------------------  
+/***************************************************************************************************
+ Date(DDMMYY)         Author             Change info
+  DD.MM.YY             Name           Info about updates
+----------------------------------------------------------------------------------------------------
+***************************************************************************************************/  
+ // Diag Requests  
+  
+ //Diag Response   
+  //  Sessions
+ 
+  // ECU Reset
+
+ //DIDs
+  // Stored data
+
+  /* Routine control */
+  // Fault Memory
+  /*  Tester Present */
+  /* Security Acces */
+  // Diag Requests  
+  // Diag Requests  
+  
+  // Tester Present 
+    
+  
+  // ECU Reset  
+ 
+  // Memory Access
+    
+  
+  // Security Access requests  
+  
+  // Security Access responses  
+
+  //Read Data By Identifier requests  
+  
+  
+  //Fault Memory requests  
+  
+  //Fault Memory responses  
+  
+}
+

@@ -1,0 +1,7 @@
+<map id="lFctn_DIAG_CRSendAndGetPrimitiveDataWithOffset" name="lFctn_DIAG_CRSendAndGetPrimitiveDataWithOffset">
+<area shape="rect" id="node1" title="Sends a custom request and stores the primitive data, from start position until the end of the respon..." alt="" coords="5,35,243,76"/>
+<area shape="rect" id="node2" href="$group__c_d_i_a_g.html#gaf33537b2b7e72295ae2dcd4a67c8c3ef" title=" " alt="" coords="291,5,488,47"/>
+<area shape="rect" id="node3" href="$group__c_d_i_a_g.html#ga01ad9d45aca6a04ff6b96df480595305" title="Function that sends a specific diagnostic request." alt="" coords="306,71,473,98"/>
+<area shape="rect" id="node4" href="$group__b_r_e_a_d_f_i_l_e.html#ga99b3eb9243d35ea686c5f9bb5612ebde" title="Function returns previous ini file, stored in the Default.ini file, used before stopping simulation." alt="" coords="537,42,730,69"/>
+<area shape="rect" id="node5" href="$group__b_r_e_a_d_f_i_l_e.html#gaa2f411dcf05539923bc880e7732d47a9" title="Function opens an ini file and reads a number entry." alt="" coords="536,93,731,135"/>
+</map>

@@ -1,0 +1,27 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup cvDTC cvDTC
+* @defgroup DTC DTC
+* @ingroup controlLib
+* @{
+* @addtogroup cvDTC
+* @{
+*/ 
+variables
+{
+  // struct for DTC
+  struct cv_sDTC 
+  {
+    dword dwDTCid;
+    byte bDtcStatus;
+  };  
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief Library for handling global variables needed for DTC functions.
+
+*/

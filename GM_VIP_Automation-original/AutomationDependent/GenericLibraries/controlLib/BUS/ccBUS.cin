@@ -1,0 +1,65 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup ccBUS ccBUS
+* @defgroup BUS BUS
+* @ingroup controlLib
+* @{
+* @addtogroup ccBUS
+* @{
+*/ 
+
+
+variables
+{
+  enum cc_eDebugBUS {cc_eBUSDebugOff = 0,
+                     cc_eBUSDebugFuncCalls = 1,
+                     cc_eBUSDebugFuncParam = 2,
+                     cc_eBUSDebugFuncInternal = 3
+                    };
+  
+  enum cc_eResultBUS {cc_eBUS_ERR = -1,
+                      cc_eBUS_NOK = 0, 
+                      cc_eBUS_OK = 1, 
+                      cc_eBUS_ERR_BUS_CONTEXT = 2, 
+                      cc_eBUS_ERR_SIGNAL_VALUE_WRONG = 3, 
+                      cc_eBUS_ERR_TIMEOUT = 4, 
+                      cc_eBUS_ERR_LIMITS = 5,
+                      cc_eBUS_ERR_CYCLETIME = 6,
+                      cc_eBUS_ERR_WRONG_NUMBER_BITS = 7,
+                      cc_eBUS_ERR_BYTE_ARRAY_WRONG = 8
+                      };
+  
+  enum cc_ePhysRawValuesBUS {cc_eBUS_PHYSICAL = 0, 
+                             cc_eBUS_RAW = 1
+                            };
+  
+  enum cc_eNumbersBUS {cc_eBUS_ZERO = 0, 
+                       cc_eBUS_ONE = 1, 
+                       cc_eBUS_TWO = 2, 
+                       cc_eBUS_THREE = 3, 
+                       cc_eBUS_FOUR = 4, 
+                       cc_eBUS_FIVE = 5, 
+                       cc_eBUS_SIX = 6, 
+                       cc_eBUS_SEVEN = 7
+                       };   
+  
+  enum cc_eEqualNotEqualValueBUS {cc_eBUS_NOT_EQUAL_VALUE = 0, 
+                                  cc_eBUS_EQUAL_VALUE = 1
+                                 };
+  
+  enum cc_eInsideOrOutsideRangeBUS {cc_eBUS_OutsideRange = 0,
+                                    cc_eBUS_InsideRange = 1
+                                   };
+  
+  const word cc_wBUSPrintedArrayElements = 128;
+  const byte cc_bBUSNumberBitsOnByte = 8;
+}
+
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief BUS control library constants.
+*/

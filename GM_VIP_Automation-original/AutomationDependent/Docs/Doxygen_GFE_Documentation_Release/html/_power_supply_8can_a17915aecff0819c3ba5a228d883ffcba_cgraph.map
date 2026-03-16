@@ -1,0 +1,6 @@
+<map id="vFctn_PowerSupply_SaveConf" name="vFctn_PowerSupply_SaveConf">
+<area shape="rect" id="node1" title=" " alt="" coords="5,31,203,57"/>
+<area shape="rect" id="node2" href="$group__c_p_o_w.html#ga80a1a31d65e2ce53e74ab4de24306fbe" title="Function sets the parameters for communication on RS232." alt="" coords="251,5,429,32"/>
+<area shape="rect" id="node3" href="$_power_supply_8can.html#ab2858ef458a693cc26659e3eff14e90c" title=" " alt="" coords="273,56,407,83"/>
+<area shape="rect" id="node4" href="$group__b_r_e_a_d_f_i_l_e.html#ga99f88f9d1b1e898e2c9c6b7b2419f707" title="Function opens an ini file and writes a number entry." alt="" coords="477,49,707,90"/>
+</map>

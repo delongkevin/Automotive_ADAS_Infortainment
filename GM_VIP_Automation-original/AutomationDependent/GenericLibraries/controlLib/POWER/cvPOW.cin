@@ -1,0 +1,69 @@
+/*@!Encoding:1252*/
+
+/*!
+* @defgroup cvPOW cvPOW
+* @defgroup POWER POWER
+* @ingroup controlLib
+* @{
+* @addtogroup cvPOW
+* @{
+*/ 
+
+variables
+{
+  byte cv_bPOWPort           = 0;    
+  int  cv_iPOWBaudRate       = 0;    
+  byte cv_bPOWDataBits       = 0;    
+  byte cv_bPOWParity         = 0;    
+  byte cv_bPOWStopBits       = 0;
+  byte cv_bPOWType           = 0;    
+  byte cv_bPOWwaitTime       = 0;
+  long cv_lPOWmaxVoltage     = 0;  
+  long cv_lPOWmaxCurrent      = 0;
+  int cv_iPOWSCPIAddress     = 0;
+  int cv_iPOWFlowControl     = 0;
+  long cv_iPOWWaitForCommand = 0;
+  byte cv_bGetPowIniStatus   = 0;
+  
+  int cv_iPOWPSNumber;
+  int cv_iPOWPSPresentArray[8];
+  int cv_iPOWPSTypeArray[8];
+  int cv_iPOWPSCOMPortArray[8];
+  int cv_iPOWPSDataBitsArray[8];
+  int cv_iPOWPSParityArray[8];
+  int cv_iPOWPSStopBitsArray[8];
+  int cv_iPOWPSBaudRateArray[8];
+  long cv_lPOWPSMaxVoltageArray[8];
+  long cv_lPOWPSMaxCurrentArray[8];
+  int cv_iPOWPSSCPIAddress[8];
+  int cv_iPOWPSFlowControl[8];
+  long cv_iPOWPSWaitForCommand[8];
+  word cv_wPOWPSWaitTimeForResponse = 400;
+  
+  byte cv_bPOWSendData[50];
+  byte cv_bPOWSendDataSCPI[50];
+  byte cv_bPOWSendDataValue[50];
+  
+  struct cv_stPowerSupplycommand
+  {
+    int iPowerSupplyNumber;
+    char chGetCurrent[20];
+    char chGetVoltage[20];
+    char chSetCurrent[20];
+    char chSetVoltage[20];
+    char chSetOn[20];
+    char chSetOff[20];
+    char chGetStatus[20];
+    char chSelectAddress[20];
+  };
+  
+  struct cv_stPowerSupplycommand cv_stGenericCommands;
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief Power Supply control library variables.
+*/

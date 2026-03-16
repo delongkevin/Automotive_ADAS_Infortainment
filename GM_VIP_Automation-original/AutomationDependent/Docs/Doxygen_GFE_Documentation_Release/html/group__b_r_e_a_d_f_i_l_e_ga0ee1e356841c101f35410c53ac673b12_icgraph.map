@@ -1,0 +1,5 @@
+<map id="bFctn_READFILEPutStringInAFile" name="bFctn_READFILEPutStringInAFile">
+<area shape="rect" id="node1" title=" " alt="" coords="543,5,732,47"/>
+<area shape="rect" id="node2" href="$group__c_c_a_n.html#ga040061195ad669b9c4cbd35466e84b30" title="Function that saves in a CSV file, the specified number of log entries from the already populated CAL..." alt="" coords="264,13,495,39"/>
+<area shape="rect" id="node3" href="$group__ts_c_a_n.html#ga07e925af0857734c6363de60959c7b23" title="Function that executes the action to save in a CSV file, the specified number of log entries from the..." alt="" coords="5,13,216,39"/>
+</map>

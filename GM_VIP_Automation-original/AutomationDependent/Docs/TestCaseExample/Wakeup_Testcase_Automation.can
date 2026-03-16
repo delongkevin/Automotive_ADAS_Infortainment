@@ -1,0 +1,1817 @@
+/*@!Encoding:1252*/
+
+includes
+{
+  
+  #include "..\..\ProjectSpecific\GenLib_Includes.cin"
+
+}
+
+variables
+{
+  char chTestDescription[500];
+  char chActionText[500];
+  char chExpectedText[500];
+  char chTestTitle[100];
+  
+  byte dat_102[3] = {0xAA,0x55,0xAA};
+  mstimer delay;
+  
+}
+
+  on timer delay 
+  {
+    write("wait for 3 Sec");
+    
+  }
+    
+    
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36631001: Test_case_To_verify_the_control_flow_through_the_interface_GetHWIO_e_WakeupSigSt()
+----------------------------------------------------------------------------------------------------
+Description:   Test_case_To_verify_the_control_flow_through_the_interface_GetHWIO_e_WakeupSigSt().
+
+***************************************************************************************************/
+testcase Test_case_To_verify_the_control_flow_through_the_interface_GetHWIO_e_WakeupSigSt()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "Test_case_To_verify_the_control_flow_through_the_interface_GetHWIO_e_WakeupSigSt()" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:Test_case_To_verify_the_control_flow_through_the_interface_GetHWIO_e_WakeupSigSt()");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36631001", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file test_wakeup_hwio.c in function uint8 Test_GetHWIO_e_WakeupSigSt(void) at line if (CheckWakeup == (boolean)TRUE)
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_wakeup_hwio.c in function uint8 Test_GetHWIO_e_WakeupSigSt(void) at line if (CheckWakeup == (boolean)TRUE)"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 Test_GetHWIO_e_WakeupSigSt(void) at line if (CheckWakeup == (boolean)TRUE)"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("Test_GetHWIO_e_WakeupSigSt\\5"); //Test_GetHWIO_e_WakeupSigSt\5
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_WakeupSigSt\\5");
+  
+  
+   /*******************************************************************************************************************************************************/    
+    // Test Step 4: Add CheckWakeup Variable in watch window and update value to TRUE or 1.
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "Add CheckWakeup Variable in watch window and update value to TRUE or 1."); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value CheckWakeup = 1"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_VariableSet("CheckWakeup", "1");
+  A_DBGR_Go();
+  E_DBGR_VariableCheck("CheckWakeup", 0, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
+  
+    
+  /******************************************************************************************************************************************************************/    
+    // Test Step 5 to 7: set breakpoint in file test_wakeup_hwio.c in function uint8 Test_GetHWIO_e_WakeupSigSt(void) at line wakeEvent = GetHWIO_e_WakeupSigSt();
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_wakeup_hwio.c in function uint8 Test_GetHWIO_e_WakeupSigSt(void) at line wakeEvent = GetHWIO_e_WakeupSigSt();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 Test_GetHWIO_e_WakeupSigSt(void) at line wakeEvent = GetHWIO_e_WakeupSigSt();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("Test_GetHWIO_e_WakeupSigSt\\8"); //Test_GetHWIO_e_WakeupSigSt\8
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_WakeupSigSt\\8"); 
+  
+  
+  /*******************************************************************************************************************************************************/    
+    // Test Step 8 to 10: set breakpoint in file wakeup_hwio.c in function BYTE GetHWIO_e_WakeupSigSt( void ) at line wakeEvent = GetHWIO_e_WakeupSigSt();
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_wakeup_hwio.c in function uint8 Test_GetHWIO_e_WakeupSigSt(void) at line wakeEvent = GetHWIO_e_WakeupSigSt();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 Test_GetHWIO_e_WakeupSigSt(void) at line wakeEvent = GetHWIO_e_WakeupSigSt();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt"); 
+  
+  
+
+}
+    
+ 
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36777368: Test_case_To_verify_the_control_flow_through_the_interface_CanTrcv_SetUpAsyncSpi()
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_control_flow_through_the_interface_CanTrcv_SetUpAsyncSpi().
+
+***************************************************************************************************/
+testcase To_verify_the_control_flow_through_the_interface_CanTrcv_SetUpAsyncSpi()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_control_flow_through_the_interface_CanTrcv_SetUpAsyncSpi" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_control_flow_through_the_interface_CanTrcv_SetUpAsyncSpi");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36777368", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file core0_main.c in function void App_MCALInit( void ) at line CanTrcv_SetUpAsyncSpi();
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file core0_main.c in function void App_MCALInit( void ) at line CanTrcv_SetUpAsyncSpi();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void App_MCALInit( void ) at line CanTrcv_SetUpAsyncSpi();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("App_MCALInit\\58"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("App_MCALInit\\58");
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file wakeup_hwio.c in function void CanTrcv_SetUpAsyncSpi( void ) at line void CanTrcv_SetUpAsyncSpi( void )
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function void CanTrcv_SetUpAsyncSpi( void ) at line void CanTrcv_SetUpAsyncSpi( void )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_SetUpAsyncSpi( void ) at line void CanTrcv_SetUpAsyncSpi( void );"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_SetUpAsyncSpi"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_SetUpAsyncSpi"); 
+   
+
+}
+
+ 
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740581: Test_case_To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_App_MCALInit()
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_App_MCALInit().
+
+***************************************************************************************************/
+testcase To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_App_MCALInit()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_App_MCALInit" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_App_MCALInit");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740581", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file core0_main.c in function void core0_main( void ) at line App_MCALInit();
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file core0_main.c in function void core0_main( void ) at line App_MCALInit();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void core0_main( void ) at line App_MCALInit();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("core0_main\\17"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("core0_main\\17");
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file wakeup_hwio.c in function void App_MCALInit( void ) at line void App_MCALInit( void )
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function void App_MCALInit( void ) at line void App_MCALInit( void )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void App_MCALInit( void ) at line void App_MCALInit( void )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("App_MCALInit"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("App_MCALInit"); 
+  
+
+}
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36777395: Test_case_To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_CanTrcv_SetUpAsyncSpi()
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_CanTrcv_SetUpAsyncSpi().
+
+***************************************************************************************************/
+testcase To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_CanTrcv_SetUpAsyncSpi()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_CanTrcv_SetUpAsyncSpi" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_CanTrcv_SetUpAsyncSpi");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36777395", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file core0_main.c in function App_MCALInit() at line CanTrcv_SetUpAsyncSpi();
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file core0_main.c in function App_MCALInit() at line CanTrcv_SetUpAsyncSpi();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function App_MCALInit() at line CanTrcv_SetUpAsyncSpi();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("App_MCALInit\\58"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("App_MCALInit\\58");
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file wakeup_hwio.c in function void CanTrcv_SetUpAsyncSpi( void ) at line void CanTrcv_SetUpAsyncSpi( void )
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function void CanTrcv_SetUpAsyncSpi( void ) at line void CanTrcv_SetUpAsyncSpi( void )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_SetUpAsyncSpi( void ) at line void CanTrcv_SetUpAsyncSpi( void )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_SetUpAsyncSpi"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_SetUpAsyncSpi"); 
+  
+
+}
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740582: Test_case_To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetAsyncMode(Spi_AsyncModeType)
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetAsyncMode(Spi_AsyncModeType).
+
+***************************************************************************************************/
+testcase To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetAsyncMode()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetAsyncMode(Spi_AsyncModeType)" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetAsyncMode(Spi_AsyncModeType)");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740582", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function static void spiAsyncSetup( void ) at line SpiStatus = Spi_SetAsyncMode( SPI_INTERRUPT_MODE );
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function static void spiAsyncSetup( void ) at line SpiStatus = Spi_SetAsyncMode( SPI_INTERRUPT_MODE );"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function static void spiAsyncSetup( void ) at line SpiStatus = Spi_SetAsyncMode( SPI_INTERRUPT_MODE );"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("spiAsyncSetup\\24"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("spiAsyncSetup\\24");
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file spi.c in function Std_ReturnType Spi_SetAsyncMode(const Spi_AsyncModeType Mode) at line Std_ReturnType Spi_SetAsyncMode(const Spi_AsyncModeType Mode)
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file spi.c in function Std_ReturnType Spi_SetAsyncMode(const Spi_AsyncModeType Mode) at line Std_ReturnType Spi_SetAsyncMode(const Spi_AsyncModeType Mode)"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function Std_ReturnType Spi_SetAsyncMode(const Spi_AsyncModeType Mode) at line Std_ReturnType Spi_SetAsyncMode(const Spi_AsyncModeType Mode)"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("Spi_SetAsyncMode"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("Spi_SetAsyncMode"); 
+  
+
+}
+
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740583: Test_case_To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetupEB_for_CAN0.
+----------------------------------------------------------------------------------------------------
+Description:   To verify the CanTrcv_SetUpAsyncSpi sequence flow through the interface Spi_SetupEB(Spi_ChannelType, Spi_DataBufferType*, Spi_DataBufferType*, Spi_NumberOfDataType) for CAN0.
+
+***************************************************************************************************/
+testcase To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetupEB_for_CAN0()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetupEB_for_CAN0" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetupEB_for_CAN0");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740583", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function static void spiAsyncSetup( void ) at line SpiStatus = Spi_SetAsyncMode( SPI_INTERRUPT_MODE );
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function static void spiAsyncSetup( void ) at line Spi_SetupEB( SpiConf_SpiChannel_CANTrcv_Channel_ClrWakeUp_FltEvnt_CAN2, TcanClrWakUpSpiWriteBuff, TcanClrWakUpSpiReadBuff_Can2, 4u );"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function static void spiAsyncSetup( void ) at line Spi_SetupEB( SpiConf_SpiChannel_CANTrcv_Channel_ClrWakeUp_FltEvnt_CAN2, TcanClrWakUpSpiWriteBuff, TcanClrWakUpSpiReadBuff_Can2, 4u );"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("spiAsyncSetup\\70"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("spiAsyncSetup\\70");
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file spi.c in function Std_ReturnType Spi_SetAsyncMode(const Spi_AsyncModeType Mode) at line Std_ReturnType Spi_SetAsyncMode(const Spi_AsyncModeType Mode)
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file spi.c in function Std_ReturnType Spi_SetupEB( const Spi_ChannelType Channel, const Spi_DataBufferType * const SrcDataBufferPtr, const Spi_DataBufferType * const DesDataBufferPtr, const Spi_NumberOfDataType Length) at line Std_ReturnType Spi_SetupEB( const Spi_ChannelType Channel, const Spi_DataBufferType * const SrcDataBufferPtr, const Spi_DataBufferType * const DesDataBufferPtr, const Spi_NumberOfDataType Length)"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function Std_ReturnType Spi_SetupEB( const Spi_ChannelType Channel, const Spi_DataBufferType * const SrcDataBufferPtr, const Spi_DataBufferType * const DesDataBufferPtr, const Spi_NumberOfDataType Length) at line Std_ReturnType Spi_SetupEB( const Spi_ChannelType Channel, const Spi_DataBufferType * const SrcDataBufferPtr, const Spi_DataBufferType * const DesDataBufferPtr, const Spi_NumberOfDataType Length)"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("Spi_SetupEB"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("Spi_SetupEB"); 
+  
+
+}
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740584: Test_case_To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetupEB_for_CAN1.
+----------------------------------------------------------------------------------------------------
+Description:   To verify the CanTrcv_SetUpAsyncSpi sequence flow through the interface Spi_SetupEB(Spi_ChannelType, Spi_DataBufferType*, Spi_DataBufferType*, Spi_NumberOfDataType) for CAN1.
+
+***************************************************************************************************/
+testcase To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetupEB_for_CAN1()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetupEB_for_CAN1" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_CanTrcv_SetUpAsyncSpi_sequence_flow_through_the_interface_Spi_SetupEB_for_CAN1");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740584", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function static void spiAsyncSetup( void ) at line SpiStatus = Spi_SetAsyncMode( SPI_INTERRUPT_MODE );
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function static void spiAsyncSetup( void ) at line SpiStatus = Spi_SetupEB( SpiConf_SpiChannel_CANTrcv_Channel_ClrWakeUp_FltEvnt_CAN8, TcanClrWakUpSpiWriteBuff, TcanClrWakUpSpiReadBuff_Can8, 4u );"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function static void spiAsyncSetup( void ) at line SpiStatus = Spi_SetupEB( SpiConf_SpiChannel_CANTrcv_Channel_ClrWakeUp_FltEvnt_CAN8, TcanClrWakUpSpiWriteBuff, TcanClrWakUpSpiReadBuff_Can8, 4u );"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("spiAsyncSetup\\82"); //spiAsyncSetup\82
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("spiAsyncSetup\\82");          //spiAsyncSetup\82
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file spi.c in function Std_ReturnType Spi_SetAsyncMode(const Spi_AsyncModeType Mode) at line Std_ReturnType Spi_SetAsyncMode(const Spi_AsyncModeType Mode)
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file spi.c in function Std_ReturnType Spi_SetupEB( const Spi_ChannelType Channel, const Spi_DataBufferType * const SrcDataBufferPtr, const Spi_DataBufferType * const DesDataBufferPtr, const Spi_NumberOfDataType Length) at line Std_ReturnType Spi_SetupEB( const Spi_ChannelType Channel, const Spi_DataBufferType * const SrcDataBufferPtr, const Spi_DataBufferType * const DesDataBufferPtr, const Spi_NumberOfDataType Length)"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function Std_ReturnType Spi_SetupEB( const Spi_ChannelType Channel, const Spi_DataBufferType * const SrcDataBufferPtr, const Spi_DataBufferType * const DesDataBufferPtr, const Spi_NumberOfDataType Length) at line Std_ReturnType Spi_SetupEB( const Spi_ChannelType Channel, const Spi_DataBufferType * const SrcDataBufferPtr, const Spi_DataBufferType * const DesDataBufferPtr, const Spi_NumberOfDataType Length)"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("Spi_SetupEB"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("Spi_SetupEB"); 
+  
+
+}
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740586: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_equence_flow_through_the_interface_GetHWIO_e_WakeupSigSt()_and_CanTrcv_checkTrcvIntruptsAsync.
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_equence_flow_through_the_interface_GetHWIO_e_WakeupSigSt()_and_CanTrcv_checkTrcvIntruptsAsync.
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_equence_flow_through_the_interface_GetHWIO_e_WakeupSigSt_and_CanTrcv_checkTrcvIntruptsAsync()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_equence_flow_through_the_interface_GetHWIO_e_WakeupSigSt()_and_CanTrcv_checkTrcvIntruptsAsync" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_equence_flow_through_the_interface_GetHWIO_e_WakeupSigSt()_and_CanTrcv_checkTrcvIntruptsAsync");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740586", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line uint8 GetHWIO_e_WakeupSigSt( void )
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line uint8 GetHWIO_e_WakeupSigSt( void )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line uint8 GetHWIO_e_WakeupSigSt( void )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt");          
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsAsync();
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsAsync();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsAsync();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt\\23"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt\\23");
+  
+  
+   
+  /******************************************************************************************************************************************************************/    
+    // Test Step 7 to 9: set breakpoint in file Hwio_can.c in function void CanTrcv_checkTrcvIntruptsAsync( void ) at line void CanTrcv_checkTrcvIntruptsAsync( void )
+  /******************************************************************************************************************************************************************/
+  
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file Hwio_can.c in function void CanTrcv_checkTrcvIntruptsAsync( void ) at line void CanTrcv_checkTrcvIntruptsAsync( void )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_checkTrcvIntruptsAsync( void ) at line void CanTrcv_checkTrcvIntruptsAsync( void )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_checkTrcvIntruptsAsync"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_checkTrcvIntruptsAsync"); 
+  
+
+}
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740587: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_AsyncTransmit(BYTE)_for_transceiver0.
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_AsyncTransmit(BYTE)_for_transceiver0.
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_AsyncTransmit_for_transceiver0()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_AsyncTransmit(BYTE)_for_transceiver0" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_AsyncTransmit(BYTE)_for_transceiver0");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740587", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file Hwio_can.c in function void CanTrcv_checkTrcvIntruptsAsync( void ) at line retval = Spi_AsyncTransmit( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN2_SEQ );
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file Hwio_can.c in function void CanTrcv_checkTrcvIntruptsAsync( void ) at line retval = Spi_AsyncTransmit( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN2_SEQ );"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_checkTrcvIntruptsAsync( void ) at line retval = Spi_AsyncTransmit( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN2_SEQ );"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_checkTrcvIntruptsAsync\\7"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_checkTrcvIntruptsAsync\\7");          
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file spi.c in function Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence) at line Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence)
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file spi.c in function Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence) at line Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence)"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence) at line Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence)"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("Spi_AsyncTransmit");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("Spi_AsyncTransmit");
+  
+
+}
+
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740588: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_AsyncTransmit(BYTE)_for_transceiver1.
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_AsyncTransmit(BYTE)_for_transceiver1.
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_AsyncTransmit_for_transceiver1()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_AsyncTransmit(BYTE)_for_transceiver1" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_AsyncTransmit(BYTE)_for_transceiver1");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740588", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file Hwio_can.c in function void CanTrcv_checkTrcvIntruptsAsync( void ) at line retval = Spi_AsyncTransmit( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN8_SEQ );
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file Hwio_can.c in function void CanTrcv_checkTrcvIntruptsAsync( void ) at line retval = Spi_AsyncTransmit( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN8_SEQ );"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_checkTrcvIntruptsAsync( void ) at line retval = Spi_AsyncTransmit( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN8_SEQ );"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_checkTrcvIntruptsAsync\\28"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_checkTrcvIntruptsAsync\\28");          
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file spi.c in function Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence) at line Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence)
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file spi.c in function Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence) at line Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence)"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence) at line Std_ReturnType Spi_AsyncTransmit(const Spi_SequenceType Sequence)"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("Spi_AsyncTransmit");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("Spi_AsyncTransmit");
+  
+
+}
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740589: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_AsyncCan2SeqEndNotify()_for_CAN0.
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_AsyncCan2SeqEndNotify()_for_CAN0.
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_AsyncCan2SeqEndNotify_for_CAN0()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_AsyncCan2SeqEndNotify()_for_CAN0" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_AsyncCan2SeqEndNotify()_for_CAN0");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740589", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /******************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsAsync();
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsAsync();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsAsync();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt\\23"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt\\23");         
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file Hwio_can.c in function void CanTrcv_AsyncCan2SeqEndNotify( void ) at line void CanTrcv_AsyncCan2SeqEndNotify( void )
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file Hwio_can.c in function void CanTrcv_AsyncCan2SeqEndNotify( void ) at line void CanTrcv_AsyncCan2SeqEndNotify( void )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_AsyncCan2SeqEndNotify( void ) at line void CanTrcv_AsyncCan2SeqEndNotify( void )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_AsyncCan2SeqEndNotify");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_AsyncCan2SeqEndNotify");
+  
+
+}
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740590: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_GetSequenceResult(BYTE)_for_CAN0.
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_GetSequenceResult(BYTE)_for_CAN0.
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_GetSequenceResult_for_CAN0()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_GetSequenceResult(BYTE)_for_CAN0" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_GetSequenceResult(BYTE)_for_CAN0");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740590", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+/******************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function void CanTrcv_AsyncCan2SeqEndNotify( void ) at line spiSeqResult = Spi_GetSequenceResult( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN2_SEQ );
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function void CanTrcv_AsyncCan2SeqEndNotify( void ) at line spiSeqResult = Spi_GetSequenceResult( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN2_SEQ );"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_AsyncCan2SeqEndNotify( void ) at line spiSeqResult = Spi_GetSequenceResult( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN2_SEQ );"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_AsyncCan2SeqEndNotify\\6"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_AsyncCan2SeqEndNotify\\6");        
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file spi.c in function Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence) at line Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence)
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file spi.c in function Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence) at line Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence)"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence) at line Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence)"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("Spi_GetSequenceResult");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("Spi_GetSequenceResult");
+  
+
+}
+
+
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740591: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_AsyncCan8SeqEndNotify()_for_CAN1.
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_AsyncCan8SeqEndNotify()_for_CAN1.
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_AsyncCan8SeqEndNotify_for_CAN1()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_AsyncCan8SeqEndNotify()_for_CAN1" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_AsyncCan8SeqEndNotify()_for_CAN1");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740591", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /******************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsAsync();
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsAsync();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsAsync();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt\\23"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt\\23");         
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file Hwio_can.c in function void CanTrcv_AsyncCan2SeqEndNotify( void ) at line void CanTrcv_AsyncCan2SeqEndNotify( void )
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file Hwio_can.c in function void CanTrcv_AsyncCan8SeqEndNotify( void ) at line void CanTrcv_AsyncCan8SeqEndNotify( void )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_AsyncCan8SeqEndNotify( void ) at line void CanTrcv_AsyncCan8SeqEndNotify( void )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_AsyncCan8SeqEndNotify");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_AsyncCan8SeqEndNotify");
+  
+
+}
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740592: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_GetSequenceResult(BYTE)_for_CAN1.
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_GetSequenceResult(BYTE)_for_CAN1.
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_GetSequenceResult_for_CAN1()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_GetSequenceResult(BYTE)_for_CAN1" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_Spi_GetSequenceResult(BYTE)_for_CAN1");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740592", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /******************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function void CanTrcv_AsyncCan8SeqEndNotify( void ) at line spiSeqResult = Spi_GetSequenceResult( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN8_SEQ );
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function void CanTrcv_AsyncCan8SeqEndNotify( void ) at line spiSeqResult = Spi_GetSequenceResult( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN8_SEQ );"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_AsyncCan8SeqEndNotify( void ) at line spiSeqResult = Spi_GetSequenceResult( SpiConf_SpiSequence_CANTRCV_CHKWAKEUP_FAULT_EVNT_CAN8_SEQ );"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_AsyncCan8SeqEndNotify\\6"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_AsyncCan8SeqEndNotify\\6");         
+  
+      
+  /******************************************************************************************************************************************************************/    
+    // Test Step 4 to 6: set breakpoint in file spi.c in function Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence) at line Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence)
+  /******************************************************************************************************************************************************************/
+
+  
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file spi.c in function Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence) at line Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence)"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence) at line Spi_SeqResultType Spi_GetSequenceResult(const Spi_SequenceType Sequence)"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("Spi_GetSequenceResult");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("Spi_GetSequenceResult");
+  
+
+}
+
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740593: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_ServiceHWIO_MainWDT()
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_ServiceHWIO_MainWDT().
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_ServiceHWIO_MainWDT()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_ServiceHWIO_MainWDT()" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_ServiceHWIO_MainWDT()");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740593", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt");
+  
+  
+   /*******************************************************************************************************************************************************/    
+    // Test Step 4: Add CheckWakeup Variable in watch window and update value to TRUE or 1.
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "Add OsRunningStatus Variable in watch window and update value to other than 1."); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value OsRunningStatus != 1"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+ // A_DBGR_BreakpointDeleteAll();
+  A_DBGR_VariableSet("OsRunningStatus", "2");   // other than 1.
+  E_DBGR_VariableCheck("OsRunningStatus", 0, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
+  
+    
+  /******************************************************************************************************************************************************************/    
+    // Test Step 5 to 7: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line ServiceHWIO_MainWDT();
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line ServiceHWIO_MainWDT();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line ServiceHWIO_MainWDT();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt\\30");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt\\30"); 
+  
+  
+  /*******************************************************************************************************************************************************/    
+    // Test Step 8 to 10: set breakpoint in file wdt_hwio.c in function void ServiceHWIO_MainWDT( void ) at line void ServiceHWIO_MainWDT( void )
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wdt_hwio.c in function void ServiceHWIO_MainWDT( void ) at line void ServiceHWIO_MainWDT( void )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void ServiceHWIO_MainWDT( void ) at line void ServiceHWIO_MainWDT( void )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("ServiceHWIO_MainWDT"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("ServiceHWIO_MainWDT"); 
+  
+  
+
+}
+    
+ 
+
+
+
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740594: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_ServiceHWIO_ExtWDT()
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_ServiceHWIO_ExtWDT().
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_ServiceHWIO_ExtWDT()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_ServiceHWIO_ExtWDT()" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_ServiceHWIO_ExtWDT()");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740594", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt");
+  
+  
+   /*******************************************************************************************************************************************************/    
+    // Test Step 4: Add CheckWakeup Variable in watch window and update value to TRUE or 1.
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "Add OsRunningStatus Variable in watch window and update value to other than 1."); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value OsRunningStatus != 1"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+ // A_DBGR_BreakpointDeleteAll();
+  A_DBGR_VariableSet("OsRunningStatus", "2");   // other than 1.
+  E_DBGR_VariableCheck("OsRunningStatus", 0, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
+  
+    
+  /******************************************************************************************************************************************************************/    
+    // Test Step 5 to 7: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line ServiceHWIO_ExtWDT();
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line ServiceHWIO_ExtWDT();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line ServiceHWIO_ExtWDT();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt\\31");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt\\31"); 
+  
+  
+  /*******************************************************************************************************************************************************/    
+    // Test Step 8 to 10: set breakpoint in file wdt_hwio.c in function void ServiceHWIO_MainWDT( void ) at line void ServiceHWIO_MainWDT( void )
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wdt_hwio.c in function void ServiceHWIO_ExtWDT( void ) at line void ServiceHWIO_ExtWDT( void )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void ServiceHWIO_ExtWDT( void ) at line void ServiceHWIO_ExtWDT( void )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("ServiceHWIO_ExtWDT"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("ServiceHWIO_ExtWDT"); 
+  
+  
+
+}
+    
+ 
+
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740595: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_checkTrcvIntruptsSync(void)
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_checkTrcvIntruptsSync(void).
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_checkTrcvIntruptsSync()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_checkTrcvIntruptsSync(void)" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_CanTrcv_checkTrcvIntruptsSync(void)");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740595", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt");
+  
+  
+   /*******************************************************************************************************************************************************/    
+    // Test Step 4: Add OsRunningStatus Variable in watch window and update value to other 1.
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "Add OsRunningStatus Variable in watch window and update value to other than 1."); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value OsRunningStatus != 1"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+ // A_DBGR_BreakpointDeleteAll();
+  A_DBGR_VariableSet("OsRunningStatus", "2");   // other than 1.
+  E_DBGR_VariableCheck("OsRunningStatus", 0, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
+  
+    
+  /******************************************************************************************************************************************************************/    
+    // Test Step 5 to 7: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsSync();
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsSync();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsSync();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt\\34");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt\\34"); 
+  
+  
+  /*******************************************************************************************************************************************************/    
+    // Test Step 8 to 10: set breakpoint in file wdt_hwio.c in function void ServiceHWIO_MainWDT( void ) at line void CanTrcv_checkTrcvIntruptsSync( void )
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wdt_hwio.c in function void CanTrcv_checkTrcvIntruptsSync( void ) at line void CanTrcv_checkTrcvIntruptsSync( void )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_checkTrcvIntruptsSync( void ) at line void CanTrcv_checkTrcvIntruptsSync( void )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_checkTrcvIntruptsSync"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_checkTrcvIntruptsSync"); 
+  
+  
+
+}
+    
+ 
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740596: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_TCAN114x_Interrupts_Read(int, TCAN114x_Interrupts *)
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_TCAN114x_Interrupts_Read(int, TCAN114x_Interrupts *).
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_TCAN114x_Interrupts_Read()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_TCAN114x_Interrupts_Read(int, TCAN114x_Interrupts *)" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_TCAN114x_Interrupts_Read(int, TCAN114x_Interrupts *)");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740596", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt");
+  
+  
+   /*******************************************************************************************************************************************************/    
+    // Test Step 4: Add OsRunningStatus Variable in watch window and update value to other 1.
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "Add OsRunningStatus Variable in watch window and update value to other than 1."); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value OsRunningStatus != 1"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+ // A_DBGR_BreakpointDeleteAll();
+  A_DBGR_VariableSet("OsRunningStatus", "2");   // other than 1.
+  E_DBGR_VariableCheck("OsRunningStatus", 0, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
+  
+    
+  /******************************************************************************************************************************************************************/    
+    // Test Step 5 to 7: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsSync();
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsSync();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsSync();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt\\34");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt\\34"); 
+  
+  
+  /*******************************************************************************************************************************************************/    
+    // Test Step 8 to 10: set breakpoint in file Hwio_can.c in function void CanTrcv_checkTrcvIntruptsSync( void ) at line TCAN114x_Interrupts_Read(int, TCAN114x_Interrupts *)
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file Hwio_can.c in function void CanTrcv_checkTrcvIntruptsSync( void ) at line TCAN114x_Interrupts_Read(int, TCAN114x_Interrupts *)"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_checkTrcvIntruptsSync( void ) at line TCAN114x_Interrupts_Read(int, TCAN114x_Interrupts *)"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_checkTrcvIntruptsSync\\9"); //CanTrcv_checkTrcvIntruptsSync\9
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_checkTrcvIntruptsSync\\9"); //CanTrcv_checkTrcvIntruptsSync\9
+  
+  
+ /*******************************************************************************************************************************************************/    
+    // Test Step 11 to 13: set breakpoint in file tcan114x.c in function TCAN114x_eStatus TCAN114x_Interrupts_Read( uint8_t canTrcvIndex, TCAN114x_IntruptsType* ir ) at line TCAN114x_eStatus TCAN114x_Interrupts_Read( uint8_t canTrcvIndex, TCAN114x_IntruptsType* ir )
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file Hwio_can.c in function TCAN114x_eStatus TCAN114x_Interrupts_Read() at line TCAN114x_eStatus TCAN114x_Interrupts_Read( uint8_t canTrcvIndex, TCAN114x_IntruptsType* ir )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function TCAN114x_eStatus TCAN114x_Interrupts_Read() at line TCAN114x_eStatus TCAN114x_Interrupts_Read( uint8_t canTrcvIndex, TCAN114x_IntruptsType* ir )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("TCAN114x_Interrupts_Read"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("TCAN114x_Interrupts_Read"); 
+  
+}
+   
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_IT_36740599: Test_case_To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_TCAN114x_Interrupts_ClearAll(int)
+----------------------------------------------------------------------------------------------------
+Description:   To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_TCAN114x_Interrupts_ClearAll(int).
+
+***************************************************************************************************/
+testcase To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_TCAN114x_Interrupts_ClearAll()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_TCAN114x_Interrupts_ClearAll(int)" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_verify_the_GetHWIO_e_WakeupSigSt_sequence_flow_through_the_interface_TCAN114x_Interrupts_ClearAll(int)");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_36740599", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo(); 
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+
+  /**************************************************************************************************************************************************************/    
+    // Test Step 1 to 3: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )
+  /**************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line if ( OsRunningStatus == Hwio_Os_Running )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt");
+  
+  
+   /*******************************************************************************************************************************************************/    
+    // Test Step 4: Add OsRunningStatus Variable in watch window and update value to other 1.
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "Add OsRunningStatus Variable in watch window and update value to other than 1."); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value OsRunningStatus != 1"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+ // A_DBGR_BreakpointDeleteAll();
+  A_DBGR_VariableSet("OsRunningStatus", "2");   // other than 1.
+  E_DBGR_VariableCheck("OsRunningStatus", 0, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
+  
+    
+  /******************************************************************************************************************************************************************/    
+    // Test Step 5 to 7: set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsSync();
+  /******************************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file wakeup_hwio.c in function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsSync();"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function uint8 GetHWIO_e_WakeupSigSt( void ) at line CanTrcv_checkTrcvIntruptsSync();"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("GetHWIO_e_WakeupSigSt\\34");
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("GetHWIO_e_WakeupSigSt\\34"); 
+  
+  
+  /*******************************************************************************************************************************************************/    
+    // Test Step 8 to 10: set breakpoint in file Hwio_can.c in function void CanTrcv_checkTrcvIntruptsSync( void ) at line TCAN114x_Interrupts_ClearAll(int)
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file Hwio_can.c in function void CanTrcv_checkTrcvIntruptsSync( void ) at line TCAN114x_Interrupts_ClearAll(int)"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void CanTrcv_checkTrcvIntruptsSync( void ) at line TCAN114x_Interrupts_ClearAll(int)"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("CanTrcv_checkTrcvIntruptsSync\\16"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("CanTrcv_checkTrcvIntruptsSync\\16"); 
+  
+  
+ /*******************************************************************************************************************************************************/    
+    // Test Step 11 to 13: set breakpoint in file tcan114x.c in function TCAN114x_eStatus TCAN114x_Device_Interrupts_ClearAll( uint8_t canTrcvIndex ) at line TCAN114x_eStatus TCAN114x_Device_Interrupts_ClearAll( uint8_t canTrcvIndex )
+  /*******************************************************************************************************************************************************/
+
+  snprintf( chActionText, elCount(chActionText), "set breakpoint in file Hwio_can.c in function TCAN114x_eStatus TCAN114x_Interrupts_ClearAll() at line TCAN114x_eStatus TCAN114x_Interrupts_ClearAll( uint8_t canTrcvIndex )"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function TCAN114x_eStatus TCAN114x_Interrupts_ClearAll() at line TCAN114x_eStatus TCAN114x_Interrupts_ClearAll( uint8_t canTrcvIndex )"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  //A_DBGR_R();
+  A_DBGR_BreakpointSet("TCAN114x_Interrupts_ClearAll"); 
+  A_DBGR_Go(); 
+  E_DBGR_BreakpointCheckForHalt("TCAN114x_Interrupts_ClearAll"); 
+  
+}
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+
+
+
+
+
+
+/*
+void MainTest ()
+{
+//  Test_case_to_verify_the_functionality_of_interface_DisableHWIO_AllTasks_to_Disable_all_the_task_from_any_one_CPU();
+//  Test_case_to_verify_the_functionality_of_interface_EnableHWIO_AllTasks_to_Enable_all_the_task_from_any_one_CPU();
+  
+//  Testcase_to_verify_the_functionality_of_interface_DsblHWIO_CPU_for_disabling_the_CPU0();
+//  Testcase_to_verify_the_functionality_of_interface_DsblHWIO_CPU_for_disabling_the_CPU1();
+//  Testcase_to_verify_the_functionality_of_interface_DsblHWIO_CPU_for_disabling_the_CPU2();
+//  Testcase_to_verify_the_functionality_of_interface_DsblHWIO_CPU_for_disabling_the_CPU3();
+//  Testcase_to_verify_the_functionality_of_interface_DsblHWIO_CPU_for_disabling_the_CPU4();
+//  Testcase_to_verify_the_functionality_of_interface_DsblHWIO_CPU_for_disabling_the_CPU5();
+  
+//    Testcase_to_verify_the_functionality_of_interface_GetHWIO_b_CPU_St_to_check_the_status_after_disabling_CPU0();
+//    Testcase_to_verify_the_functionality_of_interface_GetHWIO_b_CPU_St_to_check_the_status_after_disabling_CPU1();
+//    Testcase_to_verify_the_functionality_of_interface_GetHWIO_b_CPU_St_to_check_the_status_after_disabling_CPU2();
+//    Testcase_to_verify_the_functionality_of_interface_GetHWIO_b_CPU_St_to_check_the_status_after_disabling_CPU3();
+//    Testcase_to_verify_the_functionality_of_interface_GetHWIO_b_CPU_St_to_check_the_status_after_disabling_CPU4();
+//    Testcase_to_verify_the_functionality_of_interface_GetHWIO_b_CPU_St_to_check_the_status_after_disabling_CPU5();
+
+//Testcase_to_verify_the_functionality_of_interface_TeHWIO_e_OS_Task_GetHWIO_e_TaskID_to_check_the_task_id_for_CPU0_task();
+//Testcase_to_verify_the_functionality_of_interface_TeHWIO_e_OS_Task_GetHWIO_e_TaskID_to_check_the_task_id_for_CPU1_task();  
+//Testcase_to_verify_the_functionality_of_interface_TeHWIO_e_OS_Task_GetHWIO_e_TaskID_to_check_the_task_id_for_CPU2_task();
+//Testcase_to_verify_the_functionality_of_interface_TeHWIO_e_OS_Task_GetHWIO_e_TaskID_to_check_the_task_id_for_CPU3_task();
+//Testcase_to_verify_the_functionality_of_interface_TeHWIO_e_OS_Task_GetHWIO_e_TaskID_to_check_the_task_id_for_CPU4_task();
+//Testcase_to_verify_the_functionality_of_interface_TeHWIO_e_OS_Task_GetHWIO_e_TaskID_to_check_the_task_id_for_CPU5_task();  
+  
+//  Testcase_to_verify_the_functionality_of_interface_GetHWIO_e_CPU_to_check_the_ActiveCPU_ID_for_currently_executing_CPU0();
+//  Testcase_to_verify_the_functionality_of_interface_GetHWIO_e_CPU_to_check_the_ActiveCPU_ID_for_currently_executing_CPU1();
+//  Testcase_to_verify_the_functionality_of_interface_GetHWIO_e_CPU_to_check_the_ActiveCPU_ID_for_currently_executing_CPU2();
+//  Testcase_to_verify_the_functionality_of_interface_GetHWIO_e_CPU_to_check_the_ActiveCPU_ID_for_currently_executing_CPU3();
+//  Testcase_to_verify_the_functionality_of_interface_GetHWIO_e_CPU_to_check_the_ActiveCPU_ID_for_currently_executing_CPU4();
+//  Testcase_to_verify_the_functionality_of_interface_GetHWIO_e_CPU_to_check_the_ActiveCPU_ID_for_currently_executing_CPU5();
+  
+//  Testcase_to_verify_DsblHWIO_GM_TaskInits_to_prohibits_all_RTOS_tasks_and_ISRs_from_preempting_current_task_or_ISR_on_the_CPU0();
+//  Testcase_to_verify_DsblHWIO_GM_TaskInits_to_prohibits_all_RTOS_tasks_and_ISRs_from_preempting_current_task_or_ISR_on_the_CPU1();
+//  Testcase_to_verify_DsblHWIO_GM_TaskInits_to_prohibits_all_RTOS_tasks_and_ISRs_from_preempting_current_task_or_ISR_on_the_CPU2();
+//  Testcase_to_verify_DsblHWIO_GM_TaskInits_to_prohibits_all_RTOS_tasks_and_ISRs_from_preempting_current_task_or_ISR_on_the_CPU3();
+//  Testcase_to_verify_DsblHWIO_GM_TaskInits_to_prohibits_all_RTOS_tasks_and_ISRs_from_preempting_current_task_or_ISR_on_the_CPU4();
+//  Testcase_to_verify_DsblHWIO_GM_TaskInits_to_prohibits_all_RTOS_tasks_and_ISRs_from_preempting_current_task_or_ISR_on_the_CPU5();
+
+//  Testcase_to_verify_interface_EnblHWIO_GM_TaskInits_to_Allow_application_RTOS_tasks_and_ISRs_to_receive_event_triggers_on_CPU0();
+//  Testcase_to_verify_interface_EnblHWIO_GM_TaskInits_to_Allow_application_RTOS_tasks_and_ISRs_to_receive_event_triggers_on_CPU1();
+//  Testcase_to_verify_interface_EnblHWIO_GM_TaskInits_to_Allow_application_RTOS_tasks_and_ISRs_to_receive_event_triggers_on_CPU2();
+//  Testcase_to_verify_interface_EnblHWIO_GM_TaskInits_to_Allow_application_RTOS_tasks_and_ISRs_to_receive_event_triggers_on_CPU3();
+//  Testcase_to_verify_interface_EnblHWIO_GM_TaskInits_to_Allow_application_RTOS_tasks_and_ISRs_to_receive_event_triggers_on_CPU4();
+//  Testcase_to_verify_interface_EnblHWIO_GM_TaskInits_to_Allow_application_RTOS_tasks_and_ISRs_to_receive_event_triggers_on_CPU5();
+  
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PreTask_shall_be_triggred_before_the_task_is_invoked_for_CPU0();
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PreTask_shall_be_triggred_before_the_task_is_invoked_for_CPU1();
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PreTask_shall_be_triggred_before_the_task_is_invoked_for_CPU2();
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PreTask_shall_be_triggred_before_the_task_is_invoked_for_CPU3();
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PreTask_shall_be_triggred_before_the_task_is_invoked_for_CPU4();
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PreTask_shall_be_triggred_before_the_task_is_invoked_for_CPU5();
+  
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PostTask_shall_be_triggred_before_the_task_is_invoked_for_CPU0();
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PostTask_shall_be_triggred_before_the_task_is_invoked_for_CPU1();
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PostTask_shall_be_triggred_before_the_task_is_invoked_for_CPU2();
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PostTask_shall_be_triggred_before_the_task_is_invoked_for_CPU3();
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PostTask_shall_be_triggred_before_the_task_is_invoked_for_CPU4();
+//  Testcase_to_verify_the_functionality_of_interface_MngTSKR_e_PostTask_shall_be_triggred_before_the_task_is_invoked_for_CPU5();
+  
+//  Testcase_to_verify_the_interface_MngTSKR_TASKOS_TaskCPUx_to_trigger_normal_task_execution_when_called_from_1000ms_task_for_CPU0();
+//  Testcase_to_verify_the_interface_MngTSKR_TASKOS_TaskCPUx_to_trigger_normal_task_execution_when_called_from_1000ms_task_for_CPU1();
+//  Testcase_to_verify_the_interface_MngTSKR_TASKOS_TaskCPUx_to_trigger_normal_task_execution_when_called_from_1000ms_task_for_CPU2();
+//  Testcase_to_verify_the_interface_MngTSKR_TASKOS_TaskCPUx_to_trigger_normal_task_execution_when_called_from_1000ms_task_for_CPU3();
+//  Testcase_to_verify_the_interface_MngTSKR_TASKOS_TaskCPUx_to_trigger_normal_task_execution_when_called_from_1000ms_task_for_CPU4();
+// Testcase_to_verify_the_interface_MngTSKR_TASKOS_TaskCPUx_to_trigger_normal_task_execution_when_called_from_1000ms_task_for_CPU5();
+  
+//  A_POW_SetPowerSupplyOutputON(1);
+  
+ // A_POW_SetVoltage(1200, 1);
+  
+  Lockstep_Core1();
+  
+  
+}
+*/

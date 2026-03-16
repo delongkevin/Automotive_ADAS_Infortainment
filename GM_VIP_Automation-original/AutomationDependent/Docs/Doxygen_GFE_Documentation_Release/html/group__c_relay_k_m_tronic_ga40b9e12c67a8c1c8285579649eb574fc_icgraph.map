@@ -1,0 +1,4 @@
+<map id="bFctn_RelKMT_SetON" name="bFctn_RelKMT_SetON">
+<area shape="rect" id="node1" title="Function will set Relay to ON." alt="" coords="256,5,411,32"/>
+<area shape="rect" id="node2" href="$group__ts_relay_k_m_tronic.html#gaa63dd9d6b4630bf1580a91cfeac8de46" title="Function sets output from specified RELAY from ini file to ON." alt="" coords="5,5,208,32"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="TestStepAddActionExpected" name="TestStepAddActionExpected">
+<area shape="rect" id="node1" title="Function writes in report desired Action text." alt="" coords="5,5,195,32"/>
+<area shape="rect" id="node2" href="$group__c_r_e_p_o_r_t.html#ga3ee35346bf5c1db4733c7ca1903648bc" title="Function adds title, ID and description to testcase in report." alt="" coords="243,5,453,32"/>
+</map>

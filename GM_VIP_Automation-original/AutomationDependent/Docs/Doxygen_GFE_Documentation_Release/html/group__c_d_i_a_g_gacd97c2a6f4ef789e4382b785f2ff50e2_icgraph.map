@@ -1,0 +1,4 @@
+<map id="dwFctn_DIAGCheckIfWaitTimeIsValid" name="dwFctn_DIAGCheckIfWaitTimeIsValid">
+<area shape="rect" id="node1" title="Function that checks if the provided wait time is valid (greater then 0) If not, it will set the defa..." alt="" coords="228,5,428,47"/>
+<area shape="rect" id="node2" href="$group__c_d_i_a_g.html#ga1ceeb6ae52a64099c4c19075db84b858" title="Stores the parameter value of a specific previously sent diagnostic request." alt="" coords="5,13,180,39"/>
+</map>

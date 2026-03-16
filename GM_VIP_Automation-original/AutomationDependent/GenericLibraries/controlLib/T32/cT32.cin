@@ -1,0 +1,520 @@
+/*@!Encoding:1252*/
+//  ====================================================
+//   VEONEER - Support functions for T32
+//  ====================================================
+//
+//  File name: cT32.cin
+//
+//  Created(DD.MM.YYYY): 04.05.2022
+//
+//  Description: Constants for T32 library
+//  --------------------------------------------------------------------
+includes
+{
+  #include "ccT32.cin"
+  #include "cdotnetT32dll.cin"
+
+  #pragma netlibrary("dotnetT32dll.dll")
+
+  #if TOOL_MAJOR_VERSION >= 17
+  #pragma library("caplT32dll.dll")
+  #else
+  #pragma library("caplT32dll_v16.dll")
+  #endif
+}
+
+ 
+/*! \fn void vFctn_T32_CommandCreate_Cmm_Commands(char aOutputStringCommand[],char aCommand[])
+*  \brief Function that will generate the string with the path to the specified command(cmm/bat file).
+*  \param[out]  aOutputStringCommand  - The string which will be generated.
+*  \param[in]   char aCommand[]       - The command(name of cmm/bat file) used
+*
+*  \return No Return.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 04.05.22               AnPa            Created and implemented
+*/
+void vFctn_T32_CommandCreate_Cmm_Commands(char aOutputStringCommand[], char aCommand[])
+{
+  byte bDebugFlag;
+  
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function vFctn_T32_CommandCreate_Cmm_Commands() called.");
+
+  vFctn_T32_ConfigPathCreate(aOutputStringCommand);                                                     //get initial path (first 4 folders structure until Canoe folder)
+  
+  strncat(aOutputStringCommand,"TestSuites\\AutomationDependent\\Generic_Tools\\Lauterbach\\TC4_Aurix\\Cmm_Commands\\", 1024);   //concatenate next folder structure untill Cmm_Commands folder is reached
+  strncat(aOutputStringCommand, aCommand, 1024);                                                    //concatenate the aCommand param which is the name of the cmm used
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+     writeDbgLevel (DebugFuncInternal, "Generated command string aOutputStringCommand = %s.", aOutputStringCommand);
+  
+}
+
+/*! \fn void vFctn_T32_CommandCreate_prj(char aOutputStringCommand[],char aCommand[])
+*  \brief Function that will generate the string with the path to the specified command(cmm/bat file).
+*  \param[out]  aOutputStringCommand  - The string which will be generated.
+*  \param[in]   char aCommand[]       - The command(name of cmm/bat file) used
+*
+*  \return No Return.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 04.05.22               AnPa            Created and implemented
+*/
+void vFctn_T32_CommandCreate_prj(char aOutputStringCommand[],char aCommand[])
+{
+  byte bDebugFlag;
+  
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function vFctn_T32_CommandCreate_prj() called.");
+
+  vFctn_T32_ConfigPathCreate(aOutputStringCommand);                                             //get initial path (first 4 folders structure until Canoe folder)
+  
+  strncat(aOutputStringCommand,"TestSuites\\AutomationDependent\\Generic_Tools\\Lauterbach\\TC4_Aurix\\prj\\", 1024);    //concatenate next folder structure untill prj folder is reached
+  strncat(aOutputStringCommand,aCommand, 1024);                                             //concatenate the aCommand param which is the name of the cmm used
+
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+     writeDbgLevel (DebugFuncInternal, "Generated command string aOutputStringCommand = %s.", aOutputStringCommand);
+  
+}
+
+
+/*!\fn void vFctn_T32_ConfigPathCreate(char aOutputStringPath[])
+*  \brief Function that will return the modified path generated from absolute configuration path. 
+*  \brief This function will be used to generate the string with the path to the specified command
+*
+*  \param[out]  aOutputStringPath     - The byte array which will be modified.
+*
+*  \return No Return.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 04.05.22               AnPa            Created and implemented
+*/
+void vFctn_T32_ConfigPathCreate(char aOutputStringPath[])
+{
+  char chCfgPath[500]; 
+  dword dwMatchNbr;
+  dword dwPosArray[20];
+  byte bDebugFlag;
+  
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls , "Function vFctn_T32_ConfigPathCreate() called.");
+
+  strncpy(aOutputStringPath,"",1024); //clear the string
+  
+  lFctn_READFILEConfigurationPath(chCfgPath);                                 //  get absolute configuration path 
+  
+  dwMatchNbr = dwFctn_CONV_FindCharPosInStr( chCfgPath,'\\', dwPosArray);     //  split path by '\'
+  bFctn_CONV_GetSubString(chCfgPath,0, dwPosArray[dwMatchNbr-4], aOutputStringPath);     //  get substring untill the last 3 '\'
+ 
+  strncat(aOutputStringPath,"\\",strlen(aOutputStringPath)+2);                //  concatenate "\\" character at the end of the base directory string
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "The modified path aOutputStringPath = %s.", aOutputStringPath); 
+  
+ }
+
+/*! \fn void vFctn_T32_CommandCreate_StartUpScripts(char aOutputStringCommand[],char aCommand[])
+*  \brief Function that will generate the string with the path to the specified command(cmm/bat file).
+*  \param[out]  aOutputStringCommand  - The string which will be generated.
+*  \param[in]   char aCommand[]       - The command(name of cmm/bat file) used
+*
+*  \return No Return.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 04.05.22               AnPa            Created and implemented
+*/
+void vFctn_T32_CommandCreate_StartUpScripts(char aOutputStringCommand[],char aCommand[])
+{
+  byte bDebugFlag;
+  
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function vFctn_T32_CommandCreate_StartUpScripts() called.");
+  
+  vFctn_T32_ConfigPathCreate(aOutputStringCommand);                                         //get initial path (first 4 folders structure until Canoe folder)
+  
+  strncat(aOutputStringCommand,"TestSuites\\AutomationDependent\\Generic_Tools\\Lauterbach\\TC4_Aurix\\", 1024);     //concatenate next folder structure untill StartUp_Scripts folder is reached
+  strncat(aOutputStringCommand,aCommand, 1024);                                         //concatenate the aCommand param which is the name of the cmm/bat file used
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+     writeDbgLevel (DebugFuncInternal, "Generated command string aOutputStringCommand = %s.", aOutputStringCommand);
+  
+}
+
+/* ! long lFctn_CallT32API(char aCommand[], char aRetApiMessage[], long aRetApiExitCode[])
+*  \brief Function that calls the T32 API using .NET DLL with Execution.WaitForTask
+*         to prevent CANoe realtime kernel overruns. Captures console output from T32_API.exe.
+*
+*  \return -1: The command was NOT successfully sent.
+*  \return  0: The command was successfully sent.
+*
+*  Change History: 
+*  Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  04.05.22              GaMo         Refactoring the code.
+*  31.01.26              Auto         Performance optimization - removed unnecessary waits
+*/
+long lFctn_CallT32API(char aCommand[], char aRetApiMessage[], long aRetApiExitCode[])
+{
+  long returnExeCall;
+  // Performance: Use static path constant instead of local array initialization each call
+  char T32ApiExe[256] = "../AutomationDependent/GenericLibraries/T32_API.exe";
+
+  aRetApiExitCode[0] = -1;
+
+  // This captures console output and prevents realtime overruns
+  // returnExeCall = dllRunT32cmd(T32ApiExe, aCommand, aRetApiMessage, aRetApiExitCode);
+  // returnExeCall = dllRunT32cmdBlocking(T32ApiExe, aCommand, aRetApiMessage, aRetApiExitCode);
+  returnExeCall = dllRunT32cmdNonBlocking(T32ApiExe, aCommand, aRetApiMessage, aRetApiExitCode);
+
+  // Handle special exit code 259 (STILL_ACTIVE) as success
+  if (aRetApiExitCode[0] == 259)
+  {
+    write("T32 API returned STILL_ACTIVE exit code (259), treating as success but risks proceeding side effects of incomplete execution.");
+    aRetApiExitCode[0] = 0;
+  }
+
+
+  if (returnExeCall != 0)
+    aRetApiExitCode[0] = -1;
+
+  return returnExeCall;
+}
+
+
+/*! long lFctn_G_T32_GET_STATE()
+*  \brief Function that read the state of the system.
+*
+*  \return lState     - The state of the system: 0/1/2/3.
+*  \return -1 (Error) - An API error occurred
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 09.09.20              CrJu         Refactoring the code.
+*/
+long lFctn_G_T32_GET_STATE()
+{
+  long lState;
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128];
+  byte bDebugFlag;
+  
+  bDebugFlag = NotOk;
+  lState = Error;
+  
+  writeDbgLevel (DebugFuncCalls , "Function G_T32_GET_STATE() called.");
+  snprintf(chT32Cmd, elcount(chT32Cmd),"\"STATE\"");
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  if (lApiExitCode[0] == 0)
+  {
+    lState = atol(chApiMessage);
+    switch (lState)
+    {
+      case(0) : snprintf(msgInfo, elcount(msgInfo), "ECU is Down."); break;
+      case(1) : snprintf(msgInfo, elcount(msgInfo), "ECU is Halted."); break;
+      case(2) : snprintf(msgInfo, elcount(msgInfo), "ECU is Stopped."); break;
+      case(3) : snprintf(msgInfo, elcount(msgInfo), "ECU is Running."); break;
+      default : snprintf(msgInfo, elcount(msgInfo), "ECU state ERROR!!!."); break;
+    }
+  }
+  else // API Command Fail
+  {
+    snprintf(msgInfo, elcount(msgInfo), "API error message: %s", chApiMessage);
+  }
+  
+  if((byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, msgInfo);
+  
+
+  return lState;
+
+}
+
+/*! long lFctn_G_T32_GET_STATE(char aMsgInfo[])
+*  \brief Function that read the state of the system.
+*
+*  \return lState     - The state of the system: 0/1/2/3.
+*  \return -1 (Error) - An API error occured
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 09.09.20              CrJu         Refactoring the code.
+* 24.11.21              AnPu         Update function 
+* 16.02.22              IuSo         Refactoring the variable chT32Cmd.
+*/
+long lFctn_G_T32_GET_STATE(char aMsgInfo[])
+{
+  long lState;
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128];
+  byte bDebugFlag;
+  
+  bDebugFlag = NotOk;
+  lState = Error;
+  
+  writeDbgLevel (DebugFuncCalls , "Function G_T32_GET_STATE() called.");
+  snprintf(chT32Cmd, elcount(chT32Cmd),"\"STATE\"");
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  if (lApiExitCode[0] == 0)
+  {
+    lState = atol(chApiMessage);
+    switch (lState)
+    {
+      case(0) : snprintf(aMsgInfo, elcount(aMsgInfo), "ECU is Down."); break;
+      case(1) : snprintf(aMsgInfo, elcount(aMsgInfo), "ECU is Halted."); break;
+      case(2) : snprintf(aMsgInfo, elcount(aMsgInfo), "ECU is Stopped."); break;
+      case(3) : snprintf(aMsgInfo, elcount(aMsgInfo), "ECU is Running."); break;
+      default : snprintf(aMsgInfo, elcount(aMsgInfo), "ECU state ERROR!!!."); break;
+    }
+  }
+  else // API Command Fail
+  {
+    snprintf(aMsgInfo, elcount(aMsgInfo), "API error message: %s", chApiMessage);
+  }
+  
+  if((byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, msgInfo);
+
+  return lState;
+}
+
+
+/*! long lFctn_G_T32_RUN_CMM_CORE(char aAddress[], char aCore[], long aTimeOut, char aNumberOfParameters[])
+*  \brief Function that start an external application and check its exit code.
+*
+*  \param[in] aAddress - The working directory for the external application. The directory name may include spaces.
+*  \param[in] aCore - The specific core.
+*  \param[in] aTimeOut - The maximum wait time at the end of which the application is expected to exit.
+*  \param[in] aNumberOfParameters - The parameters that should follow
+*
+*  \return  1: The application exited with the expected exit code.
+*  \return  0: The application did not exit within the wait time.
+*  \return -1: The application could not be started, e.g., due to an error in the command line.
+*  \return -2: The application exited with an exit code other than the one expected.
+*  \return -999: Waiting aborted due to end of measurement (this does not cause the application to be aborted).
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 09.09.20              CrJu         Refactoring the code.
+*/
+long lFctn_G_T32_RUN_CMM_CORE(char aAddress[], char aCore[], long aTimeOut, char aNumberOfParameters[])
+{
+  byte bDebugFlag;
+  long lResult;
+  char chCommand[1024];
+  char chPassText[250];
+  char chFailText[250];
+  
+  lResult = NotOk;
+  
+  writeDbgLevel (DebugFuncCalls , "Function G_T32_RUN_CMM_CORE() entered.");
+  
+  // Action Text
+  vFctn_T32_CommandCreate_StartUpScripts(chCommand,"T32_API.exe \"DO "); //create StartUpScript folder structure path
+   
+  strncat(chCommand, aAddress, 1000);
+  strncat(chCommand, " ", 1000);
+  strncat(chCommand, aNumberOfParameters, 1000);
+  
+  lResult = TestWaitForSyscall(chCommand, 0, aTimeOut);
+  
+  // Expected Text
+  if (lResult)
+  {
+    snprintf(chPassText, elcount(chPassText), "The application exited with the expected exit code.");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "PASS:: %s.", chPassText);
+  }
+  else if(NotOk == lResult)
+  {
+    snprintf(chFailText, elcount(chFailText), "The application did not exit within the wait time.");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+  }
+  else if(Error == lResult)
+  {
+    snprintf(chFailText, elcount(chFailText), "The application could not be started, e.g., due to an error in the command line.");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "Error: %s.", chFailText);
+  }
+  else if(-2 == lResult)
+  {
+    snprintf(chFailText, elcount(chFailText), "The application exited with an exit code other than the one expected.");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "Error: %s.", chFailText);
+  }
+  else if(-999 == lResult)
+  {
+    snprintf(chFailText, elcount(chFailText), "Waiting aborted due to end of measurement (this does not cause the application to be aborted).");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "Error: %s.", chFailText);
+  }
+  
+  return lResult;
+}
+
+
+/*! \fn long lFctn_T32_ReadRegister_AddressValue(char aAddress[], int64 &aRegisterValue, char aMappedResponseInfo[])
+*  \brief Function that will read the value of a specific address and return an ApiExitCode
+*  \param[in]  char aAddress[]            - address from where the register value is read
+*  \param[in]  int64 &aRegisterValue      - register value that will be stored
+*  \param[in]  char aMappedResponseInfo[] - mapped response
+*
+*  \return aRetApiExitCode: 0 when register was read successfully
+*                           different than 0 when register was not read
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 20.05.22               AnPa            Created and implemented
+*/
+long lFctn_T32_ReadRegister_AddressValue(char aAddress[], int64 &aRegisterValue, char aMappedResponseInfo[])
+{
+  char chApiMessage[512];
+  byte bDebugFlag;
+  char chT32Cmd[128] = "";
+  char chAuxiliar[512] = "0x";
+  long lRetApiExitCode[1];
+  
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function lFctn_T32_ReadRegister_AddressValue() called.");
+  
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"Print data.long(%s)\"", aAddress);
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lRetApiExitCode);
+
+  if (lRetApiExitCode[0] == 0)
+    { 
+       strncat(chAuxiliar, chApiMessage, strlen(chApiMessage)+strlen(chAuxiliar)+1); //Concat the prefix '0x' to the returning value; //len indicates the maximum length of the composite string, including the terminating "\0".
+       aRegisterValue = (int)atodbl(chAuxiliar); //Convert the returned string to int64
+       strncpy(chAuxiliar,"0x",3); //Reset the auxiliar string 
+      
+       snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Register value was read successfully: 0x%lX.", aRegisterValue);
+      
+       if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+
+        return lRetApiExitCode[0]; 
+    }
+  else // API Command Fail
+    {
+       snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Register value was NOT read successfully. RetApiExitCode = %d.",  lRetApiExitCode[0]);
+      
+       if ((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+      
+       return lRetApiExitCode[0];
+    }
+}
+
+/*! \fn long lFctn_T32_Register_Check_Bit_Status(char aAddress[], byte aBit_Number, enum eBitStatus aBitStatus,char aMappedResponseInfo[])
+*  \brief Function that will return the status of a specific bit number of a specific address
+*  \param[in]  char aAddress[]            - address from where the register value is readed
+*  \param[in]  byte aBit_Number           - the bit number to be verified. (bit numbers start from 0, e.g. to verify the Port2 Pin7 the aBit_Number param should be 8 )
+*                                                                                                    (e.g. to verify bit 0 of an address the aBit_Number param should be 1)
+*  \param[in]  enum eBitStatus aBitStatus  -  eNotSet = 0 
+*                                             eSet = 1
+*  \param[in]  char aMappedResponseInfo[]  - mapped response
+*
+*  \return BitStatus code: Ok :when bit is set equal with expected aBitStatus
+*                          NotOk :when the bit is different than expected aBitStatus
+*                          Error :when error is detected at reading the register
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 20.05.22               AnPa            Created and implemented
+*/
+long lFctn_T32_Register_Check_Bit_Status(char aAddress[], byte aBit_Number, enum eBitStatus aBitStatus,char aMappedResponseInfo[])
+{
+  byte bDebugFlag;
+  int64 iRegisterValue;
+  byte bBitwiseMask = 1;  
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function lFctn_T32_Register_Check_Bit_Status() called.");
+
+
+  if (lFctn_T32_ReadRegister_AddressValue(aAddress,iRegisterValue, aMappedResponseInfo) == 0)
+   {      
+      iRegisterValue = iRegisterValue >> (aBit_Number-1);  //shift the value untill the specified bit number is on the first position so when the Bitwise AND is used the result will be 1/0
+
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "Register Value = 0x%lX and Bit number value after Bitwise AND with 0x1 applied =%X.",iRegisterValue ,(iRegisterValue & bBitwiseMask));
+  
+      if((iRegisterValue & bBitwiseMask) == aBitStatus) //if the bit is setted to expected value 0 or 1
+      {       
+        snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Bit %d has the expected value: %X", aBit_Number, aBitStatus);      
+        return Ok;   // the bit status will be return (equal with 0 or 1)
+      }
+      else
+      {
+        snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Bit %d is different than expected value: %X.", aBit_Number,aBitStatus); 
+        return NotOk;  //the bit status is different than expect aBitStatus
+      }   
+    }
+  else // API Command Fail
+    {
+       if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "Register value was NOT readed successfully.");
+      
+      return Error; //error at reading the register value
+    }
+}
+
+
+/*! \fn long lFctn_T32_ReadVariable(char aAddress[], int64 &aVariableValue, char aMappedResponseInfo[])
+*  \brief Function that will read the value of a specific variable address and return an ApiExitCode
+*  \param[in]  char aAddress[]            - name of the variable ("Symbol")
+*  \param[in]  int &aVariableValue      - variable value that will be stored
+*  \param[in]  char aMappedResponseInfo[] - mapped response
+*
+*  \return aRetApiExitCode: 0 when register was read successfully
+*                           different than 0 when register was not read
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 27.10.23               AnPa            Created and implemented
+*/
+long lFctn_T32_ReadVariable(char aAddress[], int &aVariableValue, char aMappedResponseInfo[])
+{
+  char chApiMessage[512];
+  byte bDebugFlag;
+  char chT32Cmd[128] = "";
+  long lRetApiExitCode[1];
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function lFctn_T32_ReadVariable() called.");
+  
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"print var.value(%s)*1.\"", aAddress);
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lRetApiExitCode);
+
+  if (lRetApiExitCode[0] == 0)
+    { 
+       aVariableValue = (int)atodbl(chApiMessage); //Convert the returned string to int64
+       snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Variable value was read successfully: 0x%lX.", aVariableValue);
+      
+       if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+
+        return lRetApiExitCode[0]; 
+    }
+  else // API Command Fail
+    {
+       snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Variable value was NOT read successfully. RetApiExitCode = %d.",  lRetApiExitCode[0]);
+      
+       if ((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+      
+       return lRetApiExitCode[0];
+    }
+}

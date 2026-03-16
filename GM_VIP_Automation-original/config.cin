@@ -1,0 +1,8 @@
+// This CIN is for hosting configurations to normalize for later
+variables
+{
+    //char project_root[256]    = "C:\\git\\L2H7890_Software/SWTest";
+    char automation_root[256] = "C:\\git\\L2H7890_Software\\SWTest\\GM_VIP_Automation";
+    char teraterm[256]        = "C:\\git\\L2H7890_Software\\SWTest\\GM_VIP_Automation\\teraterm.txt";
+    int powersupply_port      = 4;
+}

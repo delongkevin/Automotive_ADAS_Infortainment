@@ -1,0 +1,5 @@
+<map id="on_timer_UpdateVoltageAndCurrentTimer" name="on_timer_UpdateVoltageAndCurrentTimer">
+<area shape="rect" id="node1" title=" " alt="" coords="5,23,192,65"/>
+<area shape="rect" id="node2" href="$group__c_p_o_w.html#gaa2480fbca2c5b61678d646e8385fe1b9" title="Function send the command (IO?) for reading the actual current of the source." alt="" coords="241,5,447,32"/>
+<area shape="rect" id="node3" href="$group__c_p_o_w.html#ga6b741286058345990965dbcc12d69530" title="Function send the command (V?) for reading the voltage of the source." alt="" coords="240,56,448,83"/>
+</map>

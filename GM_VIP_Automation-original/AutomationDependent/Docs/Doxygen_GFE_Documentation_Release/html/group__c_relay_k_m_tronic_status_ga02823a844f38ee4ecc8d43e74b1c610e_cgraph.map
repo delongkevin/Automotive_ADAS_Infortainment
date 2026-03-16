@@ -1,0 +1,8 @@
+<map id="bFctn_RelKMT_GetStatus" name="bFctn_RelKMT_GetStatus">
+<area shape="rect" id="node1" title=" " alt="" coords="5,81,180,108"/>
+<area shape="rect" id="node2" href="$group__b_r_s232.html#ga61b7ec4299170645a1811565eab05262" title="Function closes a Serial Port." alt="" coords="228,5,387,32"/>
+<area shape="rect" id="node3" href="$group__b_r_s232_receive.html#gae30654746ae6641dd0a04013b29c01d2" title="Function gets from buffer data received on RS232." alt="" coords="233,56,382,83"/>
+<area shape="rect" id="node5" href="$group__b_r_s232.html#ga11797ce4059c8c018f7564bea4ce29eb" title=" " alt="" coords="229,107,385,133"/>
+<area shape="rect" id="node6" href="$group__b_r_s232.html#gae062978bea2f93af652f79122c527c31" title=" " alt="" coords="228,157,387,184"/>
+<area shape="rect" id="node4" href="$group__c_c_o_n_v_data_conversion.html#ga04fdfabf3f2093239d85ed91dd3e9aa7" title="Converts the exactly number of bytes(given in aByteDLC) from a byte array to a hex encoded strings ar..." alt="" coords="435,49,641,90"/>
+</map>

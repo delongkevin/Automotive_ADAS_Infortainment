@@ -1,0 +1,4 @@
+<map id="bFctn_POW_SetCommand" name="bFctn_POW_SetCommand">
+<area shape="rect" id="node1" title="Function sends a Command to the Power Supply, with a specific Value." alt="" coords="221,5,401,32"/>
+<area shape="rect" id="node2" href="$_power_supply_8can.html#af666efc5f9ba50e4140fc49008543ae3" title=" " alt="" coords="5,5,173,32"/>
+</map>

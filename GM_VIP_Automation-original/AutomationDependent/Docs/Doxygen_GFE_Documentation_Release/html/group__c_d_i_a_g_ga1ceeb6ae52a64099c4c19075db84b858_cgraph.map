@@ -1,0 +1,4 @@
+<map id="bFctn_DIAGGetParameter" name="bFctn_DIAGGetParameter">
+<area shape="rect" id="node1" title="Stores the parameter value of a specific previously sent diagnostic request." alt="" coords="5,13,180,39"/>
+<area shape="rect" id="node2" href="$group__c_d_i_a_g.html#gacd97c2a6f4ef789e4382b785f2ff50e2" title="Function that checks if the provided wait time is valid (greater then 0) If not, it will set the defa..." alt="" coords="228,5,428,47"/>
+</map>

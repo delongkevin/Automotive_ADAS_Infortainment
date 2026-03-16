@@ -1,0 +1,8 @@
+<map id="A_POW_SetVoltage" name="A_POW_SetVoltage">
+<area shape="rect" id="node1" title="Function sets power supply voltage." alt="" coords="5,81,147,108"/>
+<area shape="rect" id="node2" href="$group__c_p_o_w.html#ga61c1de931408b07b9f5bb1d6510994c3" title="Function selects from ini file which Power Supply to set active (0, 1... 8)." alt="" coords="196,5,403,32"/>
+<area shape="rect" id="node4" href="$group__c_p_o_w.html#gaa1df5921a823f730a8ee193aa1d38aef" title="Function sets command to set voltage from PowerSupply." alt="" coords="220,56,379,83"/>
+<area shape="rect" id="node5" href="$group__c_r_e_p_o_r_t.html#ga408b2b22f03e09e17faac1a06b30f6c5" title="unction writes in report desired Action text" alt="" coords="223,107,375,133"/>
+<area shape="rect" id="node6" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="195,157,404,184"/>
+<area shape="rect" id="node3" href="$group__c_p_o_w.html#ga80a1a31d65e2ce53e74ab4de24306fbe" title="Function sets the parameters for communication on RS232." alt="" coords="452,5,631,32"/>
+</map>

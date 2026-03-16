@@ -1,0 +1,582 @@
+/*@!Encoding:1252*/
+/*@@var:*/
+variables
+{
+  // Serial port configuration
+  dword gComPort = 4;  // COM4 as specified by user
+  msTimer tStepTimer;
+  
+  // Test parameters
+  float gCurrentVoltage = 5.5;
+  float gTargetVoltage = 17.5; //6-16v   22v
+  float gStepSize = 0.1;
+  float gNormalVoltage = 12.3;
+  dword gMinStepTime = 650;  
+  dword gMaxStepTime = 800;  
+
+  // Brown-out/Ramp test parameters
+  float gBrownLowVoltage = 6.0;
+  float gBrownHighVoltage = 12.0;
+  float gBrownStepSize = 0.2;
+  dword gBrownMinStepTime = 700;
+  dword gBrownMaxStepTime = 1000;
+
+  // General waveform test parameters
+  float gWaveMinVoltage = 6.0;
+  float gWaveMaxVoltage = 17.0;
+  float gWaveStepUp = 0.4;
+  float gWaveStepDown = 0.2;
+  dword gWaveMinStepTime = 600;
+  dword gWaveMaxStepTime = 1200;
+
+  // State tracking
+  int gTestRunning = 0;
+  int gPortOpened = 0;
+}
+
+/*@@end*/
+
+/*@@caplFunc:OpenSerialPort():*/
+dword OpenSerialPort()
+{
+  dword res;
+  
+  // Open the serial port (COM4)
+  res = RS232Open(gComPort);
+  
+  if (res == 0)
+  {
+    write("ERROR: Failed to open COM%d", gComPort);
+    return 0;
+  }
+  
+  write("COM%d opened successfully", gComPort);
+  
+  // Configure: 9600 baud, 8 data bits, 1 stop bit, no parity (0)
+  res = RS232Configure(gComPort, 9600, 8, 1, 0);
+  
+  if (res == 0)
+  {
+    write("ERROR: Failed to configure COM%d", gComPort);
+    RS232Close(gComPort);
+    return 0;
+  }
+  
+  write("COM%d configured: 9600,8,1,0", gComPort);
+  gPortOpened = 1;
+  return 1;
+}
+/*@@end*/
+
+/*@@caplFunc:CloseSerialPort():*/
+void CloseSerialPort()
+{
+  if (gPortOpened)
+  {
+    RS232Close(gComPort);
+    gPortOpened = 0;
+    write("COM%d closed", gComPort);
+  }
+}
+/*@@end*/
+
+/*@@caplFunc:SendCommand(char cmd[]):*/
+dword SendCommand(char cmd[])
+{
+  byte buffer[100];
+  dword length;
+  dword i;
+  dword res;
+  
+  // Copy command to byte buffer and add carriage return terminator
+  length = strlen(cmd);
+  for (i = 0; i < length; i++)
+  {
+    buffer[i] = cmd[i];
+  }
+  buffer[length] = 0x0D;  // CR (carriage return)
+  length++;
+  
+  // Send the command
+  res = RS232Send(gComPort, buffer, length);
+  
+  if (res == 0)
+  {
+    write("ERROR: Failed to send command: %s", cmd);
+    return 0;
+  }
+  
+  write("Sent: %s", cmd);
+  return 1;
+}
+/*@@end*/
+
+/*@@caplFunc:SetVoltage(float voltage):*/
+dword SetVoltage(float voltage)
+{
+  char cmd[50];
+  dword voltageValue;
+
+  // Clamp voltage to hardware safe range [6V, 17V]
+  if (voltage < 6.0) voltage = 6.0;
+  if (voltage > 17.0) voltage = 17.0;
+  
+  // BK Precision 1687B command format: VOLT{XXX}[CR]
+  // Voltage must be formatted as 3 digits with 1 decimal place
+  // Example: 5.9V becomes "059", 12.3V becomes "123", 17.1V becomes "171"
+  voltageValue = (dword)(voltage * 10);
+  snprintf(cmd, elcount(cmd), "VOLT%03d", voltageValue);
+  
+  return SendCommand(cmd);
+}
+/*@@end*/
+
+/*@@caplFunc:SetOutput(int state):*/
+dword SetOutput(int state)
+{
+  char cmd[20];
+  
+  // BK Precision 1687B command format: SOUT{0|1}[CR]
+  // 0 = Output ON, 1 = Output OFF
+  if (state)
+  {
+    snprintf(cmd, elcount(cmd), "SOUT0");  // Turn output ON
+  }
+  else
+  {
+    snprintf(cmd, elcount(cmd), "SOUT1");  // Turn output OFF
+  }
+  
+  return SendCommand(cmd);
+}
+/*@@end*/
+
+/*@@caplFunc:InitializePowerSupply():*/
+dword InitializePowerSupply()
+{
+  // Send initialization commands
+  write("Initializing BK Precision 1687B...");
+  
+  // Small delay for power supply to be ready
+  testWaitForTimeout(200);
+  
+  // Set voltage to initial value
+  if (SetVoltage(gCurrentVoltage) == 0)
+  {
+    return 0;
+  }
+  
+  testWaitForTimeout(200);
+  
+  // Turn output ON
+  if (SetOutput(1) == 0)
+  {
+    return 0;
+  }
+  
+  write("Power supply initialized at %.2fV", gCurrentVoltage);
+  return 1;
+}
+/*@@end*/
+
+/*@@caplFunc:GetRandomStepTime():*/
+dword GetRandomStepTime()
+{
+  dword range;
+  dword randomValue;
+  
+  range = gMaxStepTime - gMinStepTime;
+  randomValue = random(range);
+  
+  return gMinStepTime + randomValue;
+}
+/*@@end*/
+
+/*@@caplFunc:PerformNextStep():*/
+void PerformNextStep()
+{
+  dword stepTime;
+  
+  if (gCurrentVoltage <= gTargetVoltage)
+  {
+    // Set the voltage
+    write("Setting voltage to %.2fV", gCurrentVoltage);
+    SetVoltage(gCurrentVoltage);
+    
+    // Calculate random step time
+    stepTime = GetRandomStepTime();
+    write("Holding for %d ms (%.1f seconds)", stepTime, stepTime / 1000.0);
+    
+    // Start timer for next step
+    setTimer(tStepTimer, stepTime);
+    
+    // Increment voltage for next step
+    gCurrentVoltage += gStepSize;
+  }
+  else
+  {
+    // Test complete
+    write("Voltage sweep complete. Setting to normal operation voltage...");
+    SetVoltage(gNormalVoltage);
+    testWaitForTimeout(200);
+    write("Power supply set to %.2fV (normal operation)", gNormalVoltage);
+    
+    // Clean up
+    CloseSerialPort();
+    gTestRunning = 0;
+    write("PowerCrankTest COMPLETED SUCCESSFULLY");
+  }
+}
+/*@@end*/
+
+/*@@timer:tStepTimer:*/
+on timer tStepTimer
+{
+  PerformNextStep();
+}
+/*@@end*/
+
+/*@@caplFunc:RS232OnSend(dword port, byte buffer[], dword number):*/
+RS232OnSend(dword port, byte buffer[], dword number)
+{
+  // Callback when data is successfully sent
+  // Optional: can add debug output here if needed
+}
+/*@@end*/
+
+/*@@caplFunc:RS232OnError(dword port):*/
+RS232OnError(dword port)
+{
+  write("ERROR: RS232 communication error on COM%d", port);
+  gTestRunning = 0;
+  CloseSerialPort();
+}
+/*@@end*/
+
+/*@@testcase:PowerCrankTest():*/
+export testcase PowerCrankTest()
+{
+  write("==================================================");
+  write("Starting PowerCrankTest");
+  write("Power Supply: BK Precision 1687B");
+  write("COM Port: COM%d", gComPort);
+  write("Voltage Range: %.2fV to %.2fV", 5.9, 17.1);
+  write("Step Size: %.2fV", gStepSize);
+  write("Step Duration: %d-%d seconds (randomized)", gMinStepTime/1000, gMaxStepTime/1000);
+  write("==================================================");
+  
+  // Reset current voltage
+  gCurrentVoltage = 5.9;
+  gTestRunning = 1;
+  
+  // Open serial port
+  if (OpenSerialPort() == 0)
+  {
+    write("TESTCASE FAILED: Could not open serial port");
+    testStepFail();
+    return;
+  }
+  
+  // Initialize power supply
+  if (InitializePowerSupply() == 0)
+  {
+    write("TESTCASE FAILED: Could not initialize power supply");
+    CloseSerialPort();
+    testStepFail();
+    return;
+  }
+  
+  // Wait a bit for power supply to stabilize
+  write("Waiting 2 seconds for stabilization...");
+  testWaitForTimeout(2000);
+  
+  // Start the voltage sweep
+  write("Beginning voltage sweep...");
+  PerformNextStep();
+  
+  // Wait for test to complete
+  while (gTestRunning == 1)
+  {
+    testWaitForTimeout(100);  // Check every 100ms
+  }
+  
+  write("PowerCrankTest execution finished");
+  testStepPass();
+}
+/*@@end*/
+
+
+
+/*@@testcase:BrownOutRampTest():*/
+export testcase BrownOutRampTest()
+{
+  dword stepTime;
+  float voltage;
+  int i;
+  int loopCount = 3; // Number of brown-out cycles
+
+  write("==================================================");
+  write("Starting BrownOutRampTest");
+  write("Power Supply: BK Precision 1687B");
+  write("COM Port: COM%d", gComPort);
+  write("Brown-out low voltage: %.1fV", gBrownLowVoltage);
+  write("Brown-out high voltage: %.1fV", gBrownHighVoltage);
+  write("Step size: %.2fV", gBrownStepSize);
+  write("Step duration(ms): %d-%d", gBrownMinStepTime, gBrownMaxStepTime);
+  write("Loop count: %d", loopCount);
+  write("==================================================");
+
+  gTestRunning = 1;
+  if (OpenSerialPort() == 0)
+  {
+    write("TESTCASE FAILED: Could not open serial port");
+    testStepFail();
+    return;
+  }
+  gCurrentVoltage = gBrownHighVoltage;
+  if (InitializePowerSupply() == 0)
+  {
+    write("TESTCASE FAILED: Could not initialize power supply");
+    CloseSerialPort();
+    testStepFail();
+    return;
+  }
+  write("Waiting 1 second for stabilization...");
+  testWaitForTimeout(1000);
+
+  for (i = 0; i < loopCount && gTestRunning == 1; i++)
+  {
+    // Ramp down to brown-out
+    write("Brown-out cycle %d: Ramping down to %.1fV", i+1, gBrownLowVoltage);
+    for (voltage = gBrownHighVoltage; voltage >= gBrownLowVoltage && gTestRunning == 1; voltage -= gBrownStepSize)
+    {
+      SetVoltage(voltage);
+      stepTime = gBrownMinStepTime + random(gBrownMaxStepTime - gBrownMinStepTime);
+      testWaitForTimeout(stepTime);
+    }
+    // Ramp up to normal voltage
+    write("Brown-out cycle %d: Ramping up to %.1fV", i+1, gBrownHighVoltage);
+    for (voltage = gBrownLowVoltage; voltage <= gBrownHighVoltage && gTestRunning == 1; voltage += gBrownStepSize)
+    {
+      SetVoltage(voltage);
+      stepTime = gBrownMinStepTime + random(gBrownMaxStepTime - gBrownMinStepTime);
+      testWaitForTimeout(stepTime);
+    }
+    write("Brown-out cycle %d completed", i+1);
+  }
+  write("Resetting to normal operation voltage %.2fV", gNormalVoltage);
+  SetVoltage(gNormalVoltage);
+  testWaitForTimeout(200);
+  CloseSerialPort();
+  gTestRunning = 0;
+  write("BrownOutRampTest COMPLETED");
+  testStepPass();
+}
+/*@@end*/
+
+/*@@testcase:SawtoothWaveTest():*/
+export testcase SawtoothWaveTest()
+{
+  dword stepTime;
+  float voltage;
+  int periodCount = 4;
+  float minV;
+  float maxV;
+  float stepUp;
+  float stepDown;
+  int p;
+
+  minV = gWaveMinVoltage;
+  maxV = gWaveMaxVoltage;
+  stepUp = gWaveStepUp;
+  stepDown = gWaveStepDown;
+
+  write("==================================================");
+  write("Starting SawtoothWaveTest");
+  write("Power Supply: BK Precision 1687B");
+  write("COM Port: COM%d", gComPort);
+  write("Voltage Range: %.1fV to %.1fV", minV, maxV);
+  write("Step Up: +%.2fV", stepUp);
+  write("Step Down: -%.2fV", stepDown);
+  write("Step Duration(ms): %d-%d", gWaveMinStepTime, gWaveMaxStepTime);
+  write("Periods: %d", periodCount);
+  write("==================================================");
+
+  gTestRunning = 1;
+  if (OpenSerialPort() == 0)
+  {
+    write("TESTCASE FAILED: Could not open serial port");
+    testStepFail();
+    return;
+  }
+  gCurrentVoltage = minV;
+  if (InitializePowerSupply() == 0)
+  {
+    write("TESTCASE FAILED: Could not initialize power supply");
+    CloseSerialPort();
+    testStepFail();
+    return;
+  }
+  write("Waiting 1 second for stabilization...");
+  testWaitForTimeout(1000);
+
+  for (p = 0; p < periodCount && gTestRunning == 1; p++)
+  {
+    // Ramp up
+    write("Sawtooth period %d: ramp up", p+1);
+    for (voltage = minV; voltage < maxV && gTestRunning == 1; voltage += stepUp)
+    {
+      SetVoltage(voltage);
+      stepTime = gWaveMinStepTime + random(gWaveMaxStepTime - gWaveMinStepTime);
+      testWaitForTimeout(stepTime);
+    }
+    // Rapid fall
+    write("Sawtooth period %d: rapid drop to %.1fV", p+1, minV);
+    SetVoltage(minV);
+    testWaitForTimeout(gWaveMinStepTime);
+  }
+  write("Setting to normal operation voltage %.2fV", gNormalVoltage);
+  SetVoltage(gNormalVoltage);
+  testWaitForTimeout(200);
+  CloseSerialPort();
+  gTestRunning = 0;
+  write("SawtoothWaveTest COMPLETED");
+  testStepPass();
+}
+/*@@end*/
+
+/*@@testcase:TriangleWaveTest():*/
+export testcase TriangleWaveTest()
+{
+  dword stepTime;
+  float voltage;
+  int periodCount = 3;
+  float minV;
+  float maxV;
+  float step;
+  int p;
+
+  minV = gWaveMinVoltage;
+  maxV = gWaveMaxVoltage;
+  step = gWaveStepUp; // same for up and down for triangle
+  
+  write("==================================================");
+  write("Starting TriangleWaveTest");
+  write("Power Supply: BK Precision 1687B");
+  write("COM Port: COM%d", gComPort);
+  write("Voltage Range: %.1fV to %.1fV", minV, maxV);
+  write("Triangle Step: %.2fV", step);
+  write("Step Duration(ms): %d-%d", gWaveMinStepTime, gWaveMaxStepTime);
+  write("Periods: %d", periodCount);
+  write("==================================================");
+
+  gTestRunning = 1;
+  if (OpenSerialPort() == 0)
+  {
+    write("TESTCASE FAILED: Could not open serial port");
+    testStepFail();
+    return;
+  }
+  gCurrentVoltage = minV;
+  if (InitializePowerSupply() == 0)
+  {
+    write("TESTCASE FAILED: Could not initialize power supply");
+    CloseSerialPort();
+    testStepFail();
+    return;
+  }
+  write("Waiting 1 second for stabilization...");
+  testWaitForTimeout(1000);
+
+  for (p = 0; p < periodCount && gTestRunning == 1; p++)
+  {
+    // Ramp up
+    write("Triangle period %d: ramp up", p+1);
+    for (voltage = minV; voltage < maxV && gTestRunning == 1; voltage += step)
+    {
+      SetVoltage(voltage);
+      stepTime = gWaveMinStepTime + random(gWaveMaxStepTime - gWaveMinStepTime);
+      testWaitForTimeout(stepTime);
+    }
+    // Ramp down
+    write("Triangle period %d: ramp down", p+1);
+    for (voltage = maxV; voltage > minV && gTestRunning == 1; voltage -= step)
+    {
+      SetVoltage(voltage);
+      stepTime = gWaveMinStepTime + random(gWaveMaxStepTime - gWaveMinStepTime);
+      testWaitForTimeout(stepTime);
+    }
+  }
+  write("Reset to normal operation voltage %.2fV", gNormalVoltage);
+  SetVoltage(gNormalVoltage);
+  testWaitForTimeout(200);
+  CloseSerialPort();
+  gTestRunning = 0;
+  write("TriangleWaveTest COMPLETED");
+  testStepPass();
+}
+/*@@end*/
+
+/*@@testcase:NormalOperationRangeSweepTest():*/
+export testcase NormalOperationRangeSweepTest()
+{
+  dword stepTime;
+  float voltage;
+  float minV;
+  float maxV;
+  float step;
+
+  minV = 9.0;
+  maxV = 15.0;
+  step = 0.2;
+
+  write("==================================================");
+  write("Starting NormalOperationRangeSweepTest");
+  write("Power Supply: BK Precision 1687B");
+  write("COM Port: COM%d", gComPort);
+  write("Normal ECU Range: %.1fV to %.1fV", minV, maxV);
+  write("Sweep Step: %.2fV", step);
+  write("Step Duration(ms): %d-%d", gWaveMinStepTime, gWaveMaxStepTime);
+  write(" ==================================================");
+
+  gTestRunning = 1;
+  if (OpenSerialPort() == 0)
+  {
+    write("TESTCASE FAILED: Could not open serial port");
+    testStepFail();
+    return;
+  }
+  gCurrentVoltage = minV;
+  if (InitializePowerSupply() == 0)
+  {
+    write("TESTCASE FAILED: Could not initialize power supply");
+    CloseSerialPort();
+    testStepFail();
+    return;
+  }
+  write("Waiting 1 second for stabilization...");
+  testWaitForTimeout(1000);
+
+  // Sweep up
+  for (voltage = minV; voltage <= maxV && gTestRunning == 1; voltage += step)
+  {
+    SetVoltage(voltage);
+    stepTime = gWaveMinStepTime + random(gWaveMaxStepTime - gWaveMinStepTime);
+    testWaitForTimeout(stepTime);
+  }
+  // Sweep down
+  for (voltage = maxV; voltage >= minV && gTestRunning == 1; voltage -= step)
+  {
+    SetVoltage(voltage);
+    stepTime = gWaveMinStepTime + random(gWaveMaxStepTime - gWaveMinStepTime);
+    testWaitForTimeout(stepTime);
+  }
+  write("Reset to normal operation voltage %.2fV", gNormalVoltage);
+  SetVoltage(gNormalVoltage);
+  testWaitForTimeout(200);
+  CloseSerialPort();
+  gTestRunning = 0;
+  write("NormalOperationRangeSweepTest COMPLETED");
+  testStepPass();
+}
+/*@@end*/

@@ -1,0 +1,2403 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup tsDIAG tsDIAG
+* @defgroup DIAGNOSTICS DIAGNOSTICS
+* @ingroup testSupportLib
+* @{
+* @addtogroup tsDIAG
+* @{
+*/ 
+
+includes
+{ 
+  #include "tscDIAG.cin"
+  #include "..\..\controlLib\DIAGNOSTICS\cDIAG.cin"
+}
+
+/*! \fn void A_DIAG_SendRequest(diagRequest *aDiagReq, enum cc_eAddressingModeDIAG aSendMode)
+*  \brief Function that sends a specific diagnostic request. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagReq     - Diagnostic request.
+*  \param[in]  aSendMode    - Functional or physical (cc_eDIAGFunctional = 0, cc_eDIAGPhysical = 1)
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  21.12.17             CiCo            First Revision.
+*  03.07.18             RoBi            Refactoring code.
+*/
+void A_DIAG_SendRequest(diagRequest *aDiagReq, enum cc_eAddressingModeDIAG aSendMode)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  long lResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+  
+  lResult		= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SendRequest().");
+
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, enum cc_eAddressingModeDIAG: -- %d -- (0 - functional, 1 - physical).", chServiceRequestToString, aSendMode);      
+	  
+	  snprintf(chAction, elcount(chAction), "Send diagnostic request: %s, using addressing mode: %d (0 - functional, 1 - physical)", chServiceRequestToString, aSendMode);
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		  lResult = lFctn_DIAGSendRequest(aDiagReq, aSendMode);
+	  }
+
+	  if(!lResult)
+	  {
+		  snprintf(chPassText, elcount(chPassText), "Request: %s - sent successfully.", chServiceRequestToString);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chPassText, Ok);
+	  }
+	  else
+	  {
+		  snprintf(chFailText, elcount(chFailText), "Request: %s - NOT sent. Received ErrorCode: %d", chServiceRequestToString, lResult); 
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if the array size is greater than zero.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_WaitForDiagResponse(diagRequest *aDiagReq, dword aWaitTime, enum cc_eResponseCodeDIAG aResponseCode)
+*  \brief Function that wait for a specific diagnostic response and report the response. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagReq       - Diagnostic request.
+*  \param[in]  aWaitTime      - Waiting time in miliseconds for the response from when diag request was sent (if 0 - default value from .ini file will be used).
+*  \param[in]  aResponseCode  - Response code expected (cc_eDIAG_PositiveResponse, cc_eDIAG_NoResponse, cc_eDIAG_NRCXX, cc_eDIAG_GeneralNegativeResponse)
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  21.12.17             CiCo            First Revision.
+*  05.07.18             RoBi            Refactoring code.
+*/
+void E_DIAG_WaitForDiagResponse(diagRequest *aDiagReq, dword aWaitTime, enum cc_eResponseCodeDIAG aResponseCode)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chMappedResponseInfo[128];
+  long lResult;
+  byte bDebugFlag;
+ 
+  lResult	= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_WaitForDiagResponse().");
+
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, dword aWaitTime: -- %d --, enum tsc_eResponseCodeDIAG aResponseCode: -- %d --.", chServiceRequestToString, aWaitTime, aResponseCode);  
+	  
+	  aWaitTime = dwFctn_DIAGCheckIfWaitTimeIsValid(aWaitTime); // default to 4 seconds if value provided is < 1
+	  
+	  if (tsc_eDIAG_NoResponse == aResponseCode)
+	  {
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Wait no response from %s request in %d ms.", chServiceRequestToString, aWaitTime);
+	  }
+	  else if (tsc_eDIAG_PositiveResponse == aResponseCode)
+	  {
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Wait for positive response from %s request to be received in %d ms.", chServiceRequestToString, aWaitTime);
+	  }
+	  else
+	  {
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Wait for NRC_%X from %s request to be received in %d ms.", aResponseCode, chServiceRequestToString, aWaitTime);
+	  }
+
+	  lResult = lFctn_DIAGWaitForResponse(aDiagReq, aWaitTime, aResponseCode, chMappedResponseInfo);
+    
+	  if ( tsc_eDIAG_ResponseExpected == lResult  ) // Positive or negative response, as expected.
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chMappedResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+	  }
+	  else
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chMappedResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"ERROR: Conversion of the diagnostic request to string failed ! Check if the array size is greater than zero.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_TesterPresent(enum tsc_eFeatureStateDIAG aStateRequested)
+*  \brief Function that enables or disables tester present. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aStateRequested    - Disabled or Enabled. See the definition of enum tsc_eFeatureStateDIAG.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  06.07.18             RoBi            Created and implemented
+*/
+void A_DIAG_TesterPresent(enum tsc_eFeatureStateDIAG aStateRequested)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  long lResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  lResult		= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_TesterPresent().");
+  if ( (byte)DebugFuncParam & bDebugFlag )
+    writeDbgLevel (DebugFuncParam, "Parameters: enum tsc_eFeatureStateDIAG aStateRequested: -- %d -- (0 - Disable, 1 - Enable).", aStateRequested);      
+  
+  snprintf(chAction, elcount(chAction), "Change state of tester present to: %d (0 - Disable, 1 - Enable).", aStateRequested);
+  
+  bResultAction = bFctn_REPORTAction(chAction);
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+  
+  if(bResultAction)
+  {
+    if ( tsc_eDIAG_Disable == aStateRequested )
+	  {
+		  lResult = lFctn_DIAGTesterPresentOFF();
+	  }
+	  else // tsc_eDIAG_Enable == aStateRequested
+	  {
+		  lResult = lFctn_DIAGTesterPresentON();
+	  }
+  }
+
+  if(!lResult)
+  {
+	  snprintf(chPassText, elcount(chPassText), "Successfully changed state of tester present to: %d (0 - Disable, 1 - Enable).", aStateRequested);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+    vFctn_REPORTActionEvaluation(chPassText, Ok);
+  }
+  else
+  {
+	  snprintf(chFailText, elcount(chFailText), "Failed changing the state of tester present. Error Code: %d.", lResult);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+    vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_NRC78(enum tsc_eFeatureStateDIAG aStateRequested)
+*  \brief Function that enables or disables NRC78 (requestCorrectlyReceived-ResponsePending). NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aStateRequested    - Disabled or Enabled. See the definition of enum tsc_eFeatureStateDIAG.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  10.07.18             RoBi            Created and implemented
+*/
+void A_DIAG_NRC78(enum tsc_eFeatureStateDIAG aStateRequested)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  long lResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  lResult		= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_NRC78().");
+  if ( (byte)DebugFuncParam & bDebugFlag )
+    writeDbgLevel (DebugFuncParam, "Parameters: enum tsc_eFeatureStateDIAG aStateRequested: -- %d -- (0 - Disable, 1 - Enable).", aStateRequested);      
+  
+  snprintf(chAction, elcount(chAction), "Change state NRC_78 to: %d (0 - Disable, 1 - Enable).", aStateRequested);
+  
+  bResultAction = bFctn_REPORTAction(chAction);
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+  
+  if(bResultAction)
+  {
+    if ( tsc_eDIAG_Disable == aStateRequested )
+	  {
+		  lResult = lFctn_DIAG_NRC78_OFF();
+	  }
+	  else // tsc_eDIAG_Enable == aStateRequested
+	  {
+		  lResult = lFctn_DIAG_NRC78_ON();
+	  }
+  }
+
+  if(!lResult)
+  {
+	  snprintf(chPassText, elcount(chPassText), "Successfully changed state of NRC_78 to: %d (0 - Disable, 1 - Enable).", aStateRequested);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+    vFctn_REPORTActionEvaluation(chPassText, Ok);
+  }
+  else
+  {
+	  snprintf(chFailText, elcount(chFailText), "Failed changing the state of NRC_78. Error Code: %d.", lResult);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+    vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_SetTarget(char aECUName[])
+*  \brief Function that sets the target to the specified ECU name.
+*  \param[in]  aECUName[]   - Name of the desired ECU target.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  11.07.18             RoBi            Created and implemented
+*  20.11.18             RoBi            Added a condition to limit the characters displayed (in case of really large text).
+*/
+void A_DIAG_SetTarget(char aECUName[])
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chECUNameDisplayLimit[25];
+  long lResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  lResult = NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SetTarget().");
+  if ( (byte)DebugFuncParam & bDebugFlag )
+    writeDbgLevel (DebugFuncParam, "Parameters: char aECUName: -- %s --.", aECUName);
+  
+  // in case of really large ECU name, limit the display to 25 characters
+  if ( 1 == bFctn_CONV_GetSubString(aECUName, 0, 24, chECUNameDisplayLimit) ) 
+  {
+	  snprintf(chAction, elcount(chAction), "Set target to: %s.", chECUNameDisplayLimit);
+	  
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		  lResult = lFctn_DIAGSetTarget(aECUName);
+	  }
+
+	  if(!lResult)
+	  {
+		  snprintf(chPassText, elcount(chPassText), "Successfully changed the target to: %s.", chECUNameDisplayLimit);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chPassText, Ok);
+	  }
+	  else
+	  {
+		  snprintf(chFailText, elcount(chFailText), "Failed changing the target. Check if the name is correct. Error Code: %d.", lResult);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+	  }
+  }
+  else
+  {
+	  snprintf(chFailText, elcount(chFailText), "Failed when trying to get a sub string of aECUName, using function: bFctn_CONVGetSubString().");
+		if ( (byte)DebugFuncInternal & bDebugFlag)
+		  writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_SendAndWaitForResponse(diagRequest *aDiagReq, enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode)
+*  \brief Function that sends a specific diagnostic request and checks if the received response is the expected one.
+*  \param[in]  aDiagReq       - Diagnostic request.
+*  \param[in]  aSendMode      - Functional or physical (cc_eDIAGFunctional = 0, cc_eDIAGPhysical = 1).
+*  \param[in]  aResponseCode  - Response code expected (cc_eDIAG_PositiveResponse, cc_eDIAG_NoResponse, cc_eDIAG_NRCXX, cc_eDIAG_GeneralNegativeResponse)
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  13.07.18             RoBi            Created and implemented
+*/
+void A_DIAG_SendAndWaitForResponse(diagRequest *aDiagReq, enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chMappedResponseInfo[128];
+  char chExpectedResponseText[128];
+  long lResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  lResult		= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SendAndWaitForResponse().");
+
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, enum cc_eAddressingModeDIAG aSendMode: -- %d --, enum cc_eResponseCodeDIAG aResponseCode: -- %d --.", chServiceRequestToString, aSendMode, aResponseCode);      
+	  
+    vFctn_DIAG_FormExpectedResponseText(aResponseCode, chExpectedResponseText);
+    
+	  snprintf(chAction, elcount(chAction), "Send diagnostic request: %s and wait for the following response: %s", chServiceRequestToString, chExpectedResponseText);
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		  if (tsc_eDIAG_NoResponse == aResponseCode)
+		  {
+			  if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel (DebugFuncInternal, "Wait no response from %s request.", chServiceRequestToString);
+		  }
+		  else if (tsc_eDIAG_PositiveResponse == aResponseCode)
+		  {
+			  if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel (DebugFuncInternal, "Wait for positive response from %s request to be received.", chServiceRequestToString);
+		  }
+		  else
+		  {
+			  if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel (DebugFuncInternal, "Wait for NRC_%X from %s request to be received.", aResponseCode, chServiceRequestToString);
+		  }
+		
+		  lResult = lFctn_DIAGSendAndWaitForResponse(aDiagReq, aSendMode, aResponseCode, chMappedResponseInfo);
+	  }
+	  
+	  if ( tsc_eDIAG_ResponseExpected == lResult  ) // Positive or negative response, as expected.
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chMappedResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chPassText, Ok);
+	  }
+	  else
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chMappedResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if the array size is greater than zero.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+	  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_SendAndWaitForResponse(diagRequest *aDiagReq, enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode)
+*  \brief Function that ends a test step, by sending a specific diagnostic request and checking if the received response is the expected one.
+*  \param[in]  aDiagReq       - Diagnostic request.
+*  \param[in]  aSendMode      - Functional or physical (cc_eDIAGFunctional = 0, cc_eDIAGPhysical = 1).
+*  \param[in]  aResponseCode  - Response code expected (cc_eDIAG_PositiveResponse, cc_eDIAG_NoResponse, cc_eDIAG_NRCXX, cc_eDIAG_GeneralNegativeResponse)
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  21.12.17             CiCo            First Revision.
+*  05.07.18             RoBi            Refactoring code.
+*/
+void E_DIAG_SendAndWaitForResponse(diagRequest *aDiagReq, enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chMappedResponseInfo[128];
+  long lResult;
+  byte bDebugFlag;
+ 
+  lResult		= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_SendAndWaitForResponse().");
+ 
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, enum cc_eAddressingModeDIAG aSendMode: -- %d --, enum cc_eResponseCodeDIAG aResponseCode: -- %d --.", chServiceRequestToString, aSendMode, aResponseCode);      
+	  
+	  if (tsc_eDIAG_NoResponse == aResponseCode)
+	  {
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Wait no response from %s request.", chServiceRequestToString);
+	  }
+	  else if (tsc_eDIAG_PositiveResponse == aResponseCode)
+	  {
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Wait for positive response from %s request to be received.", chServiceRequestToString);
+	  }
+	  else
+	  {
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Wait for NRC_%X from %s request to be received.", aResponseCode, chServiceRequestToString);
+	  }
+
+	  lResult = lFctn_DIAGSendAndWaitForResponse(aDiagReq, aSendMode, aResponseCode, chMappedResponseInfo);
+	  
+	  if ( tsc_eDIAG_ResponseExpected == lResult  ) // Positive or negative response, as expected.
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chMappedResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+	  }
+	  else
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chMappedResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if the array size is greater than zero.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_SendCustomRequest(byte aDiagCustomReq[], enum cc_eAddressingModeDIAG aSendMode)
+*  \brief Function that sends a custom diagnostic request (whole byte array is sent). NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagCustomReq   - Custom diagnostic array request.
+*  \param[in]  aSendMode        - Functional or physical (cc_eDIAGFunctional = 0, cc_eDIAGPhysical = 1).
+* 
+*  \note 
+*   - It is required that A_DIAG_SetTarget(char aECUName[]) is previously called, else -98 error code is returned (handle not assigned to a diag object). 
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  16.07.18             RoBi            Created and implemented
+*/
+void A_DIAG_SendCustomRequest(byte aDiagCustomReq[], enum cc_eAddressingModeDIAG aSendMode)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chCustomRequestByteToStr[128];
+  byte bResizedArray[16];
+  long lResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+  byte bConvResult;
+  
+  lResult		= NotOk;
+  bResultAction = NotOk;
+  bConvResult = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SendCustomRequest().");
+  
+  // In case of large requests, for readability purpose, it is good to avoid printing all the bytes in the report
+  if ( elCount(aDiagCustomReq) > 8 ) // check if the request size is larger than 8 bytes
+  {
+    // Copy the first 8 elements of the array
+    if ( Ok == bFctn_CONV_CopyByteArray(aDiagCustomReq, bResizedArray, 8) )
+    { // Convert to string only the 8 elements
+      bConvResult = bFctn_CONV_ConvertByteArrayToString(bResizedArray, chCustomRequestByteToStr);
+    }  
+  }
+  else // The request is <= 8 elements - convert it directly to string
+  {
+    bConvResult = bFctn_CONV_ConvertByteArrayToString(aDiagCustomReq, chCustomRequestByteToStr);
+  }
+  
+  if ( Ok == bConvResult )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagCustomReq: -- 0x%s --, enum cc_eAddressingModeDIAG aSendMode: -- %d --.", chCustomRequestByteToStr, aSendMode);      
+	  
+	  snprintf(chAction, elcount(chAction), "Send custom diagnostic request: 0x%s, using addressing mode: %d (0 - functional, 1 - physical)", chCustomRequestByteToStr, aSendMode);
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		  lResult = lFctn_DIAGSendCustomRequest(aDiagCustomReq, aSendMode);
+	  }
+	  
+	  if ( !lResult )
+	  {
+		  snprintf(chPassText,elcount(chPassText),"Custom request: 0x%s - sent successfully.", chCustomRequestByteToStr);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chPassText, Ok);
+	  }
+	  else // NotOk == lResult
+	  {
+		  snprintf(chFailText,elcount(chFailText),"Custom request: 0x%s - NOT sent. Received ErrorCode: %d", chCustomRequestByteToStr, lResult);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the byte array: FAILED ! Check if the array size is greater than zero.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+	  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_SendAndWaitForResponseCR(byte aDiagCustomReq[], enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode)
+*  \brief Function that sends a custom diagnostic request and checks if the received response is the expected one. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagCustomReq   - Custom diagnostic array request.
+*  \param[in]  aWaitTime        - Waiting time in miliseconds for the response from when diag request was sent (if 0 - default value from .ini file will be used).
+*  \param[in]  aSendMode        - Functional or physical (cc_eDIAGFunctional = 0, cc_eDIAGPhysical = 1).
+*  \param[in]  aResponseCode    - Response code expected (cc_eDIAG_PositiveResponse, cc_eDIAG_NoResponse, cc_eDIAG_NRCXX, cc_eDIAG_GeneralNegativeResponse)
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  17.07.18             RoBi            Created and implemented
+*/
+void A_DIAG_SendAndWaitForResponseCR(byte aDiagCustomReq[], dword aWaitTime, enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chCustomRequestByteToStr[128];
+  char chMappedResponseInfo[128];
+  char chExpectedResponseText[128];
+  byte bResizedArray[16];
+  byte bConvResult;
+  long lResult;
+  byte bDebugFlag;
+  byte bResultAction;
+ 
+  lResult		    = NotOk;
+  bConvResult   = NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SendAndWaitForResponseCR().");
+  
+  // In case of large requests, for readability purpose, it is good to avoid printing all the bytes in the report
+  if ( elCount(aDiagCustomReq) > 8 ) // check if the request size is larger than 8 bytes
+  {
+    // Copy the first 8 elements of the array
+    if ( Ok == bFctn_CONV_CopyByteArray(aDiagCustomReq, bResizedArray, 8) )
+    { // Convert to string only the 8 elements
+      bConvResult = bFctn_CONV_ConvertByteArrayToString(bResizedArray, chCustomRequestByteToStr);
+    }
+  }
+  else // The request is <= 8 elements - convert it directly to string
+  {
+    bConvResult = bFctn_CONV_ConvertByteArrayToString(aDiagCustomReq, chCustomRequestByteToStr);
+  }
+  
+  // if wait time < 1, it will use the default wait time from .ini file
+  aWaitTime = dwFctn_DIAGCheckIfWaitTimeIsValid(aWaitTime); 
+  
+  if ( Ok == bConvResult )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: byte aDiagCustomReq[]: -- 0x%s --, enum cc_eAddressingModeDIAG aSendMode: -- %d --, enum cc_eResponseCodeDIAG aResponseCode: -- %d --.", chCustomRequestByteToStr, aSendMode, aResponseCode);      
+	  
+    vFctn_DIAG_FormExpectedResponseText(aResponseCode, chExpectedResponseText);
+    
+	  snprintf(chAction, elcount(chAction), "Send custom diagnostic request: 0x%s and wait: %d ms, for the following response: %s", chCustomRequestByteToStr, aWaitTime, chExpectedResponseText);
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		  if (tsc_eDIAG_NoResponse == aResponseCode)
+		  {
+			  if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel (DebugFuncInternal, "Wait no response from 0x%s request.", chCustomRequestByteToStr);
+		  }
+		  else if (tsc_eDIAG_PositiveResponse == aResponseCode)
+		  {
+			  if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel (DebugFuncInternal, "Wait for positive response from 0x%s request to be received.", chCustomRequestByteToStr);
+		  }
+		  else
+		  {
+			  if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel (DebugFuncInternal, "Wait for NRC_%X from 0x%s request to be received.", aResponseCode, chCustomRequestByteToStr);
+		  }
+		
+		  lResult = lFctn_DIAGSendAndWaitForResponseCR(aDiagCustomReq, aWaitTime, aSendMode, aResponseCode, chMappedResponseInfo);
+	  }
+	  
+	  if ( tsc_eDIAG_ResponseExpected == lResult  ) // Positive or negative response, as expected.
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chMappedResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chPassText, Ok);
+	  }
+	  else
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chMappedResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the byte array: FAILED ! Check if the array size is greater than zero.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+	  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_SendAndWaitForResponseCR(byte aDiagCustomReq[], enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode)
+*  \brief Function that ends a test step, by sending a custom diagnostic request and checking if the received response is the expected one. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagCustomReq   - Custom diagnostic array request.
+*  \param[in]  aWaitTime        - Waiting time in miliseconds for the response from when diag request was sent (if 0 - default value from .ini file will be used).
+*  \param[in]  aSendMode        - Functional or physical (cc_eDIAGFunctional = 0, cc_eDIAGPhysical = 1).
+*  \param[in]  aResponseCode    - Response code expected (cc_eDIAG_PositiveResponse, cc_eDIAG_NoResponse, cc_eDIAG_NRCXX, cc_eDIAG_GeneralNegativeResponse)
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  18.07.18             RoBi            Created and implemented
+*/
+void E_DIAG_SendAndWaitForResponseCR(byte aDiagCustomReq[], dword aWaitTime, enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chCustomRequestByteToStr[128];
+  char chMappedResponseInfo[128];
+  byte bResizedArray[16];
+  long lResult;
+  byte bDebugFlag;
+  byte bConvResult;
+ 
+  lResult		= NotOk;
+  bConvResult = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_SendAndWaitForResponseCR().");
+  
+  // In case of large requests, for readability purpose, it is good to avoid printing all the bytes in the report
+  if ( elCount(aDiagCustomReq) > 8 ) // check if the request size is larger than 8 bytes
+  {
+    // Copy the first 8 elements of the array
+    if ( Ok == bFctn_CONV_CopyByteArray(aDiagCustomReq, bResizedArray, 8) )
+    { // Convert to string only the 8 elements
+      bConvResult = bFctn_CONV_ConvertByteArrayToString(bResizedArray, chCustomRequestByteToStr);
+    }  
+  }
+  else // The request is <= 8 elements - convert it directly to string
+  {
+    bConvResult = bFctn_CONV_ConvertByteArrayToString(aDiagCustomReq, chCustomRequestByteToStr);
+  }
+  
+  // if wait time < 1, it will use the default wait time from .ini file
+  aWaitTime = dwFctn_DIAGCheckIfWaitTimeIsValid(aWaitTime); 
+  
+  if ( Ok == bConvResult )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: byte aDiagCustomReq[]: -- %s --, enum cc_eAddressingModeDIAG aSendMode: -- %d --, enum cc_eResponseCodeDIAG aResponseCode: -- %d --.", chCustomRequestByteToStr, aSendMode, aResponseCode);      
+	  
+	  if (tsc_eDIAG_NoResponse == aResponseCode)
+	  {
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Wait no response from %s request.", chCustomRequestByteToStr);
+	  }
+	  else if (tsc_eDIAG_PositiveResponse == aResponseCode)
+	  {
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Wait for positive response from %s request to be received.", chCustomRequestByteToStr);
+	  }
+	  else
+	  {
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Wait for NRC_%X from %s request to be received.", aResponseCode, chCustomRequestByteToStr);
+	  }
+    
+	  lResult = lFctn_DIAGSendAndWaitForResponseCR(aDiagCustomReq, aWaitTime, aSendMode, aResponseCode, chMappedResponseInfo);
+	  
+	  if ( tsc_eDIAG_ResponseExpected == lResult  ) // Positive or negative response, as expected.
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chMappedResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+	  }
+	  else
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chMappedResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the byte array: FAILED ! Check if the array size is greater than zero.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_GetParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawParamValue[])
+*  \brief Stores the parameter value of a specific previously sent diagnostic request. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagReq         - Diagnostic request.
+*  \param[in]  aParameterName   - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[out] aRawParamValue   - The raw output value of the specified parameter (ex: "00 00").
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  26.07.18             RoBi            Created and implemented
+*/
+void A_DIAG_GetParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawParamValue[])
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chRawByteToStr[128];
+  char chResponseInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  bResult		= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_GetParamRaw().");
+
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )  
+  {	
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, char aParameterName[]: -- %s --.", chServiceRequestToString, aParameterName);      
+	  
+	  snprintf(chAction, elcount(chAction), "Read RAW parameter value: %s of previously sent diagnostic request: %s.", aParameterName, chServiceRequestToString);
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		  bResult = bFctn_DIAGGetParamRaw(aDiagReq, aParameterName, aRawParamValue, chResponseInfo);
+	  }
+	  
+	  if ( Ok == bResult ) // parameter read/store ok
+	  {   
+		  if ( Ok == bFctn_CONV_ConvertByteArrayToString(aRawParamValue, chRawByteToStr) )
+		  {
+			  snprintf(chPassText, elcount(chPassText),"SUCCESS: Raw value: 0x%s of the parameter: %s has been stored.", chRawByteToStr, aParameterName);
+			  if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		    vFctn_REPORTActionEvaluation(chPassText, Ok);
+		  }
+	  }
+	  else
+	  {
+		  // invalid parameter or unexpected response (detailed info in variable: chResponseInfo)
+		  snprintf(chFailText, elcount(chFailText),"FAILED: %s", chResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+	  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+
+/*! \fn void A_DIAG_SendAndGetParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawParamValue[])
+*  \brief Sends a specific request and stores the mentioned parameter value in an output parameter. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagReq         - Diagnostic request.
+*  \param[in]  aParameterName   - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[out] aRawParamValue   - The raw output value of the specified parameter (ex: "00 00").
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  30.07.18             RoBi            Created and implemented
+*/
+void A_DIAG_SendAndGetParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawParamValue[])
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chResponseInfo[128];
+  char chRawByteToStr[128];
+  byte bResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  bResult		= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SendAndGetParamRaw().");
+
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )  
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, char aParameterName[]: -- %s --.", chServiceRequestToString, aParameterName);      
+	  
+	  snprintf(chAction, elcount(chAction), "Send diagnostic request: %s, and read parameter: %s.", chServiceRequestToString, aParameterName);
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		  bResult = bFctn_DIAGSendAndGetParamRaw(aDiagReq, aParameterName, aRawParamValue, chResponseInfo);
+	  }
+	  
+	  if ( Ok == bResult ) // parameter read/store ok
+	  {
+		  if ( Ok == bFctn_CONV_ConvertByteArrayToString(aRawParamValue, chRawByteToStr) )
+		  {
+			  snprintf(chPassText, elcount(chPassText),"SUCCESS: Raw value: 0x%s of the parameter: %s has been stored.", chRawByteToStr, aParameterName);
+			  if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		    vFctn_REPORTActionEvaluation(chPassText, Ok);
+		  }
+	  }
+	  else
+	  {
+		  // invalid parameter or unexpected response (detailed info in variable: chResponseInfo)
+		  snprintf(chFailText, elcount(chFailText),"FAILED: %s", chResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+	  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_SetSupressPositiveResponse(diagRequest *aDiagReq, enum tsc_eFeatureStateDIAG aStateRequested)
+*  \brief Function that enables or disables the send of a positive response, for a specific diag request. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagReq           - Diagnostic request.
+*  \param[in]  aStateRequested    - Disabled or Enabled (tsc_eDIAG_Disable = 0, tsc_eDIAG_Enable = 1).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  21.08.18             RoBi            Created and implemented
+*/
+void A_DIAG_SetSupressPositiveResponse(diagRequest *aDiagReq, enum tsc_eFeatureStateDIAG aStateRequested)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  long lResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  lResult		= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SetSupressPositiveResponse().");
+  
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )  
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, enum tsc_eFeatureStateDIAG aStateRequested: -- %d -- (0 - Disable, 1 - Enable).", chServiceRequestToString, aStateRequested);      
+	  
+	  snprintf(chAction, elcount(chAction), "Set Suppress positive response functionality to: %d (0 - Disable, 1 - Enable), for request: %s.", aStateRequested, chServiceRequestToString);
+	  
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		  if ( tsc_eDIAG_Disable == aStateRequested )
+		  {
+			  lResult = lFctn_DIAGSetSuppressPosResponse_OFF(aDiagReq);
+		  }
+		  else // tsc_eDIAG_Enable == aStateRequested
+		  {
+			  lResult = lFctn_DIAGSetSuppressPosResponse_ON(aDiagReq);
+		  }
+	  }
+
+	  if( !lResult )
+	  {
+		  snprintf(chPassText, elcount(chPassText), "SUCCESS: Suppress positive response functionality is changed to: %d (0 - Resp. Not Suppressed, 1 - Resp. Suppressed).", aStateRequested);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chPassText, Ok);
+	  }
+	  else // Suppress Bit has failed / Error code
+	  {
+      snprintf(chFailText, elcount(chFailText), "FAILED: Suppress bit could not be set. Received the following error code: %d.", lResult);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+	  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+
+/*! \fn void A_DIAG_GetParameter(diagRequest *aDiagReq, char aParameterName[],  enum cc_eParamValueAccessDIAG aParamValAcces, double aParamValue)
+*  \brief Function that will store the physical parameter value of a specific previously sent diagnostic request. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagReq             - Diagnostic request.
+*  \param[in]  aParameterName       - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces       - cc_eDIAG_ModeNumerical -> for numerical read
+*                                     cc_eDIAG_ModePhysical -> for pysical value(if conversion is definede from numerical)
+*                                     cc_eDIAG_ModeCoded -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[in]  aParamValue          - The output value of the specified parameter (Example: "-327.68").
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  22.08.18             RoBi            Created and implemented
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*/
+void A_DIAG_GetParameter(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double &aParamValue)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chResponseInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  bResult		= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_GetParameter().");
+  
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )  
+  {	
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, char aParameterName[]: -- %s --, enum cc_eParamValueAccessDIAG:-- %d --.", chServiceRequestToString, aParameterName, aParamValAcces);      
+    
+	  snprintf(chAction, elcount(chAction), "Read physical parameter value: %s of previously sent diagnostic request: %s.", aParameterName, chServiceRequestToString);
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		    bResult = bFctn_DIAGGetParameter(aDiagReq, aParameterName, aParamValAcces, aParamValue, chResponseInfo);
+	  }
+	  
+	  if ( Ok == bResult ) // parameter read/store ok
+	  {   
+			  snprintf(chPassText, elcount(chPassText),"SUCCESS: Physical value: %g, of the parameter: %s, has been stored.", aParamValue, aParameterName);
+			  if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		    vFctn_REPORTActionEvaluation(chPassText, Ok);
+	  }
+	  else
+	  {
+		  // invalid parameter or unexpected response (detailed info in variable: chResponseInfo)
+		  snprintf(chFailText, elcount(chFailText),"FAILED: %s", chResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+	  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+
+/*! \fn void A_DIAG_SendAndGetParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double &aParamValue)
+*  \brief Function that will send a specific request and stores the mentioned parameter, as physical value, in an output parameter. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagReq         - Diagnostic request.
+*  \param[in]  aParameterName   - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces   - cc_eDIAG_ModeNumerical -> for numerical read
+*                                 cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                 cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[out] aParamValue      - The output value of the specified parameter (ex: "-327.67").
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  27.08.18             RoBi            Created and implemented
+*/
+void A_DIAG_SendAndGetParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double &aParamValue)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chResponseInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  bResult		= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SendAndGetParam().");
+
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )  
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, char aParameterName[]: -- %s --, enum cc_eParamCompareDIAG aCompareMode: -- %d --.", chServiceRequestToString, aParameterName);      
+	  
+	  snprintf(chAction, elcount(chAction), "Send diagnostic request: %s, and read physical value of parameter: %s.", chServiceRequestToString, aParameterName);
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		  bResult = bFctn_DIAGSendAndGetParam(aDiagReq, aParameterName, aParamValAcces, aParamValue, chResponseInfo);
+	  }
+	  
+	  if ( Ok == bResult ) // parameter read/store ok
+	  {
+      snprintf(chPassText, elcount(chPassText),"SUCCESS: Physical value: %g, of the parameter: %s, has been stored.", aParamValue, aParameterName);
+			if ( (byte)DebugFuncInternal & bDebugFlag)
+			  writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chPassText, Ok);
+	  }
+	  else
+	  {
+      // invalid parameter or unexpected response (detailed info in variable: chResponseInfo)
+		  snprintf(chFailText, elcount(chFailText),"FAILED: %s", chResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+	  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+
+/*! \fn void E_DIAG_GetAndCompareParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aValueToCompareWithParam, enum cc_eParamCompareDIAG aCompareMode)
+*  \brief Function that will get the PHYSICAL value of a parameter(from request already sent) and compare it with the specified value. 
+*  \param[in]  aDiagReq                 - Diagnostic request.
+*  \param[in]  aParameterName           - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces           - cc_eDIAG_ModeNumerical -> for numerical read
+*                                         cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                         cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[in]  aValueToCompareWithParam - The actual value of the parameter will be compared with this reference value (ex: "0", "327.68").
+*  \param[in]  aCompareMode             - How the actual value of the parameter will be compared to the provided reference value (cc_eDIAG_Equal, cc_eDIAG_NotEqual, cc_eDIAG_Greater, cc_eDIAG_Less).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  28.08.18             RoBi            Created and implemented
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*/
+void E_DIAG_GetAndCompareParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aValueToCompareWithParam, enum cc_eParamCompareDIAG aCompareMode)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+ 
+  bResult		= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_GetAndCompareParam().");
+  
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest aDiagReq: -- %s --, char aParameterName[]: -- %s --, enum cc_eParamCompareDIAG aCompareMode: -- %d --, double aValueToCompareWithParam: -- %g --.", chServiceRequestToString, aParameterName, aParamValAcces, aValueToCompareWithParam, aCompareMode);      
+
+	  bResult = bFctn_DIAGGetAndCompareParam(aDiagReq, aParameterName, aParamValAcces, aValueToCompareWithParam, aCompareMode, chCompareOutputInfo);
+	  
+	  if ( Ok == bResult  ) // compare result is as expected
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+	  }
+	  else // compare result is not as exepcted, parameter name is not correct, request not sent/response not received
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_SendAndCompareParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aValueToCompareWithParam, enum cc_eParamCompareDIAG aCompareMode)
+*  \brief Function that will send the request, get the PHYSICAL value of a parameter and compare it with the specified value. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagReq                 - Diagnostic request.
+*  \param[in]  aParameterName           - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces           - cc_eDIAG_ModeNumerical -> for numerical read
+*                                         cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                         cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[in]  aValueToCompareWithParam - The actual value of the parameter will be compared with this reference value (ex: "0", "327.68").
+*  \param[in]  aCompareMode             - How the actual value of the parameter will be compared to the provided reference value (cc_eDIAG_Equal, cc_eDIAG_NotEqual, cc_eDIAG_Greater, cc_eDIAG_Less).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  30.08.18             RoBi            Created and implemented
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*/
+void E_DIAG_SendAndCompareParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aValueToCompareWithParam, enum cc_eParamCompareDIAG aCompareMode)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+ 
+  bResult	= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_SendAndCompareParam().");
+  
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest aDiagReq: -- %s --, char aParameterName[]: -- %s --, enum cc_eParamValueAccessDIAG:-- %d --, double aValueToCompareWithParam: -- %g --, enum cc_eParamCompareDIAG aCompareMode: -- %d --.", chServiceRequestToString, aParameterName, aParamValAcces, aValueToCompareWithParam, aCompareMode);      
+
+	  bResult = bFctn_DIAGSendAndCompareParam(aDiagReq, aParameterName, aParamValAcces,aValueToCompareWithParam, aCompareMode, chCompareOutputInfo);
+	  
+	  if ( Ok == bResult  ) // compare result is as expected
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+	  }
+	  else // compare result is not as exepcted, parameter name is not correct, request not sent/response not received
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_GetAndCompareParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawArrayToCompareWithParam[])
+*  \brief Function that will get the RAW value of a parameter(from request already sent) and compare it with the specified value. 
+*  \param[in]  aDiagReq                     - Diagnostic request.
+*  \param[in]  aParameterName               - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aRawArrayToCompareWithParam  - The actual raw value of the parameter will be compared with this reference value (ex: "00 00", "80 00").
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  30.08.18             RoBi            Created and implemented
+*/
+void E_DIAG_GetAndCompareParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawArrayToCompareWithParam[])
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+ 
+  bResult		= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_GetAndCompareParamRaw().");
+  
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest aDiagReq: -- %s --, char aParameterName[]: -- %s --.", chServiceRequestToString, aParameterName);      
+
+	  bResult = bFctn_DIAGGetAndCompareParamRaw(aDiagReq, aParameterName, aRawArrayToCompareWithParam, chCompareOutputInfo);
+	  
+	  if ( Ok == bResult  ) // compare result is as expected
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+	  }
+	  else // compare result is not as expected, parameter name is not correct, request not sent/response not received or conversion failed
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_SendAndCompareParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawArrayToCompareWithParam[])
+*  \brief Function that will send the request, get the RAW value of a parameter and compare it with the specified array value. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagReq 		                - Diagnostic request.
+*  \param[in]  aParameterName 	            - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aRawArrayToCompareWithParam  - The actual raw value of the parameter will be compared with this reference value (ex: "00 00", "80 00").
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  30.08.18             RoBi        	  Created and implemented
+*/
+void E_DIAG_SendAndCompareParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawArrayToCompareWithParam[])
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+ 
+  bResult		= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_SendAndCompareParamRaw().");
+  
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest aDiagReq: -- %s --, char aParameterName[]: -- %s --.", chServiceRequestToString, aParameterName);      
+
+	  bResult = bFctn_DIAGSendAndCompareParamRaw(aDiagReq, aParameterName, aRawArrayToCompareWithParam, chCompareOutputInfo);
+	
+	  if ( Ok == bResult  ) // compare result is as expected
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+	  }
+	  else // compare result is not as expected, parameter name is not correct, request not sent/response not received or conversion failed
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_CheckResponseLength(diagRequest *aDiagReq, long aExpectedRespLength)
+*  \brief Function that will get the response from a previously sent request and checks the length of it with the expected value. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagReq 		                - Diagnostic request.
+*  \param[in]  aExpectedRespLength 	        - Value of the expected response length.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  31.08.18             RoBi        	  Created and implemented
+*/
+void E_DIAG_CheckResponseLength(diagRequest *aDiagReq, long aExpectedRespLength)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+ 
+  bResult		 = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_CheckResponseLength().");
+  
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest aDiagReq: -- %s --, long aExpectedRespLength: -- %d --.", chServiceRequestToString, aExpectedRespLength);      
+
+	  bResult = bFctn_DIAGCheckResponseLength(aDiagReq, aExpectedRespLength, chCompareOutputInfo);
+
+	  if ( Ok == bResult  ) // response length is as expected
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+	  }
+	  else // response length is not as expected, response not received or internal error code encountered
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_CheckResponseLength(byte aDiagCR[], long aExpectedRespLength)
+*  \brief Function that will get the response from a previously sent custom request and checks the length of it with the expected value. NOTE: Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \param[in]  aDiagCR 		                  - Diagnostic custom request.
+*  \param[in]  aExpectedRespLength 	        - Value of the expected response length.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  12.08.20             CrJu        	  Created and implemented
+*/
+void E_DIAG_CheckResponseLength(byte aDiagCR[], long aExpectedRespLength)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+  diagRequest * req_CustomRequestCreated;
+ 
+  bResult		 = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_CheckResponseLength().");
+  
+  if ( Ok == bFctn_CONV_ConvertByteArrayToDiagObject(aDiagCR, req_CustomRequestCreated) )
+  {
+	  bResult = bFctn_DIAGCheckResponseLength(req_CustomRequestCreated, aExpectedRespLength, chCompareOutputInfo);
+
+	  if ( Ok == bResult  ) // response length is as expected
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. %s", chCompareOutputInfo);
+		  vFctn_REPORTStepEvaluation(chPassText, PASS);
+	  }
+	  else // response length is not as expected, response not received or internal error code encountered
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. %s", chCompareOutputInfo);
+		  vFctn_REPORTStepEvaluation(chFailText, FAIL);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the custom request to a diagnostic request FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, chFailText);
+	  vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void E_DIAG_GetAndCompareParamRange(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aMinValue, double aMaxValue)
+*  \brief Function that will get the PHYSICAL value of a parameter(from request already sent) and check if it is within a specified range. Note: If minVal=10, maxVal=10 and paramVal=10, the parameter is within range. 
+*  \param[in]  aDiagReq 		    - Diagnostic request.
+*  \param[in]  aParameterName   - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces   - cc_eDIAG_ModeNumerical -> for numerical read
+*                                 cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                 cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[in]  aMinValue 			  - The minimum range value.
+*  \param[in]  aMaxValue 		    - The maximum range value.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  03.09.18             RoBi        	  Created and implemented
+*  20.11.18             RoBi        	  Added condition to check that aMinValue <= aMaxValue (invalid range is avoided).
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*/
+void E_DIAG_GetAndCompareParamRange(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aMinValue, double aMaxValue)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+ 
+  bResult		= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_GetAndCompareParamRange().");
+  
+  if ( aMinValue <= aMaxValue ) // no point to allow a MinValue greater than the MaxValue
+  {
+    if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+    {
+  	  if ( (byte)DebugFuncParam & bDebugFlag )
+	      writeDbgLevel (DebugFuncParam, "Parameters: diagRequest aDiagReq: -- %s --, char aParameterName[]: -- %s --, enum cc_eParamCompareDIAG aCompareMode: -- %d --, enum cc_eParamCompareDIAG aCompareMode: -- %d --, double aMinValue: -- %g --, double aMaxValue: -- %g --.", chServiceRequestToString, aParameterName, aParamValAcces, aMinValue, aMaxValue);      
+
+  	  bResult = bFctn_DIAGGetAndCompareParamRange(aDiagReq, aParameterName, aParamValAcces, aMinValue, aMaxValue, chCompareOutputInfo);
+  	  
+  	  if ( Ok == bResult  ) // compared value is within range
+  	  {
+  		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chCompareOutputInfo);
+  		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+  		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+  	  }
+  	  else // compared value is NOT within range, parameter name is not correct, request not sent/response not received
+  	  {
+  		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chCompareOutputInfo);
+  		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+  		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  	  }
+    }
+    else // conversion failed
+    {
+  	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+  	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+  	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+    }
+  }
+  else // invalid range specified
+  {
+    snprintf(chFailText,elcount(chFailText),"Invalid range specified. Minimum Value: %g, must be less or equal than Maximum Value: %g !", aMinValue, aMaxValue);
+  	if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+  	vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_SendAndCompareParamRange(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aMinValue, double aMaxValue)
+*  \brief Function that will send the request, get the PHYSICAL value of the specified parameter and check if it is within a specified range. Note: If minVal=10, maxVal=10 and paramVal=10, the parameter is within range. 
+*  \param[in]  aDiagReq 		    - Diagnostic request.
+*  \param[in]  aParameterName   - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces   - cc_eDIAG_ModeNumerical -> for numerical read
+*                                 cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                 cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[in]  aMinValue 				- The minimum range value.
+*  \param[in]  aMaxValue 		    - The maximum range value.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  03.09.18             RoBi        	  Created and implemented
+*  20.11.18             RoBi        	  Added condition to check that aMinValue <= aMaxValue (invalid range is avoided).
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*/
+void E_DIAG_SendAndCompareParamRange(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aMinValue, double aMaxValue)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+ 
+  bResult		= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_SendAndCompareParamRange().");
+  
+  if ( aMinValue <= aMaxValue ) // no point to allow a MinValue greater than the MaxValue
+  {
+    if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+    {
+  	  if ( (byte)DebugFuncParam & bDebugFlag )
+	      writeDbgLevel (DebugFuncParam, "Parameters: diagRequest aDiagReq: -- %s --, char aParameterName[]: -- %s --,enum cc_eParamValueAccessDIAG:-- %d --, double aMinValue: -- %g --, double aMaxValue: -- %g --.", chServiceRequestToString, aParameterName, aParamValAcces, aMinValue, aMaxValue);      
+
+  	  bResult = bFctn_DIAGSendAndCompareParamRange(aDiagReq, aParameterName, aParamValAcces,aMinValue, aMaxValue, chCompareOutputInfo);
+  	  
+  	  if ( Ok == bResult  ) // compared value is within range
+  	  {
+  		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chCompareOutputInfo);
+  		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+  		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+  	  }
+  	  else // compared value is NOT within range, parameter name is not correct, request not sent/response not received
+  	  {
+  		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chCompareOutputInfo);
+  		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+  		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  	  }
+    }
+    else // conversion failed
+    {
+  	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+  	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+  	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+    }
+  }
+  else // invalid range specified
+  {
+    snprintf(chFailText,elcount(chFailText),"Invalid range specified. Minimum Value: %g, must be less or equal than Maximum Value: %g !", aMinValue, aMaxValue);
+  	if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+  	vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_SendAndCompareParamString(diagRequest *aDiagReq, char aParameterName[], char aStringToCompareWithParam[])
+*  \brief Function that will send the request, get the Symbolic text of a parameter and compare it with the specified string. NOTE: If parameter does not have a Symbol text defined in .cdd or .pdx, the numeric value will be compared instead.
+*  \param[in]  aDiagReq 		                - Diagnostic request.
+*  \param[in]  aParameterName 	            - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aStringToCompareWithParam  	- The actual Symbolic text of the parameter will be compared with this string.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  04.09.18             RoBi        	  Created and implemented
+*/
+void E_DIAG_SendAndCompareParamString(diagRequest *aDiagReq, char aParameterName[], char aStringToCompareWithParam[])
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+ 
+  bResult		= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_SendAndCompareParamString().");
+  
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest aDiagReq: -- %s --, char aParameterName[]: -- %s --,  char aStringToCompareWithParam[]: -- %s --.", chServiceRequestToString, aParameterName, aStringToCompareWithParam);      
+
+	  bResult = bFctn_DIAGSendAndCompareParamString(aDiagReq, aParameterName, aStringToCompareWithParam, chCompareOutputInfo);
+	  
+	  if ( Ok == bResult  ) // string is identical with expected value
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+	  }
+	  else // compare result is not as expected, parameter name is not correct, request not sent/response not received or conversion failed
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+
+/*! \fn void A_DIAG_SendAndGetPrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, byte aPrimitiveDataOuputArray[])
+*  \brief Function that sends a specific request and stores the primitive data, between start and stop byte position, in an output byte array.
+*  \param[in]  aDiagReq 		              - Diagnostic request.
+*  \param[in]  aStartByte 	              - The byte position from where the data will START to be copied (check note).
+*  \param[in]  aStopByte 		              - The byte position where the data will STOP copying.
+*  \param[out] aPrimitiveDataOuputArray   - The output array where the primitive data will be copied.
+* 
+*  \note  Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \htmlonly <PRE>Counting starts from the "Data" response, without taking into consideration the eco bytes from service and DID.
+	Example: 
+	Request:          <font color="orange">22 D4 00</font>
+	
+  Positive respose: <font color="blue">62</font> <font color="green">D4 00</font> <font color="red">01 00 23 01 9B 00 78 01 66 8C 1E</font>
+                    <font color="blue">|</font>  <font color="green"> \/</font>   <font color="red">\_____________________________/</font>
+                    <font color="blue">serv</font> <font color="green">DID</font>                <font color="red">Data</font>
+	Counting starts from byte number 0 (elements on the start and end position are copied as well).
+    "Data" response byte 0 is <font color="red">0x62</font>,
+    "Data" response byte 1 is <font color="red">0xD4</font>,
+    "Data" response byte 2 is <font color="red">0x00</font>
+    "Data" response byte 3 is <font color="red">0x01</font>, etc...
+    
+    If start byte = 2, stop byte = 5 => selected bytes: <font color="green">00<font color="red">01 00 23</font>
+    If start byte = 0, stop byte = 0 => selected byte is: <font color="red">0x62</font>
+	</PRE> 
+*	\endhtmlonly
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  05.09.18             RoBi        	  Created and implemented
+*  11.11.19             CrJu            Changed the doxygen example. The function will now save the whole response of the request. / Added a message in the raport in case of failing the Action function.
+*/
+void A_DIAG_SendAndGetPrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, byte aPrimitiveDataOuputArray[])
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chCopyPrimitiveDataInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  bResult	= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SendAndGetPrimitiveData().");
+
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )  
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, dword aStartByte: -- %d --, dword aStopByte: -- %d --.", chServiceRequestToString, aStartByte, aStopByte);      
+	  
+	  snprintf(chAction, elcount(chAction), "Send diag request: %s and copy primitive data from response, starting with byte position: %d and stop at: %d.", chServiceRequestToString, aStartByte, aStopByte);
+	  bResultAction = bFctn_REPORTAction(chAction);
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	  if(bResultAction)
+	  {
+		  bResult = bFctn_DIAGSendAndGetPrimitiveData(aDiagReq, aStartByte, aStopByte, aPrimitiveDataOuputArray, chCopyPrimitiveDataInfo);
+	  }
+    else //The reporting function has failed
+    {
+      snprintf(chFailText, elcount(chFailText),"FAILED: Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, chFailText);
+		  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+    }
+	  
+	  if ( Ok == bResult ) // primitive data read/store ok
+	  {
+      snprintf(chPassText, elcount(chPassText),"SUCCESS: Primitive data from position: %d to %d, has been successfully stored in output array.", aStartByte, aStopByte);
+			if ( (byte)DebugFuncInternal & bDebugFlag)
+			  writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+		  vFctn_REPORTActionEvaluation(chPassText, Ok);
+	  }
+	  else // primitive data could not be copied
+	  {
+      // start/stop value invalid, output array to small, primitive byte could not be read (internal error) or response of request not as expected.
+		  snprintf(chFailText, elcount(chFailText),"FAILED: %s", chCopyPrimitiveDataInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, chCopyPrimitiveDataInfo);
+		  vFctn_REPORTActionEvaluation(chCopyPrimitiveDataInfo, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+	  vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_SendAndComparePrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, byte aPrimitiveDataArrayToBeCompared[])
+*  \brief Function that will send the request, get the primitive data, between start and stop byte position, and compare it with the specified array (works only with 2 DID bytes).
+*  \param[in]  aDiagReq 		                    - Diagnostic request.
+*  \param[in]  aStartByte 	                    - The byte position from where the data will START to be compared (check note).
+*  \param[in]  aStopByte                        - The byte position where the data will STOP copying.
+*  \param[in]  aPrimitiveDataArrayToBeCompared  - The byte array which will be compared with the actual primitive data, of the response.
+*
+*  \note  Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \htmlonly <PRE>Counting starts from the "Data" response, without taking into consideration the eco bytes from service and DID.
+	Example (works only for 2 DID bytes): 
+	Request: <font color="orange">22 D4 00</font>
+	Positive respose: <font color="blue">62</font> <font color="green">D4 00</font> <font color="red">01 00 23 01 9B 00 78 01 66 8C 1E</font>
+                      <font color="blue">|</font>  <font color="green"> \/</font>   <font color="red">\_____________________________/</font>
+                     <font color="blue">serv</font> <font color="green">DID</font>                <font color="red">Data</font>
+	Counting starts from byte number 0 (elements on the start and end position are copied as well).
+    "Data" response byte 0 is <font color="red">0x01</font>,
+    "Data" response byte 1 is <font color="red">0x00</font>,
+    "Data" response byte 2 is <font color="red">0x23</font>, etc...
+    If start byte = 4, stop byte = 7 => selected bytes: <font color="red">9B 00 78 01</font>
+    If start byte = 0, stop byte = 0 => selected byte is: <font color="red">0x01</font>
+	</PRE> 
+*	\endhtmlonly
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  06.09.18             RoBi        	  Created and implemented
+*/
+void E_DIAG_SendAndComparePrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, byte aPrimitiveDataArrayToBeCompared[])
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+ 
+  bResult		= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_SendAndComparePrimitiveData().");
+  
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest aDiagReq: -- %s --, dword aStartByte: -- %d --, dword aStopByte: -- %d --.", chServiceRequestToString, aStartByte, aStopByte);      
+
+	  bResult = bFctn_DIAGSendAndComparePrimitiveData(aDiagReq, aStartByte, aStopByte, aPrimitiveDataArrayToBeCompared, chCompareOutputInfo);
+	  
+	  if ( Ok == bResult  ) // compare result is as expected
+	  {
+		  snprintf(chPassText,elcount(chPassText),"SUCCESS: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chPassText, Ok);
+	  }
+	  else // compare result is not as expected, request not sent/response not received or conversion failed
+	  {
+		  snprintf(chFailText,elcount(chFailText),"FAILED: %s", chCompareOutputInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+		  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+	  }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText),"Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTStepEvaluation().");
+	  vFctn_REPORTStepEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void E_DIAG_SendAndComparePrimitiveData(byte aDiagCR[], dword aStartByte, dword aStopByte, byte aPrimitiveDataArrayToBeCompared[])
+*  \brief Function that will send the custom request, get the primitive data, between start and stop byte position, and compare it with the specified array (works only with 2 DID bytes).
+*  \param[in]  aDiagCR 		                      - Array with the custom request elements (Representation example of DefaultSession_Start: aDiagCustomReqArray[0] = 0x10, aDiagCustomReqArray[1] = 0x01).
+*  \param[in]  aStartByte 	                    - The byte position from where the data will START to be compared (check note).
+*  \param[in]  aStopByte                        - The byte position where the data will STOP copying.
+*  \param[in]  aPrimitiveDataArrayToBeCompared  - The byte array which will be compared with the actual primitive data, of the response.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  24.02.20             CrJu        	  Created and implemented
+*/
+void E_DIAG_SendAndComparePrimitiveData(byte aDiagCR[], dword aStartByte, dword aStopByte, byte aPrimitiveDataArrayToBeCompared[])
+{
+  char chCompareOutputInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+  diagRequest * req_CustomRequestCreated; // use the pre-defined data diag object to create the custom request
+
+  bResult	= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_CRSendAndComparePrimitiveData().");
+    
+  // Calculate the total number of desired bytes 
+  if( bFctn_CONV_ConvertByteArrayToDiagObject(aDiagCR, req_CustomRequestCreated ))
+  {
+    bResult = bFctn_DIAGSendAndComparePrimitiveData(req_CustomRequestCreated, aStartByte, aStopByte, aPrimitiveDataArrayToBeCompared, chCompareOutputInfo);
+	
+    if ( Ok == bResult ) // compare result is as expected
+	  {
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "Test action PASSED: %s", chCompareOutputInfo);
+		  vFctn_REPORTStepEvaluation(chCompareOutputInfo, PASS);
+	  }
+    else // compare result is not as expected, request not sent/response not received or conversion failed
+    {
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "Test action FAILED: %s", chCompareOutputInfo);
+		  vFctn_REPORTStepEvaluation(chCompareOutputInfo, FAIL);
+    }
+  }
+  else //Conversion failed
+  {
+    snprintf(chCompareOutputInfo, elCount(chCompareOutputInfo), "ERROR: Conversion failed to diag object.");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "Test action FAILED: %s", chCompareOutputInfo);
+		vFctn_REPORTStepEvaluation(chCompareOutputInfo, FAIL);
+  }
+}
+
+/*! \fn void A_DIAG_SendPrimitiveData(diagRequest *aDiagReq, byte aByteArrayToSend[])
+*  \brief Function that modify all of the primitive data, of a provided diag request, send it with the data from the provided byte array and restore the request back to its original data.
+*  \param[in]  aDiagReq             - Diagnostic request which will be modified and sent.
+*  \param[in]  aByteArrayToSend     - Data which will replace the content of the provided diag request. 
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  22.11.18             RoBi        	  Created and implemented
+*/
+void A_DIAG_SendPrimitiveData(diagRequest *aDiagReq, byte aByteArrayToSend[])
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chServiceRequestToString[128];
+  char chSendPrimitiveDataInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+  byte bResizedArray[8];
+  char chElementsOfTheArray[128];
+  byte bConvResult;
+ 
+  bResult		= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SendPrimitiveData().");
+  
+  // In case of large arrays, for readability purpose, it is good to avoid printing all the bytes in the report
+  if ( (elCount(aByteArrayToSend) > 8) // check if the request size is larger than 8 bytes (counting starts at 0)
+    && (Ok == bFctn_CONV_CopyByteArray(aByteArrayToSend, bResizedArray, 8)) ) // Copy only the first 8 elements of the array
+  {
+    // Convert to string only the first 8 elements
+    bConvResult = bFctn_CONV_ConvertByteArrayToString(bResizedArray, chElementsOfTheArray); 
+    strncat(chElementsOfTheArray,"...", strlen(chElementsOfTheArray) + 3);
+  }
+  else // The request is <= 8 elements - convert it directly to string
+  {
+    bConvResult = bFctn_CONV_ConvertByteArrayToString(aByteArrayToSend, chElementsOfTheArray);
+  }
+
+  // Convert the diag request to string, in order to print it in the report
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) && Ok == bConvResult)  
+  {
+    if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest *aDiagReq: -- %s --, byte chElementsOfTheArray[] -- %d --.", chServiceRequestToString, chElementsOfTheArray);      
+    
+    snprintf(chAction, elcount(chAction), "Modify diag request: %s, and send it with primitive data: 0x%s.", chServiceRequestToString, chElementsOfTheArray);
+    bResultAction = bFctn_REPORTAction(chAction);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+    
+    if(bResultAction)
+    {
+      bResult = bFctn_DIAGSendPrimitiveData(aDiagReq, aByteArrayToSend, chSendPrimitiveDataInfo);
+    }
+    
+    if ( Ok == bResult ) // primitive data of the request was modified, sent and restored successfully
+    {
+      snprintf(chPassText, elcount(chPassText),"SUCCESS: Provided request has been successfully sent with data: 0x%s.", chElementsOfTheArray);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+      vFctn_REPORTActionEvaluation(chPassText, Ok);
+    }
+    else // failed: request could not be modified, sent or restored to initial value
+    {
+      snprintf(chFailText, elcount(chFailText),"FAILED: %s", chSendPrimitiveDataInfo);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+      vFctn_REPORTActionEvaluation(chFailText, NotOk);
+    }
+  }
+  else // conversion failed
+  {
+    snprintf(chFailText,elcount(chFailText),"FAILED: Conversion of the byte array or diagnostic request to string could not be done !");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+    vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_SetP2Timeouts(char aECU_Target[], dword aNewP2Timeout_ms, dword aNewP2ExtendedTimeout_ms)
+*  \brief Function that will modify the P2 and P2*Extended timeouts, for the correctly specified ECU Target.
+*  \param[in]  aECU_Target                - The ECU Target for which the P2/P2* timeouts will apply.
+*  \param[in]  aNewP2Timeout_ms           - The new value, in miliseconds, for the P2 timeout.
+*  \param[in]  aNewP2ExtendedTimeout_ms   - The new value, in miliseconds, for the P2* Extended timeout.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  23.11.18             RoBi            Created and implemented
+*/
+void A_DIAG_SetP2Timeouts(char aECU_Target[], dword aNewP2Timeout_ms, dword aNewP2ExtendedTimeout_ms)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chSetP2TimeoutsInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  bResult	= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Entered A_DIAG_SetP2Timeouts().");
+  if ( (byte)DebugFuncParam & bDebugFlag )
+    writeDbgLevel(DebugFuncParam, "Parameters: char aECU_Target[]: -- %s --, dword aNewP2Timeout_ms: -- %d --, dword aNewP2ExtendedTimeout_ms -- %d --.", aECU_Target, aNewP2Timeout_ms, aNewP2ExtendedTimeout_ms);      
+    
+  snprintf(chAction, elcount(chAction), "Change the timeout values of the target ECU: %s, to: P2 = %d and P2*Extended = %d.", aECU_Target, aNewP2Timeout_ms, aNewP2ExtendedTimeout_ms);
+  bResultAction = bFctn_REPORTAction(chAction);
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+
+  if(bResultAction)
+  {
+    bResult = bFctn_DIAGSetP2Timeouts(aECU_Target, aNewP2Timeout_ms, aNewP2ExtendedTimeout_ms, chSetP2TimeoutsInfo);
+  }
+
+  if ( Ok == bResult ) // the P2 timeouts were successfully modified
+  {
+    snprintf(chPassText, elcount(chPassText),"SUCCESS: The P2 timeouts of the target ECU: %s, are changed to: P2 = %d and P2*Extended = %d.", aECU_Target, aNewP2Timeout_ms, aNewP2ExtendedTimeout_ms);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+    vFctn_REPORTActionEvaluation(chPassText, Ok);
+  }
+  else // failed: could not modify the P2 timeouts
+  {
+    snprintf(chFailText, elcount(chFailText),"FAILED: %s", chSetP2TimeoutsInfo);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+    vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_RestoreP2Timeouts(char aECU_Target[])
+*  \brief Function that will restore the P2 and P2*Extended timeouts, to the values specified in the .ini file, for the specified ECU Target.
+*  \param[in]  aECU_Target                - The ECU Target for which the P2/P2* timeouts will apply.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  26.11.18             RoBi            Created and implemented
+*  25.02.20             CiCo            Debug level corrected
+*/
+void A_DIAG_RestoreP2Timeouts(char aECU_Target[])
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chRestoreP2TimeoutsInfo[128];
+  byte bResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  bResult	= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Entered A_DIAG_RestoreP2Timeouts().");
+  if ( (byte)DebugFuncParam & bDebugFlag )
+    writeDbgLevel(DebugFuncParam, "Parameters: char aECU_Target[]: -- %s --.", aECU_Target);      
+    
+  snprintf(chAction, elcount(chAction), "Change the timeout values of the target ECU: %s, to the values specified in the .cdd/configuration.", aECU_Target);
+  bResultAction = bFctn_REPORTAction(chAction);
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+
+  if(bResultAction)
+  {
+    bResult = bFctn_DIAGRestoreP2Timeouts(aECU_Target, chRestoreP2TimeoutsInfo);
+  }
+
+  if ( Ok == bResult ) // the P2 timeouts were successfully modified
+  {
+    snprintf(chPassText, elcount(chPassText),"SUCCESS: %s", chRestoreP2TimeoutsInfo);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action PASSED. Calling function vFctn_REPORTActionEvaluation().");
+    vFctn_REPORTActionEvaluation(chPassText, Ok);
+  }
+  else // failed: could not modify the P2 timeouts
+  {
+    snprintf(chFailText, elcount(chFailText),"FAILED: %s", chRestoreP2TimeoutsInfo);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, "Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+    vFctn_REPORTActionEvaluation(chFailText, NotOk);
+  }
+}
+
+/*! \fn void A_DIAG_SetResponseTimeout( dword aTimeoutValue )
+*  \brief Function that will set the maximum timeout for the next diag response
+*  \param[in]  aTimeoutValue   - Value in ms for the diag response timeout.
+*  \note Function will have effect only for the function which do not have wait time as argument
+*  \note In case that is not used the default value from tester ini file will be used ( entry DefaultDiagWaitTime)
+*  \note Function will have effect only for the next waiting for response function
+*  \note    
+*         A_DIAG_SetResponseTimeout(9000); -> set max timeout for response to 9000 ms
+*         E_DIAG_SendAndWaitForResponse(req_Extended_Start, cc_eDIAGPhysical, cc_eDIAG_PositiveResponse ); -> function will wait max 9000 ms for response to come
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  25.02.20             CiCo            Created and implemented
+*/
+void A_DIAG_SetResponseTimeout( dword aTimeoutValue )
+{
+  char chMappedResponse[256];
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128]; 
+  byte bResult;
+  byte bDebugFlag;
+  
+  bResult	= NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;// use only for debug
+  snprintf( chMappedResponse, elcount(chMappedResponse), "" );
+  
+  writeDbgLevel(DebugFuncCalls, "Entered A_DIAG_SetResponseTimeout().");
+  if ( (byte)DebugFuncParam & bDebugFlag )
+    writeDbgLevel(DebugFuncParam, "Parameters: char aTimeoutValue: -- %d [ms] --.", aTimeoutValue);      
+    
+  snprintf(chAction, elcount(chAction), "Set the max. diag response timeout to %d [ms] for the next request/response.", aTimeoutValue);
+  bResult = bFctn_REPORTAction(chAction);
+  
+  if( bResult )
+  {
+    bResult =  bFctn_DIAGSetResponseTimeout( aTimeoutValue, chMappedResponse );
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSetResponseTimeout return: -- %d --. Response %s.", bResult, chMappedResponse);
+    
+    if ( Ok == bResult ) // requested value will be taken in consideration for the next request/response
+    {
+      snprintf(chPassText, elcount(chPassText),"SUCCESS: %s", chMappedResponse);
+      vFctn_REPORTActionEvaluation(chPassText, Ok);
+    }
+    else // failed: Timeout was not set to requested value
+    {
+      snprintf(chFailText, elcount(chFailText),"FAILED: %s", chMappedResponse);
+      vFctn_REPORTActionEvaluation(chFailText, NotOk);
+    }
+  }  
+}
+
+/*! \fn long A_DIAG_SendAndGetPrimitiveData(byte aDiagCR[], dword aStartByte, byte aPrimitiveDataOuputArray[])
+*  \brief Sendd a custom request and stores the primitive data, from start position until the end of the response, in an output byte array.
+*  \param[in]  aDiagCR                  - Array with the custom request elements (Representation example of DefaultSession_Start: aDiagCustomReqArray[0] = 0x10, aDiagCustomReqArray[1] = 0x01).
+*  \param[in]  aStartByte               - The byte position from where the data will START to be copied.
+*  \param[in]  aPrimitiveDataOuputArray - The output array which store the data of the response.
+* 
+*  \note  Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  11.05.20             CrJu        	  Created and implemented
+*/
+void A_DIAG_SendAndGetPrimitiveData(byte aDiagCR[], dword aStartByte, byte aPrimitiveDataOuputArray[])
+{
+  char chAction[128];
+  char chPassText[250];
+  char chFailText[250];
+  char chMessageResponseInfo[250];
+  long lResult;
+  byte bDebugFlag;
+  byte bResultAction; 
+ 
+  lResult	= NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered A_DIAG_SendAndGetPrimitiveData().");
+
+  snprintf(chAction, elcount(chAction), "Send custom diag request and copy primitive data from response, starting with byte position: %d untill the end.", aStartByte);
+	bResultAction = bFctn_REPORTAction(chAction);
+	  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+	  writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+	  
+	if(bResultAction)
+	{
+    lResult = lFctn_DIAG_CRSendAndGetPrimitiveDataWithOffset(aDiagCR, aStartByte, aPrimitiveDataOuputArray, chMessageResponseInfo);
+    
+    if ( Error != lResult ) // primitive data read/store ok
+	  {
+      snprintf(chPassText, elcount(chPassText), "SUCCESS: Primitive data from position: %d, has been successfully stored in output array. Total of %d bytes.", aStartByte, lResult);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+			  writeDbgLevel (DebugFuncInternal, chMessageResponseInfo);
+		  vFctn_REPORTActionEvaluation(chPassText, PASS);
+	  }
+    else // primitive data could not be copied
+	  {
+      // start value invalid, output array to small, primitive byte could not be read (internal error) or response of request not as expected.
+		  snprintf(chFailText, elcount(chFailText),"FAILED: %s", chMessageResponseInfo);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, chFailText);
+		  vFctn_REPORTActionEvaluation(chMessageResponseInfo, FAIL);
+	  }
+	}
+  else //The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText),"FAILED: Test action FAILED. Calling function vFctn_REPORTActionEvaluation().");
+		if ( (byte)DebugFuncInternal & bDebugFlag)
+		  writeDbgLevel (DebugFuncInternal, chFailText);
+		vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void E_DIAG_SendAndComparePrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, qword aPrimitiveDataToBeCompared, enum eCompareType aExpectedCompareAction)
+*  \brief Function that will send the request, get the primitive data, between start and stop byte position, convert and compare it with the specified qword element (works only with 2 DID bytes).
+*  \param[in]  aDiagReq 		              - Diagnostic request.
+*  \param[in]  aStartByte 	              - The byte position from where the data will START to be compared (check note).
+*  \param[in]  aStopByte                  - The byte position where the data will STOP copying.
+*  \param[in]  aPrimitiveDataToBeCompared - The qword element which will be compared with the actual primitive data, of the response.
+*  \param[in]  aExpectedCompareAction     - The expected comparation beetwen actual data and given data: Equal / NotEqual / Greater / Smaller.
+*
+*  \note  Based on how the request is defined, if a specific target is necessary, first use the function A_DIAG_SetTarget().
+*  \htmlonly <PRE>Counting starts from the "Data" response, without taking into consideration the eco bytes from service and DID.
+	Example (works only for 2 DID bytes): 
+	Request: <font color="orange">22 D4 00</font>
+	Positive respose: <font color="blue">62</font> <font color="green">D4 00</font> <font color="red">01 00 23 01 9B 00 78 01 66 8C 1E</font>
+                      <font color="blue">|</font>  <font color="green"> \/</font>   <font color="red">\_____________________________/</font>
+                     <font color="blue">serv</font> <font color="green">DID</font>                <font color="red">Data</font>
+	Counting starts from byte number 0 (elements on the start and end position are copied as well).
+    "Data" response byte 0 is <font color="red">0x01</font>,
+    "Data" response byte 1 is <font color="red">0x00</font>,
+    "Data" response byte 2 is <font color="red">0x23</font>, etc...
+    If start byte = 4, stop byte = 7 => selected bytes: <font color="red">9B 00 78 01</font>
+    If start byte = 0, stop byte = 0 => selected byte is: <font color="red">0x01</font>
+	</PRE> 
+*	\endhtmlonly
+*
+* /note A qword element can contain maximum 8 bytes.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  30.09.20             CrJu        	  Created and implemented
+*/
+void E_DIAG_SendAndComparePrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, qword aPrimitiveDataToBeCompared, enum eCompareType aExpectedCompareAction)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chAditionalInfo[128];
+  char chServiceRequestToString[128];
+  qword qwActualPrimitiveValue;
+  byte bResult;
+  byte bDebugFlag;
+  byte bActualPrimitiveData[8];
+  byte bConvertPrimitiveDataResult;
+  
+  bResult	= NotOk;
+  bConvertPrimitiveDataResult = NotOk;
+  bDebugFlag = tscDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_DIAG_SendAndComparePrimitiveData().");
+  
+  if ( Ok == bFctn_CONV_ConvertDiagReqToString(aDiagReq, chServiceRequestToString) )
+  {
+	  if ( (byte)DebugFuncParam & bDebugFlag )
+	    writeDbgLevel (DebugFuncParam, "Parameters: diagRequest aDiagReq: -- %s --, dword aStartByte: -- %d --, dword aStopByte: -- %d --.", chServiceRequestToString, aStartByte, aStopByte);      
+
+    //Qword can contain a maximum 8 Bytes
+    if((aStopByte - aStartByte) < 8)
+    {
+  	  bResult = bFctn_DIAGSendAndGetPrimitiveData(aDiagReq, aStartByte, aStopByte, bActualPrimitiveData, chAditionalInfo);
+  	  
+      if ( bResult ) // request sent, response received and actual primitive data can be compared
+      {
+        // convert actual primitive data received after sending the specified request into a qword Value
+        bConvertPrimitiveDataResult = bFctn_CONV_ConvertByteArrToWordLength(bActualPrimitiveData, Type_Qword, qwActualPrimitiveValue);
+        if((aStopByte - aStartByte) != 7)
+          qwActualPrimitiveValue = qwActualPrimitiveValue >> (8 * (8 - (aStopByte - aStartByte + 1)));
+        
+        if(bConvertPrimitiveDataResult)// && bConvertPrimitiveDataToString)
+        {
+      	  if ( Equal == aExpectedCompareAction ) // Expect to be EQUAL
+      	  {
+            //SUCCESS: Primitive data is IDENTICAL, as expected
+            if ( aPrimitiveDataToBeCompared == qwActualPrimitiveValue )
+            {
+              snprintf(chPassText,elcount(chPassText), "SUCCESS: Primitive data of diag request: -%s- is IDENTICAL with expected value: 0x%llX.", chServiceRequestToString, aPrimitiveDataToBeCompared);
+      		    if ( (byte)DebugFuncInternal & bDebugFlag)
+      		      writeDbgLevel (DebugFuncInternal, chPassText);
+      		    vFctn_REPORTStepEvaluation(chPassText, PASS);
+            }
+            else //FAIL: Primitive data is not IDENTICAL, as not expected
+            {
+              snprintf(chFailText,elcount(chFailText), "FAILED: Primitive data of diag request: -%s- is NOT IDENTICAL with expected value: 0x%llX(!= 0x%llX).", chServiceRequestToString, aPrimitiveDataToBeCompared, qwActualPrimitiveValue);
+      		    if ( (byte)DebugFuncInternal & bDebugFlag)
+      		      writeDbgLevel (DebugFuncInternal, chFailText);
+      		    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+            }
+          }
+          else if (NotEqual == aExpectedCompareAction) // Expect to not be equal
+          {
+            //SUCCESS: Primitive data is NOT IDENTICAL, as expected
+            if ( aPrimitiveDataToBeCompared != qwActualPrimitiveValue )
+            {
+              snprintf(chPassText,elcount(chPassText), "SUCCESS: Primitive data of diag request: -%s- is NOT IDENTICAL with expected value: 0x%llX(!= 0x%llX).", chServiceRequestToString, aPrimitiveDataToBeCompared);
+      		    if ( (byte)DebugFuncInternal & bDebugFlag)
+      		      writeDbgLevel (DebugFuncInternal, chPassText);
+      		    vFctn_REPORTStepEvaluation(chPassText, PASS);
+            }
+            else //FAIL: Primitive data is IDENTICAL, as not expected
+            {
+              snprintf(chFailText,elcount(chFailText), "FAILED: Primitive data of diag request: -%s- is IDENTICAL, as not expected, with value: 0x%llX.", chServiceRequestToString, aPrimitiveDataToBeCompared, qwActualPrimitiveValue);
+      		    if ( (byte)DebugFuncInternal & bDebugFlag)
+      		      writeDbgLevel (DebugFuncInternal, chFailText);
+      		    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+            }
+          }
+      	  else if (Greater == aExpectedCompareAction) // Expect to be Greater
+      	  {
+      		  //SUCCESS: Primitive data is not IDENTICAL or GREATER, as expected
+            if ( aPrimitiveDataToBeCompared < qwActualPrimitiveValue )
+            {
+              snprintf(chPassText,elcount(chPassText), "SUCCESS: As expected, primitive data of diag request: -%s- is GREATER than expected value: 0x%llX > 0x%llX.", chServiceRequestToString, qwActualPrimitiveValue, aPrimitiveDataToBeCompared);
+      		    if ( (byte)DebugFuncInternal & bDebugFlag)
+      		      writeDbgLevel (DebugFuncInternal, chPassText);
+      		    vFctn_REPORTStepEvaluation(chPassText, PASS);
+            }
+            else //FAIL: Primitive data is IDENTICAL or not GREATER, as not expected
+            {
+              snprintf(chFailText,elcount(chFailText), "FAILED: As not expected, primitive data of diag request: -%s- is NOT GREATER than expected value: 0x%llX <= 0x%llX.", chServiceRequestToString, qwActualPrimitiveValue, aPrimitiveDataToBeCompared);
+      		    if ( (byte)DebugFuncInternal & bDebugFlag)
+      		      writeDbgLevel (DebugFuncInternal, chFailText);
+      		    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+            }
+      	  }
+          else if (Smaller == aExpectedCompareAction) // Expect to be Smaller
+      	  {
+      		  //SUCCESS: Primitive data is not IDENTICAL or SMALLER, as expected
+            if ( aPrimitiveDataToBeCompared > qwActualPrimitiveValue )
+            {
+              snprintf(chPassText,elcount(chPassText), "SUCCESS: As expected, primitive data of diag request: -%s- is SMALLER than expected value: 0x%llX > 0x%llX.", chServiceRequestToString, qwActualPrimitiveValue, aPrimitiveDataToBeCompared);
+      		    if ( (byte)DebugFuncInternal & bDebugFlag)
+      		      writeDbgLevel (DebugFuncInternal, chPassText);
+      		    vFctn_REPORTStepEvaluation(chPassText, PASS);
+            }
+            else //FAIL: Primitive data is IDENTICAL or not SMALLER, as not expected
+            {
+              snprintf(chFailText,elcount(chFailText), "FAILED: As not expected, primitive data of diag request: -%s- is NOT SMALLER than expected value: 0x%llX >= 0x%llX.", chServiceRequestToString, qwActualPrimitiveValue, aPrimitiveDataToBeCompared);
+      		    if ( (byte)DebugFuncInternal & bDebugFlag)
+      		      writeDbgLevel (DebugFuncInternal, chFailText);
+      		    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+            }
+      	  }
+        }
+        else // csonversion of the received primitive failed: bFctn_CONV_ByteArrayToSpecificNumberBaseString or bFctn_CONV_ConvertStringToUnsignedDataType
+        {
+          snprintf(chAditionalInfo, elcount(chAditionalInfo), "ERROR: Check functions for convert: bFctn_CONV_ByteArrayToSpecificNumberBaseString() or bFctn_CONV_ConvertStringToUnsignedDataType() for more info.");
+      		if ( (byte)DebugFuncInternal & bDebugFlag)
+    		    writeDbgLevel (DebugFuncInternal, chAditionalInfo);
+    		  vFctn_REPORTStepEvaluation(chAditionalInfo, FAIL);
+        }
+      }
+      else // bFctn_DIAGSendAndGetPrimitiveData() failed
+      {
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+  	      writeDbgLevel (DebugFuncInternal, chAditionalInfo);
+  	    vFctn_REPORTStepEvaluation(chAditionalInfo, FAIL);
+      }
+    }
+    else // more than 8 bytes are trying to be stacked in a qword
+    {
+      snprintf(chFailText,elcount(chFailText), "ERROR: More than 8 bytes are trying to be stacked in a qword. Check start and stop position!");
+  	  if ( (byte)DebugFuncInternal & bDebugFlag)
+  	    writeDbgLevel (DebugFuncInternal, chFailText);
+  	  vFctn_REPORTStepEvaluation(chFailText, FAIL);
+    }
+  }
+  else // conversion failed
+  {
+	  snprintf(chFailText,elcount(chFailText), "ERROR: Conversion of the diagnostic request to string: FAILED ! Check if a valid diag request was provided.");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, chFailText);
+	  vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup testSupportLib
+*   \brief Library for handling Diagnostics(UDS) services.
+*/

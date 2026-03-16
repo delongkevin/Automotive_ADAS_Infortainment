@@ -1,0 +1,4 @@
+<map id="E_DIAG_SendAndCompareParamRange" name="E_DIAG_SendAndCompareParamRange">
+<area shape="rect" id="node1" title="Function that will send the request, get the PHYSICAL value of the specified parameter and check if i..." alt="" coords="5,5,224,47"/>
+<area shape="rect" id="node2" href="$group__c_r_e_p_o_r_t.html#gae2516bdd6224879343a2a9acf69edf07" title="Function Evaluates writes in report evaluated expected." alt="" coords="272,13,471,39"/>
+</map>

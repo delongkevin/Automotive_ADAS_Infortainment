@@ -1,0 +1,4 @@
+<map id="on_sysvar_PowGeneral_Variables_ReadVoltage" name="on_sysvar_PowGeneral_Variables_ReadVoltage">
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,169,47"/>
+<area shape="rect" id="node2" href="$group__c_p_o_w.html#ga6b741286058345990965dbcc12d69530" title="Function send the command (V?) for reading the voltage of the source." alt="" coords="217,13,425,39"/>
+</map>

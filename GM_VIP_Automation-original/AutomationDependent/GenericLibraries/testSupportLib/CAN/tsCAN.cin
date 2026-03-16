@@ -1,0 +1,1403 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup tsCAN tsCAN
+* @defgroup CAN CAN
+* @ingroup testSupportLib
+* @{
+* @addtogroup tsCAN
+* @{
+*/
+
+
+includes
+{
+  #include "..\..\controlLib\CAN\cCAN.cin"
+  #include "tscCAN.cin" 
+}
+
+/*! void E_CAN_WaitForMessageByID(dword aMsgID, dword aTimeout, enum cc_ePresentAbsentCAN aPresentAbsent, char aBusContext[])
+*  \brief Function evaluate if a can messageID is present on the bus in a specific time or not
+*  \param[in] aMsgID         - ID of message
+*  \param[in] aTimeout       - Max wait time for the message(in milliseconds).
+*  \param[in] aPresentAbsent - cc_eCAN_ABSENT = Expects message to be absent, cc_eCAN_PRESENT = Expects message to be present
+*  \param[in] aBusContext    - The bus name context
+* 
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 06.07.18              GrAn        Created and implemented.
+* 01.10.18              GrAn        Resolve some remarks after tests done for this function.
+* 26.08.19              CrJu        Refactoring the code.
+*/
+
+void E_CAN_WaitForMessageByID(dword aMsgID, dword aTimeout, enum cc_ePresentAbsentCAN aPresentAbsent, char aBusContext[])
+{
+  int iResult;
+  byte bDebugFlag;
+  char chMappedResponse[250];
+  
+  iResult = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Function E_CAN_WaitForMessageByID entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aMsgID: --0x%x--, dword aTimeout: -- %d --, cc_ePresentAbsentCAN aPresentAbsent -- %d --, char aBusContext[] --%s--.", aMsgID, aTimeout, aPresentAbsent, aBusContext);    
+  
+  iResult = iFctn_CAN_WaitForMessagebyID(aMsgID, aTimeout, aPresentAbsent, aBusContext, chMappedResponse);
+  
+  if(iResult == Ok)//PASS
+  {
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "PASSED! Result E_CAN_WaitForMessageByID(): %s.", chMappedResponse);
+    vFctn_REPORTStepEvaluation(chMappedResponse, PASS);
+  }
+  else//FAILED
+  {
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAILED! Result E_CAN_WaitForMessageByID(): %s.", chMappedResponse);
+    vFctn_REPORTStepEvaluation(chMappedResponse, FAIL);
+  }
+}
+
+/*! \fn void E_CAN_WaitForMessageByName(dbMsg* aMessageName, dword aTimeout, enum cc_ePresentAbsentCAN aPresentAbsent)
+*  \brief Function evaluate if a can message name is present on the bus in a specific time or not
+*  \param[in] aMessageName   - name of message from database
+*  \param[in] aTimeout       - max wait time for the message.
+*  \param[in] aPresentAbsent - Absent = Expects message to be absent, Present = Expects message to be present
+* 
+*  \return no return
+*
+*  \note 
+*         - The aMessage parameter must be sent in following structure: [Data Base Name] :: [Data Base Node] :: Message Name \n
+*         (example: CANCluster_PrivA(Data Base Name - optional) :: Tester(Data Base Node-optional) :: Test_frame1(Message Name).
+*  \note
+*         - The optional attributes must be used if messages with the same name are present on different data bases/CAN nodes.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 06.07.18              GrAn        Created and implemented
+* 01.10.18              GrAn        Resolve some remarks after tests done for this function.
+* 27.08.19              CrJu        Refactoring the code.
+*/
+
+void E_CAN_WaitForMessageByName(dbMsg* aMessageName, dword aTimeout, enum cc_ePresentAbsentCAN aPresentAbsent)
+{
+  byte bDebugFlag;
+  char chMappedResponseInfo[250];
+  byte iResult;
+  
+  iResult = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls , "Function E_CAN_WaitForMessageByName entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dbMsg* aMessageName: -- Message searched --, dword aTimeout: -- %d --, cc_ePresentAbsentCAN aPresentAbsent -- %d --.", aTimeout, aPresentAbsent);    
+  
+  iResult = iFctn_CAN_WaitForMessagebyName(aMessageName, aTimeout, aPresentAbsent, chMappedResponseInfo);
+
+  if(iResult == Ok)//PASS
+  {
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "PASSED! Result E_CAN_WaitForMessageByName(): %s.", chMappedResponseInfo);
+    vFctn_REPORTStepEvaluation(chMappedResponseInfo, PASS);
+  }
+  else//FAILED
+  {
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAILED! Result E_CAN_WaitForMessageByName(): %s.", chMappedResponseInfo);
+    vFctn_REPORTStepEvaluation(chMappedResponseInfo, FAIL);
+  }
+}
+
+/*! \fn void A_CAN_DisableMessage(dword aMsgID, char aBusContext[])
+*   \brief Function disables sending of a message from database on a specific CAN bus.
+*   \param[in] aMsgID      - ID of message.
+*   \param[in] aBusContext - the bus name context
+*
+*   \return no return
+*
+*  \note 
+*         - This function can be used just for dbc messages.
+*
+*  Change History: 
+*  Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  06.07.18              GrAn        Created and implemented
+*  28.08.19              CrJu        Refactoring the code.
+*/
+
+void A_CAN_DisableMessage (dword aMsgID, char aBusContext[])
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  byte bResultAction;
+  long lResult;
+  byte bDebugFlag;
+  char chPrintBusContext[25];
+  
+  lResult = NotOk;
+  bResultAction = NotOk; 
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_CAN_DisableMessage entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aMsgID: -- 0x%X --, char aBusContext --%s-- .", aMsgID, aBusContext);  
+  
+  //If the bus context name is too big, print in the raport just first 25 chars
+  bFctn_CONV_GetSubString(aBusContext, 0, tsc_wPrintBusContextChars - 1, chPrintBusContext);
+
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Disable CAN message: 0x%X on required bus %s.", aMsgID, chPrintBusContext);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    lResult = lFctn_CAN_DisableMessage(aMsgID,aBusContext);
+    
+    if (Error != lResult)
+    {
+      if(lResult)
+      {
+        snprintf(chPassText, elcount(chPassText), "CAN message 0x%X disabled on required bus %s.", aMsgID, chPrintBusContext);
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "PASSED! Result: A_CAN_DisableMessage. %s.", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "CAN message 0x%X could not be disabled on required bus %s.", aMsgID, chPrintBusContext);  
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "FAILED! Result: A_CAN_DisableMessage. %s.", chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+    }
+    else
+    {
+      snprintf(chFailText, elcount(chFailText), "Disable CAN message: 0x%X on required bus %s.", aMsgID, chPrintBusContext);
+      if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "FAILED! Result: A_CAN_DisableMessage. %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_CAN_EnableMessage(dword aMsgID, char aBusContext[])
+*  \brief Function enables sending of a message from database on a specific CAN bus.
+*  \param[in] aMsgID      - ID of message.
+*  \param[in] aBusContext - the bus name context
+*
+*  \return no return
+*
+*  \note
+*         - This function can be used just for dbc messages.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  06.07.18              GrAn        Created and implemented
+*  28.08.19              CrJu        Refactoring the code.
+*/
+
+void A_CAN_EnableMessage (dword aMsgID, char aBusContext[])
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  byte bResultAction;
+  long lResult;
+  byte bDebugFlag;
+  char chPrintBusContext[25];
+  
+  lResult = NotOk;
+  bResultAction = NotOk;  
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_CAN_EnableMessage entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aMsgID: -- 0x%x --, char aBusContext --%s-- .", aMsgID, aBusContext);   
+
+  //If the bus context name is too big, print in the raport just first 25 chars
+  bFctn_CONV_GetSubString(aBusContext, 0, tsc_wPrintBusContextChars - 1, chPrintBusContext);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Enables CAN message: 0x%X on required bus %s.", aMsgID, chPrintBusContext);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    lResult = lFctn_CAN_EnableMessage(aMsgID, aBusContext);
+    
+    if (Error != lResult)
+    {
+      if(lResult)
+      {
+        snprintf(chPassText, elcount(chPassText), "CAN message 0x%X was enabled on required bus %s.", aMsgID, chPrintBusContext);
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "PASSED! Result: A_CAN_EnableMessage. %s.", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "CAN message 0x%X cannot be enabled on required bus %s.", aMsgID, chPrintBusContext);  
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "FAILED! Result: A_CAN_EnableMessage. %s.",chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+    }
+    else
+    {
+      snprintf(chFailText, elcount(chFailText), "The bus context %s does not exists. Check the name in function call aBusContext.", chPrintBusContext);  
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAILED! Result: A_CAN_EnableMessage. %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_CAN_SetBaudrate(dword aCANChannel, float aBaudrate)
+*  \brief Function that sets the baudrate for requested CAN channel.
+*  \param[in] aCANChannel - number of CAN channel.
+*  \param[in] aBaudrate   - the new value of the baudrate.
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  06.07.18              GrAn        Created and implemented
+*  01.10.18              GrAn        Change the implementation for availability of CAN channel.
+*  30.08.19              CrJu        Refactoring the code.
+*/
+void A_CAN_SetBaudrate(dword aCANChannel, float aBaudrate)
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  byte bResultAction;
+  long lResult;
+  char chIniFilePath[500];
+  byte bLastIniFileUsed;
+  byte bDebugFlag;
+  long lCANChannelAvailable;
+  
+  lResult = NotOk;
+  bResultAction = NotOk; 
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  bLastIniFileUsed = NotOk;
+  lCANChannelAvailable = 0;
+  
+  writeDbgLevel (DebugFuncCalls, "Function A_CAN_SetBaudrate entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aCANChannel: -- %d --, float aBaudrate --%12.2f-- .", aCANChannel, aBaudrate);     
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Set the baudrate for CAN channel %d with the value %12.2f.", aCANChannel, aBaudrate);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  //Read the value of the parameter 'CANChannelsAvailable' from INI File
+  bLastIniFileUsed = bFctn_READFILELastINIused(chIniFilePath); 
+    
+  lCANChannelAvailable = lFctn_READFILEiniParameterNumber(chIniFilePath, "CANChannelsAvailable", "CAN_COMMUNICATION");
+  
+  if(bResultAction)
+  {
+    lResult = lFctn_CAN_SetBaudrate((long)aCANChannel, aBaudrate); 
+  
+    if(Ok == lResult)
+    {
+      snprintf(chPassText, elcount(chPassText), "CAN channel %d baudrate is set to value %12.2f.", aCANChannel, aBaudrate );
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASSED! Result: A_CAN_SetBaudrate. %s.",chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else
+    {
+      if(NotOk == lResult)
+      {
+        snprintf(chFailText, elcount(chFailText), "CAN channel %d baudrate cannot be set to value %12.2f. Check the aCANChannel parameter if it is OK called.", aCANChannel, aBaudrate);  
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "FAILED! Result: A_CAN_SetBaudrate. %s.", chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "FAILED! The control function: lFctn_CAN_SetBaudrate has failed. Check the error code.");  
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "FAILED! Result: A_CAN_SetBaudrate. %s.", chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_CAN_SendMessage(dword aMsgID, byte aBytesToBeSend[], byte aMsgDLC, word aCANChannel)
+*  \brief Function that sends a CAN message with the maximum length of 8 bytes on required CAN channel.
+*  \param[in] aMsgID         - The ID of message that will be sent.
+*  \param[in] aBytesToBeSend - content of message to be sent.
+*  \param[in] aMsgDLC        - number of bytes to be sent (max. 8 bytes) .
+*  \param[in] aCANChannel    - required CAN channel.
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  06.07.18              GrAn        Created and implemented
+*  01.10.18              GrAn        Change the implementation for availability of CAN channel.
+*  14.11.18              GrAn        Check the return from CONV function bFctn_CONVConvertByteArrToStringByLength.
+*  14.02.19              GrAn        Check that the message DLC and the number of elements of byte array to be sent are ok before the byte array to be converted
+*  05.09.19              CrJu        Refactoring the code.
+*  14.11.19              CrJu        Eliminate the verification of INI, but added it in the control function. 
+*/
+
+void A_CAN_SendMessage(dword aMsgID, byte aBytesToBeSend[], byte aMsgDLC, word aCANChannel)
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  byte bResultAction;
+  long lResult;
+  char chBytesToBeSend[100];
+  byte bDebugFlag;
+  
+  lResult = NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Function A_CAN_SendMessage entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aMsgID: -- 0x%X --, byte aMsgDLC -- %d --, word aCANChannel --%d--.", aMsgID, aMsgDLC, aCANChannel);   
+  
+  //Convert bytes array to string
+  bFctn_CONV_ConvertByteArrayToStringByDLC(aBytesToBeSend, chBytesToBeSend, aMsgDLC);
+  
+  snprintf(chAction, elcount(chAction), "The message 0x%X is send with %s data on CAN channel %d. ", aMsgID, chBytesToBeSend, aCANChannel);
+  bResultAction = bFctn_REPORTAction(chAction);
+ 
+  if(bResultAction)
+  {
+    //Send the message
+    lResult = lFctn_CAN_SendMessage(aMsgID, aBytesToBeSend, aMsgDLC, aCANChannel); 
+    
+    if(lResult != Error)
+    {
+      //The message was sent succesfully
+      if(lResult == Ok)
+      {
+        snprintf(chPassText, elcount(chPassText), "Send message 0x%X with %s data on CAN channel %d.", aMsgID, chBytesToBeSend, aCANChannel);   
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "PASSED! Result: A_CAN_SendMessage. %s", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      //No other return might be
+    }
+    else//An error occured
+    {
+      snprintf(chFailText, elcount(chFailText), "Something went wrong. Check the error code from the control function: lFctn_CAN_SendMessage(), using debug function.");  
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "ERROR! Result: A_CAN_SendMessage. %s", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_CAN_SendMessage(dword aMsgID, byte aBytesToBeSend[], byte aMsgDataLength, word aCANChannel, enum cc_eCanTYPE aType_CAN)
+*  \brief Function that sends a CAN or CAN_FD message with the maximum length of 8 bytes, respective 64 bytes on required CAN channel.
+*  \param[in] aMsgID         - The ID of message that will be sent.
+*  \param[in] aBytesToBeSend - content of message to be sent.
+*  \param[in] aMsgDataLength - The length of the message. (On noraml CAN, it is equivalent with the DLC of the message. For CAN: max 8bytes. For CAN_FD: max 64bytes)
+*  \param[in] aCANChannel    - required CAN channel.
+*  \param[in] aType_CAN      - The CAN type you want to used: cc_eCAN_NORMAL / cc_eCAN_FD
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  14.11.19              CrJu        Created and implemented
+*/
+
+void A_CAN_SendMessage(dword aMsgID, byte aBytesToBeSend[], byte aMsgDataLength, word aCANChannel, enum cc_eCanTYPE aType_CAN)
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  byte bResultAction;
+  long lResult;
+  char chBytesToBeSend[250];
+  byte bDebugFlag;
+  
+  lResult = NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Function A_CAN_SendMessage entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aMsgID: -- 0x%X --, byte aMsgDataLength -- %d --, word aCANChannel --%d--.", aMsgID, aMsgDataLength, aCANChannel);   
+  
+  //Convert bytes array to string
+  bFctn_CONV_ConvertByteArrayToStringByDLC(aBytesToBeSend, chBytesToBeSend, aMsgDataLength);
+  
+  snprintf(chAction, elcount(chAction), "The message 0x%X is send with %s data on CAN channel %d. ", aMsgID, chBytesToBeSend, aCANChannel);
+  bResultAction = bFctn_REPORTAction(chAction);
+ 
+  if(bResultAction)
+  {
+    //Send the message
+    lResult = lFctn_CAN_SendMessage(aMsgID, aBytesToBeSend, aMsgDataLength, aCANChannel, aType_CAN); 
+    
+    if(lResult != Error)
+    {
+      //The message was sent succesfully
+      if(lResult == Ok)
+      {
+        snprintf(chPassText, elcount(chPassText), "Send message 0x%X with %s data on CAN channel %d.", aMsgID, chBytesToBeSend, aCANChannel);   
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "PASSED! Result: A_CAN_SendMessage. %s", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      //No other return might be
+    }
+    else//An error occured
+    {
+      snprintf(chFailText, elcount(chFailText), "Something went wrong. Check the error code from the control function: lFctn_CAN_SendMessage(), using debug function.");  
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "ERROR! Result: A_CAN_SendMessage. %s", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_CAN_SendBurstMessage(dword aMsgID, byte aBytesToBeSend[], dword aTimeBetweenFrames, byte aDataLengthOfMessage, word aCANChannel)
+*  \brief Function for sending specific volume of bytes more than 8 bytes.
+*  \param[in] aMsgID               - The ID of message that will be sent.
+*  \param[in] aBytesToBeSend       - content of messages to be sent.
+*  \param[in] aTimeBetweenFrames   - time waited between frames
+*  \param[in] aDataLengthOfMessage - DLC of message (maximum 8 bytes)
+*  \param[in] aCANChannel          - required CAN channel.
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  06.07.18              GrAn        Created and implemented
+*  01.10.18              GrAn        Change the implementation for availability of CAN channel.
+*  09.09.19              CrJu        Refactoring the code.
+*  21.11.19              CrJu        Eliminate the conditions for INI file. They are verified in control fct. Modified the function, for the new returns of control fct: only -1 and 1.
+*/
+
+void A_CAN_SendBurstMessage(dword aMsgID, byte aBytesToBeSend[], dword aTimeBetweenFrames, byte aDataLengthOfMessage, word aCANChannel)
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  byte bResultAction;
+  long lResult;
+  char chOutputString[150];
+  char chPrintOutput[150];
+  byte bDebugFlag;
+  
+  lResult = NotOk;
+  bResultAction = NotOk;  
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Function A_CAN_SendBurstMessage entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aMsgID: -- 0x%x --, dword aTimeBetweenFrames --%d--,byte aDataLengthOfMessage --%d--, word aCANChannel --%d--.", aMsgID,aTimeBetweenFrames,aDataLengthOfMessage,aCANChannel);   
+  
+  //Convert bytes array to string
+  bFctn_CONV_ConvertByteArrToStringByLength(aBytesToBeSend, elcount(chOutputString) ,chOutputString);
+  
+  //if Output String is too big write just first 128 characters
+  bFctn_CONV_GetSubString(chOutputString, 0, elcount(chOutputString) - 1, chPrintOutput);
+
+  snprintf(chAction, elcount(chAction),"Send %d bytes on message 0x%x with a frame length of %d bytes.",elcount(aBytesToBeSend), aMsgID, aDataLengthOfMessage);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    //Send the message
+    lResult = lFctn_CAN_SendBurstMessage(aMsgID, aBytesToBeSend, aTimeBetweenFrames, aDataLengthOfMessage, aCANChannel);
+
+    if(Error != lResult)
+    {
+      if(Ok == lResult)
+      {
+        snprintf(chPassText, elcount(chPassText), "All data bytes are succesfully sent.");
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal, "PASSED! Result: A_CAN_SendBurstMessage. %s.", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      //No other return might be
+    }
+    else
+    {
+      snprintf(chFailText, elcount(chFailText), "Something went wrong. Check the error code from the control function: lFctn_CAN_SendBurstMessage(), using debug function.");  
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "ERROR! Result: A_CAN_SendBurstMessage. %s", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_CAN_SendBurstMessage(dword aMsgID, byte aBytesToBeSend[], dword aTimeBetweenFrames, byte aDataLengthOfMessage, word aCANChannel, enum cc_eCanTYPE aType_CAN)
+*  \brief Function for sending specific volume of bytes more than 8 bytes.
+*  \param[in] aMsgID               - The ID of message that will be sent.
+*  \param[in] aBytesToBeSend       - content of messages to be sent.
+*  \param[in] aTimeBetweenFrames   - time waited between frames
+*  \param[in] aDataLengthOfMessage - The length of the message. (On noraml CAN, it is equivalent with the DLC of the message. For CAN: max 8bytes. For CAN_FD: max 64bytes)
+*  \param[in] aCANChannel          - required CAN channel.
+*  \param[in] aType_CAN            - The CAN type you want to used: cc_eCAN_NORMAL / cc_eCAN_FD
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  06.07.18              CrJu        Created and implemented
+*/
+
+void A_CAN_SendBurstMessage(dword aMsgID, byte aBytesToBeSend[], dword aTimeBetweenFrames, byte aDataLengthOfMessage, word aCANChannel, enum cc_eCanTYPE aType_CAN)
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  byte bResultAction;
+  long lResult;
+  char chOutputString[150];
+  char chPrintOutput[150];
+  byte bDebugFlag;
+  
+  lResult = NotOk;
+  bResultAction = NotOk;  
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Function A_CAN_SendBurstMessage entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aMsgID: -- 0x%x --, dword aTimeBetweenFrames --%d--,byte aDataLengthOfMessage --%d--, word aCANChannel --%d--.", aMsgID,aTimeBetweenFrames,aDataLengthOfMessage,aCANChannel);   
+  
+  //Convert bytes array to string
+  bFctn_CONV_ConvertByteArrToStringByLength(aBytesToBeSend, elcount(chOutputString) ,chOutputString);
+  
+  //if Output String is too big write just first 128 characters
+  bFctn_CONV_GetSubString(chOutputString, 0, elcount(chOutputString) - 1, chPrintOutput);
+
+  snprintf(chAction, elcount(chAction),"Send %d bytes on message 0x%x with a frame length of %d bytes.",elcount(aBytesToBeSend), aMsgID, aDataLengthOfMessage);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    //Send the message
+    lResult = lFctn_CAN_SendBurstMessage(aMsgID, aBytesToBeSend, aTimeBetweenFrames, aDataLengthOfMessage, aCANChannel, aType_CAN);
+
+    if(Error != lResult)
+    {
+      if(Ok == lResult)
+      {
+        snprintf(chPassText, elcount(chPassText), "All data bytes are succesfully sent.");
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal, "PASSED! Result: A_CAN_SendBurstMessage. %s.", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      //No other return might be
+    }
+    else
+    {
+      snprintf(chFailText, elcount(chFailText), "Something went wrong. Check the error code from the control function: lFctn_CAN_SendBurstMessage(), using debug function.");  
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "ERROR! Result: A_CAN_SendBurstMessage. %s", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void E_CAN_CycleTimeCheckByMessageID(dword aMsgID, dword aTimeout, float aMinAbsCycleTime, float aMaxAbsCycleTime, char aBusContext[] )
+*  \brief Function waits for a specific message to be sent on CAN.
+*  \param[in]  aMsgID           - ID of message
+*  \param[in]  aTimeout         - max wait time for the message.
+*  \param[in]  aMinAbsCycleTime - maximum time for message cycle.
+*  \param[in]  aMaxAbsCycleTime - minimum time for message cycle.
+*  \param[in]  aBusContext      - the specific bus context
+*
+*  \return no return
+*
+*  \note
+*          - Event is generated if the time between sends of message is smaller than aMinAbsCycleTime and aMaxAbsCycleTime (example: if Message cycle \n
+*            time is 50ms and difference between aMinAbsCycleTime and aMaxAbsCycleTime is 60ms the event is not generated)
+*  \note 
+*          - If the limits (aMinAbsCycleTime or/and aMaxAbsCycleTime) are zero, this function does not check those limits.
+*
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  21.06.18              GrAn        Created and implemented
+*  10.09.19              CrJu        Refactoring the code.
+*/
+
+void E_CAN_CycleTimeCheckByMessageID(dword aMsgID, dword aTimeout, float aMinAbsCycleTime, float aMaxAbsCycleTime, char aBusContext[] )
+{ 
+  char chCheckMessageInfo[250];
+  int iResult;
+  byte bDebugFlag;
+  
+  iResult = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Function E_CAN_CycleTimeCheckByMessageID entered.");
+
+  iResult = iFctn_CAN_CycleTimeCheckByMessageID((long)aMsgID, aTimeout, aMinAbsCycleTime, aMaxAbsCycleTime, aBusContext, chCheckMessageInfo);
+  
+  if(iResult != Error)
+  {
+    if(iResult == Ok)
+    {
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASSED! %s.", chCheckMessageInfo);
+      vFctn_REPORTStepEvaluation(chCheckMessageInfo, PASS);
+    }
+    else
+    {
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAILED! %s.", chCheckMessageInfo);
+      vFctn_REPORTStepEvaluation(chCheckMessageInfo, FAIL);
+    }
+  }
+  else
+  {
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR! %s.", chCheckMessageInfo);
+    vFctn_REPORTStepEvaluation(chCheckMessageInfo, FAIL);
+  }
+}
+
+
+/*! \fn void E_CAN_CycleTimeCheckByMessageName(dbMsg* aMessageName, dword aTimeout, float aMinAbsCycleTime, float aMaxAbsCycleTime, char aBusContext[])
+*  \brief Function waits for a specific message to be sent on CAN.
+*  \param[in] aMessageName     - Name of message from database
+*  \param[in] aTimeout         - wait time for the message.
+*  \param[in] aMinAbsCycleTime - maximum time for message cycle.
+*  \param[in] aMaxAbsCycleTime - minimum time for message cycle.
+*  \param[in] aBusContext      - The specific bus context
+*
+*  \return no return
+*
+*  \note 
+*         - Event is generated if the time between sends of message is smaller than aMinAbsCycleTime and aMaxAbsCycleTime (example: if Message cycle \n
+*          time is 50ms and difference between aMinAbsCycleTime and aMaxAbsCycleTime is 60ms the event is not generated)
+*  \note 
+*         - If the limits (aMinAbsCycleTime or/and aMaxAbsCycleTime) are zero, this function does not check those limits.
+*  \note 
+*         - The aMessageName parameter must be called in following way: [Data Base Name] :: [Data Base Node] :: Message Name \n
+*           (example: CANCluster_PrivA(Data Base Name - optional) :: Tester(Data Base Node-optional) :: Test_frame1(Message Name).
+*         - The optional attributes (specified on "[", "]") must be used if messages with the same name are present on different data bases/CAN nodes.
+*
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  21.06.18              GrAn        Created and implemented
+*  10.09.19              CrJu        Refactoring the code.
+*/
+
+void E_CAN_CycleTimeCheckByMessageName(dbMsg* aMessageName, dword aTimeout, float aMinAbsCycleTime, float aMaxAbsCycleTime, char aBusContext[])
+{ 
+  char chCheckMessageInfo[250];
+  int iResult;
+  byte bDebugFlag;
+  
+  iResult = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Function E_CAN_CycleTimeCheckByMessageID entered.");
+
+  iResult = iFctn_CAN_CycleTimeCheckByMessageName(aMessageName, aTimeout, aMinAbsCycleTime, aMaxAbsCycleTime, aBusContext, chCheckMessageInfo);
+  
+  if(iResult != Error)
+  {
+    if(iResult == Ok)
+    {
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASSED! %s.", chCheckMessageInfo);
+      vFctn_REPORTStepEvaluation(chCheckMessageInfo, PASS);
+    }
+    else
+    {
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAILED! %s.", chCheckMessageInfo);
+      vFctn_REPORTStepEvaluation(chCheckMessageInfo, FAIL);
+    }
+  }
+  else
+  {
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR! %s.", chCheckMessageInfo);
+    vFctn_REPORTStepEvaluation(chCheckMessageInfo, FAIL);
+  }
+}
+
+
+/*! \fn void A_CAN_GetMessageDataByID(dword aMsgID, char aBusContext[], dword aTimeToWaitForMessage, byte aOutputData[], dword aNumberOfBytesCopied )
+*  \brief Function Gets the content for a searched message ID on required CAN channel.
+*  \param[in]  aMsgID                - ID of message from database
+*  \param[in]  aBusContext           - The bus context
+*  \param[in]  aTimeToWaitForMessage - max time to wait for message.
+*  \param[out] aOutputData           - The Message payload.
+*  \param[out] aNumberOfBytesCopied  -  Number of bytes copied
+*
+*  \return  no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  06.07.18              GrAn        Created and implemented
+*  01.10.18              GrAn        Resolve some remarks after tests done for this function.
+*  05.11.18              GrAn        Update test decision of the covertion error.
+*  04.09.19              CrJu        Refactoring the code.
+*/
+
+void A_CAN_GetMessageDataByID(dword aMsgID, char aBusContext[], dword aTimeToWaitForMessage, byte aOutputData[], dword &aNumberOfBytesCopied )
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  byte bResultAction;
+  long lResult;
+  char chOutputString[100];
+  char chPrintBusContext[25];
+  byte bDebugFlag;
+  
+  lResult = NotOk;
+  bResultAction = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_CAN_GetMessageDataByID entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aMsgID: --0x%X --, char aBusContext[]: -- %s --, dword aTimeToWaitForMessage: --%d-- ",aMsgID,aBusContext,aTimeToWaitForMessage);
+
+  //If the bus context name is too big, print in the raport just first 25 chars
+  bFctn_CONV_GetSubString(aBusContext, 0, tsc_wPrintBusContextChars - 1, chPrintBusContext);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Take the payload of CAN message: 0x%X on bus %s", aMsgID, chPrintBusContext);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction )
+  {
+    lResult = lFctn_CAN_GetMessageDatabyID(aMsgID,aBusContext, aTimeToWaitForMessage, aOutputData, aNumberOfBytesCopied); 
+    
+    //Convert bytes array to string
+    bFctn_CONV_ByteArrayToSpecificNumberBaseString(aOutputData, cc_eCONV_Hex, " 0x", chOutputString, aNumberOfBytesCopied);
+    if(lResult != Error)
+    {
+      if(lResult == Ok)//The data message was extracted succesfully 
+      {
+        snprintf(chPassText, elcount(chPassText), "The CAN message 0x%X was found on the bus %s with %d number of bytes and following data: 0x%s.", aMsgID, chPrintBusContext,aNumberOfBytesCopied, chOutputString);
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "PASSED: %s", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      else//The data message could not be extracted succesfully or it is not found on the bus
+      {
+        snprintf(chFailText, elcount(chFailText), "The CAN message 0x%X could not be found on the bus %s or his data could not be extracted succesfully.", aMsgID, chPrintBusContext);  
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "FAILED: %s", chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+    }
+    else//An error occured
+    {
+      snprintf(chFailText, elcount(chFailText), "An error occured in the control function lFctn_CAN_GetMessageDatabyID(). Check his debug message.");  
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "ERROR: %s", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);  
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void E_CAN_WaitForMessageDataByID(dword aMsgID, char aBusContext[], dword aTimeToWaitForMessage, byte aCompareBytesArray[])
+*  \brief Function Wait and check if a message is send on a required bus context with an expected content
+*  \param[in]  aMsgID                - ID of message
+*  \param[in]  aBusContext           - The bus context
+*  \param[in]  aTimeToWaitForMessage - time to wait for message.
+*  \param[in]  aCompareBytesArray    - The array of bytes to be compared.
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  06.07.18              GrAn        Created and implemented
+*  01.10.18              GrAn        Resolve some remarks after tests done for this function.
+*  03.09.19              CrJu        Refactoring the code.
+*/
+void E_CAN_WaitForMessageDataByID(dword aMsgID, char aBusContext[], dword aTimeToWaitForMessage, byte aCompareBytesArray[])
+{
+  byte bDebugFlag;
+  long lResult;
+  char chMappedResponseInfo[250];
+  
+  lResult = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls , "Function E_CAN_WaitForMessageDataByID entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aMsgID: -- 0x%x--, char aBusContext[]: -- %s --, dword aTimeToWaitForMessage -- %d --.", aMsgID, aBusContext, aTimeToWaitForMessage);    
+  
+  lResult = lFctn_CAN_WaitForMessageDatabyID(aMsgID, aBusContext, aTimeToWaitForMessage, aCompareBytesArray, chMappedResponseInfo);
+
+  if (Error != lResult)
+  {
+    if(Ok == lResult)//The message was found with correct content
+    {
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASSED! Return: E_CAN_WaitForMessageDataByID. %s", chMappedResponseInfo);
+      vFctn_REPORTStepEvaluation(chMappedResponseInfo, PASS);
+    }
+    else//The message was not found with correct content
+    {
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAILED! Return: E_CAN_WaitForMessageDataByID. %s", chMappedResponseInfo);
+      vFctn_REPORTStepEvaluation(chMappedResponseInfo, FAIL);
+    }
+  }
+  else//An error occured
+  {
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR! Return: E_CAN_WaitForMessageDataByID. %s", chMappedResponseInfo);
+    vFctn_REPORTStepEvaluation(chMappedResponseInfo, FAIL); 
+  }
+}
+
+/*! \fn void E_CAN_WaitForMessageDataByID(dword aMsgID, char aBusContext[], dword aTimeToWaitForMessage, byte aCompareBytesArray[], enum cc_eCanTYPE aType_CAN)
+*  \brief Function Wait and check if a message is send on a required bus context with an expected content
+*  \param[in]  aMsgID                - ID of message
+*  \param[in]  aBusContext           - The bus context
+*  \param[in]  aTimeToWaitForMessage - time to wait for message.
+*  \param[in]  aCompareBytesArray    - The array of bytes to be compared.
+*  \param[in]  aType_CAN             - The CAN type you want to used: cc_eCAN_NORMAL / cc_eCAN_FD.
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  14.11.19              CrJu        Created and implemented
+*/
+void E_CAN_WaitForMessageDataByID(dword aMsgID, char aBusContext[], dword aTimeToWaitForMessage, byte aCompareBytesArray[], enum cc_eCanTYPE aType_CAN)
+{
+  byte bDebugFlag;
+  long lResult;
+  char chMappedResponseInfo[250];
+  
+  lResult = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls , "Function E_CAN_WaitForMessageDataByID entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aMsgID: -- 0x%x--, char aBusContext[]: -- %s --, dword aTimeToWaitForMessage -- %d --.", aMsgID, aBusContext, aTimeToWaitForMessage);    
+  
+  lResult = lFctn_CAN_WaitForMessageDatabyID(aMsgID, aBusContext, aTimeToWaitForMessage, aCompareBytesArray, aType_CAN, chMappedResponseInfo);
+
+  if (Error != lResult)
+  {
+    if(Ok == lResult)//The message was found with correct content
+    {
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASSED! Return: E_CAN_WaitForMessageDataByID. %s", chMappedResponseInfo);
+      vFctn_REPORTStepEvaluation(chMappedResponseInfo, PASS);
+    }
+    else//The message was not found with correct content
+    {
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAILED! Return: E_CAN_WaitForMessageDataByID. %s", chMappedResponseInfo);
+      vFctn_REPORTStepEvaluation(chMappedResponseInfo, FAIL);
+    }
+  }
+  else//An error occured
+  {
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR! Return: E_CAN_WaitForMessageDataByID. %s", chMappedResponseInfo);
+    vFctn_REPORTStepEvaluation(chMappedResponseInfo, FAIL); 
+  }
+}
+
+/*! \fn void A_CAN_SendBurstMessage(dword aMsgID[], byte aBytesToBeSend[], dword aTimeBetweenFrames, byte aDataLengthOfMessage, word aCANChannel)
+*  \brief Sends specific volume of bytes (more than 8 bytes) on specific CAN channel, on every aMsgID is given.
+*  \param[in] aMsgID               - The array of ID of message that will be sent.
+*  \param[in] aBytesToBeSend       - content of messages to be sent.
+*  \param[in] aTimeBetweenFrames   - time waited between frames
+*  \param[in] aDataLengthOfMessage - DLC of message (maximum 8 bytes)
+*  \param[in] aCANChannel          - required CAN channel.
+*
+*  \return no return
+*
+*  \note
+*       -Example: For aMsgID: 0x55, 0x67, aDataLengthOfMessage: 2 and aBytesToBeSend: (AA, BB, CC, DD), the message 0x55 will be sent with payload (AA, BB)
+*                                                                                                   and the message 0x67 will be sent with payload (CC, DD).
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  06.07.18              GrAn        Created and implemented
+*  12.09.19              CrJu        Refactoring the code.
+*/
+
+void A_CAN_SendBurstMessage(dword aMsgID[], byte aBytesToBeSend[], dword aTimeBetweenFrames, byte aDataLengthOfMessage, word aCANChannel)
+{
+  long lResult;
+  byte bResultAction;
+  byte bDebugFlag;
+  byte bLastIniFileUsed;
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  char chOutputString[150];
+  char chPrintOutput[150];
+  char chOutputString_Msg[150];
+  char chPrintString_Msg[150];
+  char chIniFilePath[100];
+  long lCANChannelAvailable;
+  
+  lResult = NotOk;
+  bResultAction = NotOk;  
+  bLastIniFileUsed = NotOk;
+  lCANChannelAvailable = 0;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Function A_CAN_SendBurstMessageConsecutiveID entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: dword aTimeBetweenFrames --%d--, byte aDataLengthOfMessage --%d--, word aCANChannel --%d--.", aTimeBetweenFrames, aDataLengthOfMessage, aCANChannel);   
+  
+  //Read the value of the parameter 'CANChannelsAvailable' from INI File
+  bLastIniFileUsed = bFctn_READFILELastINIused (chIniFilePath); 
+  
+  lCANChannelAvailable = lFctn_READFILEiniParameterNumber (chIniFilePath, "CANChannelsAvailable", "CAN_COMMUNICATION");
+  
+  //Convert bytes array to string
+  bFctn_CONV_ConvertByteArrToStringByLength(aBytesToBeSend, elcount(chOutputString), chOutputString);
+  
+  //if Output String is too big write just first 128 characters
+  bFctn_CONV_GetSubString(chOutputString, 0, cc_wPrintedArrayElements - 1, chPrintOutput); 
+  
+  //Convert messages id array to string 
+  bFctn_CONV_ConvertDwordArrayToString(aMsgID, chOutputString_Msg);
+  
+  //if Output String is too big displayed just first 128 elements
+  bFctn_CONV_GetSubString(chOutputString_Msg, 0, elcount(chOutputString_Msg) - 1, chPrintString_Msg);
+  
+  snprintf(chAction, elcount(chAction),"Send messages IDs -0x%s- with data -0x%s- on CAN Channel %d.", chPrintString_Msg, chPrintOutput, aCANChannel);
+  bResultAction = bFctn_REPORTAction(chAction);
+   
+  if(bResultAction)
+  {
+    //The CAN Channel is unavailable or ini path is not given
+    if (( aCANChannel > lCANChannelAvailable) || (Ok != bLastIniFileUsed))
+    {
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "Error occured in the INI file. Check the last INI file used.");
+      lResult = Error;
+    }
+    else
+    {
+      //Send the message
+      lResult = lFctn_CAN_SendBurstMessage(aMsgID, aBytesToBeSend, aTimeBetweenFrames, aDataLengthOfMessage, aCANChannel);
+    }
+    
+    if(lResult != Error)
+    {
+      if(lResult == Ok)
+      {
+        snprintf(chPassText, elcount(chPassText), "All data bytes -0x%s- are succesfully sent on messages -0x%s-.", chPrintOutput, chPrintString_Msg);
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal, "PASSED! Result: A_CAN_SendBurstMessage. %s.", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "Something went wrong, the messages -0x%s- could not be succesfully sent.", chOutputString_Msg); 
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal, "FAILED! Result: A_CAN_SendBurstMessage. %s.", chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+    }
+    else//An error occured
+    {
+      snprintf(chFailText, elcount(chFailText), "An error occured, the aMsgDLC is wrong -%d-(must be beween 1 and 8) or the CAN Channel number is wrong -%d-(must be between 1 and 32).");  
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "ERROR: %s", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);  
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_CAN_DeleteLog (char aFilePath[])
+*  \brief Function delete a log file.
+*  \param[in] aFilePath - The file path to the log results
+*
+*  \return no return
+*
+*  \note 
+*         - To start to logg information, first call the  function A_CAN_StartLoggingMessages.
+*  \note 
+*          - Use File path like: C:\\Test\\LogMessages.csv.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  06.07.18              GrAn        Created and implemented
+*  16.10.18              GrAn        Add the close of command line window after the file is deleted.
+*  13.09.19              CrJu        Refactoring the code.
+*/
+
+void A_CAN_DeleteLog (char aFilePath[])
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  byte bResultAction;
+  byte bDebugFlag;
+  byte bResult;
+  
+  bResult = NotOk;
+  bResultAction = NotOk;  
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "Function A_CAN_DeleteLog entered.");
+  
+  if((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: char aFilePath[] --'%s'-- ", aFilePath); 
+  
+  snprintf(chAction, elcount(chAction), "The command to delete the file '%s' is send to command prompt.", aFilePath);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    bResult = bFctn_CAN_DeleteLog(aFilePath);
+    
+    if(Ok == bResult)
+    {
+      snprintf(chPassText, elcount(chPassText), "The command to delete the file '%s' is send succesfully to command prompt.", aFilePath);     
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASSED! Return A_CAN_DeleteLog. %s", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else
+    {
+      snprintf(chFailText, elcount(chFailText), "The command to delete the file '%s' could not be send succesfully to command prompt.", aFilePath); 
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAILED! Return A_CAN_DeleteLog. %s", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_CAN_StartLoggingMessages(dword aArrayMessageIDs[], byte aChannelNumber, int64 aNumberOfLogEntries)
+*  \brief Function that executes the action to enable the CAN Message Logging functionality, based on a specified filter (MsgID's and ChannelNr).
+*  \param[in]   aArrayMessageIDs      - Array with the MessageID's which are going to be logged (if first element of the array is 0, all messages are logged).
+*  \param[in]   aChannelNumber        - The Channel/Cluster number where the message(s) is expected to arrive (if 0, it will log every occurrence of the MsgID, regardless of the cluster it arrives).
+*  \param[in]   aNumberOfLogEntries   - The maximum number of how many message(s) log entries is expected to arrive ( > 0 and recommended to not go over 500.000 as it could influence the environment and memory allocation). 
+* 
+*  \return None
+*
+*  \note
+*   - After enabling the logging functionality it is necessary to use: testWaitForTimeout(WaitTimeInMs) - only within this time the frames are added in the buffer structure.
+*
+*  \note
+*   - Even though dynamic memory allocation is used for the buffer structure array, a limit of maximum: 500.000 entries should suffice in order to avoid excessive memory allocation. \n
+*
+*  \note
+*   - Example of correct function call sequence: \n
+*   1. A_CAN_StartLoggingMessages(dwLogSlotIDsArray_3Elem, ChannelNr, NrOfLogEntries); \n
+*   2. testWaitForTimeout(5000); // Only during this time, the log is active. Expected data which arrives within 5 seconds, is saved in the back-end buffer. \n
+*   3. A_CAN_StopLoggingMessages(strSaveLogData_1500Elem, i64NumberOfExtractedLogEntries); \n
+*   4. A_CAN_SaveLogDataToCSVFile(chAbsPathOf_CSVLogFile, strSaveLogData_1500Elem, i64NumberOfLogEntriesToSave); \n
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+* 02.04.19              RoBi            Created and implemented
+*/
+
+void A_CAN_StartLoggingMessages(dword aArrayMessageIDs[], byte aChannelNumber, int64 aNumberOfLogEntries)
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  char chStartLoggingMsgInfo[250];
+  int iResult;
+  byte bDebugFlag;
+ 
+  iResult = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Entered A_CAN_StartLoggingMessages().");
+  if ( (byte)DebugFuncParam & bDebugFlag )
+    writeDbgLevel (DebugFuncParam, "Parameters: byte aChannelNumber --%d--, int64 aNumberOfLogEntries: --%I64d--.", aChannelNumber, aNumberOfLogEntries);
+
+  snprintf(chAction, elcount(chAction), "Start CAN Logging, on Channel: %d (if 0, logs on all channels) and expect maximum: %I64d messages to arrive.", aChannelNumber, aNumberOfLogEntries);
+
+  // Check if the action text is added into the report
+  if( Ok == bFctn_REPORTAction(chAction) )
+  {
+    iResult = iFctn_CAN_StartLoggingMessages(aArrayMessageIDs, aChannelNumber, aNumberOfLogEntries, chStartLoggingMsgInfo);
+    
+    // The CAN Logging mechanism is successfully enabled
+    if ( Ok == iResult )
+    {
+      snprintf(chPassText, elcount(chPassText), "SUCCESS: %s", chStartLoggingMsgInfo);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASSED! Result A_CAN_StartLoggingMessages(): %s", chStartLoggingMsgInfo);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // Logging mechanism is already enabled, incorrect parameter values or an internal error occurred
+    {
+      snprintf(chFailText, elcount(chFailText), "FAILED: %s", chStartLoggingMsgInfo);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAILED! Result A_CAN_StartLoggingMessages(): %s", chStartLoggingMsgInfo);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else // the reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report.");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAILED! Result A_CAN_StartLoggingMessages(): %s", chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_CAN_StopLoggingMessages(struct cv_strCAN_LoggingBuffer aStructureArrayToSaveLoggedData[], int64 &aNumberOfMessagesLogged)
+*  \brief Function that executes the action to disable the CAN message logging mechanism (disabling the logging functionality is only possible if it has been previously enabled).
+*  \param[in]   aStructureArrayToSaveLoggedData - Structure where the logged data is dumped from the back-end buffer.
+*  \param[out]  aNumberOfMessagesLogged         - Number of messages logged and copied within the provided output structure.
+* 
+*  \return None
+*
+*  \note
+*   - Disabling is successfully done only if it was previously enabled, provided output structure is large enough and number of frames logged is > 0.
+*
+*  \note
+*   - Example of correct function call sequence: \n
+*   1. A_CAN_StartLoggingMessages(dwLogSlotIDsArray_3Elem, ChannelNr, NrOfLogEntries); \n
+*   2. testWaitForTimeout(5000); // Only during this time, the log is active. Expected data which arrives within 5 seconds, is saved in the back-end buffer. \n
+*   3. A_CAN_StopLoggingMessages(strSaveLogData_1500Elem, i64NumberOfExtractedLogEntries); \n
+*   4. A_CAN_SaveLogDataToCSVFile(chAbsPathOf_CSVLogFile, strSaveLogData_1500Elem, i64NumberOfLogEntriesToSave); \n
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+* 02.04.19              RoBi            Created and implemented
+*/
+
+void A_CAN_StopLoggingMessages(struct cv_strCAN_LoggingBuffer aStructureArrayToSaveLoggedData[], int64 &aNumberOfMessagesLogged)
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  char chStopLoggingMsgInfo[250];
+  int iResult;
+  byte bDebugFlag;
+ 
+  iResult = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Entered A_CAN_StopLoggingMessages().");
+
+  snprintf(chAction, elcount(chAction), "Stop logging mechanism and store: %I64d entries of logged CAN messages data into output structure.", aNumberOfMessagesLogged);
+
+  // Check if the action text is added into the report
+  if( Ok == bFctn_REPORTAction(chAction) )
+  {
+    iResult = iFctn_CAN_StopLoggingMessages(aStructureArrayToSaveLoggedData, aNumberOfMessagesLogged, chStopLoggingMsgInfo);
+    
+    // The CAN Logging mechanism is successfully disabled and data is saved in the output structure
+    if ( Ok == iResult )
+    {
+      snprintf(chPassText, elcount(chPassText), "SUCCESS: %s", chStopLoggingMsgInfo);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASSED! Result A_CAN_StopLoggingMessages(): %s", chStopLoggingMsgInfo);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // Logging mechanism is already disabled, incorrect parameter values or an internal error occurred
+    {
+      snprintf(chFailText, elcount(chFailText), "FAILED: %s", chStopLoggingMsgInfo);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAILED! Result A_CAN_StopLoggingMessages(): %s", chStopLoggingMsgInfo);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else // the reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report.");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAILED! Result A_CAN_StopLoggingMessages(): %s", chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+
+/*! \fn void A_CAN_SaveLogDataToCSVFile(char aAbsoluteCSVFilePath[], struct cv_strCAN_LoggingBuffer aLogDataToSaveInCSV[], int64 aNrOfLogEntriesToWriteInCSV)
+*  \brief Function that executes the action to save in a CSV file, the specified number of log entries from the already populated CAN Message log structure.
+*  \param[in]   aAbsoluteCSVFilePath        - The absolute path to the CSV file. Only .csv extension allowed (Example: C:\\UserName\\Desktop\\MyLogFile.csv).
+*  \param[in]   aLogDataToSaveInCSV         - Structure from where the specified CAN message log entries are extracted and written in the CSV file (has to be already populated using: A_CAN_StartLoggingMessages() and A_CAN_StopLoggingMessages()).
+*  \param[in]   aNrOfLogEntriesToWriteInCSV - Number of log entries to be written in the CSV file (cannot be 0 or larger than the total size of the array structure: aLogDataToSaveInCSV).
+* 
+*  \return None
+*
+*  \note
+*   - Recommended to open the saved CSV file with Excel (make use of WordWrap feature in case of large payload data).
+*
+*  \note
+*   - Example of correct function call sequence: \n
+*   1. A_CAN_StartLoggingMessages(dwLogSlotIDsArray_3Elem, ChannelNr, NrOfLogEntries); \n
+*   2. testWaitForTimeout(5000); // Only during this time, the log is active. Expected data which arrives within 5 seconds, is saved in the back-end buffer. \n
+*   3. A_CAN_StopLoggingMessages(strSaveLogData_1500Elem, i64NumberOfExtractedLogEntries); \n
+*   4. A_CAN_SaveLogDataToCSVFile(chAbsPathOf_CSVLogFile, strSaveLogData_1500Elem, i64NumberOfLogEntriesToSave); \n
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+* 02.04.19              RoBi            Created and implemented
+*/
+
+void A_CAN_SaveLogDataToCSVFile(char aAbsoluteCSVFilePath[], struct cv_strCAN_LoggingBuffer aLogDataToSaveInCSV[], int64 aNrOfLogEntriesToWriteInCSV)
+{
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  char chSaveLogDataInfo[250];
+  int iResult;
+  byte bDebugFlag;
+ 
+  iResult = NotOk;
+  bDebugFlag = tsc_bCAN_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Entered A_CAN_SaveLogDataToCSVFile().");
+  if ( (byte)DebugFuncParam & bDebugFlag )
+    writeDbgLevel (DebugFuncParam, "Parameters: int64 aNrOfLogEntriesToWriteInCSV: --%I64d--, char aAbsoluteCSVFilePath[] --%s--.", aNrOfLogEntriesToWriteInCSV, aAbsoluteCSVFilePath);
+
+  snprintf(chAction, elcount(chAction), "Save: %I64d log entries, to CSV file: %s", aNrOfLogEntriesToWriteInCSV, aAbsoluteCSVFilePath);
+
+  // Check if the action text is added into the report
+  if( Ok == bFctn_REPORTAction(chAction) )
+  {
+    iResult = iFctn_CAN_SaveLogDataToCSVFile(aAbsoluteCSVFilePath, aLogDataToSaveInCSV, aNrOfLogEntriesToWriteInCSV, chSaveLogDataInfo);
+    
+    // The specified number of log entries have been successfully saved to the CSV file
+    if ( Ok == iResult )
+    {
+      snprintf(chPassText, elcount(chPassText), "SUCCESS: %s", chSaveLogDataInfo);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASSED! Result A_CAN_SaveLogDataToCSVFile(): %s", chSaveLogDataInfo);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // Incorrect parameters provided (relative file path, empty structure, NrOfLogEntries > SizeOfStructure) or an internal error occurred
+    {
+      snprintf(chFailText, elcount(chFailText), "FAILED: %s", chSaveLogDataInfo);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAILED! Result A_CAN_SaveLogDataToCSVFile(): %s", chSaveLogDataInfo);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else // the reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report.");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAILED! Result A_CAN_SaveLogDataToCSVFile(): %s", chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup testSupportLib
+*   \brief CAN functions with actions and expected.
+*/

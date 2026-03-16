@@ -1,0 +1,4 @@
+<map id="bFctn_RelKMT_SelectRELAY" name="bFctn_RelKMT_SelectRELAY">
+<area shape="rect" id="node1" title="Function selects from ini file which RELAY to set active (0, 1... 8)." alt="" coords="5,5,200,32"/>
+<area shape="rect" id="node2" href="$group__c_relay_k_m_tronic.html#ga27add8f5ed3628ed5209ca363b64427f" title="Function initializes link to specified relay from ini file." alt="" coords="248,5,380,32"/>
+</map>

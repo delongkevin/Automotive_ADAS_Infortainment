@@ -1,0 +1,21 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup tscETH tscETH
+* @defgroup ETH ETH
+* @ingroup testSupportLib
+* @{
+* @addtogroup tsETH
+* @{
+*/ 
+variables
+{
+  
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup testSupportLib
+*   \brief Ethernet test support library constants.
+*/

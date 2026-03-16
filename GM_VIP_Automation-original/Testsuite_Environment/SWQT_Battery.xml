@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?altova_sps ..\..\..\..\..\..\..\..\..\Program Files\Altova\Authentic2008\sps\Template\Vector\XMLTestSpecSimplified.sps?>
+<testmodule title="SWQT_Battery" version="1.13">
+	<description>Software Qualification Test for CAN LLSI</description>
+
+	
+	<testgroup title="Functionality">		
+		
+		<capltestcase name="Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_0_when_the_battery_is_connected_voltage_is_in_the_normal_range" title="Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_0_when_the_battery_is_connected_voltage_is_in_the_normal_range"/>
+		<capltestcase name="Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_the_battery_is_disconnected" title="Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_the_battery_is_disconnected"/>
+		<capltestcase name="Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditions_unless_cleared_by_the_ClrHWIO_BatConnectionStatus" title="Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditions_unless_cleared_by_the_ClrHWIO_BatConnectionStatus"/>
+		<capltestcase name="Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_the_system_wakes_up_due_to_a_low_voltage_transient" title="Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_the_system_wakes_up_due_to_a_low_voltage_transient"/>
+		<capltestcase name="Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due_to_wakeup_signal_and_not_due_to_a_battery_disconnect" title="Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due_to_wakeup_signal_and_not_due_to_a_battery_disconnect"/>
+		<capltestcase name="Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_unless_a_battery_disconnection_event_occurs" title="Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_unless_a_battery_disconnection_event_occurs"/>
+		<capltestcase name="Verify_Controller_Reset_when_Battery_Voltage_is_between_3_3V_and_4_5V_for_250ms" title="Verify_Controller_Reset_when_Battery_Voltage_is_between_3_3V_and_4_5V_for_250ms"/>
+		<capltestcase name="Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Battery_Voltage_is_between_3_3V_and_4_5V" title="Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Battery_Voltage_is_between_3_3V_and_4_5V"/>
+	
+	
+	</testgroup>
+	
+	
+	<completion>
+		<!--<capltestfunction name="InsertDUTInfo" title="Identification"/>-->
+	    <initialize title="Adding testreport info." wait="200">
+		</initialize>
+	</completion>
+</testmodule>

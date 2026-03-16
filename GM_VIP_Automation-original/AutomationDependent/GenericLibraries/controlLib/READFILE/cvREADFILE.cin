@@ -1,0 +1,22 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup cvREADFILE cvREADFILE
+* @defgroup READFILE READFILE
+* @ingroup controlLib
+* @{
+* @addtogroup cvREADFILE
+* @{
+*/ 
+variables
+{ 
+ 
+}
+
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief REAFILE control library variables.
+*/

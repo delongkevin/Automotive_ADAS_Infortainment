@@ -1,0 +1,4 @@
+<map id="bFctn_POWSetON" name="bFctn_POWSetON">
+<area shape="rect" id="node1" title="Function sets PowerSupply Output to ON." alt="" coords="236,5,369,32"/>
+<area shape="rect" id="node2" href="$_power_supply_8can.html#a7e46da0bde1efb327148691c1d92a4be" title=" " alt="" coords="5,5,188,32"/>
+</map>

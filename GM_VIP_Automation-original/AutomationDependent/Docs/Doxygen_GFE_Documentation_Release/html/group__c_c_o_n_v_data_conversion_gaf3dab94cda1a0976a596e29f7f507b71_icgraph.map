@@ -1,0 +1,9 @@
+<map id="bFctn_CONV_ConvertStringToFloatingNumber" name="bFctn_CONV_ConvertStringToFloatingNumber">
+<area shape="rect" id="node1" title="Function that will convert a string to a floating point number." alt="" coords="457,49,640,90"/>
+<area shape="rect" id="node2" href="$group__c_p_o_w_receive.html#ga32e767b1f49b3dadefb1ddb2de9fcccc" title="Function sets and send a specific command to the selected Power Supply, in order to get a response fr..." alt="" coords="228,5,409,32"/>
+<area shape="rect" id="node3" href="$_power_supply_8can.html#a548ce4006cae466126ca776de807b03d" title=" " alt="" coords="231,56,407,83"/>
+<area shape="rect" id="node6" href="$_power_supply_8can.html#abdf97457e7ba086f8505f122b6ac0115" title=" " alt="" coords="229,107,408,133"/>
+<area shape="rect" id="node4" href="$_power_supply_8can.html#adca192cf98bdcb7cf974c982fb64a69a" title=" " alt="" coords="5,15,180,57"/>
+<area shape="rect" id="node5" href="$_power_supply_8can.html#aed3cbc64e9ca4ac64113c5d636a3b778" title=" " alt="" coords="31,81,154,108"/>
+<area shape="rect" id="node7" href="$_power_supply_8can.html#a9d73e0d344aaba79a3fedb4b6e23b944" title=" " alt="" coords="5,133,180,174"/>
+</map>

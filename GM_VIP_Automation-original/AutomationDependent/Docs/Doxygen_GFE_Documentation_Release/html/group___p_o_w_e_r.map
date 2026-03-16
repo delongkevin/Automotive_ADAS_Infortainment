@@ -1,0 +1,11 @@
+<map id="POWER" name="POWER">
+<area shape="rect" id="node1" title=" " alt="" coords="160,129,232,155"/>
+<area shape="rect" id="node2" href="$group__c_p_o_w.html" title=" " alt="" coords="303,5,364,31"/>
+<area shape="rect" id="node3" href="$group__c_p_o_w_receive.html" title=" " alt="" coords="280,55,387,80"/>
+<area shape="rect" id="node4" href="$group__cc_p_o_w.html" title=" " alt="" coords="299,104,367,129"/>
+<area shape="rect" id="node6" href="$group__cv_p_o_w.html" title=" " alt="" coords="300,153,367,179"/>
+<area shape="rect" id="node8" href="$group__ts_p_o_w_e_r.html" title=" " alt="" coords="292,203,375,228"/>
+<area shape="rect" id="node9" href="$group__tsc_p_o_w_e_r.html" title=" " alt="" coords="288,252,379,277"/>
+<area shape="rect" id="node5" href="$group__control_lib.html" title=" " alt="" coords="19,104,98,129"/>
+<area shape="rect" id="node7" href="$group__test_support_lib.html" title=" " alt="" coords="5,153,112,179"/>
+</map>

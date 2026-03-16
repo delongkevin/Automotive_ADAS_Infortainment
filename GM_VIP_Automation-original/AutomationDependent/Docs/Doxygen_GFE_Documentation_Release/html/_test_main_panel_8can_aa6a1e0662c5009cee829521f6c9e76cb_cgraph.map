@@ -1,0 +1,8 @@
+<map id="on_sysvar_TestMainPanel_Variables_SaveConf" name="on_sysvar_TestMainPanel_Variables_SaveConf">
+<area shape="rect" id="node1" title=" " alt="" coords="5,100,179,141"/>
+<area shape="rect" id="node2" href="$_test_main_panel_8can.html#a79ff7555dc4a9bf3029b2b6c659531bd" title=" " alt="" coords="227,100,373,141"/>
+<area shape="rect" id="node3" href="$group__b_r_e_a_d_f_i_l_e.html#ga99f88f9d1b1e898e2c9c6b7b2419f707" title="Function opens an ini file and writes a number entry." alt="" coords="421,5,651,47"/>
+<area shape="rect" id="node4" href="$group__b_r_e_a_d_f_i_l_e.html#ga3fd32477af37f9ace65eac196fbf1fd6" title="Function opens an ini file and writes a string entry." alt="" coords="421,71,651,112"/>
+<area shape="rect" id="node5" href="$group__b_r_e_a_d_f_i_l_e.html#ga8a889e4d66c01c40e21b45786c1bfce2" title="Function saves ini file used before simulation stop." alt="" coords="437,137,635,163"/>
+<area shape="rect" id="node6" href="$group__b_r_e_a_d_f_i_l_e.html#gaa2f411dcf05539923bc880e7732d47a9" title="Function opens an ini file and reads a number entry." alt="" coords="439,188,633,229"/>
+</map>

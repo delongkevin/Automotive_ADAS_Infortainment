@@ -1,0 +1,78 @@
+/*@!Encoding:1252*/
+
+includes
+{
+  #include "..\..\ProjectSpecific\GenLib_Includes.cin"
+}
+
+variables
+{
+  char chTestDescription[500];
+  char chActionText[500];
+  char chExpectedText[500];
+  char chTestTitle[100];
+  
+}
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  UDS_36121873: Service 0x11 NRC12
+----------------------------------------------------------------------------------------------------
+Description:   To check NRC12 for Service 0x11
+----------------------------------------------------------------------------------------------------
+ Requires: -
+----------------------------------------------------------------------------------------------------
+ Status/Comments: -
+----------------------------------------------------------------------------------------------------
+ Revision history:
+
+ Date(DDMMYY)         Author             Change info
+    DDMMYY         DeveloperName       Changes on the Test
+    140225             SeSu               Created
+----------------------------------------------------------------------------------------------------
+***************************************************************************************************/
+testcase UDS_36121873()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  diagRequest DCU_EQ6LH.Hard_Reset_Reset Hard_Reset_NRC13;
+  diagRequest DCU_EQ6LH.DataDiagnosticIdentifier_DDI_Read DataDiagnosticIdentifier_DDI_Read;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+  DiagSetPrimitiveByte(Hard_Reset_NRC13, 1, 0x2); 
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "UDS_36120391: Service 0x11 NRC12" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To check NRC12 for Service 0x11");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_Q-36121873", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 0 PRECONDITIONS
+  /***************************************************************************************************************/
+  snprintf( chActionText, elCount(chActionText), "Send UDS ECU Reset (0x11) with subservice not supported"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "NRC12 recived"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  
+  E_DIAG_SendAndWaitForResponse(Hard_Reset_NRC13,cc_eDIAGPhysical,cc_eDIAG_NRC12);
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  snprintf( chActionText, elCount(chActionText), "Read diagnostics session"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "Diagnostic session is DefaultSession"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  
+  E_DIAG_SendAndWaitForResponse(DataDiagnosticIdentifier_DDI_Read,cc_eDIAGPhysical,cc_eDIAG_PositiveResponse);
+}

@@ -1,0 +1,5 @@
+<map id="bFctn_READFILEPutStringInAFile" name="bFctn_READFILEPutStringInAFile">
+<area shape="rect" id="node1" title=" " alt="" coords="5,23,195,65"/>
+<area shape="rect" id="node2" href="$group__b_r_e_a_d_f_i_l_e.html#ga4e260ee8c583989b29bca4d6805bc26a" title="This function opens a file for writing in it." alt="" coords="243,5,492,32"/>
+<area shape="rect" id="node3" href="$group__b_r_e_a_d_f_i_l_e.html#ga97224209c746e60365544f0fbdaa113b" title="This function write a string in a specific file, given by a file handler." alt="" coords="276,56,459,83"/>
+</map>

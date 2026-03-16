@@ -1,0 +1,1455 @@
+/*@!Encoding:1252*/
+/*==============================================================================
+  File: SerialComLogger_MultiPort.can
+  Description: Multi-Port Serial COM Communication with Automatic Logging
+  Compatible with: Vector VTestStudio CAPL Compiler (Test Unit)
+  
+  Features:
+  - Support for up to 4 COM ports simultaneously (COM13, COM14, COM15, COM16)
+  - Each port logs to its own separate text file
+  - Open/Close individual or all serial ports
+  - Send data to specific port with automatic newline termination (\r\n)
+  - Send break signal (Ctrl+C) to interrupt commands on specific port
+  - Receive data from all ports with callbacks
+  - Automatic logging to individual text files per port
+  
+  IMPORTANT CONFIGURATION:
+  - Baud Rate: 115200 (standard rate) - CHANGE if your devices use different rate
+  - COM Ports: 13, 14, 15, 16 - CHANGE to match your devices
+  - Enable/disable ports by setting PORT_X_ENABLED = 1 or 0
+==============================================================================*/
+
+includes
+{
+}
+
+variables
+{
+  // Multi-port configuration - ENABLE/DISABLE PORTS HERE
+  const dword PORT_1_ENABLED = 1;        // Set to 1 to enable, 0 to disable
+  const dword PORT_2_ENABLED = 1;
+  const dword PORT_3_ENABLED = 1;
+  const dword PORT_4_ENABLED = 1;
+  
+  // COM port numbers
+  const dword COM_PORT_1 = 16;           // First COM port
+  const dword COM_PORT_2 = 15;           // Second COM port
+  const dword COM_PORT_3 = 14;           // Third COM port
+  const dword COM_PORT_4 = 13;           // Fourth COM port
+  
+  // Serial port configuration (same for all ports)
+  const dword BAUD_RATE = 115200;        // Baud rate: 115200 (standard rate)
+  const dword DATA_BITS = 8;             // Number of data bits
+  const dword STOP_BITS = 1;             // Number of stop bits (1 or 2)
+  const dword PARITY = 0;                // Parity: 0=None, 1=Even, 2=Odd
+  
+  // File logging - separate file for each port
+  dword gLogFileHandle[4];               // File handles for each port
+  char gLogFileName1[100] = "SerialComLog_COM16.txt";
+  char gLogFileName2[100] = "SerialComLog_COM15.txt";
+  char gLogFileName3[100] = "SerialComLog_COM14.txt";
+  char gLogFileName4[100] = "SerialComLog_COM13.txt";
+  
+  // Serial port state
+  dword gPortOpened[4];                  // Port status flags for each port
+  
+  // Buffer for data operations - separate buffer for each port
+  const dword BUFFER_SIZE = 5000;
+  byte gReceiveBuffer1[256];
+  byte gReceiveBuffer2[256];
+  byte gReceiveBuffer3[256];
+  byte gReceiveBuffer4[256];
+  byte gSendBuffer[256];                 // Shared send buffer
+  
+  // Timestamp buffer
+  char gTimeStamp[64];
+
+  // -------------------------------------------------------------------------
+  // QNX terminal configuration
+  // -------------------------------------------------------------------------
+  // COM_PORT_1 (COM16) is the QNX core that has a full shell (terminal access).
+  // All other ports are listener-only cores that only emit serial prints.
+  // Use the QNX_CMD_PORT constant when you need to send commands.
+  const dword QNX_CMD_PORT = 16;         // COM16 = QNX terminal with shell access
+
+  // Last partial line received from the QNX port (for response capture)
+  char gQnxLastLine[1024];
+  dword gQnxLastLineLen;
+
+  // Auto-save session log: master log that aggregates all ports with timestamps
+  char gMasterLogName[100] = "SerialComLog_Master.txt";
+  dword gMasterLogHandle;
+}
+
+/*==============================================================================
+  Helper Functions: Get port index and file handle
+==============================================================================*/
+dword GetPortIndex(dword port)
+{
+  if (port == COM_PORT_1) return 0;
+  if (port == COM_PORT_2) return 1;
+  if (port == COM_PORT_3) return 2;
+  if (port == COM_PORT_4) return 3;
+  return 0;
+}
+
+dword GetFileHandle(dword port)
+{
+  return gLogFileHandle[GetPortIndex(port)];
+}
+
+void GetFileName(dword port, char fileName[])
+{
+  dword idx;
+  idx = GetPortIndex(port);
+  if (idx == 0) snprintf(fileName, 100, "%s", gLogFileName1);
+  else if (idx == 1) snprintf(fileName, 100, "%s", gLogFileName2);
+  else if (idx == 2) snprintf(fileName, 100, "%s", gLogFileName3);
+  else snprintf(fileName, 100, "%s", gLogFileName4);
+}
+
+void CopyToReceiveBuffer(dword port, byte buffer[], dword size)
+{
+  dword idx;
+  dword i;
+  idx = GetPortIndex(port);
+  
+  if (idx == 0) 
+  {
+    for (i = 0; i < size && i < 256; i++) buffer[i] = gReceiveBuffer1[i];
+  }
+  else if (idx == 1) 
+  {
+    for (i = 0; i < size && i < 256; i++) buffer[i] = gReceiveBuffer2[i];
+  }
+  else if (idx == 2) 
+  {
+    for (i = 0; i < size && i < 256; i++) buffer[i] = gReceiveBuffer3[i];
+  }
+  else 
+  {
+    for (i = 0; i < size && i < 256; i++) buffer[i] = gReceiveBuffer4[i];
+  }
+}
+
+dword IsPortEnabled(dword port)
+{
+  if (port == COM_PORT_1) return PORT_1_ENABLED;
+  if (port == COM_PORT_2) return PORT_2_ENABLED;
+  if (port == COM_PORT_3) return PORT_3_ENABLED;
+  if (port == COM_PORT_4) return PORT_4_ENABLED;
+  return 0;
+}
+
+/*==============================================================================
+  Function: LogToFile
+  Description: Write a message to the log file for specific port
+  Parameters: port - COM port number
+              msg - String to log
+  Returns: void
+==============================================================================*/
+void LogToFile(dword port, char msg[])
+{
+  char logEntry[512];
+  dword fileHandle;
+  
+  fileHandle = GetFileHandle(port);
+  
+  if (fileHandle != 0)
+  {
+    getLocalTimeString(gTimeStamp);
+    snprintf(logEntry, elcount(logEntry), "[%s] %s\n", gTimeStamp, msg);
+    filePutString(logEntry, elcount(logEntry), fileHandle);
+  }
+}
+
+/*==============================================================================
+  Function: InitializeLogger
+  Description: Initialize log files for all enabled serial ports
+  Parameters: None
+  Returns: void
+==============================================================================*/
+void InitializeLogger()
+{
+  char initMessage[200];
+  char fileName[100];
+  dword i;
+  dword ports[4] = {COM_PORT_1, COM_PORT_2, COM_PORT_3, COM_PORT_4};
+  
+  // Initialize all handles and status
+  for (i = 0; i < 4; i++)
+  {
+    gLogFileHandle[i] = 0;
+    gPortOpened[i] = 0;
+  }
+  
+  // Open log file for each enabled port
+  for (i = 0; i < 4; i++)
+  {
+    if (!IsPortEnabled(ports[i])) continue;
+    
+    GetFileName(ports[i], fileName);
+    
+    // Open log file in append mode
+    gLogFileHandle[i] = openFileWrite(fileName, 2);
+    
+    if (gLogFileHandle[i] != 0)
+    {
+      // Write header to log file
+      getLocalTimeString(gTimeStamp);
+      snprintf(initMessage, elcount(initMessage), 
+               "===========================================\n");
+      filePutString(initMessage, elcount(initMessage), gLogFileHandle[i]);
+      
+      snprintf(initMessage, elcount(initMessage),
+               "Serial COM Logger Started: %s\n", gTimeStamp);
+      filePutString(initMessage, elcount(initMessage), gLogFileHandle[i]);
+      
+      snprintf(initMessage, elcount(initMessage),
+               "Port: COM%d, Baud Rate: %d\n", ports[i], BAUD_RATE);
+      filePutString(initMessage, elcount(initMessage), gLogFileHandle[i]);
+      
+      snprintf(initMessage, elcount(initMessage),
+               "===========================================\n");
+      filePutString(initMessage, elcount(initMessage), gLogFileHandle[i]);
+      
+      write("Log file initialized for COM%d: %s", ports[i], fileName);
+    }
+    else
+    {
+      write("ERROR: Failed to open log file for COM%d: %s", ports[i], fileName);
+    }
+  }
+}
+
+/*==============================================================================
+  Function: CloseLogger
+  Description: Close all log files
+  Parameters: None
+  Returns: void
+==============================================================================*/
+void CloseLogger()
+{
+  char logMsg[200];
+  dword i;
+  dword ports[4] = {COM_PORT_1, COM_PORT_2, COM_PORT_3, COM_PORT_4};
+  
+  for (i = 0; i < 4; i++)
+  {
+    if (gLogFileHandle[i] != 0)
+    {
+      snprintf(logMsg, elcount(logMsg), "Logger closed");
+      LogToFile(ports[i], logMsg);
+      
+      getLocalTimeString(gTimeStamp);
+      snprintf(logMsg, elcount(logMsg),
+               "===========================================\n");
+      filePutString(logMsg, elcount(logMsg), gLogFileHandle[i]);
+      
+      snprintf(logMsg, elcount(logMsg),
+               "Serial COM Logger Stopped: %s\n", gTimeStamp);
+      filePutString(logMsg, elcount(logMsg), gLogFileHandle[i]);
+      
+      snprintf(logMsg, elcount(logMsg),
+               "===========================================\n\n");
+      filePutString(logMsg, elcount(logMsg), gLogFileHandle[i]);
+      
+      fileClose(gLogFileHandle[i]);
+      gLogFileHandle[i] = 0;
+      write("Log file closed for COM%d", ports[i]);
+    }
+  }
+}
+
+/*==============================================================================
+  Function: SerialPort_Open
+  Description: Opens and configures a specific serial COM port
+  Parameters: port - COM port number to open
+  Returns: 1 = Success, 0 = Failure
+==============================================================================*/
+dword SerialPort_Open(dword port)
+{
+  dword result;
+  char logMsg[200];
+  dword idx;
+  
+  if (!IsPortEnabled(port))
+  {
+    write("COM%d is disabled in configuration", port);
+    return 0;
+  }
+  
+  idx = GetPortIndex(port);
+  
+  if (gPortOpened[idx] == 1)
+  {
+    write("Serial port COM%d is already open", port);
+    snprintf(logMsg, elcount(logMsg), 
+             "Attempted to open already opened port COM%d", port);
+    LogToFile(port, logMsg);
+    return 1;
+  }
+  
+  result = RS232Open(port);
+  
+  if (result == 1)
+  {
+    write("Serial port COM%d opened successfully", port);
+    snprintf(logMsg, elcount(logMsg), "Port COM%d opened successfully", port);
+    LogToFile(port, logMsg);
+    
+    result = RS232Configure(port, BAUD_RATE, DATA_BITS, STOP_BITS, PARITY);
+    
+    if (result == 1)
+    {
+      write("Serial port COM%d configured: Baud=%d, Data=%d, Stop=%d, Parity=%d",
+            port, BAUD_RATE, DATA_BITS, STOP_BITS, PARITY);
+      snprintf(logMsg, elcount(logMsg),
+               "Port COM%d configured: Baud=%d, Data=%d, Stop=%d, Parity=%d",
+               port, BAUD_RATE, DATA_BITS, STOP_BITS, PARITY);
+      LogToFile(port, logMsg);
+      
+      gPortOpened[idx] = 1;
+      return 1;
+    }
+    else
+    {
+      write("ERROR: Failed to configure serial port COM%d", port);
+      snprintf(logMsg, elcount(logMsg), 
+               "ERROR: Failed to configure port COM%d", port);
+      LogToFile(port, logMsg);
+      return 0;
+    }
+  }
+  else
+  {
+    write("ERROR: Failed to open serial port COM%d", port);
+    write("Please check if the port exists and is not in use");
+    snprintf(logMsg, elcount(logMsg), 
+             "ERROR: Failed to open port COM%d - port may not exist or is in use", 
+             port);
+    LogToFile(port, logMsg);
+    return 0;
+  }
+}
+
+/*==============================================================================
+  Function: SerialPort_OpenAll
+  Description: Opens all enabled COM ports
+  Parameters: None
+  Returns: Number of ports successfully opened
+==============================================================================*/
+dword SerialPort_OpenAll()
+{
+  dword count = 0;
+  dword ports[4] = {COM_PORT_1, COM_PORT_2, COM_PORT_3, COM_PORT_4};
+  dword i;
+  
+  write("Opening all enabled COM ports...");
+  
+  for (i = 0; i < 4; i++)
+  {
+    if (IsPortEnabled(ports[i]))
+    {
+      if (SerialPort_Open(ports[i]) == 1)
+      {
+        count++;
+      }
+    }
+  }
+  
+  write("Opened %d port(s) successfully", count);
+  return count;
+}
+
+/*==============================================================================
+  Function: SerialPort_Close
+  Description: Closes a specific serial COM port
+  Parameters: port - COM port number to close
+  Returns: 1 = Success, 0 = Failure
+==============================================================================*/
+dword SerialPort_Close(dword port)
+{
+  dword result;
+  char logMsg[200];
+  dword idx;
+  
+  idx = GetPortIndex(port);
+  
+  if (gPortOpened[idx] == 0)
+  {
+    write("Serial port COM%d is not open", port);
+    return 1;
+  }
+  
+  result = RS232Close(port);
+  
+  if (result == 1)
+  {
+    write("Serial port COM%d closed successfully", port);
+    snprintf(logMsg, elcount(logMsg), "Port COM%d closed successfully", port);
+    LogToFile(port, logMsg);
+    gPortOpened[idx] = 0;
+    return 1;
+  }
+  else
+  {
+    write("ERROR: Failed to close serial port COM%d", port);
+    snprintf(logMsg, elcount(logMsg), 
+             "ERROR: Failed to close port COM%d", port);
+    LogToFile(port, logMsg);
+    return 0;
+  }
+}
+
+/*==============================================================================
+  Function: SerialPort_CloseAll
+  Description: Closes all open COM ports
+  Parameters: None
+  Returns: Number of ports successfully closed
+==============================================================================*/
+dword SerialPort_CloseAll()
+{
+  dword count = 0;
+  dword ports[4] = {COM_PORT_1, COM_PORT_2, COM_PORT_3, COM_PORT_4};
+  dword i;
+  
+  write("Closing all open COM ports...");
+  
+  for (i = 0; i < 4; i++)
+  {
+    if (gPortOpened[i] == 1)
+    {
+      if (SerialPort_Close(ports[i]) == 1)
+      {
+        count++;
+      }
+    }
+  }
+  
+  write("Closed %d port(s) successfully", count);
+  return count;
+}
+
+/*==============================================================================
+  Function: SerialPort_Send
+  Description: Send data to a specific serial port with \r\n line termination
+  Parameters: port - COM port number
+              data - String to send
+              length - Length of data to send
+  Returns: 1 = Success, 0 = Failure
+==============================================================================*/
+dword SerialPort_Send(dword port, char data[], dword length)
+{
+  dword result;
+  dword i;
+  dword totalLength;
+  char logMsg[1024];
+  char dataStr[1024];
+  char hexDump[512];  // Moved to top for CAPL compliance
+  dword idx;
+  
+  idx = GetPortIndex(port);
+  
+  if (gPortOpened[idx] == 0)
+  {
+    write("ERROR: Cannot send data - COM%d is not open", port);
+    return 0;
+  }
+  
+  // Copy data to buffer
+  for (i = 0; i < length && i < (BUFFER_SIZE - 2); i++)
+  {
+    gSendBuffer[i] = (byte)data[i];
+  }
+  
+  // Append \r\n to the end of the data
+  gSendBuffer[i] = 13;  // \r (Carriage Return)
+  i++;
+  gSendBuffer[i] = 10;  // \n (Line Feed)
+  i++;
+  
+  totalLength = i;
+  
+  result = RS232Send(port, gSendBuffer, totalLength);
+  
+  if (result == 1)
+  {
+    write("COM%d: Data sent successfully: %d bytes (including \\r\\n)", port, totalLength);
+    
+    // Build readable ASCII string for logging
+    snprintf(dataStr, elcount(dataStr), "");
+    for (i = 0; i < length && i < 512; i++)
+    {
+      if (data[i] >= 32 && data[i] <= 126)
+      {
+        snprintf(dataStr, elcount(dataStr), "%s%c", dataStr, data[i]);
+      }
+      else
+      {
+        snprintf(dataStr, elcount(dataStr), "%s[0x%02X]", dataStr, (byte)data[i]);
+      }
+    }
+    
+    // DIAGNOSTIC: Show actual bytes being sent
+    snprintf(hexDump, elcount(hexDump), "");
+    for (i = 0; i < totalLength && i < 50; i++)
+    {
+      snprintf(hexDump, elcount(hexDump), "%s %02X", hexDump, gSendBuffer[i]);
+    }
+    write("COM%d SENT BYTES (hex):%s", port, hexDump);
+    
+    write("COM%d SENT: %s", port, dataStr);
+    snprintf(logMsg, elcount(logMsg), "SENT: %s", dataStr);
+    LogToFile(port, logMsg);
+    
+    return 1;
+  }
+  else
+  {
+    write("ERROR: COM%d failed to send data", port);
+    snprintf(logMsg, elcount(logMsg), "ERROR: Failed to send data");
+    LogToFile(port, logMsg);
+    return 0;
+  }
+}
+
+/*==============================================================================
+  Function: SerialPort_SendString
+  Description: Send a string to a specific serial port
+  Parameters: port - COM port number
+              text - String to send
+  Returns: 1 = Success, 0 = Failure
+==============================================================================*/
+dword SerialPort_SendString(dword port, char text[])
+{
+  dword length;
+  length = strlen(text);
+  return SerialPort_Send(port, text, length);
+}
+
+/*==============================================================================
+  Function: SerialPort_SendBreak
+  Description: Send Ctrl+C to a specific port to interrupt running command
+  Parameters: port - COM port number
+  Returns: 1 = Success, 0 = Failure
+==============================================================================*/
+dword SerialPort_SendBreak(dword port)
+{
+  dword result;
+  char logMsg[200];
+  dword idx;
+  
+  idx = GetPortIndex(port);
+  
+  if (gPortOpened[idx] == 0)
+  {
+    write("ERROR: Cannot send break - COM%d is not open", port);
+    return 0;
+  }
+  
+  // Send Ctrl+C character (ASCII 3)
+  gSendBuffer[0] = 3;
+  
+  result = RS232Send(port, gSendBuffer, 1);
+  
+  if (result == 1)
+  {
+    write("COM%d: Break signal (Ctrl+C) sent successfully", port);
+    snprintf(logMsg, elcount(logMsg), "SENT: Ctrl+C (Break Signal)");
+    LogToFile(port, logMsg);
+    return 1;
+  }
+  else
+  {
+    write("ERROR: COM%d failed to send break signal", port);
+    snprintf(logMsg, elcount(logMsg), "ERROR: Failed to send Ctrl+C");
+    LogToFile(port, logMsg);
+    return 0;
+  }
+}
+
+/*==============================================================================
+  Function: SerialPort_Receive
+  Description: Register to receive data from a specific serial port
+  Parameters: port - COM port number
+              expectedLength - Expected number of bytes to receive
+  Returns: 1 = Success, 0 = Failure
+==============================================================================*/
+dword SerialPort_Receive(dword port, dword expectedLength)
+{
+  dword result;
+  dword idx;
+  
+  idx = GetPortIndex(port);
+  
+  if (gPortOpened[idx] == 0)
+  {
+    write("ERROR: Cannot receive data - COM%d is not open", port);
+    return 0;
+  }
+  
+  // Register receive based on port index
+  if (idx == 0)
+  {
+    result = RS232Receive(port, gReceiveBuffer1, expectedLength);
+  }
+  else if (idx == 1)
+  {
+    result = RS232Receive(port, gReceiveBuffer2, expectedLength);
+  }
+  else if (idx == 2)
+  {
+    result = RS232Receive(port, gReceiveBuffer3, expectedLength);
+  }
+  else
+  {
+    result = RS232Receive(port, gReceiveBuffer4, expectedLength);
+  }
+  
+  if (result == 1)
+  {
+    write("COM%d: Receive registered for %d bytes", port, expectedLength);
+    return 1;
+  }
+  else
+  {
+    write("ERROR: COM%d failed to register receive", port);
+    return 0;
+  }
+}
+
+/*==============================================================================
+  Function: SerialPort_ReceiveAll
+  Description: Register receive callbacks for all open ports
+  Parameters: None
+  Returns: Number of ports with receive registered
+==============================================================================*/
+dword SerialPort_ReceiveAll()
+{
+  dword count = 0;
+  dword ports[4] = {COM_PORT_1, COM_PORT_2, COM_PORT_3, COM_PORT_4};
+  dword i;
+  
+  write("Registering receive callbacks for all open ports...");
+  
+  for (i = 0; i < 4; i++)
+  {
+    if (gPortOpened[i] == 1)
+    {
+      if (SerialPort_Receive(ports[i], BUFFER_SIZE) == 1)
+      {
+        count++;
+      }
+    }
+  }
+  
+  write("Registered receive for %d port(s)", count);
+  return count;
+}
+
+/*==============================================================================
+  Callback: RS232OnReceive
+  Description: Callback triggered when data is received on any port
+==============================================================================*/
+RS232OnReceive(dword port, byte buffer[], dword number)
+{
+  char dataAscii[2048];
+  char logLine[2048];
+  dword i;
+  dword linePos;
+  char currentLine[1024];
+  char hexStr[10];  // Moved to top for CAPL compliance
+  dword j;          // Moved to top for CAPL compliance
+  
+  write("COM%d: Data received: %d bytes", port, number);
+  
+  // Build ASCII representation for console output
+  snprintf(dataAscii, elcount(dataAscii), "");
+  for (i = 0; i < number && i < 1024; i++)
+  {
+    if (buffer[i] >= 32 && buffer[i] <= 126)
+    {
+      snprintf(dataAscii, elcount(dataAscii), "%s%c", dataAscii, buffer[i]);
+    }
+    else if (buffer[i] == 10)  // LF
+    {
+      snprintf(dataAscii, elcount(dataAscii), "%s<LF>", dataAscii);
+    }
+    else if (buffer[i] == 13)  // CR
+    {
+      snprintf(dataAscii, elcount(dataAscii), "%s<CR>", dataAscii);
+    }
+    else if (buffer[i] == 9)   // TAB
+    {
+      snprintf(dataAscii, elcount(dataAscii), "%s<TAB>", dataAscii);
+    }
+    else
+    {
+      snprintf(dataAscii, elcount(dataAscii), "%s[0x%02X]", dataAscii, buffer[i]);
+    }
+  }
+  
+  write("COM%d RECV: %s", port, dataAscii);
+  
+  // Save to log file as actual ASCII text with real newlines
+  // Process data line by line
+  linePos = 0;
+  
+  for (i = 0; i < number; i++)
+  {
+    if (buffer[i] == 13)  // Carriage return - skip it
+    {
+      continue;
+    }
+    else if (buffer[i] == 10)  // Line feed - end of line
+    {
+      // Save the current line
+      currentLine[linePos] = 0;  // Null terminate
+      
+      if (linePos > 0)  // Only log non-empty lines
+      {
+        snprintf(logLine, elcount(logLine), "RECV: %s", currentLine);
+        LogToFile(port, logLine);
+      }
+      
+      // Reset for next line
+      linePos = 0;
+    }
+    else if (buffer[i] >= 32 && buffer[i] <= 126)  // Printable ASCII
+    {
+      if (linePos < 1023)
+      {
+        currentLine[linePos] = buffer[i];
+        linePos++;
+      }
+    }
+    else if (buffer[i] == 9)  // Tab
+    {
+      if (linePos < 1023)
+      {
+        currentLine[linePos] = '\t';
+        linePos++;
+      }
+    }
+    else  // Non-printable character - represent as hex
+    {
+      snprintf(hexStr, elcount(hexStr), "[0x%02X]", buffer[i]);
+      
+      for (j = 0; j < strlen(hexStr) && linePos < 1023; j++)
+      {
+        currentLine[linePos] = hexStr[j];
+        linePos++;
+      }
+    }
+  }
+  
+  // Log any remaining data that didn't end with newline
+  if (linePos > 0)
+  {
+    currentLine[linePos] = 0;  // Null terminate
+    snprintf(logLine, elcount(logLine), "RECV: %s", currentLine);
+    LogToFile(port, logLine);
+  }
+  
+  // Re-register to receive more data
+  SerialPort_Receive(port, BUFFER_SIZE);
+}
+
+/*==============================================================================
+  Callback: RS232OnSend
+  Description: Callback triggered when data is sent on any port
+==============================================================================*/
+RS232OnSend(dword port, byte buffer[], dword number)
+{
+  char logMsg[200];
+  
+  getLocalTimeString(gTimeStamp);
+  write("COM%d [%s] Data transmission confirmed: %d bytes", port, gTimeStamp, number);
+  snprintf(logMsg, elcount(logMsg), "SEND CONFIRMED: %d bytes", number);
+  LogToFile(port, logMsg);
+}
+
+/*==============================================================================
+  Callback: RS232OnError
+  Description: Callback triggered on error on any port
+==============================================================================*/
+RS232OnError(dword port, dword errorFlags)
+{
+  char logMsg[200];
+  
+  write("ERROR on COM%d: Error flags = 0x%X", port, errorFlags);
+  
+  if (errorFlags & 1)
+  {
+    write("  - Send error");
+    snprintf(logMsg, elcount(logMsg), "ERROR: Send error (flags=0x%X)", errorFlags);
+    LogToFile(port, logMsg);
+  }
+  
+  if (errorFlags & 2)
+  {
+    write("  - Receive error");
+    snprintf(logMsg, elcount(logMsg), "ERROR: Receive error (flags=0x%X)", errorFlags);
+    LogToFile(port, logMsg);
+  }
+  
+  if (errorFlags & 4)
+  {
+    write("  - Configuration error");
+    snprintf(logMsg, elcount(logMsg), "ERROR: Configuration error (flags=0x%X)", errorFlags);
+    LogToFile(port, logMsg);
+  }
+}
+
+/*==============================================================================
+  Test Function: Setup_SerialComLogger
+==============================================================================*/
+export testfunction Setup_SerialComLogger()
+{
+  InitializeLogger();
+  write("========================================");
+  write("Multi-Port SerialComLogger Setup Complete");
+  write("========================================");
+  write("CONFIGURATION:");
+  if (PORT_1_ENABLED) write("  COM%d: ENABLED -> %s", COM_PORT_1, gLogFileName1);
+  if (PORT_2_ENABLED) write("  COM%d: ENABLED -> %s", COM_PORT_2, gLogFileName2);
+  if (PORT_3_ENABLED) write("  COM%d: ENABLED -> %s", COM_PORT_3, gLogFileName3);
+  if (PORT_4_ENABLED) write("  COM%d: ENABLED -> %s", COM_PORT_4, gLogFileName4);
+  write("  Baud Rate: %d", BAUD_RATE);
+  write("========================================");
+  write("Functions available:");
+  write("  - SerialPort_Open(port)");
+  write("  - SerialPort_OpenAll()");
+  write("  - SerialPort_Close(port)");
+  write("  - SerialPort_CloseAll()");
+  write("  - SerialPort_SendString(port, text)");
+  write("  - SerialPort_SendBreak(port)");
+  write("  - SerialPort_Receive(port, length)");
+  write("  - SerialPort_ReceiveAll()");
+  write("========================================");
+  write("Test Cases available:");
+  write("  - TC_OpenAllPorts()");
+  write("  - TC_SendToPort(port, command, waitMs)");
+  write("  - TC_MonitorAllPorts(waitMs)");
+  write("  - TC_CloseAllPorts()");
+  write("========================================");
+}
+
+/*==============================================================================
+  Test Function: Teardown_SerialComLogger
+==============================================================================*/
+export testfunction Teardown_SerialComLogger()
+{
+  SerialPort_CloseAll();
+  CloseLogger();
+  write("Multi-Port SerialComLogger Teardown Complete");
+}
+
+/*==============================================================================
+  Test Case: TC_OpenAllPorts
+==============================================================================*/
+export testcase TC_OpenAllPorts()
+{
+  dword count;
+  
+  write("==================================================");
+  write("Test Case: Open All Enabled COM Ports");
+  write("==================================================");
+  
+  count = SerialPort_OpenAll();
+  
+  if (count > 0)
+  {
+    write("  PASS: Opened %d port(s)", count);
+    
+    // Register receive for all ports
+    SerialPort_ReceiveAll();
+  }
+  else
+  {
+    write("  FAIL: No ports opened");
+  }
+  
+  testWaitForTimeout(100);
+}
+
+/*==============================================================================
+  Test Case: TC_CloseAllPorts
+==============================================================================*/
+export testcase TC_CloseAllPorts()
+{
+  dword count;
+  
+  write("==================================================");
+  write("Test Case: Close All COM Ports");
+  write("==================================================");
+  
+  count = SerialPort_CloseAll();
+  
+  write("  Closed %d port(s)", count);
+}
+
+/*==============================================================================
+  Test Case: TC_SendToPort
+  Description: Send a command to a specific port and wait for response
+==============================================================================*/
+export testcase TC_SendToPort(dword port, char command[], int waitMs)
+{
+  dword result;
+  
+  write("==================================================");
+  write("Test Case: Send Command to COM%d", port);
+  write("Command: %s", command);
+  write("==================================================");
+  
+  result = SerialPort_Open(port);
+  if (result != 1)
+  {
+    write("  FAIL: Could not open COM%d", port);
+    return;
+  }
+  
+  result = SerialPort_Receive(port, BUFFER_SIZE);
+  if (result != 1)
+  {
+    write("  FAIL: Could not register receive on COM%d", port);
+    SerialPort_Close(port);
+    testStepFail();
+    return;
+  }
+  
+  result = SerialPort_SendString(port, command);
+  if (result != 1)
+  {
+    write("  FAIL: Failed to send to COM%d", port);
+    SerialPort_Close(port);
+    testStepFail();
+    return;
+  }
+  
+  write("  Waiting %d ms for response...", waitMs);
+  testWaitForTimeout(waitMs);
+  
+  SerialPort_Close(port);
+  write("==================================================");
+  testStepPass();
+}
+
+/*==============================================================================
+  Test Case: TC_MonitorAllPorts
+  Description: Monitor all enabled ports simultaneously
+==============================================================================*/
+export testcase TC_MonitorAllPorts(int monitorMs)
+{
+  dword openCount;
+  dword recvCount;
+  
+  write("==================================================");
+  write("Test Case: Monitor All Enabled Ports");
+  write("Duration: %d ms", monitorMs);
+  write("==================================================");
+  
+  openCount = SerialPort_OpenAll();
+  if (openCount == 0)
+  {
+    write("  FAIL: No ports opened");
+    testStepFail();
+    return;
+  }
+  
+  write("  Opened %d port(s)", openCount);
+  
+  recvCount = SerialPort_ReceiveAll();
+  write("  Registered receive on %d port(s)", recvCount);
+  
+  write("  Monitoring all ports for %d ms...", monitorMs);
+  testWaitForTimeout(monitorMs);
+  
+  SerialPort_CloseAll();
+  
+  write("==================================================");
+  write("  Test complete - check individual log files");
+  write("==================================================");
+  testStepPass();
+}
+
+/*==============================================================================
+  Test Case: TC_SendToAllPorts
+  Description: Send a command to all enabled ports
+==============================================================================*/
+export testcase TC_SendToAllPorts(char command[], int waitMs)
+{
+  dword ports[4] = {COM_PORT_1, COM_PORT_2, COM_PORT_3, COM_PORT_4};
+  dword i;
+  
+  write("==================================================");
+  write("Test Case: Send Command to All Ports");
+  write("Command: %s", command);
+  write("==================================================");
+  
+  SerialPort_OpenAll();
+  SerialPort_ReceiveAll();
+  
+  for (i = 0; i < 4; i++)
+  {
+    if (IsPortEnabled(ports[i]) && gPortOpened[i] == 1)
+    {
+      SerialPort_SendString(ports[i], command);
+    }
+  }
+  
+  write("  Waiting %d ms for responses...", waitMs);
+  testWaitForTimeout(waitMs);
+  
+  SerialPort_CloseAll();
+  
+  write("==================================================");
+  write("  Test complete - check individual log files");
+  write("==================================================");
+  testStepPass();
+}
+
+/* ============================================================================
+   MASTER LOG HELPERS
+   The master log aggregates output from all ports into one time-stamped file.
+============================================================================ */
+
+void MasterLog_Open()
+{
+  char initMsg[256];
+  char sessionTs[64];
+  char masterPath[200];
+
+  if (gMasterLogHandle != 0) return; // already open
+
+  // Build a session-stamped filename so successive runs never overwrite.
+  // getLocalTimeString() returns a string like "hh:mm:ss" – replace colons
+  // with underscores to make it file-system safe.
+  getLocalTimeString(sessionTs);
+  sessionTs[2] = '_';
+  sessionTs[5] = '_';
+  snprintf(gMasterLogName, elcount(gMasterLogName),
+           "SerialComLog_Master_%s.txt", sessionTs);
+
+  snprintf(masterPath, elcount(masterPath), "%s", gMasterLogName);
+
+  gMasterLogHandle = openFileWrite(masterPath, 2); // append mode
+  if (gMasterLogHandle != 0)
+  {
+    getLocalTimeString(gTimeStamp);
+    snprintf(initMsg, elcount(initMsg),
+             "===========================================\n"
+             "Master Serial Log Started: %s\n"
+             "Ports: COM%d(QNX) COM%d COM%d COM%d\n"
+             "===========================================\n",
+             gTimeStamp,
+             QNX_CMD_PORT, COM_PORT_2, COM_PORT_3, COM_PORT_4);
+    filePutString(initMsg, strlen(initMsg), gMasterLogHandle);
+    write("Master log opened: %s", gMasterLogName);
+  }
+  else
+  {
+    write("ERROR: Could not open master log: %s", gMasterLogName);
+  }
+}
+
+void MasterLog_Write(dword port, char msg[])
+{
+  char entry[1200];
+  getLocalTimeString(gTimeStamp);
+  snprintf(entry, elcount(entry), "[%s] COM%d: %s\n", gTimeStamp, port, msg);
+  if (gMasterLogHandle != 0)
+    filePutString(entry, strlen(entry), gMasterLogHandle);
+}
+
+void MasterLog_Close()
+{
+  char closeMsg[128];
+  if (gMasterLogHandle != 0)
+  {
+    getLocalTimeString(gTimeStamp);
+    snprintf(closeMsg, elcount(closeMsg),
+             "===========================================\n"
+             "Master Log Closed: %s\n"
+             "===========================================\n\n",
+             gTimeStamp);
+    filePutString(closeMsg, strlen(closeMsg), gMasterLogHandle);
+    fileClose(gMasterLogHandle);
+    gMasterLogHandle = 0;
+    write("Master log closed.");
+  }
+}
+
+/* ============================================================================
+   QNX TERMINAL FUNCTIONS
+   These functions target exclusively COM_PORT_1 / QNX_CMD_PORT because
+   that is the only port with a shell (all other ports are listen-only).
+============================================================================ */
+
+/*------------------------------------------------------------------------------
+  QNX_SendCommand
+  Send a single shell command to the QNX terminal port.
+  Automatically opens the port if not already open.
+  Returns 1 on success, 0 on failure.
+------------------------------------------------------------------------------*/
+dword QNX_SendCommand(char cmd[])
+{
+  dword result;
+  char  logMsg[300];
+
+  if (gPortOpened[GetPortIndex(QNX_CMD_PORT)] == 0)
+  {
+    if (SerialPort_Open(QNX_CMD_PORT) != 1)
+    {
+      write("QNX: ERROR – COM%d not open and cannot be opened", QNX_CMD_PORT);
+      return 0;
+    }
+    // Register receive so the response is captured
+    SerialPort_Receive(QNX_CMD_PORT, BUFFER_SIZE);
+  }
+
+  result = SerialPort_SendString(QNX_CMD_PORT, cmd);
+
+  snprintf(logMsg, elcount(logMsg), "QNX CMD: %s", cmd);
+  LogToFile(QNX_CMD_PORT, logMsg);
+  MasterLog_Write(QNX_CMD_PORT, logMsg);
+
+  write("QNX -> COM%d: %s", QNX_CMD_PORT, cmd);
+  return result;
+}
+
+/*------------------------------------------------------------------------------
+  QNX_SendCommandAndWait
+  Send a single command to the QNX port and wait <waitMs> for a response.
+  Returns 1 on send success, 0 on failure.
+------------------------------------------------------------------------------*/
+dword QNX_SendCommandAndWait(char cmd[], int waitMs)
+{
+  dword result;
+  char  logMsg[300];
+
+  result = QNX_SendCommand(cmd);
+  if (result == 1)
+  {
+    write("QNX: Waiting %d ms for response to: %s", waitMs, cmd);
+    testWaitForTimeout(waitMs);
+    snprintf(logMsg, elcount(logMsg),
+             "QNX WAIT DONE (%d ms): %s", waitMs, cmd);
+    LogToFile(QNX_CMD_PORT, logMsg);
+    MasterLog_Write(QNX_CMD_PORT, logMsg);
+  }
+  return result;
+}
+
+/*------------------------------------------------------------------------------
+  QNX_SendBreak
+  Send Ctrl+C (ASCII 0x03) to the QNX terminal to interrupt a running command.
+------------------------------------------------------------------------------*/
+dword QNX_SendBreak()
+{
+  write("QNX: Sending Ctrl+C (break) to COM%d", QNX_CMD_PORT);
+  MasterLog_Write(QNX_CMD_PORT, "QNX CMD: Ctrl+C (break)");
+  return SerialPort_SendBreak(QNX_CMD_PORT);
+}
+
+/* ============================================================================
+   TEST CASE: TC_QNX_SendCommand
+   Send a single command to the QNX terminal port (COM16) and capture any
+   response printed within the specified wait window.
+   Parameters:
+     cmd    – shell command string (e.g. "cat /proc/meminfo")
+     waitMs – milliseconds to wait for response after sending
+============================================================================ */
+export testcase TC_QNX_SendCommand(char cmd[], int waitMs)
+{
+  dword result;
+
+  write("==================================================");
+  write("Test Case: Send QNX Command");
+  write("Port    : COM%d (QNX terminal)", QNX_CMD_PORT);
+  write("Command : %s", cmd);
+  write("Wait    : %d ms", waitMs);
+  write("==================================================");
+
+  InitializeLogger();
+  MasterLog_Open();
+
+  result = QNX_SendCommandAndWait(cmd, waitMs);
+
+  MasterLog_Close();
+  CloseLogger();
+
+  if (result == 1)
+  {
+    write("  PASS: Command sent successfully");
+    testStepPass();
+  }
+  else
+  {
+    write("  FAIL: Failed to send command to COM%d", QNX_CMD_PORT);
+    testStepFail();
+  }
+}
+
+/* ============================================================================
+   TEST CASE: TC_QNX_MultiCommand
+   Send a predefined sequence of diagnostic shell commands to the QNX
+   terminal, pausing between each for the response to be logged.
+   Parameter: waitBetweenMs – delay between consecutive commands (ms)
+============================================================================ */
+export testcase TC_QNX_MultiCommand(int waitBetweenMs)
+{
+  write("==================================================");
+  write("Test Case: QNX Multi-Command Sequence");
+  write("==================================================");
+
+  InitializeLogger();
+  MasterLog_Open();
+
+  // Open QNX port with receive registered
+  SerialPort_Open(QNX_CMD_PORT);
+  SerialPort_Receive(QNX_CMD_PORT, BUFFER_SIZE);
+
+  // --- Command sequence ---
+  // 1. Check system uptime
+  QNX_SendCommandAndWait("uptime", waitBetweenMs);
+
+  // 2. Check free memory
+  QNX_SendCommandAndWait("pidin mem", waitBetweenMs);
+
+  // 3. List running processes
+  QNX_SendCommandAndWait("pidin", waitBetweenMs);
+
+  // 4. Read CPU load (sysctl)
+  QNX_SendCommandAndWait("sysctl -a | grep cpu", waitBetweenMs);
+
+  // 5. Dump NVM DID check (if a helper script exists on QNX target)
+  QNX_SendCommandAndWait("cat /dev/nvm_status 2>/dev/null || echo NVM_STATUS_NA",
+                         waitBetweenMs);
+
+  // 6. Check for any kernel errors
+  QNX_SendCommandAndWait("slog2info -b | tail -20", waitBetweenMs);
+
+  // 7. Echo a sentinel to confirm shell is responsive
+  QNX_SendCommandAndWait("echo QNX_HEALTH_OK", waitBetweenMs);
+
+  SerialPort_Close(QNX_CMD_PORT);
+  MasterLog_Close();
+  CloseLogger();
+
+  write("==================================================");
+  write("  QNX multi-command sequence complete.");
+  write("  Check SerialComLog_COM16.txt and SerialComLog_Master.txt");
+  write("==================================================");
+  testStepPass();
+}
+
+/* ============================================================================
+   TEST CASE: TC_QNX_MonitorSystem
+   Open all four COM ports and passively monitor all output for <durationMs>.
+   All data is written to per-port log files AND to the master log.
+   Parameter: durationMs – total monitoring duration in ms
+============================================================================ */
+export testcase TC_QNX_MonitorSystem(int durationMs)
+{
+  dword openCount;
+  dword recvCount;
+
+  write("==================================================");
+  write("Test Case: Monitor All 4 COM Ports");
+  write("  COM%d – QNX core (command + print)", QNX_CMD_PORT);
+  write("  COM%d – Listener core 2", COM_PORT_2);
+  write("  COM%d – Listener core 3", COM_PORT_3);
+  write("  COM%d – Listener core 4", COM_PORT_4);
+  write("Duration: %d ms", durationMs);
+  write("==================================================");
+
+  InitializeLogger();
+  MasterLog_Open();
+
+  openCount = SerialPort_OpenAll();
+  if (openCount == 0)
+  {
+    write("  FAIL: No serial ports could be opened");
+    MasterLog_Close();
+    CloseLogger();
+    testStepFail();
+    return;
+  }
+
+  recvCount = SerialPort_ReceiveAll();
+  write("  Opened %d port(s), registered receive on %d port(s)",
+        openCount, recvCount);
+  write("  Monitoring for %d ms...", durationMs);
+
+  testWaitForTimeout(durationMs);
+
+  SerialPort_CloseAll();
+  MasterLog_Close();
+  CloseLogger();
+
+  write("==================================================");
+  write("  Monitoring complete – check log files:");
+  write("    %s", gLogFileName1);
+  write("    %s", gLogFileName2);
+  write("    %s", gLogFileName3);
+  write("    %s", gLogFileName4);
+  write("    %s", gMasterLogName);
+  write("==================================================");
+  testStepPass();
+}
+
+/* ============================================================================
+   TEST CASE: TC_QNX_DiagnosticCapture
+   Opens all four ports, sends a predefined diagnostic command sequence to
+   the QNX terminal, and captures all serial output for <captureMs> ms.
+   Useful for capturing system state before/after CAN or NVM stress tests.
+   Parameter: captureMs – total capture window in ms
+============================================================================ */
+export testcase TC_QNX_DiagnosticCapture(int captureMs)
+{
+  int waitCmd;
+
+  write("==================================================");
+  write("Test Case: QNX Diagnostic Capture (all 4 ports)");
+  write("Capture duration: %d ms", captureMs);
+  write("==================================================");
+
+  InitializeLogger();
+  MasterLog_Open();
+
+  SerialPort_OpenAll();
+  SerialPort_ReceiveAll();
+
+  // Stagger command wait so total does not exceed captureMs
+  waitCmd = captureMs / 7;
+  if (waitCmd < 500) waitCmd = 500;
+
+  // Diagnostic command sequence on QNX terminal
+  QNX_SendCommandAndWait("echo === DiagCapture Start ===", waitCmd);
+  QNX_SendCommandAndWait("date",                            waitCmd);
+  QNX_SendCommandAndWait("uptime",                          waitCmd);
+  QNX_SendCommandAndWait("pidin mem",                       waitCmd);
+  QNX_SendCommandAndWait("slog2info -b | tail -30",         waitCmd);
+  QNX_SendCommandAndWait("pidin | wc -l",                   waitCmd);
+  QNX_SendCommandAndWait("echo === DiagCapture End ===",    waitCmd);
+
+  SerialPort_CloseAll();
+  MasterLog_Close();
+  CloseLogger();
+
+  write("==================================================");
+  write("  Diagnostic capture complete.");
+  write("  Master log: %s", gMasterLogName);
+  write("==================================================");
+  testStepPass();
+}
+
+/* ============================================================================
+   TEST CASE: TC_QNX_NVM_Check
+   Sends NVM-inspection commands to the QNX terminal and monitors all
+   listener ports for any NVM-related print output.
+   Parameter: waitMs – time to wait after each command for output (ms)
+============================================================================ */
+export testcase TC_QNX_NVM_Check(int waitMs)
+{
+  write("==================================================");
+  write("Test Case: QNX NVM Status Check");
+  write("==================================================");
+
+  InitializeLogger();
+  MasterLog_Open();
+
+  SerialPort_OpenAll();
+  SerialPort_ReceiveAll();
+
+  // Query NVM block status via QNX shell
+  QNX_SendCommandAndWait("echo === NVM Check ===",                          waitMs);
+  QNX_SendCommandAndWait("cat /dev/nvm_block 2>/dev/null || echo NOT_AVAIL", waitMs);
+  QNX_SendCommandAndWait("nvmctl status 2>/dev/null || echo NVM_CTL_NA",    waitMs);
+  QNX_SendCommandAndWait("slog2info -b | grep -i nvm | tail -20",           waitMs);
+  QNX_SendCommandAndWait("echo === NVM Check Complete ===",                 waitMs);
+
+  SerialPort_CloseAll();
+  MasterLog_Close();
+  CloseLogger();
+
+  write("NVM check commands sent. Review %s for results.", gMasterLogName);
+  testStepPass();
+}
+
+/* ============================================================================
+   TEST CASE: TC_LongDuration_AllPorts
+   Continuous long-duration monitoring and periodic QNX health-check suitable
+   for overnight runs alongside NVM or SWQT stress tests.
+   Sends a health-ping to QNX every <pingIntervalMs> and logs all four COM
+   ports continuously for <totalDurationMs> milliseconds.
+   Parameters:
+     totalDurationMs  – total run time in ms  (e.g. 28800000 = 8 hours)
+     pingIntervalMs   – interval between QNX health pings in ms (e.g. 60000)
+============================================================================ */
+export testcase TC_LongDuration_AllPorts(int totalDurationMs, int pingIntervalMs)
+{
+  int   elapsed;
+  int   pingCount;
+  dword openCount;
+
+  write("==================================================");
+  write("Test Case: Long-Duration All-Port Monitor");
+  write("Duration : %d ms (%.1f hours)",
+        totalDurationMs, totalDurationMs / 3600000.0);
+  write("Ping interval: %d ms", pingIntervalMs);
+  write("==================================================");
+
+  elapsed   = 0;
+  pingCount = 0;
+
+  InitializeLogger();
+  MasterLog_Open();
+
+  openCount = SerialPort_OpenAll();
+  if (openCount == 0)
+  {
+    write("  FAIL: No serial ports opened");
+    MasterLog_Close();
+    CloseLogger();
+    testStepFail();
+    return;
+  }
+
+  SerialPort_ReceiveAll();
+  write("  Monitoring %d port(s)...", openCount);
+
+  while (elapsed < totalDurationMs)
+  {
+    // Wait one ping interval
+    testWaitForTimeout(pingIntervalMs);
+    elapsed += pingIntervalMs;
+    pingCount++;
+
+    // Send health ping to QNX terminal
+    write("LongDuration: ping %d at elapsed %d ms", pingCount, elapsed);
+    QNX_SendCommandAndWait("echo HEALTH_PING", 1000);
+
+    // Log progress to master log every 10 pings
+    if (pingCount % 10 == 0)
+    {
+      char progressMsg[128];
+      snprintf(progressMsg, elcount(progressMsg),
+               "PROGRESS: elapsed=%d ms, pings=%d", elapsed, pingCount);
+      MasterLog_Write(QNX_CMD_PORT, progressMsg);
+      write("LongDuration progress: %s", progressMsg);
+    }
+  }
+
+  SerialPort_CloseAll();
+  MasterLog_Close();
+  CloseLogger();
+
+  write("==================================================");
+  write("  Long-duration run complete. %d pings sent.", pingCount);
+  write("  Check %s for full log.", gMasterLogName);
+  write("==================================================");
+  testStepPass();
+}

@@ -1,0 +1,4 @@
+<map id="iFcnt_READFILE_SearchKeywordInFile" name="iFcnt_READFILE_SearchKeywordInFile">
+<area shape="rect" id="node1" title="Function is going to parse each file line and search within for the provided Keyword/Phrase." alt="" coords="5,5,224,47"/>
+<area shape="rect" id="node2" href="$group__b_r_e_a_d_f_i_l_e.html#ga8dea2ad9c1aecf048140b0c138b517be" title="This function opens a file only for reading purpose, in ASCII or BINARY mode." alt="" coords="272,13,520,39"/>
+</map>

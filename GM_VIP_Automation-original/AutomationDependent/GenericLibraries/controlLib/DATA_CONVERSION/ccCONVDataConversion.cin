@@ -1,0 +1,35 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup ccCONVDataConversion ccCONVDataConversion
+* @defgroup DATA_CONVERSION DATA_CONVERSION
+* @ingroup controlLib
+* @{
+* @addtogroup ccCONVDataConversion
+* @{
+*/ 
+variables 
+{  
+  enum cc_eResultCONV { cc_eCONV_NOK = 0, cc_eCONV_OK = 1, cc_eCONV_WARNING_ELEMENTS_NOT_COPIED = 6 };
+
+  enum cc_eNumberBaseCONV { cc_eCONV_Binary = 2, cc_eCONV_Decimal = 10, cc_eCONV_Hex = 16 };
+	
+  enum cc_eNumbersCONV {cc_eCONV_ZERO = 0, cc_eCONV_ONE = 1, cc_eCONV_TWO = 2, cc_eCONV_THREE = 3, cc_eCONV_FOUR = 4, cc_eCONV_FIVE = 5, cc_eCONV_SIX = 6, cc_eCONV_SEVEN = 7};
+
+  const qword cc_qwCONVNoMaxElConverted = 100000; 
+  
+  // This debug flag will be used to enable/disable the debug messages in all functions of the current module
+  // 0x00 - No debug messages displayed (only function calls).
+  // 0x01 - Only function call messages displayed (this will always displayed).
+  // 0x02 - Function parameter + 0x01.
+  // 0x04 - Internal function actions + 0x01 and 0x02.
+  // 0xFF - All of the above (function calls, function parameters, internal function actions).
+  const byte ccCONV_GlobalDebugFlag = 0x01;
+ }
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief Data conversion control library constants.
+*/

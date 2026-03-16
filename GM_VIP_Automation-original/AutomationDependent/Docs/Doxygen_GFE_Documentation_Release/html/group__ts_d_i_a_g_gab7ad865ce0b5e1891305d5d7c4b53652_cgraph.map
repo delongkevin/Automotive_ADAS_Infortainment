@@ -1,0 +1,4 @@
+<map id="A_DIAG_SetP2Timeouts" name="A_DIAG_SetP2Timeouts">
+<area shape="rect" id="node1" title="Function that will modify the P2 and P2*Extended timeouts, for the correctly specified ECU Target." alt="" coords="5,5,171,32"/>
+<area shape="rect" id="node2" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="219,5,428,32"/>
+</map>

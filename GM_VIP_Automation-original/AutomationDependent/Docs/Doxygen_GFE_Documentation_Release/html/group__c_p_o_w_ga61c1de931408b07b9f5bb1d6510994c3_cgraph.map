@@ -1,0 +1,4 @@
+<map id="bFctn_POWSelectPowerSupply" name="bFctn_POWSelectPowerSupply">
+<area shape="rect" id="node1" title="Function selects from ini file which Power Supply to set active (0, 1... 8)." alt="" coords="5,5,212,32"/>
+<area shape="rect" id="node2" href="$group__c_p_o_w.html#ga80a1a31d65e2ce53e74ab4de24306fbe" title="Function sets the parameters for communication on RS232." alt="" coords="260,5,439,32"/>
+</map>

@@ -1,0 +1,107 @@
+/*@!Encoding:1252*/
+//  ====================================================
+//   CAPL DotNet Integration Functions
+//  ====================================================
+//
+//  File name: cdotnetT32dll.cin
+//
+//  Created(DD.MM.YYYY): 31.01.2026
+//
+//  Description: CAPL wrapper functions for .NET DLL calls
+//               These functions wrap the .NET methods from dotnetT32dll.dll
+//
+//  Usage:
+//    1. Include this file: #include "cdotnetT32dll.cin"
+//    2. Add pragma: #pragma library("dotnetT32dll.dll")
+//    3. Call wrapper functions: dlldotnetT32dll_TestWriteMessage();
+//
+//  Note: The .NET DLL must be compiled and placed alongside caplT32dll.dll
+//  --------------------------------------------------------------------
+includes
+{
+  #pragma netlibrary("dotnetT32dll.dll")
+}
+
+variables
+{
+  // dotnetT32dll module constants
+  const byte cc_bdotnetT32dll_GlobalDebugFlag = 0; // Set to 1 to enable debug output
+}
+
+
+/// <summary>
+/// Wrapper function for dotnetT32dllLib::dotnetT32dllHelper::TestWriteMessage()
+/// Writes a test message to the CANoe Write Window from .NET
+/// </summary>
+void dlldotnetT32dll_TestWriteMessage()
+{
+  char chMessage[512];
+  // Call the .NET static method which returns a string
+  dotnetT32dllLib::dotnetT32dllHelper::TestWriteMessage(chMessage);
+  // Write to CANoe Write Window
+  write("%s", chMessage);
+}
+
+/// <summary>
+/// Wrapper function for dotnetT32dllLib::dotnetT32dllHelper::TestWriteCustomMessage(string)
+/// Writes a custom message to the CANoe Write Window from .NET
+/// </summary>
+/// <param name="aMessage">The message to write</param>
+void dlldotnetT32dll_TestWriteCustomMessage(char aMessage[])
+{
+  char chResult[512];
+  dotnetT32dllLib::dotnetT32dllHelper::TestWriteCustomMessage(aMessage, chResult);
+  write("%s", chResult);
+}
+
+/// <summary>
+/// Wrapper function for dotnetT32dllLib::dotnetT32dllHelper::TestAdd(int, int)
+/// Simple test function to verify DLL integration
+/// </summary>
+/// <param name="a">First integer</param>
+/// <param name="b">Second integer</param>
+/// <returns>Sum of a and b</returns>
+long dlldotnetT32dll_TestAdd(long a, long b)
+{
+  return dotnetT32dllLib::dotnetT32dllHelper::TestAdd(a, b);
+}
+
+/// <summary>
+/// Wrapper function for dotnetT32dllLib::dotnetT32dllHelper::WaitMs(int)
+/// Waits for the specified number of milliseconds using CANoe threading
+/// </summary>
+/// <param name="aMilliseconds">Time to wait in milliseconds</param>
+void dlldotnetT32dll_WaitMs(long aMilliseconds)
+{
+  dotnetT32dllLib::dotnetT32dllHelper::WaitMs(aMilliseconds);
+}
+
+/// <summary>
+/// Blocking execution of T32_API.exe using Process.Start.
+/// WARNING: May cause CANoe realtime kernel overruns if T32 command takes too long.
+/// ~60ms per command
+/// </summary>
+/// <param name="aExePath">Path to T32 API executable</param>
+/// <param name="aCommand">Command string to execute</param>
+/// <param name="aMessage">Output buffer for API message</param>
+/// <param name="aExitCode">Output array for exit code</param>
+/// <returns>0 on success, negative value on failure</returns>
+long dllRunT32cmdBlocking(char aExePath[], char aCommand[], char aMessage[], long aExitCode[])
+{
+  return dotnetT32dllLib::dotnetT32dllHelper::RunT32cmdBlocking(aExePath, aCommand, aMessage, aExitCode);
+}
+
+/// <summary>
+/// Non-blocking execution of T32_API.exe using Execution.WaitForTask.
+/// Yields to CANoe's realtime kernel during execution to prevent overruns.
+/// ~75ms per command
+/// </summary>
+/// <param name="aExePath">Path to T32 API executable</param>
+/// <param name="aCommand">Command string to execute</param>
+/// <param name="aMessage">Output buffer for API message</param>
+/// <param name="aExitCode">Output array for exit code</param>
+/// <returns>0 on success, negative value on failure</returns>
+long dllRunT32cmdNonBlocking(char aExePath[], char aCommand[], char aMessage[], long aExitCode[])
+{
+  return dotnetT32dllLib::dotnetT32dllHelper::RunT32cmdNonBlocking(aExePath, aCommand, aMessage, aExitCode);
+}

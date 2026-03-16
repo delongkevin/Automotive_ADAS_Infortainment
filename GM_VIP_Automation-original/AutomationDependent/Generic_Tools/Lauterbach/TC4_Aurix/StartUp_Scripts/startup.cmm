@@ -1,0 +1,63 @@
+; startup.cmm
+; Lauterbach Trace32 startup script for Infineon Aurix TC4xx
+;
+; This script initializes the Trace32 debugger connection to the Aurix TC4 ECU
+; and attaches to a running target. It is invoked automatically by the CANoe
+; automation framework via T32_API.exe "DO <path_to_this_script>".
+;
+; Prerequisites:
+;   - Trace32 must be running with the remote API enabled (port 20000).
+;   - The ECU must be powered on before this script is executed.
+;
+; Usage from T32 remote API:
+;   T32_API.exe "DO <absolute_path>\startup.cmm"
+;
+; Exit codes:
+;   0 - Startup completed successfully (CPU is running or halted).
+;   1 - Startup failed (could not attach or CPU in unexpected state).
+
+LOCAL &cpuState
+
+; -----------------------------------------------------------------------
+; 1. Reset the debug system to a clean state
+; -----------------------------------------------------------------------
+SYStem.RESet
+
+; -----------------------------------------------------------------------
+; 2. Select the Aurix TC4xx CPU family
+;    Adjust the CPU type to match the exact device on the bench
+;    (e.g. TC499, TC498, TC497, TC496, TC494, TC49X).
+; -----------------------------------------------------------------------
+SYStem.CPU TC49X
+
+; -----------------------------------------------------------------------
+; 3. Configure the DAP/JTAG debug interface
+; -----------------------------------------------------------------------
+SYStem.CONFIG DEBUGACCESSPORT 0.
+SYStem.CONFIG DAP.DP 0.
+SYStem.JtagClock 20MHz
+
+; -----------------------------------------------------------------------
+; 4. Attach to the running ECU without halting execution
+; -----------------------------------------------------------------------
+SYStem.Mode.Attach
+
+; -----------------------------------------------------------------------
+; 5. Verify the CPU state and report result
+; -----------------------------------------------------------------------
+&cpuState=STATE()
+IF (&cpuState==0x0)
+(
+  PRINT "T32 STARTUP FAIL: CPU is in Down state - check ECU power and JTAG connection."
+  ENDDO 1
+)
+IF STATE.RUN()
+(
+  PRINT "T32 STARTUP PASS: Attached to running Aurix TC4 ECU. CPU state: " STATE()
+  ENDDO 0
+)
+ELSE
+(
+  PRINT "T32 STARTUP PASS: Attached to Aurix TC4 ECU (halted). CPU state: " STATE()
+  ENDDO 0
+)

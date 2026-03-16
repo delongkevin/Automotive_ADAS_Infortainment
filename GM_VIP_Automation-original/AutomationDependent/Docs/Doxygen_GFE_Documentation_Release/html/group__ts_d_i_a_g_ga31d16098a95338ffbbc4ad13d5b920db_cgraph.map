@@ -1,0 +1,4 @@
+<map id="E_DIAG_SendAndComparePrimitiveData" name="E_DIAG_SendAndComparePrimitiveData">
+<area shape="rect" id="node1" title="Function that will send the request, get the primitive data, between start and stop byte position,..." alt="" coords="5,5,263,32"/>
+<area shape="rect" id="node2" href="$group__c_r_e_p_o_r_t.html#gae2516bdd6224879343a2a9acf69edf07" title="Function Evaluates writes in report evaluated expected." alt="" coords="311,5,509,32"/>
+</map>

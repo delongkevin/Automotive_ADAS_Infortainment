@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?altova_sps ..\..\..\..\..\..\..\..\..\Program Files\Altova\Authentic2008\sps\Template\Vector\XMLTestSpecSimplified.sps?>
+<testmodule title="SWQT_HWCRC" version="1.13">
+	<description>Software Qualification Test for HWCRC LLSI</description>
+
+	
+	<testgroup title="Functionality">	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_0" title="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_1" title="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_1"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_2" title="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_2"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_3" title="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_3"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_4" title="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_4"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_5" title="Verify_Hardware_CRC_Calculation_Reset_Initialization_Core_5"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_0" title="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC16_Calculation_Inprogress_Reporting_Core_0" title="Verify_Hardware_CRC16_Calculation_Inprogress_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC8_Calculation_Inprogress_Reporting_Core_0" title="Verify_Hardware_CRC8_Calculation_Inprogress_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_1" title="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_1"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_2" title="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_2"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_3" title="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_3"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_4" title="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_4"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_5" title="Verify_Hardware_CRC32_Calculation_Inprogress_Reporting_Core_5"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_0" title="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC16_Calculation_SignatureAvail_Reporting_Core_0" title="Verify_Hardware_CRC16_Calculation_SignatureAvail_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC8_Calculation_SignatureAvail_Reporting_Core_0" title="Verify_Hardware_CRC8_Calculation_SignatureAvail_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_1" title="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_1"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_2" title="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_2"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_3" title="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_3"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_4" title="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_4"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_5" title="Verify_Hardware_CRC32_Calculation_SignatureAvail_Reporting_Core_5"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_0" title="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_1" title="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_1"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_2" title="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_2"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_3" title="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_3"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_4" title="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_4"/>	
+		<capltestcase name="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_5" title="Verify_Hardware_CRC_Calculation_Invalid_algorithm_Failure_Reporting_Core_5"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_0" title="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_1" title="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_1"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_2" title="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_2"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_3" title="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_3"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_4" title="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_4"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_5" title="Verify_Hardware_CRC32_Calculation_Invalid_Start_Address_Failure_Reporting_Core_5"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_0" title="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_1" title="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_1"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_2" title="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_2"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_3" title="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_3"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_4" title="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_4"/>	
+		<capltestcase name="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_5" title="Verify_Hardware_CRC32_Calculation_Invalid_End_Address_Failure_Reporting_Core_5"/>	
+		<capltestcase name="Verify_Hardware_CRC16_Calculation_Invalid_End_Address_Failure_Reporting_Core_0" title="Verify_Hardware_CRC16_Calculation_Invalid_End_Address_Failure_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC8_Calculation_Invalid_End_Address_Failure_Reporting_Core_0" title="Verify_Hardware_CRC8_Calculation_Invalid_End_Address_Failure_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC16_Calculation_Invalid_Start_Address_Failure_Reporting_Core_0" title="Verify_Hardware_CRC16_Calculation_Invalid_Start_Address_Failure_Reporting_Core_0"/>	
+		<capltestcase name="Verify_Hardware_CRC8_Calculation_Invalid_Start_Address_Failure_Reporting_Core_0" title="Verify_Hardware_CRC8_Calculation_Invalid_Start_Address_Failure_Reporting_Core_0"/>	
+		<capltestcase name="Verify_CRC_Request_Before_Reading_Signatur_Of_Last_Request_Passed" title="Verify_CRC_Request_Before_Reading_Signatur_Of_Last_Request_Passed"/>	
+		<capltestcase name="Verify_CRC_Request_Before_Reading_Signatur_Of_Last_Request_Failed" title="Verify_CRC_Request_Before_Reading_Signatur_Of_Last_Request_Failed"/>	
+		<capltestcase name="Verify_Hardware_CRC8_Calculation_Failure_Reporting_Core_1" title="Verify_Hardware_CRC8_Calculation_Failure_Reporting_Core_1"/>	
+		<capltestcase name="Verify_Hardware_CRC8_Calculation_Failure_Reporting_Core_2" title="Verify_Hardware_CRC8_Calculation_Failure_Reporting_Core_2"/>	
+		<capltestcase name="Verify_Hardware_CRC8_Calculation_Failure_Reporting_Core_3" title="Verify_Hardware_CRC8_Calculation_Failure_Reporting_Core_3"/>	
+		<capltestcase name="Verify_Hardware_CRC8_Calculation_Failure_Reporting_Core_4" title="Verify_Hardware_CRC8_Calculation_Failure_Reporting_Core_4"/>	
+		<capltestcase name="Verify_Hardware_CRC8_Calculation_Failure_Reporting_Core_5" title="Verify_Hardware_CRC8_Calculation_Failure_Reporting_Core_5"/>	
+		<capltestcase name="Verify_Hardware_CRC16_Calculation_Failure_Reporting_Core_1" title="Verify_Hardware_CRC16_Calculation_Failure_Reporting_Core_1"/>	
+		<capltestcase name="Verify_Hardware_CRC16_Calculation_Failure_Reporting_Core_2" title="Verify_Hardware_CRC16_Calculation_Failure_Reporting_Core_2"/>	
+		<capltestcase name="Verify_Hardware_CRC16_Calculation_Failure_Reporting_Core_3" title="Verify_Hardware_CRC16_Calculation_Failure_Reporting_Core_3"/>	
+		<capltestcase name="Verify_Hardware_CRC16_Calculation_Failure_Reporting_Core_4" title="Verify_Hardware_CRC16_Calculation_Failure_Reporting_Core_4"/>	
+		<capltestcase name="Verify_Hardware_CRC16_Calculation_Failure_Reporting_Core_5" title="Verify_Hardware_CRC16_Calculation_Failure_Reporting_Core_5"/>	
+		
+	
+	</testgroup>
+	
+	<completion>
+		<!--<capltestfunction name="InsertDUTInfo" title="Identification"/>-->
+	    <initialize title="Adding testreport info." wait="200">
+		</initialize>
+	</completion>
+</testmodule>

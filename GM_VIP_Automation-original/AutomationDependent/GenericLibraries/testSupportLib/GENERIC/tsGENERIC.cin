@@ -1,0 +1,343 @@
+/*@!Encoding:1252*/
+
+/*!
+* @defgroup tsGENERIC tsGENERIC
+* @defgroup GENERIC GENERIC
+* @ingroup testSupportLib
+* @{
+* @addtogroup tsGENERIC
+* @{
+*/ 
+
+
+includes
+{
+  #include "tscGENERIC.cin"
+  #include "..\..\controlLib\GENERIC\cGENERIC.cin"
+}
+
+
+
+/*! \fn void A_GENERIC_SetTimeout()
+*  \brief Function sets timeout.
+*  \param[in] lTimeout - Timeout to wait in ms.
+*  \param[in] chComment - Custom text to be added in report.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  07.06.18              SeNi        Created and implemented
+*/
+
+void A_GENERIC_SetTimeout(long lTimeout, char chComment[])
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  byte bResult;
+  byte bResultAction; 
+  
+  bResultAction = 0;
+  bResult = 0;
+
+  writeDbgLevel (tsc_eGENERICDebugFuncCalls, "Function A_GENERIC_SetTimeout called");
+  writeDbgLevel (tsc_eGENERICDebugFuncParam, "Parameters: long lTimeout: -- %d --, char chComment[]: -- %s --.", lTimeout, chComment);
+  
+  if(strlen(chComment) != 0)
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "chComment is not empty, writing parameter to report. chComment: -- %s --.", chComment);
+    snprintf(chAction, elcount(chAction), chComment);
+  }
+  else
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "chComment is empty, writing default Action to repport.");
+    snprintf(chAction, elcount(chAction), "Set timeout: %ld ms.", lTimeout);
+  }
+    
+  bResultAction = bFctn_REPORTAction(chAction);
+  writeDbgLevel (tsc_eGENERICDebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+    
+  if(bResultAction)
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Calling function TestWaitForTimeout.");
+    bResult = TestWaitForTimeout(lTimeout);  
+  } 
+  
+  snprintf(chPassText, elcount(chPassText), "Resumed due to timeout: %ld ms.", lTimeout);
+  snprintf(chFailText, elcount(chFailText), "Resumed due to an error, please check testcase.");  
+  
+  if(!bResult)
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test action passed. Calling function vFctn_REPORTActionEvaluation.");
+    vFctn_REPORTActionEvaluation(chPassText, PASS);
+  }
+  else
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test action failed. Calling function vFctn_REPORTActionEvaluation.");
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void E_GENERIC_ManualExpected(char chText[], char chPassText[], char chFailText[]) 
+*  \brief Function shows manual confirmation window and writes in report the result.
+*  \param[in] chText - Text to ask tester.
+*  \param[in] chPassText - Text to be written in report if PASS case.
+*  \param[in] chFailText - Text to be written in report if FAIL case.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  13.06.18              SeNi        Created and implemented
+*/
+
+void E_GENERIC_ManualExpected(char chText[], char chPassText[], char chFailText[]) 
+{
+  byte bResponse;
+  
+  writeDbgLevel (tsc_eGENERICDebugFuncCalls, "Function E_GENERIC_ManualExpected called");
+  writeDbgLevel (tsc_eGENERICDebugFuncParam, "Parameters: char chText[]: -- %s --, char chPassText[] -- %s --, char chFailText[] -- %s --.", chText, chPassText, chFailText);
+  
+  writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Add to test report Manual Intervention.");
+  TestStep("", "Manual Intervention"); 
+  
+  bResponse = TestWaitForTesterConfirmation(chText);
+  writeDbgLevel (tsc_eGENERICDebugFuncInternal, "bResponse: -- %d --, return value from function TestWaitForTesterConfirmation().");
+  
+  if(PASS == bResponse)
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test step passed. Calling function vFctn_REPORTStepEvaluation.");
+    vFctn_REPORTStepEvaluation(chPassText, PASS);
+  }
+  else
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test step failed. Calling function vFctn_REPORTStepEvaluation.");
+    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void E_GENERIC_ManualExpectedTimeout(char chText[], char chPassText[], char chFailText[], long lTimeout)  
+*  \brief Function shows manual confirmation window for an amount of time and writes in report the result.
+*  \param[in] chText - Text to ask tester.
+*  \param[in] chPassText - Text to be written in report if PASS case.
+*  \param[in] chFailText - Text to be written in report if FAIL case.
+*  \param[in] lTimeout - Timeout to wait in ms.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  13.06.18              SeNi        Created and implemented
+*/
+
+void E_GENERIC_ManualExpectedTimeout(char chText[], char chPassText[], char chFailText[], long lTimeout) 
+{
+  byte bResponse;
+  
+  writeDbgLevel (tsc_eGENERICDebugFuncCalls, "Function E_GENERIC_ManualExpected called");
+  writeDbgLevel (tsc_eGENERICDebugFuncParam, "Parameters: char chText[]: -- %s --, char chPassText[] -- %s --, char chFailText[] -- %s --, long lTimeout: -- %d --.", chText, chPassText, chFailText, lTimeout);  
+  
+  writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Add to test report Manual Intervention.");  
+  TestStep("", "Manual Intervention"); 
+  
+  bResponse = TestWaitForTesterConfirmation(chText, lTimeout);
+  writeDbgLevel (tsc_eGENERICDebugFuncInternal, "bResponse: -- %d --, return value from function TestWaitForTesterConfirmation().");
+  
+  if(PASS == bResponse)
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test step passed. Calling function vFctn_REPORTStepEvaluation.");
+    vFctn_REPORTStepEvaluation(chPassText, PASS);
+  }
+  else
+  {
+    if (FAIL == bResponse)
+    {
+      writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test step failed. Timeout occured. Calling function vFctn_REPORTStepEvaluation.");
+      vFctn_REPORTStepEvaluation("Timeout occured. No tester response.", FAIL);
+    }
+    else
+    {
+      writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test step failed. Calling function vFctn_REPORTStepEvaluation.");
+      vFctn_REPORTStepEvaluation(chFailText, FAIL);
+    }
+  }
+}
+
+
+/*! \fn void A_GENERIC_ManualActionTimeout(char chText[], char chPassText[], char chFailText[], long lTimeout) 
+*  \brief Function shows manual confirmation window and writes in report the result.
+*  \param[in] chText - Text to ask tester.
+*  \param[in] chPassText - Text to be written in report if PASS case.
+*  \param[in] chFailText - Text to be written in report if FAIL case.
+*  \param[in] lTimeout - Text to be written in report if FAIL case.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  13.06.18              SeNi        Created and implemented
+*/
+
+void A_GENERIC_ManualActionTimeout(char chAction[], char chPassText[], char chFailText[], long lTimeout) 
+{
+  byte bResponse;
+  byte bResultAction;
+  
+  writeDbgLevel (tsc_eGENERICDebugFuncCalls, "Function A_GENERIC_ManualActionTimeout called");
+  writeDbgLevel (tsc_eGENERICDebugFuncParam, "Parameters: char chAction[]: -- %s --, char chPassText[]: -- %s --, char chFailText[]: -- %s --, long lTimeout: -- %d --.",chAction, chPassText, chFailText, lTimeout);
+  
+  writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Add to test report Manual Intervention.");  
+  TestStep("", "Manual Intervention"); 
+  
+  bResultAction = bFctn_REPORTAction(chAction);
+  writeDbgLevel (tsc_eGENERICDebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+    
+  if(bResultAction)
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Calling function TestWaitForTesterConfirmation().");
+    bResponse = TestWaitForTesterConfirmation(chAction);  
+  }
+  
+  if(PASS == bResponse)
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test Action passed. Calling function vFctn_REPORTActionEvaluation.");
+    vFctn_REPORTActionEvaluation(chPassText, PASS);
+  }
+  else
+  {
+    if (FAIL == bResponse)
+    {
+      writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test Action failed. Timeout occured. Calling function vFctn_REPORTActionEvaluation.");
+      vFctn_REPORTActionEvaluation("Timeout occured. No tester response.", FAIL);
+    }
+    else
+    {
+      writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test Action failed. Calling function vFctn_REPORTActionEvaluation.");
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+}
+
+/*! \fn void A_GENERIC_ManualAction(char chAction[], char chPassText[], char chFailText[]) 
+*  \brief Function shows manual confirmation window and writes in report the result.
+*  \param[in] chAction - Text to ask tester.
+*  \param[in] chPassText - Text to be written in report if PASS case.
+*  \param[in] chFailText - Text to be written in report if FAIL case.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  13.06.18              SeNi        Created and implemented
+*/
+
+void A_GENERIC_ManualAction(char chAction[], char chPassText[], char chFailText[]) 
+{
+  byte bResponse;
+  byte bResultAction;
+   
+  writeDbgLevel (tsc_eGENERICDebugFuncCalls, "Function A_GENERIC_ManualActionTimeout called");
+  writeDbgLevel (tsc_eGENERICDebugFuncParam, "Parameters: char chAction[]: -- %s --, char chPassText[]: -- %s --, char chFailText[]: -- %s --.",chAction, chPassText, chFailText);  
+  
+  writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Add to test report Manual Intervention.");
+  TestStep("", "Manual Intervention"); 
+  
+  bResultAction = bFctn_REPORTAction(chAction);
+  writeDbgLevel (tsc_eGENERICDebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+  
+  if(bResultAction)
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Calling function TestWaitForTesterConfirmation().");
+    bResponse = TestWaitForTesterConfirmation(chAction);  
+  }
+  
+  if(PASS == bResponse)
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test Action passed. Calling function vFctn_REPORTActionEvaluation.");
+    vFctn_REPORTActionEvaluation(chPassText, PASS);
+  }
+  else
+  {
+    writeDbgLevel (tsc_eGENERICDebugFuncInternal, "Test Action failed. Calling function vFctn_REPORTActionEvaluation.");
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void E_GENERIC_CheckLastWaitTime( float aTimeToCompare, enum cc_eTimeFormat aTimeFormat, enum cc_eTimeCmp aTimeCmpType )
+*  \brief Function that check if the requested time for the last wait instruction is as expected or not.
+*  \param[in]  aTimeToCompare   - Time to compare.
+*  \param[in]  aTimeFormat      - How the time will be compared in [nS, uS, mS, S] -> see definition of enum cc_eTimeFormat.
+*  \param[in]  aTimeCmpType     - Compare Type - TimeLessEq, TimeMoreEq (less or equal then last elapsed time, more or equal then last elapsed time)
+*
+*  \note Use this function when is needed to see if the event is occured after a certain time.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  26.02.20             CiCo            Created and implemented
+*/
+void E_GENERIC_CheckLastWaitTime( float aTimeToCompare, enum cc_eTimeFormat aTimeFormat, enum cc_eTimeCmp aTimeCmpType )
+{
+  char chMapedResponse[50];
+  float fWaitTimeLastInstruction;
+  float fMinTime;
+  char chTempText[256];
+  byte bDebugFlag;
+  
+  bDebugFlag = tsc_bBUS_GlobalDebugFlag;// debug only
+  
+  writeDbgLevel (DebugFuncCalls, "Entered E_Generic_CheckLastWaitTime()");
+  
+  if ( (byte)DebugFuncParam & bDebugFlag)
+	  writeDbgLevel(DebugFuncInternal, "Params -> TimeToCompare %f \nTime Format: %d \nCompare Type: %d", aTimeToCompare, aTimeFormat, aTimeCmpType );
+  
+  fWaitTimeLastInstruction = fFctn_Generic_GetLastWaitTime( aTimeFormat, chMapedResponse );
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag )
+	  writeDbgLevel( DebugFuncInternal, "fFctn_Generic_GetLastWaitTime ->Return %f, Response: %s", fWaitTimeLastInstruction, chMapedResponse );
+  
+  if ( Error != fWaitTimeLastInstruction )
+  {
+    if( TimeLessEq == aTimeCmpType )
+      snprintf( chTempText, elcount(chTempText),"less or equal then %s", chMapedResponse );
+    else if ( TimeMoreEq == aTimeCmpType )
+      snprintf( chTempText, elcount(chTempText),"greather or equal then %s", chMapedResponse );
+    else
+      snprintf( chTempText, elcount(chTempText),"Compare type not defined" );// tbd 
+    
+    fMinTime =  _min( aTimeToCompare, fWaitTimeLastInstruction );
+    
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Min Time -> %f", fMinTime );
+    
+    if( aTimeToCompare == fMinTime && TimeLessEq == aTimeCmpType )
+    {
+      // requested val is as expected, less
+      snprintf( chTempText, elcount(chTempText), "SUCCESS: Expected time %f is %s.", aTimeToCompare, chTempText );
+      vFctn_REPORTStepEvaluation( chTempText, PASS );
+    }
+    else if ( fWaitTimeLastInstruction == fMinTime && TimeMoreEq == aTimeCmpType )
+    {
+      // requested val is as expected, more
+      snprintf( chTempText, elcount(chTempText), "SUCCESS: Expected time %f is %s.", aTimeToCompare, chTempText );
+      vFctn_REPORTStepEvaluation( chTempText, PASS );
+    } 
+    else
+    {
+      // is not as expected
+      snprintf( chTempText, elcount(chTempText), "FAILED: Expected time %f is not %s as requested.", aTimeToCompare, chTempText );
+      vFctn_REPORTStepEvaluation( chTempText, FAIL );
+    }
+  }
+  else// error in fFctn_Generic_GetLastWaitTime
+  {
+    snprintf( chTempText, elcount(chTempText), "FAILED: %s", chMapedResponse );
+    vFctn_REPORTStepEvaluation( chTempText, FAIL );
+  }
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup testSupportLib
+*   \brief General functions with action or expected.
+*/
+
+

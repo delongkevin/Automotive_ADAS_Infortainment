@@ -1,0 +1,6 @@
+<map id="A_CAN_TP_ChangeNodeSettings" name="A_CAN_TP_ChangeNodeSettings">
+<area shape="rect" id="node1" title="Function that executes the action to change the CAN TP settings of a specific Node/ECU." alt="" coords="5,56,223,83"/>
+<area shape="rect" id="node2" href="$group__c_r_e_p_o_r_t.html#ga408b2b22f03e09e17faac1a06b30f6c5" title="unction writes in report desired Action text" alt="" coords="313,5,465,32"/>
+<area shape="rect" id="node3" href="$group__c_c_a_n___t_p.html#ga3a4f5899c13197dc6838b3f34a42ef7f" title="Function that changes the CAN TP settings of a specific Node/ECU." alt="" coords="271,56,508,83"/>
+<area shape="rect" id="node4" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="285,107,494,133"/>
+</map>

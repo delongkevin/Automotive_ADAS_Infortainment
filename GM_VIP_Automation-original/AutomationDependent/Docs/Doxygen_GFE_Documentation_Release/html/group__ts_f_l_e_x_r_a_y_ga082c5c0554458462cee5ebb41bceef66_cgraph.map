@@ -1,0 +1,7 @@
+<map id="A_FR_WaitForFrameByName" name="A_FR_WaitForFrameByName">
+<area shape="rect" id="node1" title="Function that executes the action to check if a FlexRay Frame name is received in a specific time or ..." alt="" coords="5,56,200,83"/>
+<area shape="rect" id="node2" href="$group__c_r_e_p_o_r_t.html#ga408b2b22f03e09e17faac1a06b30f6c5" title="unction writes in report desired Action text" alt="" coords="279,5,431,32"/>
+<area shape="rect" id="node3" href="$group__c_f_l_e_x_r_a_y.html#ga02fee65bd21cd1a49ed7ac926e61df2e" title=" " alt="" coords="248,56,463,83"/>
+<area shape="rect" id="node5" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="251,107,460,133"/>
+<area shape="rect" id="node4" href="$group__c_f_l_e_x_r_a_y.html#gaa68c147549b8fe493a7024fc0ae68f4a" title="Function that checks if the provided wait time is valid (greater than 0). If not, it will use the def..." alt="" coords="511,49,704,90"/>
+</map>

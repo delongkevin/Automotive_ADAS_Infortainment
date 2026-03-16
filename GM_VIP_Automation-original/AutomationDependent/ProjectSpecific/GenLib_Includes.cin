@@ -1,0 +1,36 @@
+/*@!Encoding:1252*/
+includes
+{
+  // Generic baselib
+  #include "..\GenericLibraries\baseLib\COMMON\bcCOMMON.cin"
+  
+  
+  // Generic controlLib  
+  #include "..\GenericLibraries\controlLib\DATA_CONVERSION\cCONVDataConversion.cin"
+  #include "..\GenericLibraries\controlLib\REPORT\cREPORT.cin"
+  #include "..\GenericLibraries\controlLib\READFILE\cREADFILE.cin"  
+  
+  // Generic testSupportLib
+  #include "..\GenericLibraries\testSupportLib\GENERIC\tsGENERIC.cin"
+  #include "..\GenericLibraries\testSupportLib\POWER\tsPOWER.cin"
+  #include "..\GenericLibraries\testSupportLib\DIAGNOSTICS\tsDIAG.cin"
+  #include "..\GenericLibraries\testSupportLib\BUS\tsBUS.cin"
+  #include "..\GenericLibraries\testSupportLib\CAN\tsCAN.cin"
+  #include "..\GenericLibraries\testSupportLib\PDU\tsPDU.cin"
+  #include "..\GenericLibraries\testSupportLib\T32\tsT32.cin"  
+  #include "..\GenericLibraries\testSupportLib\ETHERNET\tsETH.cin" 
+ 
+  
+}
+//  ====================================================
+//   Magna - Common Include File for project using the test framework
+//  ====================================================
+//
+//  File name: GenLib_Includes_Common.cin
+//
+//  Created(DD.MM.YYYY): 27.01.2025
+//
+//  Description: Include file for GenericLib
+//          
+//  References: This file should be included in test modules
+//  --------------------------------------------------------------------

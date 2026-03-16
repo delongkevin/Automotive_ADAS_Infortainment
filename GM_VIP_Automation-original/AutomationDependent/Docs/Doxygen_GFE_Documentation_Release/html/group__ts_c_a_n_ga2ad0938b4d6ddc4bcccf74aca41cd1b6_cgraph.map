@@ -1,0 +1,5 @@
+<map id="A_CAN_StartLoggingMessages" name="A_CAN_StartLoggingMessages">
+<area shape="rect" id="node1" title="Function that executes the action to enable the CAN Message Logging functionality,..." alt="" coords="5,31,211,57"/>
+<area shape="rect" id="node2" href="$group__c_c_a_n.html#ga51dc99ce3f4217dc8b1899e15a81c2fe" title="Function that enables the CAN Message Logging functionality, based on a specified filter (MsgID&#39;s and..." alt="" coords="259,5,484,32"/>
+<area shape="rect" id="node3" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="267,56,476,83"/>
+</map>

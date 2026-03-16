@@ -1,0 +1,7 @@
+<map id="lFctn_DIAGSendCustomRequest" name="lFctn_DIAGSendCustomRequest">
+<area shape="rect" id="node1" title="Function will send a custom request, provided through the byte array parameter." alt="" coords="5,42,217,69"/>
+<area shape="rect" id="node2" href="$group__c_c_o_n_v_data_conversion.html#ga85a8ffcad2b94621a5615327db13df8c" title="Function that converts BCD values coded with four bits each to a string (character array) that is sui..." alt="" coords="265,5,464,47"/>
+<area shape="rect" id="node3" href="$group__c_d_i_a_g.html#ga01ad9d45aca6a04ff6b96df480595305" title="Function that sends a specific diagnostic request." alt="" coords="281,71,448,98"/>
+<area shape="rect" id="node4" href="$group__b_r_e_a_d_f_i_l_e.html#ga99b3eb9243d35ea686c5f9bb5612ebde" title="Function returns previous ini file, stored in the Default.ini file, used before stopping simulation." alt="" coords="513,42,706,69"/>
+<area shape="rect" id="node5" href="$group__b_r_e_a_d_f_i_l_e.html#gaa2f411dcf05539923bc880e7732d47a9" title="Function opens an ini file and reads a number entry." alt="" coords="512,93,707,135"/>
+</map>

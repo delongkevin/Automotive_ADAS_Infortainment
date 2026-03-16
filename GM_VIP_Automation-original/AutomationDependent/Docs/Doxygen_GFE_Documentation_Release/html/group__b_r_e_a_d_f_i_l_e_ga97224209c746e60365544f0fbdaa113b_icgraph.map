@@ -1,0 +1,6 @@
+<map id="lFctn_READFILEWriteInFile" name="lFctn_READFILEWriteInFile">
+<area shape="rect" id="node1" title="This function write a string in a specific file, given by a file handler." alt="" coords="780,13,963,39"/>
+<area shape="rect" id="node2" href="$group__b_r_e_a_d_f_i_l_e.html#ga0ee1e356841c101f35410c53ac673b12" title=" " alt="" coords="543,5,732,47"/>
+<area shape="rect" id="node3" href="$group__c_c_a_n.html#ga040061195ad669b9c4cbd35466e84b30" title="Function that saves in a CSV file, the specified number of log entries from the already populated CAL..." alt="" coords="264,13,495,39"/>
+<area shape="rect" id="node4" href="$group__ts_c_a_n.html#ga07e925af0857734c6363de60959c7b23" title="Function that executes the action to save in a CSV file, the specified number of log entries from the..." alt="" coords="5,13,216,39"/>
+</map>

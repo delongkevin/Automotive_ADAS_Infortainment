@@ -1,0 +1,22 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup cvPDU cvPDU
+* @defgroup PDU PDU
+* @ingroup controlLib
+* @{
+* @addtogroup cvPDU
+* @{
+*/ 
+variables
+{ 
+ 
+}
+
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief PDU control library variables.
+*/

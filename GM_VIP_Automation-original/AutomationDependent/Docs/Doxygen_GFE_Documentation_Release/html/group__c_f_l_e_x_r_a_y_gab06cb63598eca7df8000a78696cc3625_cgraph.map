@@ -1,0 +1,4 @@
+<map id="iFctn_FR_WaitForFrameBySlotID" name="iFctn_FR_WaitForFrameBySlotID">
+<area shape="rect" id="node1" title="Function that evaluates if a FlexRay Frame arrives, on a certain FR Cluster and its associated channe..." alt="" coords="5,13,221,39"/>
+<area shape="rect" id="node2" href="$group__c_f_l_e_x_r_a_y.html#gaa68c147549b8fe493a7024fc0ae68f4a" title="Function that checks if the provided wait time is valid (greater than 0). If not, it will use the def..." alt="" coords="269,5,463,47"/>
+</map>

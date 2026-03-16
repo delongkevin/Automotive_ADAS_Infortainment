@@ -1,0 +1,4 @@
+<map id="A_DIAG_SetResponseTimeout" name="A_DIAG_SetResponseTimeout">
+<area shape="rect" id="node1" title="Function that will set the maximum timeout for the next diag response." alt="" coords="5,5,205,32"/>
+<area shape="rect" id="node2" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="253,5,463,32"/>
+</map>

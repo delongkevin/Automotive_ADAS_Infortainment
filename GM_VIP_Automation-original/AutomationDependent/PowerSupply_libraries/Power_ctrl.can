@@ -1,0 +1,151 @@
+/*@!Encoding:1252*/
+//********************************************************************************************
+//----------------- Initial version 1.0: created by : Ramagopal Bandi-------------------------
+//---------- this script works for Tenma programmable power supplies--------------------------
+//*********************************************************************************************
+includes
+{
+  
+}
+
+variables
+{
+  dword port_open,ret,ret1;
+  char buffer1[100];
+  char buffer2[100];
+  int i;
+  byte buffer[100];
+  byte buffer3[10];
+  byte buffer4[10];
+}
+
+export testfunction Set_voltage(int port,float volt)      // Function is used to set to desired voltage port: Check the USB COM number in device manager
+                                                          //                                            volt: Voltage  
+{
+  RS232_Initilize(port);
+  snprintf(buffer1,elCount(buffer1),"VSET1:%0.2f\n OUT1\n",volt);  
+  for(i=0;i<strlen(buffer1);i++)
+  {
+    buffer[i] = buffer1[i];
+  }
+  ret = RS232Send(port,buffer,strlen(buffer1));
+  if(ret == 1)
+  {
+    testStepPass("","VOLTAGE Set to is %0.2f",volt);      
+  }
+  else
+  {
+    testStepfail("","Not Able to set the Voltage due to error %d",ret);    
+  }  
+
+}
+
+
+
+export testfunction Read_voltage(int port)  // Function is used to read voltage (port: Check the USB COM number in device manager)                                           
+{
+  RS232_Initilize(port);
+  snprintf(buffer1,elCount(buffer1),"VOUT1?\r\n");  
+  for(i=0;i<strlen(buffer1);i++)
+  {
+    buffer[i] = buffer1[i];
+  }
+  ret = RS232Send(port,buffer,elcount(buffer));
+    if(ret == 1)
+  {
+    testStepPass("","VOLTAGE read request sent");      
+  }
+  else
+  {
+    testStepfail("","VOLTAGE read request not sent");    
+  }  
+  ret1 =  RS232Receive(port,buffer3,elcount(buffer3));  
+  testWaitForTimeout(2000);
+//  write("datrial port%c",buffer3[0]);
+  if(ret1 == 1)
+  {
+    for(i=0;i<elcount(buffer3);i++)
+   {
+    buffer2[i] = buffer3[i];    
+    }
+   Teststep("","Voltage is %s",buffer2);
+  }
+  else
+  Teststep("","read error");
+}
+
+export testfunction Read_current(int port)  // Function is used to read Current (port: Check the USB COM number in device manager)                                           
+{
+  RS232_Initilize(port);
+  snprintf(buffer1,elCount(buffer1),"IOUT1?\r\n");  
+  for(i=0;i<strlen(buffer1);i++)
+  {
+    buffer[i] = buffer1[i];
+  }
+  ret = RS232Send(port,buffer,elcount(buffer));
+    if(ret == 1)
+  {
+    testStepPass("","CURRENT read request sent");      
+  }
+  else
+  {
+    testStepfail("","CURRENT read request not sent");    
+  }  
+  ret1 =  RS232Receive(port,buffer3,elcount(buffer3));  
+  testWaitForTimeout(2000);
+//  write("datrial port%c",buffer3[0]);
+  if(ret1 == 1)
+  {
+    for(i=0;i<elcount(buffer3);i++)
+   {
+    buffer2[i] = buffer3[i];    
+    }
+   Teststep("","Current is %s",buffer2);
+  }
+  else
+  Teststep("","read error");
+}
+
+export testfunction Power_OFF_ON(int port,int ctrl) // Function is used to On and OFf the Power supply ctrl: 0 - OFF ad 1 - ON    
+{ 
+  RS232_Initilize(port);
+  snprintf(buffer1,elCount(buffer1),"OUT%d\n",ctrl);  
+  for(i=0;i<strlen(buffer1);i++)
+  {
+    buffer[i] = buffer1[i];
+  }
+  ret = RS232Send(port,buffer,strlen(buffer1));
+  if(ret == 1)
+  {
+    if(ctrl == 0)
+    {
+    testStep("","Power is OFF  %d",ctrl);  
+     testStepPass(); 
+    }
+    else
+    {
+    testStep("","Power is ON %d",ctrl); 
+    testStepPass();
+    }
+   }
+  else
+  {
+    testStepfail("","Unable do On or OFF due to error %d",ret);
+  }
+}
+
+void RS232_Initilize(int port)  // Initilization of RS232 port
+{
+  RS232Configure(port,9600,8,1,0);  
+  port_open = RS232Open(port);  
+  if(port_open == 1)
+    testStepPass("","Port %d succesfully opened",port);
+  else
+    testStepfail("","Port %d open not succesful",port);  
+}
+
+RS232OnReceive( dword port, byte buffer[], dword number )
+{
+  
+}
+

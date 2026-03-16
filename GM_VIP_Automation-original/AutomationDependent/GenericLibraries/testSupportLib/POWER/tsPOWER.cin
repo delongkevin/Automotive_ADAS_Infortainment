@@ -1,0 +1,687 @@
+/*@!Encoding:1252*/
+
+/*!
+* @defgroup tsPOWER tsPOWER
+* @defgroup POWER POWER
+* @ingroup testSupportLib
+* @{
+* @addtogroup tsPOWER
+* @{
+*/ 
+
+
+includes 
+{
+  #include "tscPOWER.cin"
+  #include "..\..\controlLib\POWER\cPOW.cin"
+  #include "..\..\controlLib\POWER\cPOWReceive.cin"
+}
+
+/*! \fn void A_POW_SetVoltage(long lVoltage, byte bPSNumber)
+*  \brief Function sets power supply voltage.
+*  \param[in] lVoltage - voltage to be set.
+*  \param[in] bPSNumber - power supply selected (0,1,...7 - from ini file).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  12.04.18              SeNi        Created and implemented
+*  07.07.20              CrJu        Added debug functions
+*  14.07.20              CrJu        Added a time to wait after commands if it is not zero from ini file
+*/
+
+void A_POW_SetVoltage(long lVoltage, byte bPSNumber)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chMappedResponseInfo[250];
+  char chVoltageToSet[50];
+  double dVoltageToSet;
+  byte bResult;
+  byte bResultAction;  
+  byte bDebugFlag;
+  
+  bResult       = NotOk;
+  bResultAction = NotOk;   
+  bDebugFlag    = NotOk;
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_POW_SetVoltage called.");
+  writeDbgLevel (DebugFuncParam, "Parameters: long lVoltage: -- %d --.", lVoltage);
+  
+  snprintf(chAction, elcount(chAction), "Set voltage to %d mV.", lVoltage);      
+  
+  bResultAction = bFctn_REPORTAction(chAction);
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+  
+  if(bResultAction)
+  {
+    bResult = bFctn_POWSelectPowerSupply(bPSNumber); 
+        
+    //The SCPI command for setting the address has been sent
+    if(cv_iPOWWaitForCommand > 0 && @sysvar::PowGeneral_Variables::SCPICommand == 1)
+      testWaitForTimeout(cv_iPOWWaitForCommand);
+    
+    if(bResult)
+    { 
+      bResult = bFctn_POWSetVoltage(lVoltage);
+      
+      if(cv_iPOWWaitForCommand > 0)
+        testWaitForTimeout(cv_iPOWWaitForCommand);
+      
+      if(Ok == bResult)
+      {
+        snprintf(chPassText, elcount(chPassText), "Voltage set to %d mV. ", lVoltage);
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "There was an error setting voltage to desired value. Please check connection to power supply and ini file.");  
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);  
+      }
+    }
+    else // Selecting power supply failed
+    {
+      snprintf(chFailText, elcount(chFailText), "ERROR: Power Supply selected is NOT available in ini file or Power Supply could not be initialize.");
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else // The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_POW_SetCurrent(int iCurrent, byte bPSNumber)
+*  \brief Function sets power supply current.
+*  \param[in] iCurrent - current to be set.
+*  \param[in] bPSNumber - power supply selected (0,1,...7 - from ini file).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  12.04.18              SeNi        Created and implemented
+*  07.07.20              CrJu        Added debug functions
+*  14.07.20              CrJu        Added a time to wait after commands if it is not zero from ini file
+*/
+
+void A_POW_SetCurrent(int iCurrent, byte bPSNumber)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128]; 
+  char chMappedResponseInfo[250];
+  double dCurrentToSet;
+  char chCurrentToSet[50];
+  byte bDebugFlag;
+  byte bResult;
+  byte bResultAction;
+  
+  bResult       = NotOk;
+  bResultAction = NotOk;   
+  bDebugFlag    = NotOk;
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_POW_SetCurrent called.");
+  writeDbgLevel (DebugFuncParam, "Parameters: int iCurrent: -- %d --.", iCurrent);  
+  
+  snprintf(chAction, elcount(chAction), "Set current to %d mA.", iCurrent);    
+  
+  bResultAction = bFctn_REPORTAction(chAction);
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+  
+  if(bResultAction)
+  {
+    bResult = bFctn_POWSelectPowerSupply(bPSNumber); 
+    
+    //The SCPI command for setting the address has been sent
+    if(cv_iPOWWaitForCommand > 0 && @sysvar::PowGeneral_Variables::SCPICommand == 1)
+      testWaitForTimeout(cv_iPOWWaitForCommand);
+          
+    if(bResult)
+    {
+      bResult = bFctn_POWSetCurrent(iCurrent);
+      
+      if(cv_iPOWWaitForCommand > 0)
+        testWaitForTimeout(cv_iPOWWaitForCommand);
+            
+      if(Ok == bResult)
+      {
+        snprintf(chPassText, elcount(chPassText), "Current set to %d mA. ", iCurrent);
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "There was an error setting current to desired value. Please check connection to power supply and ini file.");  
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+    }
+    else // Selecting power supply failed
+    {
+      snprintf(chFailText, elcount(chFailText), "ERROR: Power Supply selected is NOT available in ini file or Power Supply could not be initialize.");
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else // The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_POW_SetPowerSupplyOutputON(byte bPSNumber)
+*  \brief Function sets output from PowerSupply ON
+*  \param[in] bPSNumber - power supply selected (0,1,...7 - from ini file).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  07.06.18              SeNi        Created and implemented
+*  07.07.20              CrJu        Updated with new control function: bFctn_POW_SetCommand() and added debug functions
+*  14.07.20              CrJu        Added a time to wait after commands if it is not zero from ini file
+*/
+
+void A_POW_SetPowerSupplyOutputON(byte bPSNumber)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chMappedResponseInfo[250];
+  byte bResult;
+  byte bResultAction; 
+  byte bDebugFlag;
+  
+  bResult       = NotOk;
+  bResultAction = NotOk;   
+  bDebugFlag    = NotOk;
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_POW_SetPowerSupplyOutputON called.");
+  snprintf(chAction, elcount(chAction), "Set Power Supply Output ON.");
+    
+  bResultAction = bFctn_REPORTAction(chAction);
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+  
+  if(bResultAction)
+  {
+    bResult = bFctn_POWSelectPowerSupply(bPSNumber); 
+    
+    //The SCPI command for setting the address has been sent
+    if(cv_iPOWWaitForCommand > 0 && @sysvar::PowGeneral_Variables::SCPICommand == 1)
+      testWaitForTimeout(cv_iPOWWaitForCommand);
+    
+    if(bResult)    
+    {
+      bResult = bFctn_POW_SetCommand(ePowerSupply_ON, "", chMappedResponseInfo);
+      
+      if(cv_iPOWWaitForCommand > 0)
+        testWaitForTimeout(cv_iPOWWaitForCommand);
+    
+      if(bResult)
+      {
+        snprintf(chPassText, elcount(chPassText), "Power Supply Output switched ON.");
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "There was an error switching the Power Supply Output. Please check connection to power supply and ini file.");  
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+    }
+    else // Selecting power supply failed
+    {
+      snprintf(chFailText, elcount(chFailText), "ERROR: Power Supply selected is NOT available in ini file or Power Supply could not be initialize.");
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else // The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_POW_SetPowerSupplyOutputOFF(byte bPSNumber)
+*  \brief Function sets output from PowerSupply OFF
+*  \param[in] bPSNumber - power supply selected (0,1,...7 - from ini file).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  07.06.18              SeNi        Created and implemented
+*  07.07.20              CrJu        Updated with new control function: bFctn_POW_GetCommand() and added debug functions
+*  14.07.20              CrJu        Added a time to wait after commands if it is not zero from ini file
+*/
+
+void A_POW_SetPowerSupplyOutputOFF(byte bPSNumber)
+{
+  char chAction[128];
+  char chPassText[128];
+  char chFailText[128];
+  char chMappedResponseInfo[250];
+  byte bResult;
+  byte bResultAction; 
+  byte bDebugFlag;
+  
+  bResult       = NotOk;
+  bDebugFlag    = NotOk;
+  bResultAction = NotOk;  
+
+  writeDbgLevel (DebugFuncCalls , "Function A_POW_SetPowerSupplyOutputOFF called.");
+  
+  snprintf(chAction, elcount(chAction), "Set Power Supply Output OFF.");
+    
+  bResultAction = bFctn_REPORTAction(chAction);
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+    
+  if(bResultAction)
+  {
+    bResult = bFctn_POWSelectPowerSupply(bPSNumber); 
+    
+    //The SCPI command for setting the address has been sent
+    if(cv_iPOWWaitForCommand > 0 && @sysvar::PowGeneral_Variables::SCPICommand == 1)
+      testWaitForTimeout(cv_iPOWWaitForCommand);
+        
+    if(bResult)    
+    {
+      bResult = bFctn_POW_SetCommand(ePowerSupply_OFF, "", chMappedResponseInfo);
+      
+      if(cv_iPOWWaitForCommand > 0)
+        testWaitForTimeout(cv_iPOWWaitForCommand);
+          
+      if(bResult)
+      {
+        snprintf(chPassText, elcount(chPassText), "Power Supply Output switched OFF.");
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "There was an error switching the Power Supply Output. Please check connection to power supply and ini file.");  
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+    }
+    else // Selecting power supply failed
+    {
+      snprintf(chFailText, elcount(chFailText), "ERROR: Power Supply selected is NOT available in ini file or Power Supply could not be initialize.");
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else // The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void E_POW_GetAndComparePowerSupplyVoltage(long lValue, int iTolerance, byte bPSNumber)
+*  \brief Function gets output voltage and compares to requested value.
+*  \param[in] lValue - Voltage value to compare.
+*  \param[in] iTolerance - Tolerance for voltage.
+*  \param[in] bPSNumber - power supply selected (0,1,...7 - from ini file).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info  
+*   
+*  11.06.18              SeNi        Created and implemented
+*  04.12.19              CiCo        Updated in order to compare the voltage
+*  07.07.20              CrJu        Updated with new control function: bFctn_POW_GetCommand()
+*  07.07.20              CrJu        Updated with new control function: bFctn_POW_GetCommand() and added debug functions
+*  14.07.20              CrJu        Added a time to wait after commands if it is not zero from ini file
+*/
+
+void E_POW_GetAndComparePowerSupplyVoltage(long lValue, int iTolerance, byte bPSNumber)
+{
+  char chPassText[128];
+  char chFailText[128];
+  char chMappedResponseInfo[250];
+  byte bResult;
+  byte bDebugFlag;
+  double dVoltage;
+  
+  bDebugFlag = NotOk;
+  bResult = NotOk;
+  dVoltage = NotOk;
+    
+  writeDbgLevel (DebugFuncCalls , "Function E_POW_GetAndComparePowerSupplyVoltage called.");
+  if ( (byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel (DebugFuncParam, "Parameters: long lValue: -- %d --, int iTolerance: -- %d --.", lValue, iTolerance);     
+  
+  bResult = bFctn_POWSelectPowerSupply(bPSNumber); 
+           
+  //The SCPI command for setting the address has been sent
+  if(cv_iPOWWaitForCommand > 0 && @sysvar::PowGeneral_Variables::SCPICommand == 1)
+    testWaitForTimeout(cv_iPOWWaitForCommand);
+    
+  if( bResult )
+  {
+    bResult = bFctn_POW_GetCommand(eGetVoltage, dVoltage, chMappedResponseInfo);
+    
+    writeDbgLevel (DebugFuncInternal, "bResult: -- %d -- is the result from calling function bFctn_POWGetActualVoltage.", bResult);
+    if( bResult )
+    {
+      dVoltage = dVoltage * 1000;
+      
+      if((lValue - iTolerance <= dVoltage) && (lValue + iTolerance >= dVoltage))
+      {
+        snprintf(chPassText, elcount(chPassText), "Power supply voltage %f mV is equal to expected voltage %ld mV. Tolerance set to: %d mV.", dVoltage, lValue, iTolerance);
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chPassText);
+        vFctn_REPORTStepEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "Power supply Voltage %f mV is not equal to expected voltage %ld mV. Tolerance set to: %d mV.", dVoltage, lValue, iTolerance);
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chFailText);
+        vFctn_REPORTStepEvaluation(chFailText, FAIL);
+      }
+    }
+    else
+    {
+      snprintf(chFailText, elcount(chFailText), "There was an error reading Power Supply voltage. Please check connection to power supply and ini file.");
+      if ( (byte)DebugFuncInternal & bDebugFlag)  
+        writeDbgLevel (DebugFuncInternal, chFailText );
+      vFctn_REPORTStepEvaluation(chFailText, FAIL);
+    }
+  }
+  else
+  {
+    snprintf(chFailText, elcount(chFailText), "Fail: Could not select requested Power Supply %d. ", bPSNumber);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, chFailText);
+    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+
+/*! \fn void E_POW_GetAndComparePowerSupplyCurrent(int iValue, int iTolerance, byte bPSNumber)
+*  \brief Function gets output voltage and compares to requested value.
+*  \param[in] iValue - Current value to compare.
+*  \param[in] iTolerance - Tolerance for voltage.
+*  \param[in] bPSNumber - power supply selected (0,1,...7 - from ini file).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info  
+*   
+*  11.06.18              SeNi        Created and implemented
+*  04.12.19              CiCo        Updated in order to compare the current
+*  07.07.20              CrJu        Updated with new control function: bFctn_POW_GetCommand()
+*  07.07.20              CrJu        Updated with new control function: bFctn_POW_GetCommand() and added debug functions
+*  14.07.20              CrJu        Added a time to wait after commands if it is not zero from ini file
+*/
+
+void E_POW_GetAndComparePowerSupplyCurrent(int iValue, int iTolerance, byte bPSNumber)
+{
+  char chPassText[128];
+  char chFailText[128];
+  byte bResult;
+  double dCurrent;
+  char chMappedResponseInfo[250];
+  byte bDebugFlag;
+  
+  bResult = NotOk;
+  dCurrent = NotOk;
+  bDebugFlag = NotOk;
+  
+  writeDbgLevel (DebugFuncCalls , "Function E_POW_GetAndComparePowerSupplyCurrent called.");
+  writeDbgLevel (DebugFuncParam, "Parameters: int iValue: -- %d --, int iTolerance: -- %d --.", iValue, iTolerance);    
+  
+  bResult = bFctn_POWSelectPowerSupply( bPSNumber ); 
+  
+  //The SCPI command for setting the address has been sent
+  if(cv_iPOWWaitForCommand > 0 && @sysvar::PowGeneral_Variables::SCPICommand == 1)
+    testWaitForTimeout(cv_iPOWWaitForCommand);
+    
+  if( bResult )
+  {
+    bResult = bFctn_POW_GetCommand(eGetCurrent, dCurrent, chMappedResponseInfo);
+  
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "bResult: -- %d -- is the result from calling function bFctn_POWGetActualCurrent.", bResult);
+    
+    if(bResult)
+    {
+      dCurrent = dCurrent * 1000; //transform it in mA
+      
+      if((iValue - iTolerance <= dCurrent) && (iValue + iTolerance >= dCurrent))
+      {
+        snprintf(chPassText, elcount(chPassText), "Power supply current %f mA is equal to expected current %ld mA. Tolerance set to: %d mA.", dCurrent, iValue, iTolerance);
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chPassText);
+        vFctn_REPORTStepEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "Power supply current %f mA is not equal to expected current %ld mA. Tolerance set to: %d mA.", dCurrent, iValue, iTolerance);
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chFailText);
+        vFctn_REPORTStepEvaluation(chFailText, FAIL);
+      }
+    }
+    else
+    {
+      snprintf(chFailText, elcount(chFailText), "There was an error reading Power Supply current. Please check connection to power supply and ini file.");
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, chFailText);
+      vFctn_REPORTStepEvaluation(chFailText, FAIL);
+    }
+  }
+  else
+  {
+    snprintf(chFailText, elcount(chFailText), "Fail: Could not select requested Power Supply %d. ", bPSNumber);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, chFailText);
+    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void A_POW_SetCommand(enum cc_eCommandToSend aCommandToSend, char aValue[], byte bPSNumber)
+*  \brief Function sets and send a specific command to the selected Power Supply.
+*  \param[in] aCommandToSend - Commands to send can be:  eSetVoltage /  eSetCurrent /  ePowerSupply_ON / ePowerSupply_OFF
+*  \param[in] aValue         - Value to be sent for setting voltage/current. It must be format of: XX.xxx V/A. For ON or OFF, it can be empty
+*  \param[in] bPSNumber      - power supply selected (0,1,...7 - from ini file).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  22.06.20              CrJu        Created and implemented
+*  14.07.20              CrJu        Added a time to wait after commands if it is not zero from ini file
+*/
+
+void A_POW_SetCommand(enum cc_eCommandToSend aCommandToSend, char aValue[], byte bPSNumber)
+{
+  char chAction[128];
+  char chFailText[128];
+  char chMappedResponseInfo[250]; 
+  byte bResult;
+  byte bDebugFlag;
+  byte bResultAction;
+  
+  bResult       = NotOk;
+  bResultAction = NotOk;   
+  bDebugFlag    = NotOk;
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_POW_SetCommand called.");
+  
+  //snprintf(chAction, elcount(chAction), "Send command: -%d- from enum cc_eCommandToSend with value: %s on Power Supply number: %d.", aCommandToSend, aValue, bPSNumber);    
+  snprintf(chAction, elcount(chAction), "A command is send to Power Supply number: %d.", bPSNumber);    
+ 
+  bResultAction = bFctn_REPORTAction(chAction);
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, "bResultAction: -- %d -- is the result from adding action to report.", bResultAction);
+  
+  if(bResultAction)
+  {
+    bResult = bFctn_POWSelectPowerSupply(bPSNumber); 
+    
+    //The SCPI command for setting the address has been sent
+    if(cv_iPOWWaitForCommand > 0 && @sysvar::PowGeneral_Variables::SCPICommand == 1)
+      testWaitForTimeout(cv_iPOWWaitForCommand);
+    
+    if(bResult)
+    {
+      bResult = bFctn_POW_SetCommand(aCommandToSend, aValue, chMappedResponseInfo);
+          
+      if(cv_iPOWWaitForCommand > 0)
+        testWaitForTimeout(cv_iPOWWaitForCommand);
+      
+      if(Ok == bResult)
+      {
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chMappedResponseInfo);
+        vFctn_REPORTActionEvaluation(chMappedResponseInfo, PASS);
+      }
+      else
+      {
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chMappedResponseInfo);
+        vFctn_REPORTActionEvaluation(chMappedResponseInfo, FAIL);
+      }
+    }
+    else // Selecting power supply failed
+    {
+      snprintf(chFailText, elcount(chFailText), "ERROR: Power Supply selected is NOT available in ini file or Power Supply could not be initialize.");
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else // The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! \fn void E_POW_GetCommand(enum cc_eCommandToSend aCommandToSend, double aValueToCompare, double aTolerance, byte aPSNumber)
+*  \brief Function sets and send a specific command to the selected Power Supply, in order to get a response from it
+*  \param[in] aCommandToSend  - Commands to send can be:  eGetStatus,  eGetVoltage,  eGetCurrent
+*  \param[in] aValueToCompare - Value to compare the status, voltage or current. Format: XX.xx V/A or 1/0 for Status
+*  \param[in] aTolerance      - Tolerance for comparing.
+*  \param[in] aPSNumber       - power supply selected (0,1,...7 - from ini file).
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  25.06.20              CrJu        Created and implemented
+*  14.07.20              CrJu        Added a time to wait after commands if it is not zero from ini file
+*/
+
+void E_POW_GetCommand(enum cc_eCommandToSend aCommandToSend, double aValueToCompare, double aTolerance, byte aPSNumber)
+{
+  char chAction[128];
+  char chFailText[250];
+  char chMappedResponseInfo[250]; 
+  double dReturnedValue;
+  byte bResult;
+  byte bDebugFlag;
+  
+  bResult    = NotOk;   
+  bDebugFlag = NotOk;
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_POW_GetCommand called.");
+ 
+  bResult = bFctn_POWSelectPowerSupply(aPSNumber); 
+  
+  //The SCPI command for setting the address has been sent
+  if(cv_iPOWWaitForCommand > 0 && @sysvar::PowGeneral_Variables::SCPICommand == 1)
+    testWaitForTimeout(cv_iPOWWaitForCommand);
+  
+  if(bResult)
+  {
+    bResult = bFctn_POW_GetCommand(aCommandToSend, dReturnedValue, chMappedResponseInfo);
+      
+    if(Ok == bResult)
+    {
+      if((aValueToCompare - aTolerance <= dReturnedValue) && (aValueToCompare + aTolerance >= dReturnedValue))
+      {
+        if(aCommandToSend !=  eGetStatus)
+        {
+          if(aCommandToSend ==  eGetVoltage)
+            snprintf(chMappedResponseInfo, elcount(chMappedResponseInfo), "Power supply voltage %f V is equal to expected voltage %f V. Tolerance set to: %f V.", dReturnedValue, aValueToCompare, aTolerance);
+          else
+            snprintf(chMappedResponseInfo, elcount(chMappedResponseInfo), "Power supply current %f A is equal to expected current %f A. Tolerance set to: %f A.", dReturnedValue, aValueToCompare, aTolerance);
+        }
+        
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chMappedResponseInfo);
+        vFctn_REPORTStepEvaluation(chMappedResponseInfo, PASS);
+      }
+      else
+      {
+        if(aCommandToSend !=  eGetStatus)
+        {
+          if(aCommandToSend ==  eGetVoltage)
+           snprintf(chMappedResponseInfo, elcount(chMappedResponseInfo),"Power supply voltage %f V is not equal to expected voltage %f V. Tolerance set to: %f V.",dReturnedValue, aValueToCompare, aTolerance);
+          else
+           snprintf(chMappedResponseInfo, elcount(chMappedResponseInfo),"Power supply current %f A is not equal to expected current %f A. Tolerance set to: %f A.",dReturnedValue, aValueToCompare, aTolerance);
+         }
+        
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, chMappedResponseInfo);
+        vFctn_REPORTStepEvaluation(chMappedResponseInfo, FAIL);
+      }
+    }
+    else
+    {
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, chMappedResponseInfo);
+      vFctn_REPORTStepEvaluation(chMappedResponseInfo, FAIL);
+    }
+  }
+  else // Selecting power supply failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: Power Supply selected is NOT available in ini file or Power Supply could not be initialize.");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, chFailText);
+    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup testSupportLib
+*   \brief Power supply functions with actions and expected.
+*/
+
+
+

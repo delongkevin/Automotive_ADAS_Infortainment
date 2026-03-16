@@ -1,0 +1,10 @@
+; Cmm_Commands/
+;
+; This directory contains Lauterbach PRACTICE (CMM) macro scripts used for
+; individual debugger commands during test execution.
+;
+; Scripts in this directory are invoked from CANoe CAPL test cases via:
+;   vFctn_T32_CommandCreate_Cmm_Commands(chCommand, "script_name.cmm")
+;   lFctn_G_T32_RUN_CMM_CORE("Cmm_Commands\\script_name.cmm", core, timeout, params)
+;
+; Add project-specific CMM command scripts here as needed.

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<systemvariables version="4">
+  <namespace name="" comment="" interface="">
+    <namespace name="DUT_TestSupport" comment="" interface="">
+      <namespace name="DUTSelect" comment="" interface="">
+        <variable anlyzLocal="2" readOnly="false" valueSequence="false" unit="" name="DiagTarget" comment="For store the diag target" bitcount="0" isSigned="true" encoding="65001" type="string" />
+        <variable anlyzLocal="2" readOnly="false" valueSequence="false" unit="" name="Type" comment="For selection of DUT Variant" bitcount="32" isSigned="true" encoding="65001" type="int" startValue="0" minValue="0" minValuePhys="0" maxValue="2" maxValuePhys="2"/>
+      </namespace>
+    </namespace>
+  </namespace>
+</systemvariables>

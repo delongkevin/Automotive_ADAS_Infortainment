@@ -1,0 +1,327 @@
+/*@!Encoding:1252*/
+includes
+{
+  #include "ccDTC.cin"
+  #include "cvDTC.cin"
+}
+
+/*!
+* @defgroup cDTC cDTC
+* @defgroup DTC DTC
+* @ingroup controlLib
+* @{
+* @addtogroup cDTC
+* @{
+*/ 
+
+/*! \fn lFctn_DTC_GetAcceptedDTCFromIni(dword aDTCId[])
+*  \brief Function to get the accepted DTC list from ini into a dword array
+*  \param[out]  	  aDTCId  - array to store the requested data from ini file
+*
+*  \return  -1    - Error oDCUrs while get the dtc list from ini file
+*  \return  >=0   - Number of DTC populated in the array
+*  \note
+*         Make sure that ReportedDTC entry is present in DUT section from ini
+*         All the accepted DTC should be splitted by "," and should have "0x" eg. 0x123456,0x234567
+*  Change History: 
+*  Date(DD.MM.YY)        Author          Change info                                                          
+*  19.10.23             CiCo            Updated from SSM project.
+*/ 
+long lFctn_DTC_GetAcceptedDTCFromIni(dword aDTCId[])
+{
+  char chFctnInfo[ 200 ];
+  char chDTCException[ 10 * 4 ];  
+  char chIniFile[ 200 ];
+  char chDTCString[10];
+  dword dwConfirmedDTC[ 10 ];// max number of reported DTC
+  dword dwNbrOfConfirmedDTC;
+  qword qwDTCid;
+  word wStartPos;
+  byte bDTCNbr;
+  byte bReturn;
+  byte bDebugFlag;
+  
+  bDebugFlag = pc_bGlobalDebugFlag;// only for debug  
+  bReturn = NotOk;
+  wStartPos = 0;
+  
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_DTC_GetAcceptedDTCFromIni() called.");
+  bReturn = bFctn_READFILELastINIused(chIniFile);
+  if(!bReturn)
+    return Error; 
+  else
+  {
+    bReturn = bFctn_READFILEiniParameterString(chIniFile, "ReportedDTC", "DUT", chDTCException);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal , "bFctn_READFILEiniParameterString-> Return: %d, Info: %s ", bReturn, chDTCException);  
+
+    if(0)  testReportAddSUTInfo ("ReportedDTC", chDTCException);
+    dwNbrOfConfirmedDTC = dwFctn_CONV_FindCharPosInStr(chDTCException, ',', dwConfirmedDTC);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal , "dwFctn_CONV_FindCharPosInStr-> Return: %d. ", dwNbrOfConfirmedDTC); 
+
+    for(bDTCNbr = 0; bDTCNbr < dwNbrOfConfirmedDTC; bDTCNbr++)
+    {
+      bFctn_CONV_GetSubString(chDTCException, wStartPos, dwConfirmedDTC[ bDTCNbr ], chDTCString);
+      wStartPos = dwConfirmedDTC[ bDTCNbr ] + 1;
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel(DebugFuncInternal , "bFctn_CONV_GetSubString-> Output: %s ", chDTCString); 
+      bFctn_CONV_ConvertStringToUnsignedDataType(chDTCString, Type_Dword, qwDTCid, chFctnInfo);
+      aDTCId[bDTCNbr] = (dword)qwDTCid;// report accepted DTC as dword
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel(DebugFuncInternal , "bFctn_CONV_ConvertStringToUnsignedDataType-> Output: 0x%X ", aDTCId[bDTCNbr]); 
+    }
+    return dwNbrOfConfirmedDTC;
+  }  
+}
+
+/*! \fn lFctn_DTC_GetAcceptedDTCFromIni()
+*  \brief Function to get the accepted DTC list from ini and write it on the report
+*
+*  \return  -1    - Error oDCUrs while get the dtc list from ini file
+*  \return  1     - Data was written to the report
+*  \note
+*         Make sure that ReportedDTC entry is present in DUT section from ini
+*         All the accepted DTC should be splitted by "," and should have "0x" eg. 0x123456,0x234567
+*  Change History: 
+*  Date(DD.MM.YY)        Author          Change info                                                          
+*  19.10.23             CiCo            Updated from SSM project.
+*/ 
+long lFctn_DTC_GetAcceptedDTCFromIni()
+{
+  char chFctnInfo[ 200 ];
+  char chDTCException[ 10 * 4 ];  
+  char chIniFile[ 200 ];
+  char chDTCString[10];
+  dword dwConfirmedDTC[ 10 ];// max number of reported DTC
+  dword dwNbrOfConfirmedDTC;
+  qword qwDTCid;
+  word wStartPos;
+  byte bDTCNbr;
+  byte bReturn;
+  byte bDebugFlag;
+  
+  bDebugFlag = pc_bGlobalDebugFlag;// only for debug  
+  bReturn = NotOk;
+  wStartPos = 0;
+  
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_DTC_GetAcceptedDTCFromIni() called.");
+  bReturn = bFctn_READFILELastINIused(chIniFile);
+  if(!bReturn)
+    return Error; 
+  else
+  {
+    bReturn = bFctn_READFILEiniParameterString(chIniFile, "ReportedDTC", "DUT", chDTCException);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal , "bFctn_READFILEiniParameterString-> Return: %d, Info: %s ", bReturn, chDTCException);  
+    testReportAddSUTInfo ("ReportedDTC", chDTCException);
+    return Ok;
+  }  
+}
+
+/*! \fn long lFctn_DTC_StoreToArray( byte aAvailableDTC[], char aMappedResponse[])
+*  \brief Function to store reported DTC by 19 02 09 in byte array
+*  \param[out]   aAvailableDTC[]    - array where the DTC wil be reported
+*  \param[out]   aMappedResponse    - info about execution of function
+*  \note cc_bDtcStatusMask -> could be modified based on project needs
+*
+*  \return 	>=0   - Number of DTC reported in aAvailableDTC
+*  \return 	-1  	- Error oDCUrs, check the aMappedResponse for more info
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  19.10.23             CiCo            Updated from SSM project.
+*/
+long lFctn_DTC_StoreToArray( byte aAvailableDTC[], char aMappedResponse[])
+{
+  char chMappedResponse[1024];
+  dword dwNoOfAvailableDTC;
+  byte bReqDTCByStatusMask[3] = {0x19, 0x02, cc_bDtcStatusMask};// 19 02 09
+  dwNoOfAvailableDTC = 0;
+  // prepare data for sending
+  
+  dwNoOfAvailableDTC = lFctn_DIAG_CRSendAndGetPrimitiveDataWithOffset(bReqDTCByStatusMask, 2, aAvailableDTC, chMappedResponse);
+  if( 0 < dwNoOfAvailableDTC )
+  {
+    // Sending OK
+    dwNoOfAvailableDTC = (dwNoOfAvailableDTC -1 )/4; // get the number of the readed DTC
+    wFctn_CONV_CopyByteArrayToByteArray( aAvailableDTC, 1, dwNoOfAvailableDTC*4 , aAvailableDTC );
+    snprintf(aMappedResponse, elcount(aMappedResponse), "Number of DTC stored: %d", dwNoOfAvailableDTC);
+  }
+  else
+  {
+    snprintf(aMappedResponse, elcount(aMappedResponse), "%s", chMappedResponse);
+    return Error;
+  }
+  return dwNoOfAvailableDTC;
+}
+
+/*! \fn byte bFctn_CheckDTCByStatusMask( struct sDTC aRequestedDTC[], enum eBool aReportNotRqDTC, char aMappedResponse[])
+*  \brief Function to check if a specific DTC/s is present with requested status mask
+*  \param[in]  aRequestedDTC[]    - struct array with the DTCid and DTCStatus(se definition of pv_sDTC)
+*  \param[in]  aReportNotRqDTC    - report or not the no requested DTC if are present (FALSE or TRUE)
+*  \param[in]  aMappedResponse    - Info about the execution of function
+*
+*  \return 	1   - All the requested DTC was reported with the requested status.
+*  \return 	0  	- Failed status, check aMappedResponse for further information
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  19.10.23             CiCo            Updated from SSM project.
+*/
+byte bFctn_DTC_CheckByStatusMask( struct cv_sDTC aRequestedDTC[], enum eBool aReportNotRqDTC, char aMappedResponse[])
+{
+  char chTempText[500];
+  byte bSoredDTC[ cc_dwMaxOfDTC * 4 ];// max array to store the uds response
+  byte bReportedDTC[3];// buff vector foc conversion to dword
+  long lNbrOfDTC;//  for get the total number of reported DTC
+  byte bDTCflag;// evaluate the status of search
+  dword dwDTCNbr;// for count the DTC
+  dword dwListOfDTCAccepted[10];// accepted DTC list
+  qword qwReportedDTC;// Reported DTC ID
+  word wReqDTCNbr;// for get the total number of requested DTC
+  byte bafDTC[long];// associative array
+  byte bDebugFlag;
+  
+  bDebugFlag = pc_bGlobalDebugFlag;
+  
+  bDTCflag = Ok;
+  lNbrOfDTC = Error; 
+  wReqDTCNbr = 0;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_CheckDTCByStatusMask() called.");
+  
+  for(wReqDTCNbr = 0; wReqDTCNbr<elcount(aRequestedDTC);wReqDTCNbr++)
+  {
+    if( 0 == aRequestedDTC[wReqDTCNbr].dwDTCid )
+      break;
+  }
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal , "Requested DTC for Check %d", wReqDTCNbr);  
+  
+  lNbrOfDTC = lFctn_DTC_StoreToArray( bSoredDTC, chTempText);// Get The DTC
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal , "lFctn_StoreDTCtoArray-> Returns: - %d - %s", wReqDTCNbr, chTempText); 
+  
+  if( Error < lNbrOfDTC )
+  {
+    // DTC was Stored
+    // Start of conversions of DTC stored to associative fields 
+    for(dwDTCNbr = 0; dwDTCNbr < lNbrOfDTC; dwDTCNbr++)
+    {
+      wFctn_CONV_CopyByteArrayToByteArray( bSoredDTC, 4*dwDTCNbr, 3, bReportedDTC);
+      bFctn_CONV_ConvertByteArrToWordLength(bReportedDTC, Type_Dword, qwReportedDTC);
+      bafDTC[qwReportedDTC] =  bSoredDTC[ 4*dwDTCNbr + 3 ];    
+    }
+    // Debug  
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+    {
+      for (long mykey : bafDTC)
+      {
+        snprintf(chTempText, elcount(chTempText), "0x%x DTCid", mykey );
+        snprintf(chTempText, elcount(chTempText), "%s have status 0x%X", chTempText, bafDTC[mykey] );
+        writeDbgLevel(DebugFuncInternal , "Stored in associative fields: %s", chTempText);
+      }
+    }
+    // end onf conversion
+    // search for all requested DTC
+    for(dwDTCNbr = 0; dwDTCNbr < wReqDTCNbr ; dwDTCNbr++)
+    {
+      if( bafDTC.containsKey(aRequestedDTC[dwDTCNbr].dwDTCid) ) // check for DTC ID to be present
+      { 
+        // DTCid found
+        // check for DTC mask
+        if( aRequestedDTC[dwDTCNbr].bDtcStatus == bafDTC[aRequestedDTC[dwDTCNbr].dwDTCid] )
+        {
+          // DTC mask is as expected
+          snprintf(chTempText,elcount(chTempText),"DTC ID 0x%X, was reported with expected status 0x%X", aRequestedDTC[dwDTCNbr].dwDTCid, aRequestedDTC[dwDTCNbr].bDtcStatus );
+        }
+        else
+        {
+          // DTC Mask different then expected
+          bDTCflag = NotOk;
+          if( 0 == aRequestedDTC[dwDTCNbr].bDtcStatus )// DTC expected to be not present
+          {
+            snprintf(chTempText,elcount(chTempText),"DTC ID 0x%X, was reported with status ( 0x%X ),but it was not expected to be present.", aRequestedDTC[dwDTCNbr].dwDTCid, bafDTC[aRequestedDTC[dwDTCNbr].dwDTCid] );
+          }
+          else
+          {
+            snprintf(chTempText,elcount(chTempText),"DTC ID 0x%X, was reported with other status ( 0x%X ) then expected one ( 0x%X )", aRequestedDTC[dwDTCNbr].dwDTCid, bafDTC[aRequestedDTC[dwDTCNbr].dwDTCid], aRequestedDTC[dwDTCNbr].bDtcStatus); 
+          }
+        }
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal , "Info of DTC stored-> - %s", chTempText);         
+        bafDTC.remove(aRequestedDTC[dwDTCNbr].dwDTCid);// remove DTC from list
+      }
+      else // DTC ID not found
+      {
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal , "DTC ID not found -> - 0x%X", aRequestedDTC[dwDTCNbr].dwDTCid );  
+        
+        if( 0 == aRequestedDTC[dwDTCNbr].bDtcStatus )// DTC ID expected to be not present
+        {
+          snprintf(chTempText,elcount(chTempText), "DTC ID 0x%X, is not present as expected.", aRequestedDTC[dwDTCNbr].dwDTCid );
+        }
+        else
+        {
+          bDTCflag = NotOk;
+          snprintf(chTempText,elcount(chTempText), "DTC ID 0x%X, was expected to be present but it is not.", aRequestedDTC[dwDTCNbr].dwDTCid );
+        } 
+      }
+      snprintf(aMappedResponse,elcount(aMappedResponse),"%s\nRequested DTC: %s",aMappedResponse, chTempText);
+    }// end of search for all requested DTC
+    
+    if( TRUE == aReportNotRqDTC && bafDTC.size() != 0 ) // if requested report remained DTC if are available and check de exception list from ini
+    {
+      lNbrOfDTC = lFctn_DTC_GetAcceptedDTCFromIni(dwListOfDTCAccepted);
+      for(dwDTCNbr = 0; dwDTCNbr < lNbrOfDTC; dwDTCNbr++)
+      {
+        if( bafDTC.containsKey(dwListOfDTCAccepted[dwDTCNbr]) )
+        {
+          // remove and put in the report the accepted DTC
+          snprintf(chTempText, elcount(chTempText),"");
+          snprintf(chTempText, elcount(chTempText),"DTC ID 0x%X", dwListOfDTCAccepted[dwDTCNbr] );
+          snprintf(chTempText, elcount(chTempText),"%s have status 0x%X", chTempText, bafDTC[dwListOfDTCAccepted[dwDTCNbr]] );
+          if ( (byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel(DebugFuncInternal , "Reported DTC but accepted: %s", chTempText ); 
+          snprintf(aMappedResponse,elcount(aMappedResponse),"%s\nReported DTC but accepted: %s.",aMappedResponse, chTempText);
+          bafDTC.remove(dwListOfDTCAccepted[dwDTCNbr]);// remove DTC from list
+        }  
+       }
+       if( bafDTC.size() != 0 )
+       {
+          // report remained DTC as failed
+          bDTCflag = NotOk;
+          for (long mykey : bafDTC)
+          {
+            snprintf(chTempText, elcount(chTempText),"");
+            snprintf(chTempText, elcount(chTempText),"DTC ID 0x%X",mykey );
+            snprintf(chTempText, elcount(chTempText),"%s have status 0x%X", chTempText, bafDTC[mykey] );
+            if ( (byte)DebugFuncInternal & bDebugFlag)
+              writeDbgLevel(DebugFuncInternal , "Reported DTC but not requested: %s", chTempText ); 
+            snprintf(aMappedResponse,elcount(aMappedResponse),"%s\nReported DTC but not requested: %s.",aMappedResponse, chTempText);
+        }
+      }
+    }  
+  }
+  else
+  {
+    bDTCflag = NotOk;
+    snprintf(aMappedResponse,elcount(aMappedResponse), "%s", chTempText);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal , "lFctn_StoreDTCtoArray: %s", chTempText ); 
+  }
+  
+  bafDTC.clear();
+  
+  return bDTCflag;
+}
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief Library for handling DTC functionality
+*/

@@ -1,0 +1,22 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup tscPOWER tscPOWER
+* @defgroup POWER POWER
+* @ingroup testSupportLib
+* @{
+* @addtogroup tscPOWER
+* @{
+*/ 
+
+variables
+{
+  
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup testSupportLib
+*   \brief POWER test support library constants.
+*/

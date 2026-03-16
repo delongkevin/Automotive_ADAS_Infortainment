@@ -1,0 +1,4 @@
+<map id="iFctn_FR_SaveLogDataToCSVFile" name="iFctn_FR_SaveLogDataToCSVFile">
+<area shape="rect" id="node1" title="Function that saves in a CSV file, the specified number of log entries from the already populated log..." alt="" coords="253,5,473,32"/>
+<area shape="rect" id="node2" href="$group__ts_f_l_e_x_r_a_y.html#ga040284cccd0d2c444e063c3af52be6da" title="Function that executes the action to save in a CSV file, the specified number of log entries from the..." alt="" coords="5,5,205,32"/>
+</map>

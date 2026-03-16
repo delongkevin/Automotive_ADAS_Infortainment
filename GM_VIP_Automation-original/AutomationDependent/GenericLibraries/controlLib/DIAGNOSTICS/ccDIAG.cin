@@ -1,0 +1,58 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup ccDIAG ccDIAG
+* @defgroup DIAGNOSTICS DIAGNOSTICS
+* @ingroup controlLib
+* @{
+* @addtogroup ccDIAG
+* @{
+*/ 
+variables 
+{
+  enum cc_eResultDIAG { cc_eDIAG_NOK = 0, cc_eDIAG_OK = 1 };
+  
+  enum cc_eAddressingModeDIAG { cc_eDIAGFunctional = 0, cc_eDIAGPhysical = 1 };
+  
+  enum cc_eInternalStatesDIAG { cc_eDIAG_ECUTimeOutState = 0, cc_eDIAG_ResponseReceivedState = 1, 
+								                cc_eDIAG_ErrorTPLevelState = -92, cc_eDIAG_DiagNotInitForNodeState = -94, cc_eDIAG_FuncNotImplementedState = -96 };
+  
+  enum cc_eLastResponseCodeDIAG { cc_eDIAG_LastResponseOfReqIsNotReceived = 0, cc_eDIAG_LastResponseOfReqIsPositive = -1 };
+  
+  enum cc_eStateOutputDIAG { cc_eDIAG_NoAnswerFromECU = 0, cc_eDIAG_ResponseAsExpected = 1, cc_eDIAG_ResponseNotExpected = -1};
+  
+  // Note: If new values are added in "enum cc_eResponseCodeDIAG" map it in function: vFctn_DIAG_FormExpectedResponseText()
+  enum cc_eResponseCodeDIAG {  cc_eDIAG_PositiveResponse = 0x00, cc_eDIAG_NoResponse = 0x03, 
+              							   cc_eDIAG_NRC10 = 0x10, cc_eDIAG_NRC11 = 0x11, cc_eDIAG_NRC12 = 0x12, cc_eDIAG_NRC13 = 0x13, cc_eDIAG_NRC14 = 0x14,
+              							   cc_eDIAG_NRC21 = 0x21, cc_eDIAG_NRC22 = 0x22, cc_eDIAG_NRC24 = 0x24, 
+              							   cc_eDIAG_NRC31 = 0x31, cc_eDIAG_NRC33 = 0x33, cc_eDIAG_NRC35 = 0x35, cc_eDIAG_NRC36 = 0x36, cc_eDIAG_NRC37 = 0x37, 
+              							   cc_eDIAG_NRC70 = 0x70, cc_eDIAG_NRC71 = 0x71, cc_eDIAG_NRC72 = 0x72, cc_eDIAG_NRC73 = 0x73, cc_eDIAG_NRC78 = 0x78, cc_eDIAG_NRC7E = 0x7E , cc_eDIAG_NRC7F = 0x7F,
+              							   cc_eDIAG_GeneralNegativeResponse = 0xFF };
+  
+  enum cc_ePendingHandlingDIAG { cc_eDIAG_PendingRespDisabled = -1, cc_eDIAG_PendingRespEnabled = 0 };
+  
+  enum cc_eParamValueAccessDIAG { cc_eDIAG_ModeNumerical = 0, cc_eDIAG_ModePhysical = 1, cc_eDIAG_ModeCoded = 2 };
+  
+  enum cc_eParamCompareDIAG { cc_eDIAG_Equal = 0, cc_eDIAG_NotEqual = 1, cc_eDIAG_Greater = 2, cc_eDIAG_Less = 3 };
+  
+  enum cc_eNumbersDIAG {  cc_eDIAG_ZERO = 0, cc_eDIAG_ONE = 1, cc_eDIAG_TWO = 2, cc_eDIAG_THREE = 3, cc_eDIAG_FOUR = 4, cc_eDIAG_FIVE = 5, cc_eDIAG_SIX = 6, cc_eDIAG_SEVEN = 7, cc_eDIAG_EIGHT = 8, cc_eDIAG_NINE = 9,
+						              cc_eDIAG_16 = 16 };
+  
+  const dword cc_dwDIAG_BackupWaitTime = 2000; // miliseconds
+  
+  // This debug flag will be used to enable/disable the debug messages in all functions of the current module
+  // 0x00 - No debug messages displayed (only function calls).
+  // 0x01 - Only function call messages displayed (this will always displayed).
+  // 0x02 - Function parameter + 0x01.
+  // 0x04 - Internal function actions + 0x01 and 0x02.
+  // 0xFF - All of the above (function calls, function parameters, internal function actions).
+  const byte ccDIAG_GlobalDebugFlag = 0x01;
+}
+
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief DIAG test control library constants.
+*/

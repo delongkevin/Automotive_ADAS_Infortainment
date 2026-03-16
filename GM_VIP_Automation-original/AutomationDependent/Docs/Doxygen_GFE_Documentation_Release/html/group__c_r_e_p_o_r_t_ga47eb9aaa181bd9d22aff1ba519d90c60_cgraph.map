@@ -1,0 +1,5 @@
+<map id="bFctn_REPORTInit" name="bFctn_REPORTInit">
+<area shape="rect" id="node1" title="Function writes in report: tester, hardware, software, company and iniFile used." alt="" coords="5,42,137,69"/>
+<area shape="rect" id="node2" href="$group__b_r_e_a_d_f_i_l_e.html#ga2b527d8836b7a18e4deb97b756fc6314" title="Function opens an ini file and reads a string entry." alt="" coords="185,5,384,47"/>
+<area shape="rect" id="node3" href="$group__b_r_e_a_d_f_i_l_e.html#ga99b3eb9243d35ea686c5f9bb5612ebde" title="Function returns previous ini file, stored in the Default.ini file, used before stopping simulation." alt="" coords="188,71,381,98"/>
+</map>

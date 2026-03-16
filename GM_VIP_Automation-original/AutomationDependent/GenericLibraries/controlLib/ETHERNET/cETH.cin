@@ -1,0 +1,877 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup cETH cETH
+* @defgroup ETH ETH
+* @ingroup controlLib
+* @{
+* @addtogroup cETH
+* @{
+*/ 
+includes
+{
+  #include "ccETH.cin"
+  #include "cvETH.cin"
+}
+
+variables
+{
+  byte bFcnt_ETH_DebugFlags = 0;// used for internal debug
+}
+
+/*! \fn long lFcnt_ETH_WaitForTCPpacket(long aEthChannel, struct cv_stETHPacket st_aPacket, word aTimeToWait, char aFcntInfo[])
+*  \brief Function to wait for a TCP PSH packet
+*  \param[in] aEthChannel - ETH channel number
+*  \param[in] st_aPacket - struct for TCP packet(see definition of cv_stETHPacket )
+*  \param[in] aTimeToWait - time in ms if 0 - No timeout controlling
+*  \param[out] aFcntInfo - Info about returned value from the function
+*  \return 0  Timeout packet was not received in desired time
+*  \return 1  Packet received
+*  \return -1 Error ocurred during waiting the TCP packet
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 31.08.18              CiCo        Created and implemented
+*/
+long lFcnt_ETH_WaitForTCPpacket(long aEthChannel, struct cv_stETHPacket st_aPacket, word aTimeToWait,  char aFcntInfo[])
+{
+  byte bDebugFlag;
+  long lSysVarRead;
+  long lRetVal;
+  lSysVarRead = cc_eETHretVal_Read_ERR;
+  lRetVal = cc_eETHretVal_Channel_ERR;
+  bDebugFlag = bFcnt_ETH_DebugFlags;
+  
+  writeDbgLevel( DebugFuncCalls, "lFcnt_ETH_WaitForTCPpacket called.");
+#if TOOL_MAJOR_VERSION <= 15  
+  if( cc_eETHretVal_NOK < aEthChannel )
+  {
+    // prepare data for TCP and ETH node
+    @sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedProtocol = cc_eETHpacket_TCP; // search for TCP packet
+    @sysvar::EthBusMonitor::EthPaketType::TCP::SrcPort = st_aPacket.cv_dwSrcPort;
+    @sysvar::EthBusMonitor::EthPaketType::TCP::DestPort = st_aPacket.cv_dwDestPort;
+    @sysvar::EthBusMonitor::EthPaketType::IPv4::SourceIP = swapDWord( IpGetAddressAsNumber( st_aPacket.cv_chSrcIP ) );
+    @sysvar::EthBusMonitor::EthPaketType::IPv4::DestinationIP = swapDWord( IpGetAddressAsNumber( st_aPacket.cv_chDestIP ) );
+    @sysvar::EthBusMonitor::EthPaketData::Content::EthChannelNumber = aEthChannel;
+    @sysvar::EthBusMonitor::EthPaketData::Flags::EthSearchMsg = cc_eETHBusMonitor_Start;// flag set to 1 in order to start searching desired packet
+    if( bDebugFlag & (byte) DebugFuncParam )
+      writeDbgLevel( DebugFuncParam, "Params: Channel: %d \n SourceIP: %s \n DestinationIP: %s \n SourcePort: %d \n DestinationPort: %d", aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, st_aPacket.cv_dwSrcPort, st_aPacket.cv_dwDestPort );
+    
+    lSysVarRead = TestWaitForSysVar(sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage, aTimeToWait);
+    if( bDebugFlag & (byte) DebugFuncInternal )
+      writeDbgLevel( DebugFuncInternal, "Wait for sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage - %d -", lSysVarRead );
+    if ( cc_eETHretVal_OK == lSysVarRead )
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "TCP packet on Eth channel - %d - (SrcIP- %s -, DestIP- %s -, SrcPort- %d -, DestPort - %d -) was found in requested time (%d ms).", aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, st_aPacket.cv_dwSrcPort, st_aPacket.cv_dwDestPort, aTimeToWait );
+      lRetVal = cc_eETHretVal_OK; // TCP packet received in desired time    
+    }
+    else if( cc_eETHretVal_NOK == lSysVarRead )
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "TCP packet on Eth channel - %d - (SrcIP- %s -, DestIP- %s -, SrcPort- %d -, DestPort - %d -) was not found in requested time (%d ms).", aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, st_aPacket.cv_dwSrcPort, st_aPacket.cv_dwDestPort, aTimeToWait );
+      lRetVal = cc_eETHretVal_NOK;// timeout
+    }
+    else
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "Error reading sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage. See definition of TestWaitForSysVar for retval %d", lSysVarRead );
+      lRetVal = cc_eETHretVal_Read_ERR;// errors occurs during reading sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage ( -2 )
+    }
+    
+    @sysvar::EthBusMonitor::EthPaketData::Flags::EthSearchMsg = cc_eETHBusMonitor_Stop;// set the flag to 0 in order to stop searching another packet
+    TestResetSysVarValue(sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedProtocol);// reset to default value
+  }
+  else
+  {
+    snprintf(aFcntInfo, elcount(aFcntInfo), "Invalid channel requested should be greather then 0. %d requested  ", aEthChannel );
+  }
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel( DebugFuncInternal, "Return Value: %d, Info message: %s", lRetVal, aFcntInfo );
+  return lRetVal;
+#else
+  snprintf(aFcntInfo, elcount(aFcntInfo), "Function deprecated");
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel(DebugFuncInternal, "Error: %s", aFcntInfo);
+  return cc_eETHretVal_ERR;
+#endif
+}
+
+/*! \fn long lFcnt_ETH_WaitAndGetTCPdata( long aEthChannel, struct cv_stETHPacket st_aPacket, word aTimeToWait, byte aStoredPayload[], char aFcntInfo[])
+*  \brief Function to get a TCP PSH packet
+*  \param[in] aEthChannel - ETH channel number
+*  \param[in] st_aPacket - struct for TCP packet(see definition of cv_stETHPacket )
+*  \param[in] aTimeToWait - time in ms if 0 - No timeout controlling
+*  \param[in] aStoredPayload - the stored payload of the TCP PSH packet
+*  \param[out] aFcntInfo - Info about returned value from the function
+*  \return >0 - Number of bytes copied to destination
+*  \return 0 - Error accessing TCP packet see info in aFcntInfo
+*  \return -1 - SysVar read error
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 07.09.18              CiCo        Created and implemented
+*/
+long lFcnt_ETH_WaitAndGetTCPdata( long aEthChannel, struct cv_stETHPacket st_aPacket, word aTimeToWait, byte aStoredPayload[], char aFcntInfo[])
+{
+  byte bDebugFlag;
+  long lFcntRet;
+  long lRetVal;
+  long lLength;
+  long lSysVarRead;
+  char chMsgInfo[cc_ETHmaxMsgInfoLength];
+  
+  bDebugFlag = bFcnt_ETH_DebugFlags;
+  lFcntRet =  cc_eETHretVal_NOK;// initialize value with NOK
+
+  writeDbgLevel( DebugFuncCalls, "lFcnt_ETH_WaitAndGetTCPdata called." );
+#if TOOL_MAJOR_VERSION <= 15
+  if( bDebugFlag & (byte) DebugFuncParam )
+    writeDbgLevel( DebugFuncParam, "Params: Channel: %d \n SourceIP: %s \n DestinationIP: %s \n SourcePort: %d \n DestinationPort: %d \n aTimeToWait: %d", 
+                   aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, st_aPacket.cv_dwSrcPort, st_aPacket.cv_dwDestPort, aTimeToWait );
+  lFcntRet = lFcnt_ETH_WaitForTCPpacket( aEthChannel, st_aPacket, aTimeToWait, chMsgInfo );
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel( DebugFuncInternal, "lFcnt_ETH_WaitForTCPpacket: Return Value: %d, Info message: %s", lFcntRet, chMsgInfo );
+  if ( cc_eETHretVal_OK == lFcntRet )
+  {// TCP packet was found
+    lSysVarRead = sysGetVariableData(sysvar::EthBusMonitor::EthPaketType::TCP::Payload, aStoredPayload, lLength ); 
+    if( cc_eETHSysVarRead_OK == lSysVarRead )// check if data was written to stored location
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "All data was copied to destination. Total %d bytes", lLength);
+      return lLength; // number of bytes copied to destination
+    }
+    else if( cc_eETHSysVarRead_BufSmal == lSysVarRead)// fail because store location is to small
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "Buffer to small to copy the payload data. Please define it to have min %d, length", @sysvar::EthBusMonitor::EthPaketData::Content::EthBytesCopied);
+      return cc_eETHretVal_NOK; // stored location to small for TCP playload
+    }
+    else
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "Error reading sysvar::EthBusMonitor::EthPaketType::TCP::Payload. See definition of sysGetVariableData for reval %d", lSysVarRead);
+      return cc_eETHretVal_ERR;
+    }
+  }
+  else
+  {
+    snprintf(aFcntInfo, elcount(aFcntInfo), "%s", chMsgInfo);
+    return cc_eETHretVal_ERR; // error from lFcnt_ETH_WaitForTCPpacket 
+  }
+#else
+  snprintf(aFcntInfo, elcount(aFcntInfo), "Function deprecated");
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel(DebugFuncInternal, "Error: %s", aFcntInfo);
+  return cc_eETHretVal_ERR;
+#endif
+}
+
+/*! \fn long lFcnt_ETH_SetBusContext(char abusContextName[], char aFcntInfo[])
+*  \brief Function to set the bus context for ETH channel
+*  \param[in] abusContextName - ETH channel name
+*  \param[out] aFcntInfo - Info about returned value from the function
+*  \return 0 - Bus context successfully set
+*  \return 1 - Error setting the context see the info returned in aFcntInfo
+*  \return -1 - Deprecated function
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 12.09.18              CiCo        Created and implemented
+*/
+long lFcnt_ETH_SetBusContext(char aBusContextName[], char aFcntInfo[])
+{
+  byte bDebugFlag;
+  long lRetVal;
+  long lRetValWait;
+  char cMsgInfo[cc_ETHmaxMsgInfoLength];
+  
+  bDebugFlag = bFcnt_ETH_DebugFlags;
+  lRetVal = cc_eETHretVal_ERR;
+  lRetValWait = cc_eETHretVal_ERR;
+  
+  writeDbgLevel( DebugFuncCalls, "lFcnt_ETH_SetBusContext called.");
+ #if TOOL_MAJOR_VERSION <= 15 
+  if( bDebugFlag & (byte) DebugFuncParam )
+    writeDbgLevel(DebugFuncParam, "Params: aBusContextName - %s -", aBusContextName);
+  
+  lRetVal = sysSetVariableString( sysvar::EthBusMonitor::EthPaketData::Content::EthChannelName, aBusContextName);
+  lRetValWait = testWaitForSysVar(sysvar::EthBusMonitor::EthPaketData::Flags::EthLastAPIError, 1);// mandatory to wait for setting sysvar
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel( DebugFuncInternal, "sysSetVariableString: (EthChannelName):  %d \n testWaitForSysVar: (EthLastAPIError): %d", lRetVal,  lRetValWait );  
+  if( cc_eETHretVal_NOK == lRetVal && lRetValWait == cc_eETHretVal_OK ) // check for sysVar was set without problems
+  {
+    if (cc_eETHretVal_OK == @sysvar::EthBusMonitor::EthPaketData::Flags::EthLastAPIError)
+    {
+      sysGetVariableString( sysvar::EthBusMonitor::EthPaketData::Content::EthApiMessage , aFcntInfo, elCount(aFcntInfo));
+      if( bDebugFlag & (byte) DebugFuncInternal )
+        writeDbgLevel( DebugFuncInternal, "sysGetVariableString: (EthApiMessage):  %s.", aFcntInfo );
+      return cc_eETHretVal_OK;
+    }
+    else
+    {
+      sysGetVariableString( sysvar::EthBusMonitor::EthPaketData::Content::EthApiMessage , aFcntInfo, elCount(aFcntInfo));
+      if( bDebugFlag & (byte) DebugFuncInternal )
+        writeDbgLevel( DebugFuncInternal, "sysGetVariableString: (EthApiMessage):  %s.", aFcntInfo );      
+      return cc_eETHretVal_NOK;
+    }
+  }
+  else
+  {
+    snprintf(aFcntInfo, elcount(aFcntInfo), "Error reading sysvar::EthBusMonitor::EthPaketData::Content::EthChannelName or testWaitForSysVar. See definition of sysGetVariableData for retval %d and testWaitForSysVar %d ", lRetVal, lRetValWait);
+    if( bDebugFlag & (byte) DebugFuncInternal )
+      writeDbgLevel( DebugFuncInternal, "sysGetVariableString: (EthApiMessage):  %s.", aFcntInfo );  
+    return cc_eETHretVal_NOK;
+  }
+#else
+  snprintf(aFcntInfo, elcount(aFcntInfo), "Function deprecated");
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel(DebugFuncInternal, "Error: %s", aFcntInfo);
+  return cc_eETHretVal_ERR;
+#endif
+}
+
+/*! \fn long lFcnt_ETH_WaitForArPpacket(long aEthChannel, struct cv_stETHPacket st_aPacket, word aTimeToWait, enum cc_eETHArpOp aArpOp, char aFcntInfo[])
+*  \brief Function to set the bus context for ETH channel
+*  \param[in] aEthChannel   - ETH channel number
+*  \param[in] st_aPacket    - struct for ARP packet(see definition of cv_stETHPacket )
+*  \param[in] aTimeToWait   - time in ms if 0 - No timeout controlling
+*  \param[in] aArpOp        - ARP type of the desired packet (see definition of enum cc_eETHArpOp )
+*  \param[out] aFcntInfo    - Info about returned value from the function
+*  \return 0  Timeout, ARP packet was not received in desired time
+*  \return 1  ARP Packet received
+*  \return -1 Error ocurred during waiting the ARP packet
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 12.09.18              CiCo        Created and implemented
+* 07.09.23              RC          Checker updated for ARP requested operation
+*/
+long lFcnt_ETH_WaitForArPpacket(long aEthChannel, struct cv_stETHPacket st_aPacket, word aTimeToWait, enum cc_eETHArpOp aArpOp, char aFcntInfo[])
+{
+  byte bDebugFlag;
+  long lFcntRet;
+  long lRetVal;
+  long lLength;
+  long lSysVarRead;
+  char chARPop[250];
+  char chErrorText[250];
+  char chMsgInfo[ cc_ETHmaxMsgInfoLength ];
+  
+  bDebugFlag = bFcnt_ETH_DebugFlags;  
+  lFcntRet =  cc_eETHretVal_NOK;// initialize value with NOK
+  writeDbgLevel( DebugFuncCalls, "lFcnt_ETH_WaitForArPpacket called.");
+#if TOOL_MAJOR_VERSION <= 15
+  if( cc_eETHretVal_NOK > aEthChannel )
+  {
+    snprintf(aFcntInfo, elcount(aFcntInfo), "Invalid channel requested should be greather then 0. %d requested  ", aEthChannel );
+    if( bDebugFlag & (byte) DebugFuncInternal )
+      writeDbgLevel(DebugFuncInternal, "Error: %s", aFcntInfo);
+    return cc_eETHretVal_ERR;
+  } 
+  
+  switch( aArpOp )
+  {
+    case cc_eETHArpOp_request:
+      snprintf( chARPop,elcount(chARPop),"ARP Request" );
+      break;
+    case cc_eETHArpOp_reply:
+      snprintf( chARPop,elcount(chARPop),"ARP Reply" );
+      break;
+    case cc_eETHArpOp_reqReverse:
+      snprintf( chARPop,elcount(chARPop),"ARP Request Reverse" );
+      break;
+    case cc_eETHArpOp_repReverse:
+      snprintf( chARPop,elcount(chARPop),"ARP Reply Reverse" );
+      break;
+    default:
+      snprintf( chErrorText,elcount(chErrorText),"Wrong operation requested for ARP packet.See the definition of enum cc_eETHArpOp. Requested: %x", aArpOp );
+      break;
+  }
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel( DebugFuncInternal, "errorText: %s", chErrorText);
+  
+  if( cc_eETHretVal_NOK == strlen(chErrorText) )
+  {
+    // prepare data for ARP and ETH node
+    @sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedProtocol = cc_eETHpacket_ARP; // search for ARP packet
+    @sysvar::EthBusMonitor::EthPaketType::ARP::SourceIP = swapDWord( IpGetAddressAsNumber( st_aPacket.cv_chSrcIP ) );
+    @sysvar::EthBusMonitor::EthPaketType::ARP::DestinationIP = swapDWord( IpGetAddressAsNumber( st_aPacket.cv_chDestIP ) );
+    @sysvar::EthBusMonitor::EthPaketType::ARP::ArpOperation = aArpOp;
+    @sysvar::EthBusMonitor::EthPaketData::Content::EthChannelNumber = aEthChannel;
+    @sysvar::EthBusMonitor::EthPaketData::Flags::EthSearchMsg = cc_eETHBusMonitor_Start;// flag set to 1 in order to start searching desired packet
+    
+    if( bDebugFlag & (byte) DebugFuncParam )
+      writeDbgLevel( DebugFuncParam, "Params: Channel: %d \n SourceIP: %s \n DestinationIP: %s \n ArpOperation: %s \n aTimeToWait", aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, chARPop, aTimeToWait );
+    
+    lSysVarRead = TestWaitForSysVar(sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage, aTimeToWait);
+    if( bDebugFlag & (byte) DebugFuncInternal )
+      writeDbgLevel(DebugFuncInternal, "TestWaitForSysVar sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage - %d -", lSysVarRead);
+    
+    if ( cc_eETHretVal_OK == lSysVarRead )
+    {
+      // arp packet found as requested
+      snprintf(aFcntInfo, elcount(aFcntInfo), "%s packet on channel - %d -(SrcIP- %s -, DestIP- %s -) received in the expected time (%d ms).", chARPop, aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, aTimeToWait);
+      lRetVal = cc_eETHretVal_OK; // ARP packet received in desired time    
+    }
+    else if( cc_eETHretVal_NOK == lSysVarRead )
+    {
+      // arp packet requested not found in desired time
+      snprintf(aFcntInfo, elcount(aFcntInfo), "%s packet on channel - %d -(SrcIP- %s -, DestIP- %s -) was not found in requested time (%d ms).",chARPop, aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, aTimeToWait );
+      lRetVal = cc_eETHretVal_NOK;// timeout
+    }
+    else
+    {
+      // error reading sysvar
+      snprintf(aFcntInfo, elcount(aFcntInfo), "Error reading sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage. See definition of TestWaitForSysVar for retval %d", lSysVarRead );
+      lRetVal = cc_eETHretVal_Read_ERR;// errors occurs during reading sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage ( -2 )
+    }
+    
+    @sysvar::EthBusMonitor::EthPaketData::Flags::EthSearchMsg = cc_eETHBusMonitor_Stop;// set the flag to 0 in order to stop searching another packet
+    TestResetSysVarValue(sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedProtocol);// reset to default value
+  }
+  else
+  {
+    // invalid arp operation requested
+    snprintf(aFcntInfo, elcount(aFcntInfo), "%s", chErrorText);
+    lRetVal = cc_eETHretVal_ERR;
+  }
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel( DebugFuncInternal, "Return Value: %d, Info message: %s", lRetVal, aFcntInfo );
+  return lRetVal;
+#else
+  snprintf(aFcntInfo, elcount(aFcntInfo), "Function deprecated");
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel(DebugFuncInternal, "Error: %s", aFcntInfo);
+  return cc_eETHretVal_ERR;
+#endif
+}
+
+/*! \fn long lFcnt_ETH_WaitAndGetUDPdata( long aEthChannel, struct cv_stETHPacket st_aPacket, word aTimeToWait, byte aStoredPayload[], char aFcntInfo[])
+*  \brief Function to get an UDP packet.
+*  \param[in] aEthChannel - ETH channel number
+*  \param[in] st_aPacket - struct for UDP packet(see definition of cv_stETHPacket )
+*  \param[in] aTimeToWait - time in ms if 0 - no timeout controlling
+*  \param[in] aStoredPayload - the stored payload of the UDP packet
+*  \param[out] aFcntInfo - info about returned value from the function
+*  \return >0 - number of bytes copied to destination
+*  \return 0 - error accessing UDP packet see info in aFcntInfo
+*  \return -1 - SysVar read error
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 05.09.23               RC         Created and implemented.
+*/
+long lFcnt_ETH_WaitAndGetUDPdata( long aEthChannel, struct cv_stETHPacket st_aPacket, word aTimeToWait, byte aStoredPayload[], char aFcntInfo[])
+{
+  byte bDebugFlag;
+  long lFcntRet;
+  long lRetVal;
+  long lLength;
+  long lSysVarRead;
+  char chMsgInfo[cc_ETHmaxMsgInfoLength];
+  
+  bDebugFlag = bFcnt_ETH_DebugFlags;
+  lFcntRet =  cc_eETHretVal_NOK;// initialize value with NOK
+
+  writeDbgLevel( DebugFuncCalls, "lFcnt_ETH_WaitAndGetUDPdata called." );
+ #if TOOL_MAJOR_VERSION <= 15
+  if( bDebugFlag & (byte) DebugFuncParam )
+    writeDbgLevel( DebugFuncParam, "Params: Channel: %d \n SourceIP: %s \n DestinationIP: %s \n SourcePort: %d \n DestinationPort: %d \n aTimeToWait: %d", 
+                   aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, st_aPacket.cv_dwSrcPort, st_aPacket.cv_dwDestPort, aTimeToWait );
+  lFcntRet = lFcnt_ETH_WaitForUDPpacket( aEthChannel, st_aPacket, aTimeToWait, chMsgInfo );
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel( DebugFuncInternal, "lFcnt_ETH_WaitForUDPpacket: Return Value: %d, Info message: %s", lFcntRet, chMsgInfo );
+  if ( cc_eETHretVal_OK == lFcntRet )
+  {// UDP packet was found
+    lSysVarRead = sysGetVariableData(sysvar::EthBusMonitor::EthPaketType::UDP::Payload, aStoredPayload, lLength ); 
+    if( cc_eETHSysVarRead_OK == lSysVarRead )// check if data was written to stored location
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "All data was copied to destination. Total %d bytes", lLength);
+      return lLength; // number of bytes copied to destination
+    }
+    else if( cc_eETHSysVarRead_BufSmal == lSysVarRead)// fail because store location is to small
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "Buffer to small to copy the payload data. Please define it to have min %d, length", @sysvar::EthBusMonitor::EthPaketData::Content::EthBytesCopied);
+      return cc_eETHretVal_NOK; // stored location to small for UDP playload
+    }
+    else
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "Error reading sysvar::EthBusMonitor::EthPaketType::UDP::Payload. See definition of sysGetVariableData for reval %d", lSysVarRead);
+      return cc_eETHretVal_ERR;
+    }
+  }
+  else
+  {
+    snprintf(aFcntInfo, elcount(aFcntInfo), "%s", chMsgInfo);
+    return cc_eETHretVal_ERR; // error from lFcnt_ETH_WaitForUDPpacket 
+  }
+#else
+  snprintf(aFcntInfo, elcount(aFcntInfo), "Function deprecated");
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel(DebugFuncInternal, "Error: %s", aFcntInfo);
+  return cc_eETHretVal_ERR;
+#endif
+}
+
+/*! \fn long lFcnt_ETH_WaitForUDPpacket(long aEthChannel, struct cv_stETHPacket st_aPacket, word aTimeToWait, char aFcntInfo[])
+*  \brief Function to wait for an UDP packet.
+*  \param[in] aEthChannel - ETH channel number
+*  \param[in] st_aPacket - struct for UDP packet(see definition of cv_stETHPacket)
+*  \param[in] aTimeToWait - time in ms if 0 - no timeout controlling
+*  \param[out] aFcntInfo - info about returned value from the function
+*  \return 0 - timeout, packet was not received in desired time
+*  \return 1 - packet received
+*  \return -2 - errors occur during reading sysvar
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 05.09.23               RC        Created and implemented.
+*/
+long lFcnt_ETH_WaitForUDPpacket(long aEthChannel, struct cv_stETHPacket st_aPacket, word aTimeToWait,  char aFcntInfo[])
+{
+  byte bDebugFlag;
+  long lSysVarRead;
+  long lRetVal;
+  lSysVarRead = cc_eETHretVal_Read_ERR;
+  lRetVal = cc_eETHretVal_Channel_ERR;
+  bDebugFlag = bFcnt_ETH_DebugFlags;
+  
+  writeDbgLevel( DebugFuncCalls, "lFcnt_ETH_WaitForUDPpacket called.");
+  #if TOOL_MAJOR_VERSION <= 15
+  if( cc_eETHretVal_NOK < aEthChannel )
+  {
+    // prepare data for UDP and ETH node
+    @sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedProtocol = cc_eETHpacket_UDP; // search for UDP packet
+    @sysvar::EthBusMonitor::EthPaketType::UDP::SrcPort = st_aPacket.cv_dwSrcPort;
+    @sysvar::EthBusMonitor::EthPaketType::UDP::DestPort = st_aPacket.cv_dwDestPort;
+    @sysvar::EthBusMonitor::EthPaketType::IPv4::SourceIP = swapDWord( IpGetAddressAsNumber( st_aPacket.cv_chSrcIP ) );
+    @sysvar::EthBusMonitor::EthPaketType::IPv4::DestinationIP = swapDWord( IpGetAddressAsNumber( st_aPacket.cv_chDestIP ) );
+    @sysvar::EthBusMonitor::EthPaketData::Content::EthChannelNumber = aEthChannel;
+    @sysvar::EthBusMonitor::EthPaketData::Flags::EthSearchMsg = cc_eETHBusMonitor_Start;// flag set to 1 in order to start searching desired packet
+    if( bDebugFlag & (byte) DebugFuncParam )
+      writeDbgLevel( DebugFuncParam, "Params: Channel: %d \n SourceIP: %s \n DestinationIP: %s \n SourcePort: %d \n DestinationPort: %d", aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, st_aPacket.cv_dwSrcPort, st_aPacket.cv_dwDestPort );
+    
+    lSysVarRead = TestWaitForSysVar(sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage, aTimeToWait);
+    if( bDebugFlag & (byte) DebugFuncInternal )
+      writeDbgLevel( DebugFuncInternal, "Wait for sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage - %d -", lSysVarRead );
+    if ( cc_eETHretVal_OK == lSysVarRead )
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "UDP packet on Eth channel - %d - (SrcIP- %s -, DestIP- %s -, SrcPort- %d -, DestPort - %d -) was found in requested time (%d ms).", aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, st_aPacket.cv_dwSrcPort, st_aPacket.cv_dwDestPort, aTimeToWait );
+      lRetVal = cc_eETHretVal_OK; // UDP packet received in desired time    
+    }
+    else if( cc_eETHretVal_NOK == lSysVarRead )
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "UDP packet on Eth channel - %d - (SrcIP- %s -, DestIP- %s -, SrcPort- %d -, DestPort - %d -) was not found in requested time (%d ms).", aEthChannel, st_aPacket.cv_chSrcIP, st_aPacket.cv_chDestIP, st_aPacket.cv_dwSrcPort, st_aPacket.cv_dwDestPort, aTimeToWait );
+      lRetVal = cc_eETHretVal_NOK;// timeout
+    }
+    else
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "Error reading sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage. See definition of TestWaitForSysVar for retval %d", lSysVarRead );
+      lRetVal = cc_eETHretVal_Read_ERR;// errors occur during reading sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedMessage ( -2 )
+    }
+    
+    @sysvar::EthBusMonitor::EthPaketData::Flags::EthSearchMsg = cc_eETHBusMonitor_Stop;// set the flag to 0 in order to stop searching another packet
+    TestResetSysVarValue(sysvar::EthBusMonitor::EthPaketData::Flags::EthExpectedProtocol);// reset to default value
+  }
+  else
+  {
+    snprintf(aFcntInfo, elcount(aFcntInfo), "Invalid channel requested should be greather then 0. %d requested  ", aEthChannel );
+  }
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel( DebugFuncInternal, "Return Value: %d, Info message: %s", lRetVal, aFcntInfo );
+  return lRetVal;
+#else
+  snprintf(aFcntInfo, elcount(aFcntInfo), "Function deprecated");
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel(DebugFuncInternal, "Error: %s", aFcntInfo);
+  return cc_eETHretVal_ERR;
+#endif
+}
+
+/*! \fn long lFcnt_ETH_WaitAndGetPacketData(struct cv_stETHPacket aETHpacket, char aNetworkName[], dword aTimeout, byte aOutputData[], char aFcntInfo[])
+*  \brief Function gets the received Eth packet payload data in a specific time.
+*  \param[in] aNetworkName - network name
+*  \param[in] aETHpacket - struct for Eth packet(see definition of cv_stETHPacket)
+*  \param[in] aTimeout - time in ms, if 0 - no timeout controlling
+*  \param[out] aOutputData - packet payload data
+*  \param[out] aFcntInfo - info about returned value from the function
+*
+*  \return 0 (cc_eETHretVal_NOK) - data access problems
+*  \return >0 (lLength) - number of bytes copied to destination
+*  \return -1 (Error) - network name was wrong / requested protocol was wrong / ethernet event was not succesfully completed
+*
+*  \note - supported transport protocol from IPv4 header: TCP and UDP
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 23.11.23               RC        Created and implemented based of CANoe >15
+*/
+long lFcnt_ETH_WaitAndGetPacketData(struct cv_stETHPacket aETHpacket, char aNetworkName[], dword aTimeout, byte aOutputData[], char aFcntInfo[])
+{
+  ethernetPacket ethpkt_EthernetEvent;
+  long lResult;
+  byte bResult_SetContext;
+  int64 i64ResultJoin;
+  int iResultGetData;
+  int64 i64TestWait;
+  byte bDebugFlag;
+  qword qw_sMac, qw_dMac;
+  dword dw_sIP, dw_dIP;
+  long lLength;
+  
+  //Initialization of local variable
+  lResult = Error;
+  bResult_SetContext = cc_eETHretVal_NOK;
+  i64TestWait = Error;
+  i64ResultJoin = Error;
+  iResultGetData = Error;
+  bDebugFlag = bFcnt_ETH_DebugFlags;
+  
+  writeDbgLevel (DebugFuncCalls, "Function lFcnt_ETH_WaitAndGetPacketData called."); 
+#if TOOL_MAJOR_VERSION > 15 
+  if( (byte)DebugFuncParam & bDebugFlag)
+  {
+    writeDbgLevel (DebugFuncParam, "MacAddress: Source -- %s --, Destination -- %s --", aETHpacket.ch_sMAC, aETHpacket.ch_dMAC);
+    writeDbgLevel (DebugFuncParam, "vlanID -- 0x%X --, ethType -- 0x%X --", aETHpacket.w_vlanID, aETHpacket.w_ethType);
+    writeDbgLevel (DebugFuncParam, "IP: Source -- %s --, Destination -- %s --", aETHpacket.ch_sIP, aETHpacket.ch_dIP);
+    writeDbgLevel (DebugFuncParam, "Protocol: -- 0x%X --", aETHpacket.dw_protocol);
+    writeDbgLevel (DebugFuncParam, "Port: Source -- %lld --, Destination -- %lld --", aETHpacket.dw_sPort, aETHpacket.dw_dPort);
+    writeDbgLevel (DebugFuncParam, "Flags: Source -- 0x%X --, Timeout -- %d --", aETHpacket.dw_flags, aTimeout);
+  }
+  if( 0!=strlen(aETHpacket.ch_sMAC) )
+    qw_sMac = ethGetMacAddressAsNumber(aETHpacket.ch_sMAC);
+  else
+    qw_sMac = 0;
+  
+  if( 0!=strlen(aETHpacket.ch_dMAC) )
+    qw_dMac = ethGetMacAddressAsNumber(aETHpacket.ch_dMAC);
+  else
+    qw_dMac = 0;
+  
+  if( 0!=strlen(aETHpacket.ch_sIP) )
+    dw_sIP = IpGetAddressAsNumber(aETHpacket.ch_sIP);
+  else
+    dw_sIP = 0;
+  
+  if( 0!=strlen(aETHpacket.ch_dIP) )
+    dw_dIP = IpGetAddressAsNumber(aETHpacket.ch_dIP);
+  else
+    dw_dIP = 0;
+ 
+  //reset the output array to 0
+  vFctn_CONV_SetAllByteArrElemToSpecificVal(aOutputData, 0);
+  
+  //setting the bus Context
+  bResult_SetContext = bFctn_BUS_SetContext(aNetworkName);
+  
+  //check if the bus context name is wrong
+  if (bResult_SetContext == cc_eETHretVal_NOK)
+  {
+    snprintf(aFcntInfo, elcount(aFcntInfo), "The bus context was not set succesfully.");
+    return Error;  
+  }
+  
+  //tests if the requested Eth packet was found on bus
+  i64ResultJoin = TestJoinEthernetPacket(qw_sMac/*sMAC*/, qw_dMac/*dMAC*/,aETHpacket.w_vlanID /*vlanID*/, aETHpacket.w_ethType /*etherType*/, dw_sIP /*sIPv4*/, dw_dIP /*dIPv4*/, aETHpacket.dw_protocol /*protocol*/,aETHpacket.dw_sPort /*sPort*/,aETHpacket.dw_dPort /*dPort*/,aETHpacket.dw_flags /*flags*/);
+  if( 0 > i64ResultJoin ){ // error Join ETH packet
+    snprintf(aFcntInfo, elcount(aFcntInfo), "Error in TestJoinEthernetPacket(): -- %d -- ", i64ResultJoin);
+    return Error;
+  }
+  //wait to complete the join event
+  i64TestWait = TestWaitForAnyJoinedEvent(aTimeout);
+  
+  if (i64TestWait == 0)
+  {
+    snprintf(aFcntInfo, elcount(aFcntInfo), "The requested ETH Packet (SrcMAC: %s , DestMAC: %s , SrcIP: %s , DestIP: %s , SrcPort: %d , DestPort: %d ) not found in time (%d ms).", aETHpacket.ch_sMAC, aETHpacket.ch_dMAC ,aETHpacket.ch_sIP, aETHpacket.ch_dIP, aETHpacket.dw_sPort, aETHpacket.dw_dPort, aTimeout);
+    lResult = cc_eETHretVal_NOK;
+  }
+  else if (i64ResultJoin == i64TestWait)
+  {
+	// if event was successfully completed, copy the bytes 
+	iResultGetData = TestGetWaitEthernetPacketData(i64ResultJoin, ethpkt_EthernetEvent);
+    
+    if (0 == iResultGetData)
+    {
+      // if data access successful
+      if (cc_eETHpacket_UDP == aETHpacket.dw_protocol)
+        lLength = ethpkt_EthernetEvent.UDP.GetData(0,aOutputData,cc_eETHPacketMaxLength_UDP);
+      else if (cc_eETHpacket_TCP == aETHpacket.dw_protocol)
+        lLength = ethpkt_EthernetEvent.TCP.GetData(0,aOutputData,cc_eETHPacketMaxLength_TCP);
+      else
+      {
+        snprintf(aFcntInfo, elcount(aFcntInfo), "The requested protocol ( 0x%X ) is not supported by this function.", aETHpacket.dw_protocol);
+        return Error;
+      }
+	  
+	    if (cc_eETHretVal_NOK == lLength)
+	    {
+        snprintf(aFcntInfo, elcount(aFcntInfo), "No data was copied to destination."); 
+	      lResult = cc_eETHretVal_NOK;
+      }
+      else
+      {
+        snprintf(aFcntInfo, elcount(aFcntInfo), "All data was copied to destination. Total %d bytes.", lLength);  
+        lResult = lLength;
+      }
+    }
+    else // end if TestGetWaitEthernetPacketData
+    {
+      snprintf(aFcntInfo, elcount(aFcntInfo), "Data access could not be executed.");  
+      lResult = cc_eETHretVal_NOK;
+    }
+  }
+  else // error reading join event
+  {
+    //the event was not succesfully completed
+    snprintf(aFcntInfo, elcount(aFcntInfo), "ETH event was not succesfully completed. TestWaitForAnyJoinedEvent(): -- %d -- .", i64TestWait);
+    return Error;
+  }
+  
+  if ((byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, "Function lFcnt_ETH_WaitAndGetPacketData, lResult: -- %d --.", lResult);
+  return lResult;
+#else
+  snprintf(aFcntInfo, elcount(aFcntInfo), "Function not suitable for current CANoe Version. Use version > v15");
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel(DebugFuncInternal, "Error: %s", aFcntInfo);
+  return cc_eETHretVal_ERR;
+#endif
+}
+
+/*! \fn long lFctn_ETH_WaitForArpPacket(struct cv_stETHPacket aETHpacket, char aNetworkName[], dword aTimeout, enum cc_eETHArpOp aArpOp, enum cc_ePacketPresence aPresentAbsent ,char aMappedResponseInfo[])
+*  \brief Function which check the presence of an ETH ARP packet in a specific time.
+*  \param[in]  aETHpacket           - ethernet packet (see definition of struct cv_stETHPacket)
+*  \param[in]  aNetworkName         - name of the network on which the check should be made
+*  \param[in]  aTimeout             - time in ms, if 0 - no timeout controlling
+*  \param[in]  aArpOp               - ARP operation type of the desired packet (see definition of enum cc_eETHArpOp)
+*  \param[in]  aPresentAbsent       - desired state of the packet, Present or Absent (see definition of enum cc_ePacketPresence)
+*  \param[out] aMappedResponseInfo  - the information which is going to be printed in the report 
+*
+*  \return  0 (cc_eETHretVal_NOK) - if the ethernet packet is not received as expected
+*  \return  1 (cc_eETHretVal_OK)  - if the ethernet packet is received as expected
+*  \return -1 (cc_eETHretVal_ERR) - error occured
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  8.1.24                RC        Created and implemented based of CANoe >15
+*/
+long lFctn_ETH_WaitForArpPacket(struct cv_stETHPacket aETHpacket, char aNetworkName[], dword aTimeout, enum cc_eETHArpOp aArpOp, enum cc_ePacketPresence aPresentAbsent ,char aMappedResponseInfo[])
+{
+  ethernetPacket ethpkt_EthernetEvent;
+  long lRetVal;
+  dword dwTimeSample;
+  qword qw_sMac, qw_dMac;
+  dword dw_sIP, dw_dIP;
+  byte bDebugFlag;
+  int64 i64ResultJoin;
+  int64 i64TestWait;
+  int iResultGetData;
+  dword dwCounter;
+  
+  lRetVal = cc_eETHretVal_ERR;
+  dwTimeSample = 5; //5 ms
+  bDebugFlag = bFcnt_ETH_DebugFlags;
+  
+  writeDbgLevel(DebugFuncCalls , "Function lFctn_ETH_WaitForArpPacket() called.");
+#if TOOL_MAJOR_VERSION > 15 
+  if ((byte)DebugFuncParam & bDebugFlag){
+      writeDbgLevel(DebugFuncParam, "MacAddress: Source -- %s --, Destination -- %s --", aETHpacket.ch_sMAC, aETHpacket.ch_dMAC);
+      writeDbgLevel(DebugFuncParam, "vlanID -- 0x%X --, ethType -- 0x%X --", aETHpacket.w_vlanID, aETHpacket.w_ethType);
+      writeDbgLevel(DebugFuncParam, "IP: Source -- %s --, Destination -- %s --", aETHpacket.ch_sIP, aETHpacket.ch_dIP);
+      writeDbgLevel(DebugFuncParam, "Flags: Source -- 0x%X --, Timeout -- %d --", aETHpacket.dw_flags, aTimeout);
+    }
+
+  if (0!=strlen(aETHpacket.ch_sMAC) )
+    qw_sMac = ethGetMacAddressAsNumber(aETHpacket.ch_sMAC);
+  else
+    qw_sMac = 0;
+  if (0!=strlen(aETHpacket.ch_dMAC) )
+    qw_dMac = ethGetMacAddressAsNumber(aETHpacket.ch_dMAC);
+  else
+    qw_dMac = 0;
+  if (0!=strlen(aETHpacket.ch_sIP) )
+    dw_sIP = IpGetAddressAsNumber(aETHpacket.ch_sIP);
+  else
+    dw_sIP = 0;
+  if (0!=strlen(aETHpacket.ch_dIP) )
+    dw_dIP = IpGetAddressAsNumber(aETHpacket.ch_dIP);
+  else
+    dw_dIP = 0;
+
+  if (cc_eETHretVal_NOK == bFctn_BUS_SetContext(aNetworkName))// check for bus context
+    {snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Error: Unable to set bus context for %s network", aNetworkName);
+    return cc_eETHretVal_ERR;
+    }
+
+  for (dwCounter=0; dwCounter<aTimeout/5; dwCounter++)
+    {//tests if the ETH ARP packet is found on bus
+    i64ResultJoin = cc_eETHretVal_ERR;
+    i64TestWait = cc_eETHretVal_ERR;
+    i64ResultJoin = TestJoinEthernetPacket(qw_sMac/*sMAC*/, qw_dMac/*dMAC*/,aETHpacket.w_vlanID /*vlanID*/, aETHpacket.w_ethType /*etherType*/, aETHpacket.dw_flags /*flags*/);
+    //wait to complete the join event
+    i64TestWait = TestWaitForAnyJoinedEvent(dwTimeSample);
+
+    if ((cc_eETHretVal_NOK < i64ResultJoin) && (cc_eETHretVal_NOK < i64TestWait) && (i64ResultJoin == i64TestWait))
+      {// event was succesfully completed
+      iResultGetData = cc_eETHretVal_ERR;
+      iResultGetData = TestGetWaitEthernetPacketData(i64ResultJoin, ethpkt_EthernetEvent);
+      if (0 == iResultGetData)
+        {// data access successful
+        if ((aArpOp == ethpkt_EthernetEvent.ARP.operation) && (dw_sIP == ethpkt_EthernetEvent.ARP.protSourceAddr) && (dw_dIP == ethpkt_EthernetEvent.ARP.protDestinationAddr))
+          {if ((byte) DebugFuncInternal & bDebugFlag)
+            writeDbgLevel(DebugFuncInternal, "Desired packet was received in %d ms on %s network.", aTimeout, aNetworkName);
+          lRetVal = cc_eETHretVal_OK;
+          break;
+          }
+        else
+          {if ((byte) DebugFuncInternal & bDebugFlag)
+            writeDbgLevel(DebugFuncInternal, "Desired packet was not received in %d ms on %s network.", aTimeout, aNetworkName);
+          lRetVal = cc_eETHretVal_NOK;
+          }
+        }
+      else
+        {// data access not successful
+        if ((byte) DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal, "Data access could not be executed.");		
+        lRetVal = cc_eETHretVal_NOK;
+        }
+      }
+    else
+      {// event was not succesfully completed
+      if ((byte) DebugFuncInternal & bDebugFlag)
+        writeDbgLevel(DebugFuncInternal, "ETH event was not succesfully completed. Error code of functions TestJoinEthernetPacket(): -- %d -- and TestWaitForAnyJoinedEvent(): -- %d -- .", i64ResultJoin, i64TestWait);
+      lRetVal = cc_eETHretVal_NOK;
+      }
+    }
+
+  if (eETHPacketNotPresent == aPresentAbsent)// check for absence
+    {if (eETHPacketNotPresent == lRetVal)
+      {snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Desired ETH ARP packet (SrcMAC: %s, DestMAC: %s, SrcIP: %s, DestIP: %s, ArpOp: 0x%X) was NOT received in %d ms on %s network.", aETHpacket.ch_sMAC, aETHpacket.ch_dMAC ,aETHpacket.ch_sIP, aETHpacket.ch_dIP, aArpOp, aTimeout, aNetworkName);
+      return cc_eETHretVal_OK;
+      }
+    else
+      {snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Desired ETH ARP packet (SrcMAC: %s, DestMAC: %s, SrcIP: %s, DestIP: %s, ArpOp: 0x%X) was received in %d ms on %s network.", aETHpacket.ch_sMAC, aETHpacket.ch_dMAC ,aETHpacket.ch_sIP, aETHpacket.ch_dIP, aArpOp, aTimeout, aNetworkName);
+      return cc_eETHretVal_NOK;
+      }
+    }
+  else// check for presence
+    {if (eETHPacketPresent == lRetVal)
+      {snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Desired ETH ARP packet (SrcMAC: %s, DestMAC: %s, SrcIP: %s, DestIP: %s, ArpOp: 0x%X) was received in %d ms on %s network.", aETHpacket.ch_sMAC, aETHpacket.ch_dMAC ,aETHpacket.ch_sIP, aETHpacket.ch_dIP, aArpOp, aTimeout, aNetworkName);
+      return cc_eETHretVal_OK;
+      }
+    else
+      {snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Desired ETH ARP packet (SrcMAC: %s, DestMAC: %s, SrcIP: %s, DestIP: %s, ArpOp: 0x%X) was NOT received in %d ms on %s network.", aETHpacket.ch_sMAC, aETHpacket.ch_dMAC ,aETHpacket.ch_sIP, aETHpacket.ch_dIP, aArpOp, aTimeout, aNetworkName);
+      return cc_eETHretVal_NOK;
+      }
+    }
+#else
+  snprintf(aFcntInfo, elcount(aFcntInfo), "Function not suitable for current CANoe Version. Use version > v15");
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel(DebugFuncInternal, "Error: %s", aFcntInfo);
+  return cc_eETHretVal_ERR;
+#endif
+}
+
+/*! \fn long lFctn_ETH_WaitForPacket(struct cv_stETHPacket aETHpacket, char aNetworkName[], dword aTimeout, enum cc_ePacketPresence aPresentAbsent,char aMappedResponseInfo[])
+*  \brief Function Wait and check if a signal is send with a specific raw content (This function can be used for signals with more than 32 bits length).
+*  \param[in]  aETHpacket           - ethernet packet(see definition of aETHpacket, any combination of members are allowed)
+*  \param[in]  aNetworkName         - Name of the network on which the check should be made
+*  \param[in]  aPresentAbsent       - Desired state of the packet(Present or Not Present)
+*  \param[out] aMappedResponseInfo  - the information which is going to be printed in the report 
+*
+*  \return  0 (NotOk) - if the ethernet packet is not in requested state 
+*  \return  1 (Ok)    - if the ethernet packet have the requested state
+*  \return <0 (Error) - error occured
+
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+*  08.11.23              CiCo        Created and implemented based of CANoe >15
+*/
+long lFctn_ETH_WaitForPacket(struct cv_stETHPacket aETHpacket, char aNetworkName[], dword aTimeout, enum cc_ePacketPresence aPresentAbsent,char aMappedResponseInfo[])
+{
+  long lRetVal;
+  qword qw_sMac, qw_dMac;
+  dword dw_sIP, dw_dIP;
+  byte bDebugFlag;
+  lRetVal = Error;
+  bDebugFlag = DebugOff;;
+  
+  writeDbgLevel (DebugFuncCalls , "Function lFcnt_ETH_WaitForPacket() called.");
+#if TOOL_MAJOR_VERSION > 15 
+  if( (byte)DebugFuncParam & bDebugFlag){
+    writeDbgLevel (DebugFuncParam, "MacAddress: Source -- %s --, Destination -- %s --", aETHpacket.ch_sMAC, aETHpacket.ch_dMAC);
+    writeDbgLevel (DebugFuncParam, "vlanID -- 0x%X --, ethType -- 0x%X --", aETHpacket.w_vlanID, aETHpacket.w_ethType);
+    writeDbgLevel (DebugFuncParam, "IP: Source -- %s --, Destination -- %s --", aETHpacket.ch_sIP, aETHpacket.ch_dIP);
+    writeDbgLevel (DebugFuncParam, "Protocol: -- 0x%X --", aETHpacket.dw_protocol);
+    writeDbgLevel (DebugFuncParam, "Port: Source -- %lld --, Destination -- %lld --", aETHpacket.dw_sPort, aETHpacket.dw_dPort);
+    writeDbgLevel (DebugFuncParam, "Flags: Source -- 0x%X --, Timeout -- %d --", aETHpacket.dw_flags, aTimeout);
+  }
+  if( 0!=strlen(aETHpacket.ch_sMAC) )
+    qw_sMac = ethGetMacAddressAsNumber(aETHpacket.ch_sMAC);
+  else
+    qw_sMac = 0;
+  
+  if( 0!=strlen(aETHpacket.ch_dMAC) )
+    qw_dMac = ethGetMacAddressAsNumber(aETHpacket.ch_dMAC);
+  else
+    qw_dMac = 0;
+  
+  if( 0!=strlen(aETHpacket.ch_sIP) )
+    dw_sIP = IpGetAddressAsNumber(aETHpacket.ch_sIP);
+  else
+    dw_sIP = 0;
+  
+  if( 0!=strlen(aETHpacket.ch_dIP) )
+    dw_dIP = IpGetAddressAsNumber(aETHpacket.ch_dIP);
+  else
+    dw_dIP = 0;
+
+  if( NotOk == bFctn_BUS_SetContext(aNetworkName) ){ // check for bus context
+    snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Error: Unable to set bus context for %s network", aNetworkName);
+    return Error;
+  }
+  
+  lRetVal = TestWaitForEthernetPacket(qw_sMac/*sMAC*/, qw_dMac/*dMAC*/,aETHpacket.w_vlanID /*vlanID*/, aETHpacket.w_ethType /*etherType*/, dw_sIP /*sIPv4*/, dw_dIP /*dIPv4*/, aETHpacket.dw_protocol /*protocol*/,aETHpacket.dw_sPort /*sPort*/,aETHpacket.dw_dPort /*dPort*/,aETHpacket.dw_flags /*flags*/, aTimeout /*aTimeout*/);
+  if( 0 > lRetVal ){
+    snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Error: TestWaitForEthernetPacket check definition: %d", lRetVal); 
+    return lRetVal;
+  }
+  
+  if( eETHPacketNotPresent == aPresentAbsent ){// check for absence
+    if ( eETHPacketNotPresent == lRetVal ){
+      snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Desired packet was not received in %d ms on %s network.", aTimeout, aNetworkName);
+      return Ok;
+    }
+    else{
+      snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Desired packet was received in %d ms on %s network. Expected: Not Present", aTimeout, aNetworkName);
+      return NotOk;
+    }
+  }
+  else{ // check for presence
+    if ( eETHPacketPresent == lRetVal ){
+      snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Desired packet was received in %d ms on %s network.", aTimeout, aNetworkName);
+      return Ok;
+    }
+    else{
+      snprintf(aMappedResponseInfo, elcount(aMappedResponseInfo), "Desired packet was not received in %d ms on %s network. Expected: Present", aTimeout, aNetworkName);
+      return NotOk;
+    }
+  }
+#else
+  snprintf(aFcntInfo, elcount(aFcntInfo), "Function not suitable for current CANoe Version. Use version > v15");
+  if( bDebugFlag & (byte) DebugFuncInternal )
+    writeDbgLevel(DebugFuncInternal, "Error: %s", aFcntInfo);
+  return cc_eETHretVal_ERR;
+#endif
+}
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief Library for handling Ethernet functionality
+*/

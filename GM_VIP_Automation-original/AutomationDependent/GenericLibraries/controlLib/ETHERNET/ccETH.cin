@@ -1,0 +1,32 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup ccETH ccETH
+* @defgroup ETH ETH
+* @ingroup controlLib
+* @{
+* @addtogroup ccETH
+* @{
+*/ 
+variables
+{
+  enum cc_eETHretVal {cc_eETHretVal_Channel_ERR = -3 , cc_eETHretVal_Read_ERR = -2, cc_eETHretVal_ERR = -1,cc_eETHretVal_NOK = 0, cc_eETHretVal_OK = 1 };
+  enum cc_eETHPacketType {cc_eETHpacket_IPV4 = 0x0800, cc_eETHpacket_ARP = 0x0806, cc_eETHpacket_PTP = 0x88f7,cc_eETHpacket_TCP = 0x06, cc_eETHpacket_UDP = 0x11}; // ethernet packet type
+  enum cc_eETHArpOp { cc_eETHArpOp_request = 0x01, cc_eETHArpOp_reply = 0x02, cc_eETHArpOp_reqReverse = 0x03, cc_eETHArpOp_repReverse = 0x04  }; // Ethernet arp operation
+  enum cc_eETHBusMonitor {cc_eETHBusMonitor_Stop = 0x00, cc_eETHBusMonitor_Start = 0x01};
+  enum cc_eETHPacketMaxLength {cc_eETHPacketMaxLength_TCP = 1600 , cc_eETHPacketMaxLength_UDP = 1600 };
+  enum cc_eETHSysVarRead {cc_eETHSysVarRead_OK = 0, cc_eETHSysVarRead_TO = 0, cc_eETHSysVarRead_WaitOK = 1, cc_eETHSysVarRead_BufSmal = 5};
+  enum cc_eETHWaitPacket {cc_eETHWaitPacket_TO = 0 ,cc_eETHWaitPacket_Present = 1};
+  enum cc_ePacketPresence {eETHPacketNotPresent = 0,  eETHPacketPresent =1 };
+  const long cc_ETHmaxMsgInfoLength = 500;
+
+  enum cc_eETHLinkStatus {eLinkDown = 0, eLinkUp= 1};
+  char cc_chLinkStatus[2][10] = {"LinkDonwn","LinkUp"};
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief Ethernet control library constants.
+*/

@@ -1,0 +1,7 @@
+<map id="on_sysvar_update_TestMainPanel_Variables_LoadConf" name="on_sysvar_update_TestMainPanel_Variables_LoadConf">
+<area shape="rect" id="node1" title=" " alt="" coords="5,71,192,112"/>
+<area shape="rect" id="node2" href="$_test_main_panel_8can.html#a5f1256f4a63601b16acdca15c8050a3c" title=" " alt="" coords="240,71,387,112"/>
+<area shape="rect" id="node3" href="$group__b_r_e_a_d_f_i_l_e.html#ga2b527d8836b7a18e4deb97b756fc6314" title="Function opens an ini file and reads a string entry." alt="" coords="450,5,649,47"/>
+<area shape="rect" id="node4" href="$group__b_r_e_a_d_f_i_l_e.html#ga99f88f9d1b1e898e2c9c6b7b2419f707" title="Function opens an ini file and writes a number entry." alt="" coords="435,71,664,112"/>
+<area shape="rect" id="node5" href="$group__b_r_e_a_d_f_i_l_e.html#gaa2f411dcf05539923bc880e7732d47a9" title="Function opens an ini file and reads a number entry." alt="" coords="452,136,647,177"/>
+</map>

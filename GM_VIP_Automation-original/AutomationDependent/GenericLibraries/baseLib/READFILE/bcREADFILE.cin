@@ -1,0 +1,35 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup bcREADFILE bcREADFILE
+* @defgroup READFILE READFILE
+* @ingroup baseLib
+* @{
+* @addtogroup bcREADFILE
+* @{
+*/ 
+
+variables
+{ 
+  enum bc_eResultREADFILE {bc_eREADFILE_ERR = -1, bc_eREADFILE_NOK = 0, bc_eREADFILE_OK = 1, bc_eREADFILE_FILE_NOT_SAVED = 2};
+  enum bc_eStatusWriteCSVREADFILE {bc_eREADFILE_CLOSE_FILE = -3, bc_eREADFILE_INIT_VALUE = -2, bc_eREADFILE_ERROR_WRITE = 0, bc_eREADFILE_SUCCESS_WRITE = 1};  
+
+  // This debug flag will be used to enable/disable the debug messages in all functions of the current module
+  // 0x00 - No debug messages displayed (only function calls).
+  // 0x01 - Only function call messages displayed (this will always displayed).
+  // 0x02 - Function parameter + 0x01.
+  // 0x04 - Internal function actions + 0x01 and 0x02.
+  // 0xFF - All of the above (function calls, function parameters, internal function actions).
+  const byte bcREADFILE_GlobalDebugFlag = 0x01;
+  
+  enum bc_eREADFILE_WriteMode {bc_eREADFILE_ASCII = 0, bc_eREADFILE_BINARY = 1, bc_eREADFILE_AppBINARY = 2, bc_eREADFILE_AppASCII = 3};
+  enum bc_eREADFILE_ReadMode {bc_eREADFILE_ASCII_ReadOnly = 0, bc_eREADFILE_BINARY_ReadOnly = 1};
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup baseLib
+*   \brief READFILE base library constants.
+
+*/

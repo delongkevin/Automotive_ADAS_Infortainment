@@ -1,0 +1,264 @@
+;CANoe Version |4|18|0|53105 SupportNodes 
+Version: 18.4.26 Build 26
+32 PRO
+10
+APPDIR Vector.CANoe.SignalGenerators.DLL
+Vector.CANoe.SignalGenerators, Version=18.4.26.0, Culture=neutral, PublicKeyToken=null
+Vector.CANoe.SignalGenerators.ComponentWrapper
+1
+1.0.1
+APPDIR Vector.CANalyzer.CAN.InteractiveGenerator.DLL
+Vector.CANalyzer.CAN.InteractiveGenerator, Version=18.4.26.0, Culture=neutral, PublicKeyToken=null
+Vector.CANalyzer.CAN.InteractiveGenerator.Controller.CANwinCommunicator
+2
+1.0.0
+VTSPersistentRoot 1 Begin_Of_Object
+1
+1
+TS_PERSISTENT_ROOT_ID_STRING_0x792341fe
+1
+3
+VTSProgrammedNode 2 Begin_Of_Object
+1
+VTSWrapper<class_VProgrammedNode> 3 Begin_Of_Object
+2
+VTSItem 4 Begin_Of_Object
+1
+3 1713785227 0
+1
+END_OF_ITEM_DATA
+End_Of_Object VTSItem 4
+2
+VSimulationNode 4 Begin_Of_Object
+8
+VProgrammedNode 5 Begin_Of_Object
+7
+VConfigurationRoot 6 Begin_Of_Object
+1
+End_Of_Object VConfigurationRoot 6
+<VFileName V9 QL> 1 "..\GenericLibraries\SupportNodes\PowerSupply\PowerSupply.can" 
+1
+C:\git\L2H7890_Software\SWTest\GM_VIP_Automation\AutomationDependent\GenericLibraries\SupportNodes\PowerSupply\PowerSupply.cbf
+<< default >>
+
+5
+ECU 11
+ECU 11
+EOF_TITLE_INFO
+<< default >>
+1
+0
+1
+1
+0
+1
+0
+
+EOF_MBSSDATA
+2
+0 1
+1 1
+0
+EOF_NLDATA
+0
+EOF_ASSEMBLYDATA
+<VFileName V9 QL> 1 "..\GenericLibraries\SupportNodes\PowerSupply\PowerSupply.cbf" 
+VIPBStackSetting 6 Begin_Of_Object
+7
+2
+0
+0
+1
+0
+1
+6
+0.0.0.0
+End_Of_Serialized_Data 6
+6
+::
+End_Of_Serialized_Data 6
+10
+0
+End_Of_Object VIPBStackSetting 6
+5
+NULL
+End_Of_Serialized_Data 5
+0
+<VFileName V9 QL> 0 "" 
+0
+0
+0
+End_Of_Object VProgrammedNode 5
+0
+0
+Startdelay 0 0 0
+Jitter 0 0 1 0 0 0 0
+0
+EOF_NLDATA
+3
+VSimulinkModelViewerConfiguration 5 Begin_Of_Object
+3
+<VFileName V9 QL> 0 "" 
+<VFileName V9 QL> 0 "" 
+<VFileName V9 QL> 0 "" 
+150
+0
+0
+End_Of_Object VSimulinkModelViewerConfiguration 5
+1
+0
+613168039
+0
+NodeSignalPanelBustypeCount 0
+0
+613168039
+0
+End_Of_Object VSimulationNode 4
+TS_WRP_DATA_END
+End_Of_Object VTSWrapper<class_VProgrammedNode> 3
+4
+0
+1
+TS_BUS_INFO_COLLECTION_END
+TS_CAPL_BLOCK_END
+End_Of_Object VTSProgrammedNode 2
+VTSProgrammedNode 2 Begin_Of_Object
+1
+VTSWrapper<class_VProgrammedNode> 3 Begin_Of_Object
+2
+VTSItem 4 Begin_Of_Object
+1
+3 1713792651 0
+1
+END_OF_ITEM_DATA
+End_Of_Object VTSItem 4
+2
+VSimulationNode 4 Begin_Of_Object
+8
+VProgrammedNode 5 Begin_Of_Object
+7
+VConfigurationRoot 6 Begin_Of_Object
+1
+End_Of_Object VConfigurationRoot 6
+<VFileName V9 QL> 1 "..\GenericLibraries\SupportNodes\TestMain\TestMainPanel.can" 
+1
+C:\git\L2H7890_Software\SWTest\GM_VIP_Automation\AutomationDependent\GenericLibraries\SupportNodes\TestMain\TestMainPanel.cbf
+<< default >>
+
+5
+ECU 10
+ECU 10
+EOF_TITLE_INFO
+<< default >>
+1
+0
+1
+1
+0
+1
+0
+
+EOF_MBSSDATA
+2
+0 1
+1 1
+0
+EOF_NLDATA
+0
+EOF_ASSEMBLYDATA
+<VFileName V9 QL> 1 "..\GenericLibraries\SupportNodes\TestMain\TestMainPanel.cbf" 
+VIPBStackSetting 6 Begin_Of_Object
+7
+2
+0
+0
+1
+0
+1
+6
+0.0.0.0
+End_Of_Serialized_Data 6
+6
+::
+End_Of_Serialized_Data 6
+12
+0
+End_Of_Object VIPBStackSetting 6
+5
+NULL
+End_Of_Serialized_Data 5
+0
+<VFileName V9 QL> 0 "" 
+0
+0
+0
+End_Of_Object VProgrammedNode 5
+0
+0
+Startdelay 0 0 0
+Jitter 0 0 1 0 0 0 0
+0
+EOF_NLDATA
+3
+VSimulinkModelViewerConfiguration 5 Begin_Of_Object
+3
+<VFileName V9 QL> 0 "" 
+<VFileName V9 QL> 0 "" 
+<VFileName V9 QL> 0 "" 
+150
+0
+0
+End_Of_Object VSimulinkModelViewerConfiguration 5
+1
+0
+1370745633
+0
+NodeSignalPanelBustypeCount 0
+0
+1370745633
+0
+End_Of_Object VSimulationNode 4
+TS_WRP_DATA_END
+End_Of_Object VTSWrapper<class_VProgrammedNode> 3
+4
+0
+1
+TS_BUS_INFO_COLLECTION_END
+TS_CAPL_BLOCK_END
+End_Of_Object VTSProgrammedNode 2
+VTSFolder 2 Begin_Of_Object
+1
+VTSItem 3 Begin_Of_Object
+1
+3 1715432299 0
+1
+END_OF_ITEM_DATA
+End_Of_Object VTSItem 3
+4
+SupportNodes
+2
+1713792651
+1713785227
+<VFileName V9 QL> 1 "..\..\..\TestRBS\03_VariantDependent\SYST\report.xml" 
+END_OF_FILE_NAME
+<VFileName V9 QL> 1 "" 
+END_OF_FILE_NAME
+2
+1
+END_OF_FOLDER_DATA
+End_Of_Object VTSFolder 2
+1
+1715432299
+3
+1
+1713785227
+0
+1
+1713792651
+0
+1
+1715432299
+2
+1713792651
+1713785227
+End_Of_Object VTSPersistentRoot 1

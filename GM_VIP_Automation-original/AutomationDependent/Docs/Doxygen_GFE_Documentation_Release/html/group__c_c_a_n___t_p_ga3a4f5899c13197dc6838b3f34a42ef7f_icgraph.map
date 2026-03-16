@@ -1,0 +1,4 @@
+<map id="iFctn_CAN_TP_ChangeNodeSettings" name="iFctn_CAN_TP_ChangeNodeSettings">
+<area shape="rect" id="node1" title="Function that changes the CAN TP settings of a specific Node/ECU." alt="" coords="271,5,508,32"/>
+<area shape="rect" id="node2" href="$group__ts_c_a_n___t_p.html#gac8e8f89a67de6ee87e0e3fac599f6256" title="Function that executes the action to change the CAN TP settings of a specific Node/ECU." alt="" coords="5,5,223,32"/>
+</map>

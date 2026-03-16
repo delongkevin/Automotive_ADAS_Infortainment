@@ -1,0 +1,9 @@
+<map id="bFctn_READFILELastINIused" name="bFctn_READFILELastINIused">
+<area shape="rect" id="node1" title="Function returns previous ini file, stored in the Default.ini file, used before stopping simulation." alt="" coords="505,64,699,91"/>
+<area shape="rect" id="node2" href="$group__c_r_e_p_o_r_t.html#ga47eb9aaa181bd9d22aff1ba519d90c60" title="Function writes in report: tester, hardware, software, company and iniFile used." alt="" coords="308,13,440,40"/>
+<area shape="rect" id="node3" href="$group__c_d_i_a_g.html#ga01ad9d45aca6a04ff6b96df480595305" title="Function that sends a specific diagnostic request." alt="" coords="291,64,457,91"/>
+<area shape="rect" id="node7" href="$_test_main_panel_8can.html#a8048a45bb4a5c1e5a546050aaabbed26" title=" " alt="" coords="339,115,409,141"/>
+<area shape="rect" id="node4" href="$group__ts_d_i_a_g.html#ga7af3d29b249bcc751bef7e028cd8bec1" title="Function that sends a specific diagnostic request. NOTE: Based on how the request is defined,..." alt="" coords="47,5,201,32"/>
+<area shape="rect" id="node5" href="$group__c_d_i_a_g.html#ga2ecf717cfdb74176c76ec362d35c7cda" title="Sends a custom request and stores the primitive data, from start position until the end of the respon..." alt="" coords="5,57,243,98"/>
+<area shape="rect" id="node6" href="$group__c_d_i_a_g.html#gabebaf08418a99efdb8d3529826a84e01" title="Function will send a custom request, provided through the byte array parameter." alt="" coords="18,123,230,149"/>
+</map>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?altova_sps ..\..\..\..\..\..\..\..\..\Program Files\Altova\Authentic2008\sps\Template\Vector\XMLTestSpecSimplified.sps?>
+<testmodule title="SWQT_InternalBus" version="1.13">
+	<description>Software Qualification Test for InternalBus LLSI</description>
+
+	
+	<testgroup title="Functionality">	
+		<capltestcase name="Verify_default_value_of_INTERNAL_BUS_STATUS_parameter" title="Verify_default_value_of_INTERNAL_BUS_STATUS_parameter"/>
+		<capltestcase name="Verify_GetHWIO_e_BusStatus_function_returns_correct_values" title="Verify_GetHWIO_e_BusStatus_function_returns_correct_values"/>
+		<capltestcase name="Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initialization" title="Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initialization"/>
+		<capltestcase name="Verify_default_value_of_BUS_ID_parameter" title="Verify_default_value_of_BUS_ID_parameter"/>
+		<capltestcase name="Verify_GetHWIO_e_BusStatus_function_returns_0_if_No_Fault_is_present_in_Bus_Network" title="Verify_GetHWIO_e_BusStatus_function_returns_0_if_No_Fault_is_present_in_Bus_Network"/>
+		<capltestcase name="Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bus_Network" title="Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bus_Network"/>
+		<capltestcase name="Verify_GetHWIO_e_BusID_function_returns_correct_values" title="Verify_GetHWIO_e_BusID_function_returns_correct_values"/>
+		<capltestcase name="Verify_BUS_ID_is_set_to_No_Bus_Network_Error_during_Reset_Initialization" title="Verify_BUS_ID_is_set_to_No_Bus_Network_Error_during_Reset_Initialization"/>
+		<capltestcase name="Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCVR_and_SPI_MCU_CAN8TCVR_scenario_1" title="Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCVR_and_SPI_MCU_CAN8TCVR_scenario_1"/>
+		<capltestcase name="Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCVR_and_SPI_MCU_PMIC_TLF4D_scenario_2" title="Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCVR_and_SPI_MCU_PMIC_TLF4D_scenario_2"/>
+		<capltestcase name="Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCVR_and_SPI_MCU_PMIC_TLF4D_scenario_3" title="Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCVR_and_SPI_MCU_PMIC_TLF4D_scenario_3"/>
+		<capltestcase name="Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MCU_CAN2TCVR_CAN8TCVR_and_SPI_MCU_PMIC_TLF4D_scenario_4" title="Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MCU_CAN2TCVR_CAN8TCVR_and_SPI_MCU_PMIC_TLF4D_scenario_4"/>
+		<capltestcase name="Verify_default_value_of_BUS_DEVICE_ID_parameter" title="Verify_default_value_of_BUS_DEVICE_ID_parameter"/>
+		<capltestcase name="Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values" title="Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values"/>
+		<capltestcase name="Verify_BUS_DEVICE_ID_is_set_to_No_Device_Error_during_Reset_Initialization" title="Verify_BUS_DEVICE_ID_is_set_to_No_Device_Error_during_Reset_Initialization"/>
+		<capltestcase name="Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_CAN8TCVR_scenario_1" title="Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_CAN8TCVR_scenario_1"/>
+		<capltestcase name="Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_PMIC_TLF4D_scenario_2" title="Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_PMIC_TLF4D_scenario_2"/>
+		<capltestcase name="Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_PMIC_TLF4D_scenario_3" title="Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_PMIC_TLF4D_scenario_3"/>
+		<capltestcase name="Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8TCVR_and_PMIC_TLF4D_scenario_4" title="Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8TCVR_and_PMIC_TLF4D_scenario_4"/>
+		<capltestcase name="Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_3" title="Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_3"/>
+		<capltestcase name="Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2" title="Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2"/>
+		<capltestcase name="Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1" title="Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1"/>
+		<capltestcase name="Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Failed" title="Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Failed"/>
+		<capltestcase name="Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed" title="Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed"/>
+		<capltestcase name="Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed" title="Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed"/>
+		
+	</testgroup>
+	
+	<completion>
+		<!--<capltestfunction name="InsertDUTInfo" title="Identification"/>-->
+	    <initialize title="Adding testreport info." wait="200">
+		</initialize>
+	</completion>
+</testmodule>

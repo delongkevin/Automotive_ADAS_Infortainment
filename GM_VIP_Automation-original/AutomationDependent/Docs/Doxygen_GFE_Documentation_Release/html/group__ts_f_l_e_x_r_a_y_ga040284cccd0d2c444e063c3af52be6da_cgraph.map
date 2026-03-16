@@ -1,0 +1,5 @@
+<map id="A_FR_SaveLogDataToCSVFile" name="A_FR_SaveLogDataToCSVFile">
+<area shape="rect" id="node1" title="Function that executes the action to save in a CSV file, the specified number of log entries from the..." alt="" coords="5,31,205,57"/>
+<area shape="rect" id="node2" href="$group__c_f_l_e_x_r_a_y.html#gab31d9c7699b8b9c28fa3207abf41fe34" title="Function that saves in a CSV file, the specified number of log entries from the already populated log..." alt="" coords="253,5,473,32"/>
+<area shape="rect" id="node3" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="259,56,468,83"/>
+</map>

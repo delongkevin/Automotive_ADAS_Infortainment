@@ -1,0 +1,9 @@
+; prj/
+;
+; This directory contains Lauterbach Trace32 project files (.t32 or .cmm)
+; used to configure the debug session for the Aurix TC4xx target.
+;
+; Project files are referenced via:
+;   vFctn_T32_CommandCreate_prj(chCommand, "project_file.cmm")
+;
+; Add project-specific configuration files here as needed.

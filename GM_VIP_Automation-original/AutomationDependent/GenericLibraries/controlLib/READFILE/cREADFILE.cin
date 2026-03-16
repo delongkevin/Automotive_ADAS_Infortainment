@@ -1,0 +1,119 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup cREADFILE cREADFILE
+* @defgroup READFILE READFILE
+* @ingroup controlLib
+* @{
+* @addtogroup cREADFILE
+* @{
+*/ 
+
+includes
+{
+  #include "ccREADFILE.cin"
+  #include "..\..\baseLib\READFILE\bREADFILE.cin"
+  #include "cvREADFILE.cin"
+}
+
+/*! \fn int iFcnt_READFILE_SearchKeywordInFile(char aAbsoluteFilePath[], char aKeywordToSearch[], char aSearchKeywordInfo[])
+*  \brief Function is going to parse each file line and search within for the provided Keyword/Phrase.
+*  \param[in]   aAbsoluteFilePath   - The absolute file path (example: C:\\Users\\romulus.bita\\Desktop\\FileToBeOpened.txt).
+*  \param[in]   aKeywordToSearch    - The keyword or phrase (480 char limit) which is searched within the file (examples: "My Keyword", "c0:18:85:5f:55:cf", "192.168.7.94").
+*  \param[out]  aSearchKeywordInfo  - Extra information regarding the function output (displayed in the test report).
+* 
+*  \return  0   - The keyword/phrase has not been found within the file.
+*  \return  1   - The keyword/phrase is found within the file.
+*  \return  -1  - Empty or too large keyword provided, file could not be opened or another internal error occurred 
+*
+*  \note
+*   - Avoid providing only special characters as these are not considered on their own, as a keyword(ex: "...") \n
+*   - Empty keywords are restricted as there is nothing to search in this case(ex: "")
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+* 06.03.19              RoBi            Created and implemented
+*/
+int iFcnt_READFILE_SearchKeywordInFile(char aAbsoluteFilePath[], char aKeywordToSearch[], char aSearchKeywordInfo[])
+{
+  int iResult;
+  dword dwFileHandle;
+  qword qwNrOfParsedLine;
+  char chLineBuffer[cc_wREADFILE_BufferCharLimit];
+  char chRegEx_Search_Pattern[cc_bREADFILE_RegExCharLimit] = "^(.*?(\\b%s\\b)[^$]*)$";
+  char chRegEx_InsertKeywordInPattern[cc_wREADFILE_KeywordCharLimit];
+  byte bDebugFlag;
+  byte bSizeOfPattern;
+
+  bDebugFlag = ccREADFILE_GlobalDebugFlag;
+  iResult = NotOk;
+  qwNrOfParsedLine = 1;
+  bSizeOfPattern = strlen(chRegEx_Search_Pattern);
+  
+  writeDbgLevel (DebugFuncCalls, "Function iFcnt_READFILE_SearchKeywordInFile() called.");
+  
+  // Try to open the file in ASCII Read mode
+  dwFileHandle = dwFctn_READFILEOpenFileReadMode(aAbsoluteFilePath, bc_eREADFILE_ASCII_ReadOnly);
+  
+  // File has been successfully opened
+  if ( 0 < dwFileHandle )
+  {
+    // Check if keyword is not empty and if it fits within the search pattern
+    if ( (strlen(aKeywordToSearch) <= (elcount(chRegEx_InsertKeywordInPattern) - bSizeOfPattern)) // Keyword fits within the search pattern
+      && (0 < strlen(aKeywordToSearch)) ) // No point in searching for nothing/empty keyword
+    {
+      // Insert the Keyword within the search pattern
+      snprintf(chRegEx_InsertKeywordInPattern, elCount(chRegEx_InsertKeywordInPattern), chRegEx_Search_Pattern, aKeywordToSearch);
+    }
+    else
+    {
+      snprintf(aSearchKeywordInfo, elCount(aSearchKeywordInfo), "The character length of the searched Keyword/Phrase must be within range: 1 - %d.", elcount(chRegEx_InsertKeywordInPattern) - bSizeOfPattern);
+      iResult = Error;
+    }
+    
+    // Parse line by line until Keyword is encountered or the end of the file is reached
+    while ( 0 != fileGetString(chLineBuffer, elcount(chLineBuffer), dwFileHandle) && NotOk == iResult )
+    {
+      // Check if the searched Keyword is present within the current line
+      if ( 1 == str_match_regex(chLineBuffer, chRegEx_InsertKeywordInPattern) )
+      {
+        snprintf(aSearchKeywordInfo, elCount(aSearchKeywordInfo), "Keyword: %s, has been found on line: %I64u.", aKeywordToSearch, qwNrOfParsedLine);
+        iResult = Ok;
+        break;
+      } // else, continue parsing the file
+      
+      // Increment the document line index
+      qwNrOfParsedLine++;
+    }
+    
+    // If keyword was not found
+    if ( NotOk == iResult )
+      snprintf(aSearchKeywordInfo, elCount(aSearchKeywordInfo), "Could NOT find the Keyword: %s, within the provided file.", aKeywordToSearch);
+    
+    if ( (byte)DebugFuncInternal & bDebugFlag )
+      writeDbgLevel (DebugFuncInternal, aSearchKeywordInfo);
+    
+    // Close the file
+    fileClose(dwFileHandle);
+  }
+  else // Could not open the file
+  {
+    snprintf(aSearchKeywordInfo, elCount(aSearchKeywordInfo), "Cannot open the file. Check if the absolute path is correct, file exists and file extension is present."); 
+    if ( (byte)DebugFuncInternal & bDebugFlag )
+      writeDbgLevel (DebugFuncInternal, aSearchKeywordInfo);
+    iResult = Error;
+  }
+
+  if ( (byte)DebugFuncInternal & bDebugFlag )
+    writeDbgLevel (DebugFuncInternal, "iFcnt_READFILE_SearchKeywordInFile() return: %i.", iResult);
+  
+  return iResult;
+}
+
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief Library for handling files.
+*/

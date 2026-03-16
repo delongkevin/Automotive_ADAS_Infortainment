@@ -1,0 +1,2908 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup cDIAG cDIAG
+* @defgroup DIAGNOSTICS DIAGNOSTICS
+* @ingroup controlLib
+* @{
+* @addtogroup cDIAG
+* @{
+*/ 
+
+includes
+{
+  #include "ccDIAG.cin"
+  #include "cvDIAG.cin"
+}
+
+/*! \fn long lFctn_DIAGSendRequest(diagRequest *aDiagReq, enum cc_eAddressingModeDIAG aSendMode)
+*  \brief Function that sends a specific diagnostic request.
+*  \param[in]  aDiagReq 			- Diagnostic request.
+*  \param[in]  aSendMode 			- Functional or physical. See the definition of enum cc_eAddressingModeDIAG.
+*
+*  \return 	0  - No error, success.
+*  \return 	<0 - Error code of the diag send.
+*  \return  -1 - Can not read the MaximumWaitTime from the INI file, or the INI file path is wrong.
+* 
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  21.12.17             CiCo        	  First Revision.
+*  04.07.18             RoBi        	  Refactoring code.
+*  30.10.19             CrJu            Added a variabile which read the MaximumWaitTime from an INI file.
+*  25.11.21				      CiCo			      Added report filter mechanism for TestReportWriteDiagObject
+*/
+long lFctn_DIAGSendRequest(diagRequest *aDiagReq, enum cc_eAddressingModeDIAG aSendMode)
+{
+  long lResult;
+  long lResultReadIniParam;
+  char chIniFilePath[256];
+  byte bDebugFlag;
+  
+  lResultReadIniParam = Error;
+  lResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+   
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGSendRequest() called.");
+  
+  if ( cc_eDIAG_ONE == bFctn_READFILELastINIused(chIniFilePath) ) // get the path of the last .ini used
+  {
+    // Get the value of the parameter (returns -1 if any error is encountered)
+    lResultReadIniParam = lFctn_READFILEiniParameterNumber (chIniFilePath, "DiagReqSentMaxTime", "DIAGNOSTICS");
+  
+    if(lResultReadIniParam != Error)
+    {
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel(DebugFuncInternal, "The maximum wait time for waiting a diagnostic is succesfully read from .ini: %d.", lResultReadIniParam);
+    }
+    else
+    {
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel(DebugFuncInternal, "The maximum wait time for waiting a diagnostic could not be read from INI file");
+      return Error;
+    }
+    if( cv_bREPORTRemoveLevel != cc_eOnlyNotCritical ) 
+      TestReportWriteDiagObject(aDiagReq); // add diag object request information to test report
+  
+    // Send Request
+    if ( cc_eDIAGPhysical == aSendMode )
+    {
+      lResult = DiagSendRequest(aDiagReq);
+      TestWaitForDiagRequestSent (aDiagReq, lResultReadIniParam);
+    }
+    else if ( cc_eDIAGFunctional == aSendMode )
+    {
+      lResult = DiagSendFunctional(aDiagReq);
+      TestWaitForDiagRequestSent (aDiagReq, lResultReadIniParam);
+    }
+  }
+  else// Path of the last .ini file is not valid
+  {
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "Path of the last .ini file is not valid.");
+    lResult = Error;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "lFctn_DIAGSendRequest() return: %d", lResult);
+
+  return lResult;
+}
+
+
+/*! \fn long lFctn_DIAGWaitForResponse(diagRequest *aDiagReq, dword aWaitTime, enum cc_eResponseCodeDIAG aResponseCode, char aMappedResponseInfo[])
+*  \brief Function that wait for a specific diagnostic response and report the response.
+*  \param[in]  aDiagReq 			      - Diagnostic request.
+*  \param[in]  aWaitTime 			      - Waiting time in miliseconds for the response from when diag request was sent (if 0 - default 4 seconds will be used).
+*  \param[in]  aResponseCode		    - Response code expected (see definition of enum cc_eResponseCodeDIAG - only those values can be used).
+*  \param[out] aMappedResponseInfo	- Information regarding the mapped response.
+*
+*  \return 	0  		- No answer from ECU.
+*  \return 	1  		- Positive or negative response as expected.
+*  \return 	-1  	- Other response was received than expected one.
+*  \return 	other - Error in TestCase, verdict unreliable.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  21.12.17             CiCo        	  First Revision.
+*  05.07.18             RoBi        	  Refactoring code.
+*/
+
+long lFctn_DIAGWaitForResponse(diagRequest *aDiagReq, dword aWaitTime, enum cc_eResponseCodeDIAG aResponseCode, char aMappedResponseInfo[])
+{
+  long lResult;
+  long lLastDiagResult; 
+  byte bDebugFlag;
+  
+  lResult = cc_eDIAG_ECUTimeOutState;
+  lLastDiagResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGWaitForResponse() called.");
+	
+  //Get last response
+  lLastDiagResult = TestWaitForDiagResponse(aDiagReq, aWaitTime); // <0: An internal error occurred, 0: The timeout was reached, 1: The event occurred.
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "TestWaitForDiagResponse() return: %d.", lLastDiagResult); 
+  
+  lResult = lFctn_DIAGMapTheResponse(aDiagReq, lLastDiagResult, aResponseCode, aMappedResponseInfo);
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "lFctn_DIAGWaitForResponse() return: %d.", lResult);
+ 
+  return lResult;
+}
+
+/*! \fn long lFctn_DIAGMapTheResponse(diagRequest *aDiagReq, long aLastDiagResponse, enum cc_eResponseCodeDIAG aExpectedResponseCode, char aMappedResponseInfo[])
+*  \brief Function that maps the diagnostic response to the according category.
+*  \param[in]  aDiagReq 			        - Diagnostic request.
+*  \param[in]  aLastDiagResponse 	    - The last response received for the specified diagnostic request.
+*  \param[in]  aExpectedResponseCode  - Response code expected (see definition of enum cc_eResponseCodeDIAG - only those values can be used).
+*  \param[out] aMappedResponseInfo	  - Information regarding the mapped response.
+*
+*  \return 	0  		- No answer from ECU.
+*  \return 	1  		- Positive or negative response as expected.
+*  \return 	-1  	- Other response was received than expected one.
+*  \return 	other - Error in TestCase, verdict unreliable.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  21.12.17             CiCo        	  First Revision.
+*  05.07.18             RoBi        	  Refactoring code.
+*  19.09.18				      RoBi			      Fixed case of expected timeout, to not be evaluated as failed in the report.
+*  25.11.21				      CiCo			      Added report filter mechanism for TestReportWriteDiagResponse
+*/
+
+long lFctn_DIAGMapTheResponse(diagRequest *aDiagReq, long aLastDiagResponse, enum cc_eResponseCodeDIAG aExpectedResponseCode, char aMappedResponseInfo[])
+{
+  long lResult;
+  byte bDebugFlag;
+  
+  lResult = aLastDiagResponse; // use returned value of the TestWaitForDiagResponse() (1 - event occured, 0 - timeout, <0 internal error)
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGMapTheResponse() called.");
+  if( cv_bREPORTRemoveLevel != cc_eOnlyNotCritical )
+    TestReportWriteDiagResponse(aDiagReq);  // add diag object response information to test report
+	
+  switch( aLastDiagResponse )
+  {
+    case cc_eDIAG_ECUTimeOutState: // 0: The timeout was reached
+      if( cc_eDIAG_NoResponse == aExpectedResponseCode ) // if a timeout/no answer for ECU is actually expected
+      {
+		    lResult = cc_eDIAG_ResponseAsExpected;
+		    snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "No answer from ECU, as expected !");
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+      }
+      else // if timeout occurs but it was not expected
+      {
+		    lResult = cc_eDIAG_ResponseNotExpected;
+		    snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "No answer from ECU (NOT expected) !");
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+      }
+      break;
+
+    case cc_eDIAG_ResponseReceivedState: // 1: The event occurred (a response has been received).
+      if( cc_eDIAG_NoResponse == aExpectedResponseCode )
+      {
+		    lResult = cc_eDIAG_ResponseNotExpected;
+		    snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Response was received when no response was expected !");
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);	
+      }
+      else
+      {
+        if( cc_eDIAG_LastResponseOfReqIsPositive == DiagGetLastResponseCode(aDiagReq) )
+        {
+          // A positive response was received
+          if( cc_eDIAG_PositiveResponse == aExpectedResponseCode )
+          {
+				    lResult = cc_eDIAG_ResponseAsExpected;
+			      snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Positive response received, as expected !");
+            if ( (byte)DebugFuncInternal & bDebugFlag)
+			        writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+          }
+          else if( cc_eDIAG_GeneralNegativeResponse == aExpectedResponseCode )
+          {
+			      lResult = cc_eDIAG_ResponseNotExpected;
+			      snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Positive response was received when negative response was expected !");
+            if ( (byte)DebugFuncInternal & bDebugFlag)
+			        writeDbgLevel (DebugFuncInternal, aMappedResponseInfo); 
+          }
+          else
+          {
+			      lResult = cc_eDIAG_ResponseNotExpected;
+			      snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Positive response was received when negative response with NRC_%X was expected !", aExpectedResponseCode);
+            if ( (byte)DebugFuncInternal & bDebugFlag)
+			        writeDbgLevel (DebugFuncInternal, aMappedResponseInfo); 
+          }
+        }
+        else 
+        {
+          // A negative response was received
+          if( cc_eDIAG_PositiveResponse == aExpectedResponseCode )
+          {
+			      lResult = cc_eDIAG_ResponseNotExpected;
+			      snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Negative response with NRC_%X was received when positive response was expected !", (byte)DiagGetLastResponseCode(aDiagReq));	
+            if ( (byte)DebugFuncInternal & bDebugFlag)
+			        writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+          }
+          else if( (byte)DiagGetLastResponseCode(aDiagReq) == aExpectedResponseCode )
+          {
+			      lResult = cc_eDIAG_ResponseAsExpected;
+			      snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Negative response received with NRC_%X, as expected !", aExpectedResponseCode);
+            if ( (byte)DebugFuncInternal & bDebugFlag)
+			        writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+          }
+          else
+          {
+			      lResult = cc_eDIAG_ResponseNotExpected;
+			      snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Wrong negative response received with NRC_%X. Expected: NRC_%X !", (byte)DiagGetLastResponseCode(aDiagReq), aExpectedResponseCode);
+            if ( (byte)DebugFuncInternal & bDebugFlag)
+			        writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+          }
+        }// end of if/else (cc_eDIAG_LastResponseOfReqIsPositive == DiagGetLastResponseCode(aDiagReq) )
+      }// end of if/else ( cc_eNoResponseDIAG == aExpectedResponseCode )
+      break;
+	// <0: An internal error occurred
+    case cc_eDIAG_ErrorTPLevelState: // -92
+	    snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "There was an error on TP level! Error code received = %i !", lResult);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+      break;
+
+    case cc_eDIAG_DiagNotInitForNodeState: // -94
+		  snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Diagnostics was not initialized for the node! Error code received = %i !", lResult);
+	    if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+      break;
+
+    case cc_eDIAG_FuncNotImplementedState: // -96
+		  snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Function not implemented yet! Error code received = %i !", lResult);
+	    if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+      break;
+
+    default: // internal or setup error
+		  snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "An internal error occurred! Error code received = %i !", lResult);
+	    if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+  }//end of switch/case
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "lFctn_DIAGMapTheResponse() return: %d.", lResult); 
+  
+  return lResult;
+}
+
+/*! \fn dword dwFctn_DIAGCheckIfWaitTimeIsValid(dword aWaitTime)
+*  \brief Function that checks if the provided wait time is valid (greater then 0) If not, it will set the default value of 4000ms.
+*  \param[in]  	aWaitTime 	- Waiting time in miliseconds for the response from when diag request was sent (if == 0 - default 4 seconds will be used).
+*
+*  \return 		>0 	- Returns a valid wait time, greater than 0. 
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  06.07.18             RoBi        	  Created and implemented.
+*  20.09.18             RoBi            Modified the call of bFctn_READFILELastINIused (previously returned void).
+*/
+dword dwFctn_DIAGCheckIfWaitTimeIsValid(dword aWaitTime)
+{
+  dword dwResult;
+  char chIniFilePath[1000];
+  char chDefaultDiagWaitTime[100];
+  long lResultReadIniParam;
+  byte bDebugFlag;
+  
+  dwResult = aWaitTime;
+  lResultReadIniParam = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+	
+  writeDbgLevel(DebugFuncCalls, "Function dwFctn_DIAGCheckIfWaitTimeIsValid() called.");
+  
+  // If specified wait time is not valid (less than 1 ms), read the default value from .ini file
+  if ( cc_eDIAG_ZERO >= aWaitTime )
+  {
+    // Read the default wait value specified in the .ini file (DefaultDiagWaitTime)
+    if ( cc_eDIAG_ONE == bFctn_READFILELastINIused(chIniFilePath) ) // get the path of the last .ini used
+    {
+      // Get the value of the parameter (returns -1 if any error is encountered)
+      lResultReadIniParam = lFctn_READFILEiniParameterNumber (chIniFilePath, "DefaultDiagWaitTime", "DIAGNOSTICS");
+      
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, "Parameter aWaitTime is not greater than 0 ms. Proceed to use a default value !");
+      
+      // Default value was read from .ini file and it is greater than 0
+      if ( cc_eDIAG_ZERO < lResultReadIniParam )
+      {
+        // Use the value from the .ini file
+        dwResult = (dword)lResultReadIniParam;
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel (DebugFuncInternal, "Wait time must be greater than 0. Default .ini value of -- %d -- miliseconds will be used instead.", dwResult);
+      }
+      else // Error encountered when reading value from .ini file
+      {
+        // Use a backup value
+        dwResult = cc_dwDIAG_BackupWaitTime;
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel (DebugFuncInternal, "Error reading default value from .ini file. Backup value -- %d -- miliseconds will be used instead.", dwResult);
+      }
+    }
+    else // path of the last .ini file is not valid
+    {
+      // Use a backup value
+      dwResult = cc_dwDIAG_BackupWaitTime;
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, "Path of the last .ini file is not valid. Backup value -- %d -- miliseconds will be used instead.", dwResult);
+    }
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, "dwFctn_DIAGCheckIfWaitTimeIsValid() return: %d ms.", dwResult);
+  
+  return dwResult;
+}
+
+/*! \fn long lFctn_DIAGTesterPresentOFF()
+*  \brief Function that disables the tester present functionality.
+*
+*  \return 	0 	- No Error, success.
+*  \return <0 	- Error code. 
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  06.07.18             RoBi        	  Created and implemented.
+*/
+
+long lFctn_DIAGTesterPresentOFF()
+{
+	long lResult;
+	byte bDebugFlag;
+	
+	bDebugFlag = ccDIAG_GlobalDebugFlag;
+	
+	writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGTesterPresentOFF() called.");
+	
+	lResult = DiagStopTesterPresent();
+	
+	if ( (byte)DebugFuncInternal & bDebugFlag)
+	  writeDbgLevel(DebugFuncInternal, "lFctn_DIAGTesterPresentOFF() return: %d.", lResult); 
+	
+	return lResult;
+}
+
+/*! \fn long lFctn_DIAGTesterPresentON()
+*  \brief Function that enables the tester present functionality.
+*
+*  \return 	0 	- No Error, success.
+*  \return <0 	- Error code. 
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  06.07.18             RoBi        	  Created and implemented.
+*/
+long lFctn_DIAGTesterPresentON()
+{
+	long lResult;
+	byte bDebugFlag;
+	
+	bDebugFlag = ccDIAG_GlobalDebugFlag;
+	
+	writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGTesterPresentON() called.");
+	
+	lResult = DiagStartTesterPresent();
+	
+	if ( (byte)DebugFuncInternal & bDebugFlag)
+	  writeDbgLevel(DebugFuncInternal, "lFctn_DIAGTesterPresentON() return: %d.", lResult);
+	
+	return lResult;
+}
+
+/*! \fn long lFctn_DIAG_NRC78_ON()
+*  \brief Function that enables the NRC78 (requestCorrectlyReceived-ResponsePending).
+*
+*  \return 	0 	- No Error, success.
+*  \return 	<0 	- Error code. 
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  10.07.18             RoBi        	  Created and implemented.
+*/
+long lFctn_DIAG_NRC78_ON()
+{
+	long lResult;
+	byte bDebugFlag;
+	
+	bDebugFlag = ccDIAG_GlobalDebugFlag;
+	
+	writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAG_NRC78_ON() called.");
+	
+	lResult = DiagSetP2Extended(cc_eDIAG_PendingRespEnabled); // enable response pending handling to default value
+	
+	if ( (byte)DebugFuncInternal & bDebugFlag)
+	  writeDbgLevel(DebugFuncInternal, "lFctn_DIAG_NRC78_ON() return: %d.", lResult);
+	
+	return lResult;
+}
+
+/*! \fn long lFctn_DIAG_NRC78_OFF()
+*  \brief Function that disables the NRC78 (requestCorrectlyReceived-ResponsePending).
+*
+*  \return 	0 	- No Error, success.
+*  \return 	<0 	- Error code.  
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  10.07.18             RoBi        	  Created and implemented.
+*/
+long lFctn_DIAG_NRC78_OFF()
+{
+	long lResult;
+	byte bDebugFlag;
+	
+	bDebugFlag = ccDIAG_GlobalDebugFlag;
+	
+	writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAG_NRC78_OFF() called.");
+	
+	lResult = DiagSetP2Extended(cc_eDIAG_PendingRespDisabled);
+	
+	if ( (byte)DebugFuncInternal & bDebugFlag)
+	  writeDbgLevel(DebugFuncInternal, "lFctn_DIAG_NRC78_OFF() return: %d.", lResult);
+	
+	return lResult;
+}
+
+/*! \fn long lFctn_DIAGSetTarget(char aECUName[])
+*  \brief Function that sets the target to the specified ECU name.
+*  \param[in]  	aECUName 	- String which specifies the name of the ECU.
+*
+*  \return 	0 	- No Error, success.
+*  \return 	<0 	- Error code. 
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  11.07.18             RoBi        	  Created and implemented.
+*/
+long lFctn_DIAGSetTarget(char aECUName[])
+{
+	long lResult;
+	byte bDebugFlag;
+	
+	bDebugFlag = ccDIAG_GlobalDebugFlag;
+
+	writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGSetTarget() called.");
+	if ( (byte)DebugFuncParam & bDebugFlag )
+	  writeDbgLevel(DebugFuncParam, "Parameters: char aECUName[]: -- %s --.", aECUName);
+	
+	lResult = diagSetTarget(aECUName);
+	
+	if ( (byte)DebugFuncInternal & bDebugFlag)
+	  writeDbgLevel(DebugFuncInternal, "lFctn_DIAGSetTarget() return: %d.", lResult);
+	
+	return lResult;
+}
+
+
+/*! \fn long lFctn_DIAGSendAndWaitForResponse(diagRequest *aDiagReq, enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode, char aMappedResponseInfo[])
+*  \brief Function that wait for a specific diagnostic response and report the response.
+*  \param[in]  aDiagReq 			      - Diagnostic request.
+*  \param[in]  aSendMode 			      - Functional or physical. See the definition of enum cc_eAddressingModeDIAG.
+*  \param[in]  aResponseCode		    - Response code expected (see definition of enum cc_eResponseCodeDIAG - only those values can be used).
+*  \param[out] aMappedResponseInfo	- Information regarding the mapped response.
+*
+*  \return 	0  		- No answer from ECU.
+*  \return 	1  		- Positive or negative response as expected.
+*  \return 	-1  	- Other response was received than expected one.
+*  \return 	other - Error in TestCase, verdict unreliable.
+*  \note    Timeout for the diag response can be handled using either by default from .ini file, or can be changed by calling function bFctn_DIAGSetResponseTimeout( TimeoutValue, infoMessage ) before function call
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  21.12.17             CiCo        	  First Revision.
+*  05.07.18             RoBi        	  Refactoring code.
+*  25.02.20				CiCo			  Updated for handling the diag response timeout if user request it.
+*/
+
+long lFctn_DIAGSendAndWaitForResponse(diagRequest *aDiagReq, enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode, char aMappedResponseInfo[])
+{
+  long lResult;
+  dword dwWaitTime;
+  byte bDebugFlag;
+  
+  lResult = cc_eDIAG_ECUTimeOutState;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  if (cc_eDIAG_OK == cv_bDiag_TimeoutFlag )// check if tester requested to use desired timeout for response
+  {
+    dwWaitTime = cv_dwDiag_RespTimeout;// use new resp Timeout
+    cv_bDiag_TimeoutFlag = cc_eDIAG_NOK;
+  }
+  else 
+  {	  
+    dwWaitTime = dwFctn_DIAGCheckIfWaitTimeIsValid(cc_eDIAG_ZERO); // use the default wait time from ini file
+  }
+  
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGSendAndWaitForResponse() called.");
+  
+  if ( cc_eDIAG_ZERO == lFctn_DIAGSendRequest(aDiagReq, aSendMode) ) // request sent with success
+  {
+	  lResult = lFctn_DIAGWaitForResponse(aDiagReq, dwWaitTime, aResponseCode, aMappedResponseInfo); // wait for response
+  }
+  else
+  {
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "FAILED in sending the request !"); 
+	  lResult = cc_eDIAG_ECUTimeOutState;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "lFctn_DIAGSendAndWaitForResponse() return: %d.", lResult); 
+ 
+  return lResult;
+}
+
+
+/*! \fn long lFctn_DIAGSendCustomRequest(byte aDiagCustomReqArray[], enum cc_eAddressingModeDIAG aSendMode)
+*  \brief Function will send a custom request, provided through the byte array parameter.
+*  \param[in]  aDiagCustomReqArray  - Array with the custom request elements (Representation example of DefaultSession_Start: aDiagCustomReqArray[0] = 0x10, aDiagCustomReqArray[1] = 0x01).
+*  \param[in]  aSendMode 				    - Functional or physical. See the definition of enum cc_eAddressingModeDIAG.
+*
+*  \return 	0 - No error, success.
+*  \return <0 - Error code of the diag send.
+*
+*  \note 
+*         - It is required that A_DIAG_SetTarget(char aECUName[]) is previously called, else -98 error code is returned (handle not assigned to a diag object). 
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  16.07.18             RoBi        	  First Revision.
+*  11.11.19             CrJu            Changed the dimension of the chServiceRequestToString, in order to convert the biggest request given. / Eliminate a condition error and added a warning.
+*/
+
+long lFctn_DIAGSendCustomRequest(byte aDiagCustomReqArray[], enum cc_eAddressingModeDIAG aSendMode)
+{
+  diagRequest * req_CustomRequestCreated; // use the pre-defined data diag object to create the custom request
+  char chServiceRequestToString[5000];
+  long lResult;
+  byte bDebugFlag;
+  
+  lResult = Error; // value != 0 because no internal error code is 0
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGSendCustomRequest() called.");
+  
+  if ( Ok == bFctn_CONV_ConvertByteArrayToDiagObject(aDiagCustomReqArray, req_CustomRequestCreated)) // convert to diag object was successfull
+  {
+    if(Ok == bFctn_CONV_ConvertDiagReqToString(req_CustomRequestCreated, chServiceRequestToString)) // convert to string to display it  
+    {
+	    if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel(DebugFuncInternal, "The resulted custom request diag object is: %s.", chServiceRequestToString); 
+    }
+    else
+    {
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel(DebugFuncInternal, "WARNING: Failed in convering the diag request to an array, in order to print it.");
+    }
+    //Send the request
+	  lResult = lFctn_DIAGSendRequest(req_CustomRequestCreated, aSendMode);
+  }
+  else
+  {
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "ERROR: Failed in converting the array to a custom request diag object."); 
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "lFctn_DIAGSendCustomRequest() return: %d.", lResult); 
+  
+  return lResult;
+}
+
+/*! \fn long lFctn_DIAGSendAndWaitForResponseCR(byte aDiagCustomReqArray[], enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode,  char aMappedResponseInfo[])
+*  \brief Function that send and wait for a custom diagnostic response and report the response.
+*  \param[in]  aDiagCustomReqArray  - Array with the custom request elements (Representation example of DefaultSession_Start: aDiagCustomReqArray[0] = 0x10, aDiagCustomReqArray[1] = 0x01).
+*  \param[in]  aWaitTime 			      - Waiting time in miliseconds for the response from when diag request was sent (if 0 - default value from .ini file will be used).
+*  \param[in]  aSendMode 			      - Functional or physical. See the definition of enum cc_eAddressingModeDIAG.
+*  \param[in]  aResponseCode		    - Response code expected (see definition of enum cc_eResponseCodeDIAG - only those values can be used).
+*  \param[out] aMappedResponseInfo	- Information regarding the mapped response.
+*
+*  \return 	0  		- No answer from ECU.
+*  \return 	1  		- Positive or negative response as expected.
+*  \return 	-1  	- Other response was received than expected one.
+*  \return 	other - Error in TestCase, verdict unreliable.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  17.07.18             RoBi        	  First Revision.
+*/
+
+long lFctn_DIAGSendAndWaitForResponseCR(byte aDiagCustomReqArray[], dword aWaitTime, enum cc_eAddressingModeDIAG aSendMode, enum cc_eResponseCodeDIAG aResponseCode,  char aMappedResponseInfo[])
+{
+  long lResult;
+  byte bDebugFlag;  
+
+  lResult = cc_eDIAG_ECUTimeOutState;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGSendAndWaitForResponseCR() called.");
+
+  if ( cc_eDIAG_ZERO == lFctn_DIAGSendCustomRequest(aDiagCustomReqArray, aSendMode) ) // if request sent with success
+  {
+	  lResult = lFctn_DIAGWaitForCustomReqResponse(aDiagCustomReqArray, aWaitTime, aResponseCode, aMappedResponseInfo); // wait for response
+  }
+  else
+  {
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "FAILED in sending the request !"); 
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "lFctn_DIAGSendAndWaitForResponseCR() return: %d.", lResult); 
+ 
+  return lResult;
+}
+
+/*! \fn long lFctn_DIAGWaitForCustomReqResponse(byte aDiagCustomReqArray[], enum cc_eResponseCodeDIAG aResponseCode, char aMappedResponseInfo[])
+*  \brief Function that wait for a custom diagnostic response and report the response.
+*  \param[in]  aDiagCustomReqArray 	- Array with the custom request elements (Representation example of DefaultSession_Start: aDiagCustomReqArray[0] = 0x10, aDiagCustomReqArray[1] = 0x01).
+*  \param[in]  aWaitTime 			      - Waiting time in miliseconds for the response from when diag request was sent (if 0 - default value from .ini file will be used).
+*  \param[in]  aResponseCode			  - Response code expected (see definition of enum cc_eResponseCodeDIAG - only those values can be used).
+*  \param[out] aMappedResponseInfo	- Information regarding the mapped response.
+*
+*  \return 	0  		- No answer from ECU.
+*  \return 	1  		- Positive or negative response as expected.
+*  \return 	-1  	- Other response was received than expected one.
+*  \return 	other - Error in TestCase, verdict unreliable.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  17.07.18             RoBi        	  First Revision.
+*/
+long lFctn_DIAGWaitForCustomReqResponse(byte aDiagCustomReqArray[], dword aWaitTime, enum cc_eResponseCodeDIAG aResponseCode, char aMappedResponseInfo[])
+{
+  long lResult; 
+  diagRequest * req_CustomRequestCreated;
+  byte bDebugFlag;
+  
+  lResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+	
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGWaitForCustomReqResponse() called.");
+
+  if ( Ok == bFctn_CONV_ConvertByteArrayToDiagObject(aDiagCustomReqArray, req_CustomRequestCreated) ) // conversion to diag object was successfully done
+  {
+	  lResult = lFctn_DIAGWaitForResponse(req_CustomRequestCreated, aWaitTime, aResponseCode, aMappedResponseInfo);
+  }
+
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "lFctn_DIAGWaitForCustomReqResponse() return: %d.", lResult); 
+
+  return lResult;
+}
+
+/*! \fn byte bFctn_DIAGGetParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawParamOutputValue[], char aResponseInfo[])
+*  \brief Stores the parameter value of a specific previously sent diagnostic request.
+*  \param[in]  aDiagReq 				- Diagnostic request.
+*  \param[in]  aParameterName			- The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[out] aRawParamOutputValue		- The raw output value of the specified parameter (ex: "00 00").
+*  \param[out] aResponseInfo			- Extra information regarding the mapped response or the get parameter function output.
+*
+*  \return 	1  	- Parameter value has been copied successfully.
+*  \return 	0  	- Invalid parameter name has been provided or the diagnostic request has not been previously sent.
+*  \note    Timeout for the diag response can be handled using either by default from .ini file, or can be changed by calling function bFctn_DIAGSetResponseTimeout( TimeoutValue, infoMessage ) before function call
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  27.07.18             RoBi        	  First Revision.
+*  25.02.20				CiCo			  Updated for handling the diag response timeout if user request it.
+*/
+byte bFctn_DIAGGetParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawParamOutputValue[], char aResponseInfo[])
+{
+  byte bResult; 
+  dword dwWaitTime;
+  byte bOutputArrayIsLargeEnough; 
+  diagResponse * drDummyDiagResp; // dummy response
+  byte bDebugFlag;
+  
+  bResult = NotOk;
+  bOutputArrayIsLargeEnough = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGGetParamRaw() called.");
+  // handling of the max to wait for diag response
+  if (cc_eDIAG_OK == cv_bDiag_TimeoutFlag )// check if tester requested to use desired timeout for response
+  {
+    dwWaitTime = cv_dwDiag_RespTimeout;// use new resp Timeout
+    cv_bDiag_TimeoutFlag = cc_eDIAG_NOK;
+  }
+  else 
+  {	  
+    dwWaitTime = dwFctn_DIAGCheckIfWaitTimeIsValid(cc_eDIAG_ZERO); // use the default wait time from ini file
+  }
+
+  // NOTE: If the response was already acknowledged with TestWaitForDiagResponse() and it is used to get the same response (again), it will fail as the response was already acknowledged.
+  // WORK AROUND: if (cond_A == TRUE || cond_B == TRUE) -> if cond_A is TRUE the cond_B will not be checked, as only one condition must be true (therefore, TestWaitForDiagResponse() is not checked again)
+  if (   ( cc_eDIAG_ZERO == diagGetLastResponse(aDiagReq, drDummyDiagResp) ) // TRUE: if request was previously sent and the response has been already acknowledged with TestWaitForDiagResponse()
+	  || ( cc_eDIAG_ResponseAsExpected == lFctn_DIAGWaitForResponse(aDiagReq, dwWaitTime, cc_eDIAG_PositiveResponse, aResponseInfo)) ) // TRUE: if request has been sent but the positive response was not yet acknowledged
+  {
+	  bOutputArrayIsLargeEnough = bFctn_DIAGCheckIfParamFitsInOutputArray(aDiagReq, aParameterName, aRawParamOutputValue, aResponseInfo);
+			
+	  if ( bOutputArrayIsLargeEnough == Ok )
+	  {
+	    // copy the value, parameter will fit
+		  diagGetRespParameterRaw(aDiagReq, aParameterName, aRawParamOutputValue, elcount(aRawParamOutputValue));
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel(DebugFuncInternal, "Raw parameter value has been copied in output parameter."); 
+		  bResult = Ok;
+	  }
+	  else
+	  {
+		  // array size is not big enough to fit the parameter 
+		  bResult = NotOk;
+	  }
+  }
+  else
+  {
+	  // Diagnostic should have been sent previously.
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Diagnostic request has not been previously sent."); 
+	  bResult = NotOk;
+  }
+
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGGetParamRaw() return: %d.", bResult); 
+
+  return bResult;
+}
+
+/*! \fn byte bFctn_DIAGSendAndGetParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawParamOutputVal[], char aResponseInfo[])
+*  \brief Sends a specific request and stores the mentioned parameter value in an output parameter.
+*  \param[in]  aDiagReq 				- Diagnostic request.
+*  \param[in]  aParameterName			- The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[out] aRawParamOutputVal		- The raw output value of the specified parameter (ex: "00 00").
+*  \param[out] aResponseInfo			- Extra information regarding the mapped response or the get parameter function output.
+*
+*  \return 	1  		- Param read/copy success.
+*  \return 	0  		- Invalid parameter name.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  31.07.18             RoBi        	  First Revision.
+*/
+byte bFctn_DIAGSendAndGetParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawParamOutputVal[], char aResponseInfo[])
+{
+  byte bResult; 
+  long lDiagSendStatus;
+  byte bGetParamStatus;
+  byte bDebugFlag;
+  
+  bResult = NotOk;
+  lDiagSendStatus = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSendAndGetParamRaw() called.");
+	
+  lDiagSendStatus = lFctn_DIAGSendRequest(aDiagReq, cc_eDIAGPhysical); // note - by default it will be sent on physical mode
+  bGetParamStatus = bFctn_DIAGGetParamRaw(aDiagReq, aParameterName, aRawParamOutputVal, aResponseInfo);
+	
+  if ( cc_eDIAG_ZERO <= lDiagSendStatus ) // check if request has been successfully sent
+  {
+	  if ( Ok == bGetParamStatus )
+	  {
+		  // Param read/stored in output array
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel(DebugFuncInternal, "Raw parameter has been copied in output parameter."); 
+		  bResult = Ok; // param read/copy success
+	  }
+	  else
+	  {
+		  // Invalid parameter name
+	    if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel(DebugFuncInternal, "Invalid parameter name has been provided.");
+		  bResult = NotOk;
+	  }
+  }
+  else
+  {
+	  // Unexpected response received for diagnostic request.
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Unexpected response received for diagnostic request: %s", aResponseInfo);
+	  bResult = NotOk;
+  }
+
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSendAndGetParamRaw() return: %d.", bResult); 
+
+  return bResult;
+}
+
+/*! \fn byte bFctn_DIAGCheckIfParamFitsInOutputArray(diagRequest *aDiagReq, char aParameterName[], byte aRawParamOutputValue[], char aResponseInfo[])
+*  \brief Function that checks if the output array is large enough to fit the raw parameter value.
+*  \param[in]  aDiagReq 				    - Diagnostic request.
+*  \param[in]  aParameterName			  - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[out] aRawParamOutputValue	- The raw output value of the specified parameter (ex: "00 00").
+*  \param[out] aResponseInfo			  - Extra information regarding the mapped response or the get parameter function output.
+*
+*  \return 	1  		- Size of the output array is large enough, parameter can be copied.
+*  \return 	0  		- Output array is too small or provided parameter name is incorrect.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  02.08.18             RoBi        	  First Revision.
+*/
+byte bFctn_DIAGCheckIfParamFitsInOutputArray(diagRequest *aDiagReq, char aParameterName[], byte aRawParamOutputValue[], char aResponseInfo[])
+{
+	byte bResult;
+	long lSizeOfRawParam;
+	long lSizeOfRawParamOutputArray;
+	diagResponse * aDiagResp;
+	byte bDebugFlag;
+	
+	bResult = NotOk;
+	lSizeOfRawParam = cc_eDIAG_ZERO;
+	lSizeOfRawParamOutputArray = cc_eDIAG_ZERO;
+	bDebugFlag = ccDIAG_GlobalDebugFlag;
+	
+	writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGCheckIfParamFitsInOutputArray() called.");
+	
+	// Not necessary to test for return value as this function will always be called only when a response was previously received
+	diagGetLastResponse(aDiagReq, aDiagResp);
+	
+	lSizeOfRawParam = diagGetParameterSizeRaw(aDiagResp, aParameterName);
+	  
+	if ( cc_eDIAG_ZERO < lSizeOfRawParam ) // size of param returned successfully
+	{
+		lSizeOfRawParam = lSizeOfRawParam / cc_eDIAG_EIGHT; 	// example: 16 bits / size of 1 byte (8 bits) => output array needs at least 2 elements
+		lSizeOfRawParamOutputArray = elcount(aRawParamOutputValue);
+
+		if ( lSizeOfRawParam <= lSizeOfRawParamOutputArray )
+		{
+	    // Size of the output array is OK, parameter can be copied
+			if ( (byte)DebugFuncInternal & bDebugFlag)
+			  writeDbgLevel(DebugFuncInternal, "Size of the output array is large enough. Parameter can be copied !"); 
+			bResult = Ok;
+		}
+		else
+		{
+			// Size of output array is too small
+			snprintf(aResponseInfo, elCount(aResponseInfo), "Size of the output array is too small. It should be at least: %d", lSizeOfRawParam);
+			if ( (byte)DebugFuncInternal & bDebugFlag)
+			  writeDbgLevel(DebugFuncInternal, aResponseInfo);
+			bResult = NotOk;
+		}
+	}
+	else
+	{
+	  // Invalid parameter name
+		snprintf(aResponseInfo, elCount(aResponseInfo), "Invalid parameter name: %s, check spelling or cdd/odx file.", aParameterName);
+		if ( (byte)DebugFuncInternal & bDebugFlag)
+		  writeDbgLevel(DebugFuncInternal, aResponseInfo);
+		bResult = NotOk;
+	}
+	
+	if ( (byte)DebugFuncInternal & bDebugFlag)
+	  writeDbgLevel(DebugFuncInternal, "bFctn_DIAGCheckIfParamFitsInOutputArray() return: %d.", bResult); 
+
+	return bResult;
+}
+
+/*! \fn void vFctn_DIAG_FormExpectedResponseText(enum cc_eResponseCodeDIAG aResponseCode, char aOuputExpectedResp[])
+*  \brief Function that forms the string of the expected response so it can be written more clearly in the test report file.
+*  \param[in]   aResponseCode       - Response code expected (see definition of enum cc_eResponseCodeDIAG - only those values can be used).
+*  \param[out]  aOuputExpectedResp	- Specific text of expected response, to be displayed in the test report.
+*
+*  \return 	None
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  21.08.18             RoBi        	  Created and implemented.
+*  25.02.20             CiCo            Updated with NRC14
+*/
+void vFctn_DIAG_FormExpectedResponseText(enum cc_eResponseCodeDIAG aResponseCode, char aOuputExpectedResp[])
+{
+  byte bDebugFlag;
+  
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function vFctn_DIAG_FormExpectedResponseText() called.");
+	
+	switch( aResponseCode )
+  {
+    case cc_eDIAG_PositiveResponse:
+      snprintf(aOuputExpectedResp, elCount(aOuputExpectedResp), "Positive response (0x0%X)", aResponseCode);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, "Expected response text: %s", aOuputExpectedResp); 
+      break;
+    case cc_eDIAG_NoResponse:
+      snprintf(aOuputExpectedResp, elCount(aOuputExpectedResp), "No Response (0x0%X)", aResponseCode);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, "Expected response text: %s", aOuputExpectedResp); 
+      break;
+    case cc_eDIAG_NRC10:
+    case cc_eDIAG_NRC11:
+    case cc_eDIAG_NRC12:
+    case cc_eDIAG_NRC13:
+    case cc_eDIAG_NRC14:      
+    case cc_eDIAG_NRC21: 
+    case cc_eDIAG_NRC22:
+    case cc_eDIAG_NRC24:
+    case cc_eDIAG_NRC31:
+    case cc_eDIAG_NRC33:
+    case cc_eDIAG_NRC35:
+    case cc_eDIAG_NRC36:
+    case cc_eDIAG_NRC37:
+    case cc_eDIAG_NRC70:
+    case cc_eDIAG_NRC71:
+    case cc_eDIAG_NRC72:
+    case cc_eDIAG_NRC73:
+    case cc_eDIAG_NRC78: 
+    case cc_eDIAG_NRC7E:
+    case cc_eDIAG_NRC7F:
+      snprintf(aOuputExpectedResp, elCount(aOuputExpectedResp), "NRC_%X (0x%X)", aResponseCode, aResponseCode);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, "Expected response text: %s", aOuputExpectedResp); 
+      break;
+    case cc_eDIAG_GeneralNegativeResponse:
+      snprintf(aOuputExpectedResp, elCount(aOuputExpectedResp), "General Negative Response (0x%X)", aResponseCode);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, "Expected response text: %s", aOuputExpectedResp); 
+      break;
+    default: // Expected response not in range or Internal/Setup error
+		  snprintf(aOuputExpectedResp, elCount(aOuputExpectedResp), "Expected response not recognized. Check enum cc_eResponseCodeDIAG for correct values !");
+	    if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aOuputExpectedResp);
+  }//end of switch/case
+}
+
+/*! \fn long lFctn_DIAGSetSuppressPosResponse_OFF(diagRequest *aDiagReq)
+*  \brief Function that will enable the send of a positive response, for a specific diag request.
+*  \param[in]  aDiagReq 				- Diagnostic request.
+*
+*  \return 	0 - No error, success.
+*  \return 	<0 - Error code.
+*
+*  \note 
+*         - At the time of implementing this function, the return values of diagSetSuppressResp(), specified in CAPL documentation, were inversed (1: The bit is set, 0: The request does not use the bit, or it is not set.)
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+* 21.08.18              RoBi            Created and implemented.
+* 14.02.19              RoBi            Fixed remark: Added a note regarding the description error in the CAPL Documentation.
+*/
+
+long lFctn_DIAGSetSuppressPosResponse_OFF(diagRequest *aDiagReq)
+{
+	long lResult;
+	byte bDebugFlag;
+  
+  lResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+
+	writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGSetSuppressPosResponse_OFF() called.");
+
+  lResult = diagSetSuppressResp(aDiagReq, cc_eDIAG_ZERO);
+
+  if ( cc_eDIAG_ZERO == lResult ) // Suppress bit is set to desired value
+  {
+    // The bit is set.
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Bit has been successfully set to: 0 (Pos. Response is now suppressed)."); 
+  }
+  else
+  {
+    // The request does not use the bit or it could not be set (See Error Code)
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Suppress bit NOT set. Request doesn't support it or Error Code received: %d !", lResult); 
+  }
+	
+	if ( (byte)DebugFuncInternal & bDebugFlag)
+	  writeDbgLevel(DebugFuncInternal, "lFctn_DIAGSetSuppressPosResponse_OFF() return: %d.", lResult); 
+	
+	return lResult;
+}
+
+/*! \fn long lFctn_DIAGSetSuppressPosResponse_ON(diagRequest *aDiagReq)
+*  \brief Function that will disable the send of a positive response, for a specific diag request.
+*  \param[in]  aDiagReq 				- Diagnostic request.
+*
+*  \return 	0 - No error, success.
+*  \return 	<0 - Error code. 
+*
+*  \note 
+*         - At the time of implementing this function, the return values of diagSetSuppressResp(), specified in CAPL documentation, were inversed (1: The bit is set, 0: The request does not use the bit, or it is not set.)
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+* 21.08.18              RoBi            Created and implemented.
+* 14.02.19              RoBi            Fixed remark: Added a note regarding the description error in the CAPL Documentation.
+*/
+
+long lFctn_DIAGSetSuppressPosResponse_ON(diagRequest *aDiagReq)
+{
+	long lResult;
+	byte bDebugFlag;
+  
+  lResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+
+	writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAGSetSuppressPosResponse_ON() called.");
+
+  lResult = diagSetSuppressResp(aDiagReq, cc_eDIAG_ONE);
+
+  if ( cc_eDIAG_ZERO == lResult ) // Suppress bit is set to desired value
+  {
+    // The bit is set.
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Bit has been successfully set to: 1 (Pos. Response is now suppressed)."); 
+  }
+  else
+  {
+    // The request does not use the bit or it could not be set (See Error Code)
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Suppress bit NOT set. Request doesn't support it or Error Code received: %d !", lResult); 
+  }
+	
+	if ( (byte)DebugFuncInternal & bDebugFlag)
+	  writeDbgLevel(DebugFuncInternal, "lFctn_DIAGSetSuppressPosResponse_ON() return: %d.", lResult); 
+	
+	return lResult;
+}
+
+/*! \fn byte bFctn_DIAGGetParameter(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double &aOutputValue, char aResponseInfo[])
+*  \brief Stores the parameter value of a specific previously sent diagnostic request.
+*  \param[in]  aDiagReq 		        		  - Diagnostic request.
+*  \param[in]  aParameterName 	    			- The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces             - cc_eDIAG_ModeNumerical -> for numerical read
+*                                           cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                           cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[out] aOutputValue               - The output value of the specified parameter (Physical: "-327.68").
+*  \param[out] aResponseInfo			        - Extra information regarding the mapped response or the get parameter function output.
+* 
+*  \return 	1   - Parameter value has been copied successfully.
+*  \return 	0  	- Invalid parameter name has been provided or the diagnostic request has not been previously sent.
+*
+*  \note    Timeout for the diag response can be handled using either by default from .ini file, or can be changed by calling function bFctn_DIAGSetResponseTimeout( TimeoutValue, infoMessage ) before function call
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  22.08.18             RoBi        	  Created and implemented
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*  25.02.20				CiCo			  Updated for handling the diag response timeout if user request it.
+*/
+byte bFctn_DIAGGetParameter(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double &aOutputValue, char aResponseInfo[])
+{
+  byte bResult; 
+  byte bDebugFlag;
+  dword dwWaitTime;
+  diagResponse * drDummyDiagResp; // dummy response
+  long lSizeOfRawParam; // used to check if naming is correct
+  
+  bResult = NotOk;
+  lSizeOfRawParam = cc_eDIAG_ZERO;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGGetParameter() called.");
+  // handling of the max to wait for diag response
+  if (cc_eDIAG_OK == cv_bDiag_TimeoutFlag )// check if tester requested to use desired timeout for response
+  {
+    dwWaitTime = cv_dwDiag_RespTimeout;// use new resp Timeout
+    cv_bDiag_TimeoutFlag = cc_eDIAG_NOK;
+  }
+  else 
+  {	  
+    dwWaitTime = dwFctn_DIAGCheckIfWaitTimeIsValid(cc_eDIAG_ZERO); // use the default wait time from ini file
+  }
+
+  // NOTE: If the response was already acknowledged with TestWaitForDiagResponse() and it is used to get the same response (again), it will fail as the response was already acknowledged.
+  // WORK AROUND: if (cond_A == TRUE || cond_B == TRUE) -> if cond_A is TRUE the cond_B will not be checked, as only one condition must be true (therefore, TestWaitForDiagResponse() is not checked again)
+  if (   ( cc_eDIAG_ZERO == diagGetLastResponse(aDiagReq, drDummyDiagResp) ) // TRUE: if request was previously sent and the response has been already acknowledged with TestWaitForDiagResponse()
+	  || ( cc_eDIAG_ResponseAsExpected == lFctn_DIAGWaitForResponse(aDiagReq, dwWaitTime, cc_eDIAG_PositiveResponse, aResponseInfo)) ) // TRUE: if request has been sent but the positive response was not yet acknowledged
+  {
+		// for safety reason, if it was necessary to wait for the response, it means that it was not stored in drDummyDiagResp
+		diagGetLastResponse(aDiagReq, drDummyDiagResp);
+	
+		lSizeOfRawParam = diagGetParameterSizeRaw(drDummyDiagResp, aParameterName);
+	  
+  	if ( cc_eDIAG_ZERO < lSizeOfRawParam ) // parameter name is correct and size of param returned successfully 
+  	{
+  		aOutputValue = diagGetRespParameter (aDiagReq, aParamValAcces, aParameterName); // get the numeric parameter
+  		snprintf(aResponseInfo, elCount(aResponseInfo), "Physical value: %g, using mode: %d, has been copied in output parameter.", aOutputValue, aParamValAcces);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel(DebugFuncInternal, aResponseInfo);
+  		bResult = Ok;
+  	}
+  	else
+  	{
+  		// Invalid parameter name
+  		snprintf(aResponseInfo, elCount(aResponseInfo), "Invalid parameter name: %s, check spelling or cdd/odx file.", aParameterName);
+  		if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel(DebugFuncInternal, aResponseInfo);
+  		bResult = NotOk;
+  	}
+  }
+  else
+  {
+	  // Diagnostic should have been sent previously.
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Diagnostic request has not been previously sent."); 
+	  bResult = NotOk;
+  }
+
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGGetParameter() return: %d.", bResult); 
+
+  return bResult;
+}
+
+/*! \fn byte bFctn_DIAGSendAndGetParam(diagRequest *aDiagReq, char aParameterName[], double &aPhysicalParamOutputVal[], char aResponseInfo[])
+*  \brief Sends a specific request and stores the mentioned parameter value in an output parameter.
+*  \param[in]  aDiagReq 				        - Diagnostic request.
+*  \param[in]  aParameterName			      - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces           - cc_eDIAG_ModeNumerical -> for numerical read
+*                                         cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                         cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[out] aOutputVal               - The output value of the specified parameter (ex: "-327.68").
+*  \param[out] aResponseInfo			      - Extra information regarding the mapped response or the get parameter function output.
+*
+*  \return 	1  		- Param read/copy success.
+*  \return 	0  		- Invalid parameter name.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  27.08.18             RoBi        	  First Revision.
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*/
+byte bFctn_DIAGSendAndGetParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double &aOutputVal, char aResponseInfo[])
+{
+  byte bResult; 
+  byte bDebugFlag;
+  long lDiagSendStatus;
+  byte bGetParamStatus;
+  
+  bResult = NotOk;
+  lDiagSendStatus = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSendAndGetParam() called.");
+	
+  lDiagSendStatus = lFctn_DIAGSendRequest(aDiagReq, cc_eDIAGPhysical); // note - by default it will be sent on physical mode
+  bGetParamStatus = bFctn_DIAGGetParameter(aDiagReq, aParameterName, aParamValAcces, aOutputVal, aResponseInfo);
+
+  if ( cc_eDIAG_ZERO <= lDiagSendStatus ) // check if request has been successfully sent
+  {
+	  if ( Ok == bGetParamStatus )
+	  {
+		  // Param read/stored in output array
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel(DebugFuncInternal, "Physical parameter value has been copied in output parameter."); 
+		  bResult = Ok; // param read/copy success
+	  }
+	  else
+	  {
+		  // Invalid parameter name (aResponseInfo is already updated accordingly, in bFctn_DIAGGetParameter() )
+	    if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel(DebugFuncInternal, "Invalid parameter name has been provided.");
+		  bResult = NotOk;
+	  }
+  }
+  else
+  {
+	  // Unexpected response received for diagnostic request.
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Unexpected response received for diagnostic request: %s", aResponseInfo);
+	  bResult = NotOk;
+  }
+
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSendAndGetParam() return: %d.", bResult); 
+
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGGetAndCompareParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aValueToCompareWithParam, enum cc_eParamCompareDIAG aCompareMode, char aCompareOutputInfo[])
+*  \brief Get the PHYSICAL value of a parameter and compares it with the specified value.
+*  \param[in]  aDiagReq 		        	  - Diagnostic request.
+*  \param[in]  aParameterName 	    		- The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces           - cc_eDIAG_ModeNumerical -> for numerical read
+*                                         cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                         cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[in] aValueToCompareWithParam  - The actual value of the parameter will be compared with this reference value (ex: "0", "327.68").
+*  \param[in] aCompareMode			        - How the actual value of the parameter will be compared to the provided reference value (cc_eDIAG_Equal, cc_eDIAG_NotEqual, cc_eDIAG_Greater, cc_eDIAG_Less).
+*  \param[out] aCompareOutputInfo			  - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   - Values successfully compared.
+*  \return 	0  	- Invalid parameter name has been provided or the diagnostic request has not been previously sent.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  28.08.18             RoBi        	  Created and implemented
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*/
+byte bFctn_DIAGGetAndCompareParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aValueToCompareWithParam, enum cc_eParamCompareDIAG aCompareMode, char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  byte bGetParameterResult;
+  byte bCompareResult;
+  double dActualPhysicalParamValue;
+  
+  bResult = NotOk;
+  bCompareResult = NotOk;
+  bGetParameterResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGGetAndCompareParam() called.");
+
+  bGetParameterResult = bFctn_DIAGGetParameter(aDiagReq, aParameterName, aParamValAcces, dActualPhysicalParamValue, aCompareOutputInfo);
+
+  if ( Ok == bGetParameterResult )
+  {
+	  // Compare the actual value and the expected value of the parameter
+	  bCompareResult = bFctn_DIAGCompareParam(dActualPhysicalParamValue, aValueToCompareWithParam, aCompareMode, aCompareOutputInfo);
+	
+  	if ( Ok == bCompareResult )
+  	{
+  		// Compared value is as expected (details about the action is stored in "aCompareOutputInfo")
+  		bResult = Ok;
+  	}
+  	else
+  	{
+  		// Compared value is NOT as expected (details about the action is stored in "aCompareOutputInfo")
+  		bResult = NotOk;
+  	}
+  }
+  else
+  {
+	  // Invalid parameter name or request was not previously sent (details about the action is stored in "aCompareOutputInfo")
+	  bResult = NotOk;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGGetAndCompareParam() return: %d.", bResult); 
+
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGCompareParam(double aActualPhysicalParamValue, double aExpectedParamValue, enum cc_eParamCompareDIAG aCompareMode, char aCompareOutputInfo[])
+*  \brief Compare physical value of a parameter to the expected value.
+*  \param[in]  aActualPhysicalParamValue  - The physical value of the parameter.
+*  \param[in]  aExpectedParamValue 	    	- Expected value that will be used to compare with the parameter.
+*  \param[in]  aCompareMode 	            - How the actual value of the parameter will be compared to the provided reference value (cc_eDIAG_Equal, cc_eDIAG_NotEqual, cc_eDIAG_Greater, cc_eDIAG_Less).
+*  \param[out]  aCompareOutputInfo			    - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   - Result of the values compared was as expected.
+*  \return 	0  	- Compare mode not recognized or result of the values compared was not as expected.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  29.08.18             RoBi        	  Created and implemented
+*/
+
+byte bFctn_DIAGCompareParam(double aActualPhysicalParamValue, double aExpectedParamValue, enum cc_eParamCompareDIAG aCompareMode, char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+
+  bResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGCompareParam() called.");
+  
+  	switch( aCompareMode )
+    {
+    case cc_eDIAG_Equal:
+  	  if ( aActualPhysicalParamValue == aExpectedParamValue )
+  	  {
+    		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Correct, actual value of the parameter: %g, is EQUAL to the expected value: %g.", aActualPhysicalParamValue, aExpectedParamValue);
+    		bResult = Ok;
+  	  }
+  	  else // values are not equal 
+  	  {
+    		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Incorrect, values compared are NOT equal (actual value: %g, expected value: %g) !", aActualPhysicalParamValue, aExpectedParamValue);
+    		bResult = NotOk;
+  	  }
+      
+	    if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, aCompareOutputInfo); 
+      break;
+	  
+    case cc_eDIAG_NotEqual:
+  	  if ( aActualPhysicalParamValue != aExpectedParamValue )
+  	  {
+    		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Correct, actual value of the parameter: %g, is DIFFERENT of the specified value: %g.", aActualPhysicalParamValue, aExpectedParamValue);
+    		bResult = Ok;
+  	  }
+  	  else // values are actually equal
+  	  {
+    		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Incorrect, values compared are NOT different from each other (actual value: %g, expected value: %g) !", aActualPhysicalParamValue, aExpectedParamValue);
+    		bResult = NotOk;
+  	  }
+
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, aCompareOutputInfo); 
+      break;
+	  
+    case cc_eDIAG_Greater:
+  	  if ( aActualPhysicalParamValue > aExpectedParamValue )
+  	  {
+    		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Correct, actual value of the parameter: %g, is GREATER than the specified value: %g.", aActualPhysicalParamValue, aExpectedParamValue);
+    		bResult = Ok;
+  	  }
+  	  else // param value is greater than the provided reference value
+  	  {
+    		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Incorrect, value of the parameter(%g) is NOT greater than the specified value(%g) ! ", aActualPhysicalParamValue, aExpectedParamValue);
+    		bResult = NotOk;
+  	  }
+
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, aCompareOutputInfo); 
+      break;
+	  
+    case cc_eDIAG_Less:
+  	  if ( aActualPhysicalParamValue < aExpectedParamValue )
+  	  {
+    		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Correct, actual value of the parameter: %g, is LESS than the specified value: %g.", aActualPhysicalParamValue, aExpectedParamValue);
+    		bResult = Ok;
+  	  }
+  	  else // param value is less than the provided reference value
+  	  {
+    		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Incorrect, value of the parameter(%g) is NOT less than the specified value(%g) ! ", aActualPhysicalParamValue, aExpectedParamValue);
+    		bResult = NotOk;
+  	  }
+
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel (DebugFuncInternal, aCompareOutputInfo); 
+      break;
+	  
+    default: // Compare mode not recognized, please check enum cc_eParamCompareDIAG
+		  snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Compare mode not recognized. Check enum cc_eParamCompareDIAG for correct values !");
+	    if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+		  bResult = NotOk;
+  }//end of switch/case
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGCompareParam() return: %d.", bResult); 
+
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGSendAndCompareParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aValueToCompareWithParam, enum cc_eParamCompareDIAG aCompareMode, char aCompareOutputInfo[])
+*  \brief Sends the request, get the PHYSICAL value of a parameter and compare it with the specified value.
+*  \param[in]  aDiagReq 		        	  - Diagnostic request.
+*  \param[in]  aParameterName 	    		- The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces           - cc_eDIAG_ModeNumerical -> for numerical read
+*                                         cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                         cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[in] aValueToCompareWithParam  - The actual value of the parameter will be compared with this reference value (ex: "0", "327.68").
+*  \param[in] aCompareMode			        - How the actual value of the parameter will be compared to the provided reference value (cc_eDIAG_Equal, cc_eDIAG_NotEqual, cc_eDIAG_Greater, cc_eDIAG_Less).
+*  \param[out] aCompareOutputInfo			  - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   - Values successfully compared.
+*  \return 	0  	- Invalid parameter name has been provided or the diagnostic request has not been previously sent.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  29.08.18             RoBi        	  Created and implemented
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*/
+
+byte bFctn_DIAGSendAndCompareParam(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aValueToCompareWithParam, enum cc_eParamCompareDIAG aCompareMode, char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  long lDiagSendStatus;
+  byte bGetAndCompareParameterResult;
+  
+  bResult = NotOk;
+  lDiagSendStatus = NotOk;
+  bGetAndCompareParameterResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSendAndCompareParam() called.");
+  
+  // Send the request
+  lDiagSendStatus = lFctn_DIAGSendRequest(aDiagReq, cc_eDIAGPhysical); // note - by default it will be sent on physical mode
+  bGetAndCompareParameterResult = bFctn_DIAGGetAndCompareParam(aDiagReq, aParameterName, aParamValAcces, aValueToCompareWithParam, aCompareMode, aCompareOutputInfo);
+  
+  if ( cc_eDIAG_ZERO <= lDiagSendStatus ) // check if request has been successfully sent
+  {
+  	if ( Ok == bGetAndCompareParameterResult )
+  	{
+  		// Compared value is as expected (details about the action is stored in "aCompareOutputInfo")
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+  	  bResult = Ok;
+  	}
+  	else
+  	{
+  		// Compared value is NOT as expected (details about the action is stored in "aCompareOutputInfo")
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+  		bResult = NotOk;
+  	}
+  }
+  else
+  {
+	  // Request could not be sent (aCompareOutputInfo is already updated from function bFctn_DIAGGetAndCompareParam())
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+	  bResult = NotOk;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSendAndCompareParam() return: %d.", bResult); 
+
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGGetAndCompareParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawArrayToCompareWithParam[], char aCompareOutputInfo[])
+*  \brief Get the RAW value of a parameter and compares it with the specified array value.
+*  \param[in]  aDiagReq 		        	      - Diagnostic request.
+*  \param[in]  aParameterName 	    		    - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in] aRawArrayToCompareWithParam  - The actual raw value of the parameter will be compared with this reference value (ex: "00 00", "80 00").
+*  \param[out] aCompareOutputInfo			      - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   	- Values successfully compared.
+*  \return 	0  	- Invalid parameter name, diagnostic request has not been previously sent or conversion failed.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  30.08.18             RoBi        	  Created and implemented
+*/
+
+byte bFctn_DIAGGetAndCompareParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawArrayToCompareWithParam[], char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  byte bGetParamRawResult;
+  byte bCompareResult;
+  byte bActualRawParamValue[4095];
+  long lSizeOfRawParam;
+  long lSizeOfArrayToCompare;
+  diagResponse * drDiagResp;
+  char chActualRawParamValToString[4096];
+  char chRawValToCmpWithParamToString[4096];
+  byte bConvResult1;
+  byte bConvResult2;
+  
+  bResult = NotOk;
+  bCompareResult = NotOk;
+  bConvResult1 = NotOk;
+  bConvResult2 = NotOk;
+  bGetParamRawResult = NotOk;
+  lSizeOfRawParam = NotOk;
+  lSizeOfArrayToCompare = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGGetAndCompareParamRaw() called.");
+
+  bGetParamRawResult = bFctn_DIAGGetParamRaw(aDiagReq, aParameterName, bActualRawParamValue, aCompareOutputInfo);
+   
+  if ( Ok == bGetParamRawResult )
+  {
+  	// Not necessary to test for return value as this function will always be called only when a response was previously received
+  	diagGetLastResponse(aDiagReq, drDiagResp);
+  	
+  	lSizeOfRawParam = diagGetParameterSizeRaw(drDiagResp, aParameterName);
+  	
+  	lSizeOfRawParam = lSizeOfRawParam / cc_eDIAG_EIGHT;
+  	lSizeOfArrayToCompare = elcount(aRawArrayToCompareWithParam);
+	
+  	if ( lSizeOfRawParam == lSizeOfArrayToCompare ) // comparing is done only if size of input array is identical to the size of parameter
+  	{
+  		bCompareResult = bFctn_CONV_CompareByteArrays(bActualRawParamValue, aRawArrayToCompareWithParam, (dword)lSizeOfRawParam, aCompareOutputInfo);
+  		bConvResult1 = bFctn_CONV_ByteArrayToSpecificNumberBaseString(bActualRawParamValue, cc_eCONV_Hex, /*SeparationChar*/" ", chActualRawParamValToString, lSizeOfRawParam);
+  		bConvResult2 = bFctn_CONV_ByteArrayToSpecificNumberBaseString(aRawArrayToCompareWithParam, cc_eCONV_Hex, /*SeparationChar*/" ", chRawValToCmpWithParamToString, lSizeOfRawParam);
+
+  		if ( Ok == bConvResult1 && Ok == bConvResult2 ) // conversion was successfully done
+  		{
+  			if ( Ok == bCompareResult )
+  			{
+  				// Compared values are as expected
+  				snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Correct, actual value of the param: 0x%s is equal to compared value: 0x%s.", chActualRawParamValToString, chRawValToCmpWithParamToString);
+  				if ( (byte)DebugFuncInternal & bDebugFlag)
+				    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+				  bResult = Ok;
+  			}
+  			else // failed because values are not equal or buffer error
+  			{
+  				// Compared value is NOT as expected (details about the action is stored in "aCompareOutputInfo")
+  				snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Incorrect, values are not equal: 0x%s (param value) is different from: 0x%s (value to compare with) !", chActualRawParamValToString, chRawValToCmpWithParamToString);
+  				if ( (byte)DebugFuncInternal & bDebugFlag)
+				    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+				  bResult = NotOk;
+  			}
+  		}
+  		else // failed because conversion was not possible
+  		{
+  			snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Conversion of the arrays to string has failed !");
+  			if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+			  bResult = NotOk;
+  		}
+  	}
+  	else
+  	{
+  		// size of the arrays is not equal (it will automatically be different when comparing)
+  		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Cannot compare two different sized arrays. Size of the input array is: %d. Must have same size as the parameter: %d !", lSizeOfArrayToCompare, lSizeOfRawParam);
+  		if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+		  bResult = NotOk;
+  	}
+  }
+  else
+  {
+	  // Invalid parameter name or request was not previously sent (details about the action is stored in "aCompareOutputInfo")
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+	  bResult = NotOk;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGGetAndCompareParamRaw() return: %d.", bResult); 
+
+  return bResult;
+}
+
+/*! \fn byte bFctn_DIAGSendAndCompareParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawArrayToCompareWithParam[], char aCompareOutputInfo[])
+*  \brief Sends the request, get the RAW value of a parameter and compare it with the specified array value.
+*  \param[in]  aDiagReq 		        	      - Diagnostic request.
+*  \param[in]  aParameterName 	    		    - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in] aRawArrayToCompareWithParam  - The actual raw value of the parameter will be compared with this reference value (ex: "00 00", "80 00").
+*  \param[out] aCompareOutputInfo			      - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   - Values successfully compared.
+*  \return 	0  	- Invalid parameter name, diagnostic request has not been previously sent or conversion failed.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  30.08.18             RoBi        	  Created and implemented
+*/
+
+byte bFctn_DIAGSendAndCompareParamRaw(diagRequest *aDiagReq, char aParameterName[], byte aRawArrayToCompareWithParam[], char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  long lDiagSendStatus;
+  byte bGetAndCompareRawParameterResult;
+  
+  bResult = NotOk;
+  lDiagSendStatus = NotOk;
+  bGetAndCompareRawParameterResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSendAndCompareParamRaw() called.");
+  
+  // Send the request
+  lDiagSendStatus = lFctn_DIAGSendRequest(aDiagReq, cc_eDIAGPhysical); // note - by default it will be sent on physical mode
+  bGetAndCompareRawParameterResult = bFctn_DIAGGetAndCompareParamRaw(aDiagReq, aParameterName, aRawArrayToCompareWithParam, aCompareOutputInfo);
+  
+  if ( cc_eDIAG_ZERO <= lDiagSendStatus ) // check if request has been successfully sent
+  {
+  	if ( Ok == bGetAndCompareRawParameterResult )
+  	{
+  		// Compared value is as expected (details about the action are stored in "aCompareOutputInfo")
+  		if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+		  bResult = Ok;
+  	}
+  	else
+  	{
+  		// Compared value is NOT as expected (details about the action are stored in "aCompareOutputInfo")
+  		if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+		  bResult = NotOk;
+  	}
+  }
+  else
+  {
+	  // Request could not be sent (aCompareOutputInfo is already updated from function bFctn_DIAGGetAndCompareParamRaw())
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+	  bResult = NotOk;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSendAndCompareParamRaw() return: %d.", bResult); 
+
+  return bResult;
+}
+
+/*! \fn byte bFctn_DIAGCheckResponseLength(diagRequest *aDiagReq, long aExpectedRespLength, char aCompareOutputInfo[])
+*  \brief Gets the response from a previously sent request and checks the byte length of it with the expected value.
+*  \param[in]  aDiagReq 		        	      - Diagnostic request.
+*  \param[in]  aExpectedRespLength 	    		- Value of the expected response length.
+*  \param[out] aCompareOutputInfo			      - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   - Response length is as expected.
+*  \return 	0  	- Response length is not as expected, response not received or internal error code encountered.
+*
+*  \note    Timeout for the diag response can be handled using either by default from .ini file, or can be changed by calling function bFctn_DIAGSetResponseTimeout( TimeoutValue, infoMessage ) before function call
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  31.08.18             RoBi        	  Created and implemented
+*  25.02.20				CiCo			  Updated for handling the diag response timeout if user request it.
+*/
+
+byte bFctn_DIAGCheckResponseLength(diagRequest *aDiagReq, long aExpectedRespLength, char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  long lActualLengthOfResponse;
+  dword dwWaitTime;
+  diagResponse * drDummyDiagResp;
+  
+  bResult = NotOk;
+  lActualLengthOfResponse = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGCheckResponseLength() called.");
+  // handling of the max to wait for diag response
+  if (cc_eDIAG_OK == cv_bDiag_TimeoutFlag )// check if tester requested to use desired timeout for response
+  {
+    dwWaitTime = cv_dwDiag_RespTimeout;// use new resp Timeout
+    cv_bDiag_TimeoutFlag = cc_eDIAG_NOK;
+  }
+  else 
+  {	  
+    dwWaitTime = dwFctn_DIAGCheckIfWaitTimeIsValid(cc_eDIAG_ZERO); // use the default wait time from ini file
+  }
+  
+  if ( cc_eDIAG_ZERO >= aExpectedRespLength ) // check if expected length of the response is > 0
+  {
+  	snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "The input value provided as expected length of the response must be greater than 0 !");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+	  bResult = NotOk;
+  }
+  else
+  {
+  	// NOTE: If the response was already acknowledged with TestWaitForDiagResponse() and it is used to get the same response (again), it will fail as the response was already acknowledged.
+  	// WORK AROUND: if (cond_A == TRUE || cond_B == TRUE) -> if cond_A is TRUE the cond_B will not be checked, as only one condition must be true (therefore, TestWaitForDiagResponse() is not checked again)
+  	if (   ( cc_eDIAG_ZERO == diagGetLastResponse(aDiagReq, drDummyDiagResp) ) // TRUE: if request was previously sent and the response has been already acknowledged with TestWaitForDiagResponse()
+  		  || ( cc_eDIAG_ResponseAsExpected == lFctn_DIAGWaitForResponse(aDiagReq, dwWaitTime, cc_eDIAG_PositiveResponse, aCompareOutputInfo)) ) // TRUE: if request has been sent but the positive response was not yet acknowledged
+  	{
+  		lActualLengthOfResponse = diagGetRespPrimitiveSize(aDiagReq);
+  	
+  		if ( cc_eDIAG_ZERO <= lActualLengthOfResponse )// no error on TP LEVEL
+  		{
+  		  if ( lActualLengthOfResponse != aExpectedRespLength ) // check if length of the response is different of the expected value
+  		  {
+    			if ( lActualLengthOfResponse < aExpectedRespLength ) // response length is less than expected
+    			{
+    			  snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Wrong, response length is less than expected. Expected a length of: %d byte(s), but received: %d byte(s) !", aExpectedRespLength, lActualLengthOfResponse);
+    			  if ( (byte)DebugFuncInternal & bDebugFlag)
+				      writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+    			}
+    			else // response length is greater than expected
+    			{
+    			  snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Wrong, response length is greater than expected. Expected a length of: %d byte(s), but received: %d byte(s) !", aExpectedRespLength, lActualLengthOfResponse);
+    			  if ( (byte)DebugFuncInternal & bDebugFlag)
+				      writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+    			}
+  			
+  			  bResult = NotOk;
+  		  }
+  		  else // response length is equal to expected value
+  		  {
+    			snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Correct, response length is valid, as expected. Length is: %d byte(s).", lActualLengthOfResponse);
+    			if ( (byte)DebugFuncInternal & bDebugFlag)
+				    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+    			bResult = Ok;
+  		  }
+  		}
+  		else // since a response was identified this should never be reached, but handle it anyway
+  		{
+  		  snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "No response could be identified. Received Error Code: %d !", lActualLengthOfResponse);
+  		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+  		  bResult = NotOk; 
+  		}
+  	}
+  	else
+  	{
+  	  // Diagnostic should have been sent previously.
+  	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel(DebugFuncInternal, "Diagnostic request has not been previously sent."); 
+  	  bResult = NotOk;
+  	}
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGCheckResponseLength() return: %d.", bResult); 
+
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGGetAndCompareParamRange(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aMinValue, double aMaxValue, char aCompareOutputInfo[])
+*  \brief Get the PHYSICAL value of a parameter and compares it to be within the specified value.
+*  \param[in]  aDiagReq 		      - Diagnostic request.
+*  \param[in]  aParameterName 	  - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces     - cc_eDIAG_ModeNumerical -> for numerical read
+*                                   cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                   cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[in]  aMinValue 					- The minimum range value.
+*  \param[in]  aMaxValue			    - The maximum range value.
+*  \param[out] aCompareOutputInfo - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   - Value is within range.
+*  \return 	0  	- Value is out of expected range, invalid parameter name has been provided or the diagnostic request has not been previously sent.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  03.09.18             RoBi        	  Created and implemented
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*/
+byte bFctn_DIAGGetAndCompareParamRange(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aMinValue, double aMaxValue, char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  byte bGetParameterResult;
+  double dActualPhysicalParamValue;
+  
+  bResult = NotOk;
+  bGetParameterResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGGetAndCompareParamRange() called.");
+
+  bGetParameterResult = bFctn_DIAGGetParameter(aDiagReq, aParameterName, aParamValAcces, dActualPhysicalParamValue, aCompareOutputInfo);
+  
+  if ( Ok == bGetParameterResult )
+  {
+	  // check if the value is within specified range
+	  if ( dActualPhysicalParamValue >= aMinValue && dActualPhysicalParamValue <= aMaxValue )
+	  {
+  		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Correct, actual value of parameter: %g, is within range (min: %g, max: %g).", dActualPhysicalParamValue, aMinValue, aMaxValue);
+    	if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+    	bResult = Ok;
+	  }
+	  else // value not in range
+	  {
+		  snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Wrong, actual value of parameter: %g, is NOT within range (min: %g, max: %g).", dActualPhysicalParamValue, aMinValue, aMaxValue);
+    	if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+    	bResult = NotOk;
+	  }
+  }
+  else
+  {
+	  // Invalid parameter name or request was not previously sent (details about the action is stored in "aCompareOutputInfo")
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+    bResult = NotOk;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGGetAndCompareParamRange() return: %d.", bResult); 
+
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGSendAndCompareParamRange(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aMinValue, double aMaxValue, char aCompareOutputInfo[])
+*  \brief Send the specified diag request and get the PHYSICAL value of a parameter and compares it to be within the specified value.
+*  \param[in]  aDiagReq 		      - Diagnostic request.
+*  \param[in]  aParameterName 	  - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aParamValAcces     - cc_eDIAG_ModeNumerical -> for numerical read
+*                                   cc_eDIAG_ModePhysical  -> for pysical value(if conversion is definede from numerical)
+*                                   cc_eDIAG_ModeCoded     -> for codded, immediate transformation into a numeric type (up to 32 bit)
+*  \param[in]  aMinValue 					- The minimum range value.
+*  \param[in]  aMaxValue			    - The maximum range value.
+*  \param[out] aCompareOutputInfo - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   - Value is within range.
+*  \return 	0  	- Value is out of expected range, invalid parameter name has been provided or the diagnostic request could not be sent.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  03.09.18             RoBi        	  Created and implemented
+*  30.07.19             CiCo            Updated with aParamValAcces parameter
+*/
+byte bFctn_DIAGSendAndCompareParamRange(diagRequest *aDiagReq, char aParameterName[], enum cc_eParamValueAccessDIAG aParamValAcces, double aMinValue, double aMaxValue, char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  byte bGetParameterAndCompareRangeResult;
+  long lDiagSendStatus;
+  
+  bResult = NotOk;
+  bGetParameterAndCompareRangeResult = NotOk;
+  lDiagSendStatus = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSendAndCompareParamRange() called.");
+  
+  // Send the request
+  lDiagSendStatus = lFctn_DIAGSendRequest(aDiagReq, cc_eDIAGPhysical); // note - by default it will be sent on physical mode
+  bGetParameterAndCompareRangeResult = bFctn_DIAGGetAndCompareParamRange(aDiagReq, aParameterName, aParamValAcces, aMinValue, aMaxValue, aCompareOutputInfo);
+  
+  if ( cc_eDIAG_ZERO <= lDiagSendStatus ) // check if request has been successfully sent
+  {
+	  if ( Ok == bGetParameterAndCompareRangeResult )
+	  {
+		  // Value is within range
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+		  bResult = Ok;
+	  }
+	  else
+	  {
+		  // Value is not within range or invalid parameter name  was provided (details about the action is stored in "aCompareOutputInfo")
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+		  bResult = NotOk;
+	  }
+  }
+  else
+  {
+	  // Request could not be sent (aCompareOutputInfo is already updated from function bFctn_DIAGGetAndCompareParamRange())
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+	  bResult = NotOk;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSendAndCompareParamRange() return: %d.", bResult); 
+
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGSendAndCompareParamString(diagRequest *aDiagReq, char aParameterName[], char aStringToCompareWithParam[], char aCompareOutputInfo[])
+*  \brief Sends the request, get the Symbolic text of a parameter and compare it with the specified string.
+*  \param[in]  aDiagReq 		        	      - Diagnostic request.
+*  \param[in]  aParameterName 	    		    - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in]  aStringToCompareWithParam    - The actual Symbolic text of the parameter will be compared with this string.
+*  \param[out] aCompareOutputInfo			      - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   - Compared strings are identical.
+*  \return 	0  	- Invalid parameter name, diagnostic request has not been previously sent or conversion failed.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  04.09.18             RoBi        	  Created and implemented
+*/
+
+byte bFctn_DIAGSendAndCompareParamString(diagRequest *aDiagReq, char aParameterName[], char aStringToCompareWithParam[], char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  long lDiagSendStatus;
+  byte bGetAndCompareStringParameterResult;
+  
+  bResult = NotOk;
+  lDiagSendStatus = NotOk;
+  bGetAndCompareStringParameterResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSendAndCompareParamString() called.");
+  
+  // Send the request
+  lDiagSendStatus = lFctn_DIAGSendRequest(aDiagReq, cc_eDIAGPhysical); // note - by default it will be sent on physical mode
+  bGetAndCompareStringParameterResult = bFctn_DIAGGetAndCompareParamString(aDiagReq, aParameterName, aStringToCompareWithParam, aCompareOutputInfo);
+  
+  if ( cc_eDIAG_ZERO <= lDiagSendStatus ) // check if request has been successfully sent
+  {
+  	if ( Ok == bGetAndCompareStringParameterResult )
+  	{
+  		// Compared value is as expected (details about the action are stored in "aCompareOutputInfo")
+  		if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+		  bResult = Ok;
+  	}
+  	else
+  	{
+  		// Compared value is NOT as expected (details about the action are stored in "aCompareOutputInfo")
+  		if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+		  bResult = NotOk;
+  	}
+  }
+  else
+  {
+	  // Request could not be sent (aCompareOutputInfo is already updated from function bFctn_DIAGGetAndCompareParamString())
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+	  bResult = NotOk;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSendAndCompareParamString() return: %d.", bResult); 
+
+  return bResult;
+}
+
+/*! \fn byte bFctn_DIAGGetAndCompareParamString(diagRequest *aDiagReq, char aParameterName[], char aStringToCompareWithParam[], char aCompareOutputInfo[])
+*  \brief Get the Symbolic text of a parameter and compares it with the specified string.
+*  \param[in]  aDiagReq 		        	      - Diagnostic request.
+*  \param[in]  aParameterName 	    		    - The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[in] aStringToCompareWithParam    - The actual Symbolic text of the parameter will be compared with this string.
+*  \param[out] aCompareOutputInfo			      - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   - Compared strings are identical.
+*  \return 	0  	- Invalid parameter name, diagnostic request has not been previously sent or conversion failed.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  04.09.18             RoBi        	  Created and implemented
+*/
+byte bFctn_DIAGGetAndCompareParamString(diagRequest *aDiagReq, char aParameterName[], char aStringToCompareWithParam[], char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  byte bGetParamStringResult;
+  char chActualParamString[200];
+  
+  bResult = NotOk;
+  bGetParamStringResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGGetAndCompareParamString() called.");
+
+  bGetParamStringResult = bFctn_DIAGGetParameterString(aDiagReq, aParameterName, chActualParamString, aCompareOutputInfo);
+   
+  if ( Ok == bGetParamStringResult )
+  {
+  	if ( cc_eDIAG_ZERO == strncmp(chActualParamString, aStringToCompareWithParam, elcount(chActualParamString)) ) // compare strings
+  	{
+  		// Compared strings are identical
+  		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Correct, actual string of the param: %s, is equal to specified string: %s.", chActualParamString, aStringToCompareWithParam);
+  		if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+  		bResult = Ok;
+  	}
+  	else
+  	{
+  		// Compared strings are NOT identical
+  		snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "Incorrect, actual string of the param: %s, is different from specified string: %s !",chActualParamString ,aStringToCompareWithParam);
+  		if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+  		bResult = NotOk;
+  	}
+  }
+  else
+  {
+	  // Invalid parameter name or request was not previously sent (details about the action is stored in "aCompareOutputInfo")
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+	  bResult = NotOk;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGGetAndCompareParamString() return: %d.", bResult); 
+
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGGetParameterString(diagRequest *aDiagReq, char aParameterName[], char aActualParamString[], char aResponseInfo[])
+*  \brief Stores in output parameter the Symbolic text of a specific previously sent diagnostic request.
+*  \param[in]  aDiagReq 		        		- Diagnostic request.
+*  \param[in]  aParameterName 	    			- The parameter name of the diagnostic request (ex: "P2s_CAN_ECU_max").
+*  \param[out] aActualParamString  				- The Symbolic text output value of the specified parameter.
+*  \param[out] aResponseInfo			        - Extra information regarding the mapped response or the get parameter function output.
+* 
+*  \return 	1   - Parameter value has been copied successfully.
+*  \return 	0  	- Invalid parameter name has been provided or the diagnostic request has not been previously sent.
+*
+*  \note    Timeout for the diag response can be handled using either by default from .ini file, or can be changed by calling function bFctn_DIAGSetResponseTimeout( TimeoutValue, infoMessage ) before function call
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  04.09.18             RoBi        	  Created and implemented
+*  25.02.20				CiCo			  Updated for handling the diag response timeout if user request it.
+*/
+byte bFctn_DIAGGetParameterString(diagRequest *aDiagReq, char aParameterName[], char aActualParamString[], char aResponseInfo[])
+{
+  byte bResult; 
+  byte bDebugFlag;
+  dword dwWaitTime;
+  diagResponse * drDummyDiagResp; // dummy response
+  long lSizeOfRawParam; // used to check if naming is correct
+  long lCopyParamSymbolResult;
+  
+  bResult = NotOk;
+  lSizeOfRawParam = cc_eDIAG_ZERO;
+  lCopyParamSymbolResult = cc_eDIAG_ZERO;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGGetParameterString() called.");
+  
+  // handling of the max to wait for diag response
+  if (cc_eDIAG_OK == cv_bDiag_TimeoutFlag )// check if tester requested to use desired timeout for response
+  {
+    dwWaitTime = cv_dwDiag_RespTimeout;// use new resp Timeout
+    cv_bDiag_TimeoutFlag = cc_eDIAG_NOK;
+  }
+  else 
+  {	  
+    dwWaitTime = dwFctn_DIAGCheckIfWaitTimeIsValid(cc_eDIAG_ZERO); // use the default wait time from ini file
+  }
+
+  // NOTE: If the response was already acknowledged with TestWaitForDiagResponse() and it is used to get the same response (again), it will fail as the response was already acknowledged.
+  // WORK AROUND: if (cond_A == TRUE || cond_B == TRUE) -> if cond_A is TRUE the cond_B will not be checked, as only one condition must be true (therefore, TestWaitForDiagResponse() is not checked again)
+  if (   ( cc_eDIAG_ZERO == diagGetLastResponse(aDiagReq, drDummyDiagResp) ) // TRUE: if request was previously sent and the response has been already acknowledged with TestWaitForDiagResponse()
+	  || ( cc_eDIAG_ResponseAsExpected == lFctn_DIAGWaitForResponse(aDiagReq, dwWaitTime, cc_eDIAG_PositiveResponse, aResponseInfo)) ) // TRUE: if request has been sent but the positive response was not yet acknowledged
+  {
+  	// for safety reason, if it was necessary to wait for the response, it means that it was not stored in drDummyDiagResp
+  	diagGetLastResponse(aDiagReq, drDummyDiagResp);
+
+  	lSizeOfRawParam = diagGetParameterSizeRaw(drDummyDiagResp, aParameterName);
+    
+  	if ( cc_eDIAG_ZERO < lSizeOfRawParam ) // parameter name is correct and size of param returned successfully 
+  	{
+  		// try to copy the Symbolic text
+  		lCopyParamSymbolResult = diagGetRespParameter(aDiagReq, aParameterName, aActualParamString, elcount(aActualParamString));
+  		
+  		if ( cc_eDIAG_ZERO <= lCopyParamSymbolResult )
+  		{	
+  			// Symbolic text was copied successfully
+  			if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel(DebugFuncInternal, "Symbolic text: %s, of the parameter: %s,  has been copied in output string.", aActualParamString, aParameterName);
+  			bResult = Ok;
+  		}
+  		else
+  		{
+  			// Internal error, could not copy the Symbolic text
+  			snprintf(aResponseInfo, elCount(aResponseInfo), "Symbolic text of the parameter: %s, could not be copied. Internal error code: %d.", aParameterName, lCopyParamSymbolResult);
+  			if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel(DebugFuncInternal, aResponseInfo);
+  			bResult = NotOk;
+  		}
+  	}
+  	else
+  	{
+  		// Invalid parameter name
+  		snprintf(aResponseInfo, elCount(aResponseInfo), "Invalid parameter name: %s, check spelling or cdd/odx file.", aParameterName);
+  		if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel(DebugFuncInternal, aResponseInfo);
+  		bResult = NotOk;
+  	}
+  }
+  else
+  {
+	  // Diagnostic should have been sent previously.
+	  snprintf(aResponseInfo, elCount(aResponseInfo), "Diagnostic request has not been previously sent !");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, aResponseInfo); 
+	  bResult = NotOk;
+  }
+
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGGetParameterString() return: %d.", bResult); 
+
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGSendAndGetPrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, byte aPrimitiveDataOuputArray[], char aCopyPrimitiveDataInfo[])
+*  \brief Sends a specific request and stores the primitive data, between start and stop byte position, in an output byte array.
+*  \param[in]  aDiagReq 		        	    - Diagnostic request.
+*  \param[in]  aStartByte 	    		      - The byte position from where the data will START to be copied.
+*  \param[in]  aStopByte                  - The byte position where the data will STOP copying.
+*  \param[out] aPrimitiveDataOuputArray   - The output array where the primitive data will be copied.
+*  \param[out] aCopyPrimitiveDataInfo		  - Extra information regarding the action to copy the primitive data (displayed in test report).
+* 
+*  \return 	1   - Primitive data has been stored successfully in the output array.
+*  \return 	0  	- Interval not valid, output array too small, diagnostic request could not be sent or unexpected response received.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  05.09.18             RoBi        	  Created and implemented.
+*  30.10.19             CrJu        	  Refactoring the code and now it can save in the output array the whole response of the request.
+*/
+
+byte bFctn_DIAGSendAndGetPrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, byte aPrimitiveDataOuputArray[], char aCopyPrimitiveDataInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  long lDiagSendStatus;
+  byte bGetPrimitiveDataResult;
+  dword dwNoOfBytesCopied;
+  
+  bResult = NotOk;
+  dwNoOfBytesCopied = NotOk;
+  lDiagSendStatus = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSendAndGetPrimitiveData() called.");
+
+	// Send the request
+	lDiagSendStatus = lFctn_DIAGSendRequest(aDiagReq, cc_eDIAGPhysical); // note - by default it will be sent on physical mode
+  
+  // Get the request primitive in an output array
+	bGetPrimitiveDataResult = bFctn_DIAGGetPrimitiveData(aDiagReq, aStartByte, aStopByte, dwNoOfBytesCopied, aPrimitiveDataOuputArray, aCopyPrimitiveDataInfo);
+	  
+	if ( cc_eDIAG_ZERO <= lDiagSendStatus ) // check if request has been successfully sent
+	{
+    if ( Ok == bGetPrimitiveDataResult )
+    {
+      // Primitive data has been copied successfully in the ouput array (details about the action are stored in "aCopyPrimitiveDataInfo")
+  	  if ( (byte)DebugFuncInternal & bDebugFlag)
+			  writeDbgLevel (DebugFuncInternal, aCopyPrimitiveDataInfo);
+  		bResult = Ok;
+  	}
+  	else
+  	{
+      // Error encountered when trying to copy the primitive data (details about the action are stored in "aCopyPrimitiveDataInfo")
+  		if ( (byte)DebugFuncInternal & bDebugFlag)
+			   writeDbgLevel (DebugFuncInternal, aCopyPrimitiveDataInfo);
+  		bResult = NotOk;
+  	}
+  }
+  else
+	{
+    // Request could not be sent (aCopyPrimitiveDataInfo is already updated from function bFctn_DIAGGetPrimitiveData())
+		if ( (byte)DebugFuncInternal & bDebugFlag)
+		  writeDbgLevel (DebugFuncInternal, aCopyPrimitiveDataInfo);
+		bResult = NotOk;
+	}
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSendAndGetPrimitiveData() return: %d.", bResult); 
+
+  return bResult;
+}
+
+/*! \fn byte bFctn_DIAGGetPrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, dword aNoOfBytesCopied, byte aPrimitiveDataOuputArray[], char aCopyPrimitiveDataInfo[])
+*  \brief Stores in output byte array parameter, the primitive data between the specified start and stop byte position.
+*  \param[in]  aDiagReq 		        		  - Diagnostic request.
+*  \param[in]  aStartByte 	    			    - The byte position from where the data will START to be copied.
+*  \param[in]  aStopByte                  - The byte position where the data will STOP copying.
+*  \param[out] aNoOfBytesCopied           - Number of bytes copied in the output array.
+*  \param[out] aPrimitiveDataOuputArray   - The output array where the primitive data will be copied.
+*  \param[out] aCopyPrimitiveDataInfo		  - Extra information regarding the action to copy the primitive data (displayed in test report).
+* 
+*  \return 	1   - Primitive data has been stored successfully in the output array.
+*  \return 	0  	- Interval not valid, output array too small, diagnostic request could not be sent or unexpected response received.
+*
+*  \note    Timeout for the diag response can be handled using either by default from .ini file, or can be changed by calling function bFctn_DIAGSetResponseTimeout( TimeoutValue, infoMessage ) before function call
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  06.09.18             RoBi        	  Created and implemented.
+*  30.10.19             CrJu        	  Refactoring the code and now it can save in the output array the whole response of the request / New output parameter: aNoOfBytesToCopy
+*  25.02.20				CiCo			  Updated for handling the diag response timeout if user request it.
+*/
+byte bFctn_DIAGGetPrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, dword &aNoOfBytesCopied, byte aPrimitiveDataOuputArray[], char aCopyPrimitiveDataInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  dword dwWaitTime;
+  diagResponse * drDummyDiagResp; // dummy response
+  long lResponseSize;
+  dword dwIndexOfArray;
+  dword dwNoOfBytesToCopy;
+  long lResponseByte;
+  
+  bResult = NotOk;
+  aNoOfBytesCopied = NotOk;
+  dwNoOfBytesToCopy = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGGetPrimitiveData() called.");
+  
+  if(aStartByte > aStopByte)
+  {
+    snprintf(aCopyPrimitiveDataInfo, elCount(aCopyPrimitiveDataInfo), "Check the requested interval (start position is greater than stop position)!");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, aCopyPrimitiveDataInfo);
+  	return NotOk; 
+  }
+  else
+  {
+    //Calculate the total number of desired bytes
+    dwNoOfBytesToCopy = (aStopByte - aStartByte) + cc_eDIAG_ONE;
+    
+    if(dwNoOfBytesToCopy > elCount(aPrimitiveDataOuputArray))
+    {
+      snprintf(aCopyPrimitiveDataInfo, elCount(aCopyPrimitiveDataInfo), "The number of bytes to copy are bigger than the length of the output array!");
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel(DebugFuncInternal, aCopyPrimitiveDataInfo);
+      return NotOk;
+    }
+  }
+  
+  // handling of the max to wait for diag response
+  if (cc_eDIAG_OK == cv_bDiag_TimeoutFlag )// check if tester requested to use desired timeout for response
+  {
+    dwWaitTime = cv_dwDiag_RespTimeout;// use new resp Timeout
+    cv_bDiag_TimeoutFlag = cc_eDIAG_NOK;
+  }
+  else 
+  {	  
+    dwWaitTime = dwFctn_DIAGCheckIfWaitTimeIsValid(cc_eDIAG_ZERO); // use the default wait time from ini file
+  }
+
+  // NOTE: If the response was already acknowledged with TestWaitForDiagResponse() and it is used to get the same response (again), it will fail as the response was already acknowledged.
+  // WORK AROUND: if (cond_A == TRUE || cond_B == TRUE) -> if cond_A is TRUE the cond_B will not be checked, as only one condition must be true (therefore, TestWaitForDiagResponse() is not checked again)
+  if (   ( cc_eDIAG_ZERO == diagGetLastResponse(aDiagReq, drDummyDiagResp) ) // TRUE: if request was previously sent and the response has been already acknowledged with TestWaitForDiagResponse()
+	    || ( cc_eDIAG_ResponseAsExpected == lFctn_DIAGWaitForResponse(aDiagReq, dwWaitTime, cc_eDIAG_PositiveResponse, aCopyPrimitiveDataInfo)) ) // TRUE: if request has been sent but the positive response was not yet acknowledged
+  {
+  	lResponseSize = diagGetRespPrimitiveSize( aDiagReq ); // get the total response size
+	  
+	  // Check to see if the total number of bytes to copy is not greater than the size of primitive data itself and if the stop byte is not greater than the last valid element of the primitive data 
+    if ( (dwNoOfBytesToCopy <= lResponseSize ) && (aStopByte <= lResponseSize) )
+    {
+      for( dwIndexOfArray = cc_eDIAG_ZERO; dwIndexOfArray < dwNoOfBytesToCopy; dwIndexOfArray++ )
+      {
+        lResponseByte = diagGetRespPrimitiveByte(aDiagReq, aStartByte + dwIndexOfArray);
+		  
+        if ( lResponseByte < cc_eDIAG_ZERO ) // check for no error while reading byte data from the position
+        {
+          snprintf(aCopyPrimitiveDataInfo,elcount(aCopyPrimitiveDataInfo),"Error reading byte position: %d ! Error code: %d !", aStartByte + dwIndexOfArray + cc_eDIAG_THREE, lResponseByte);
+			    if ( (byte)DebugFuncInternal & bDebugFlag)
+				    writeDbgLevel(DebugFuncInternal, aCopyPrimitiveDataInfo); 
+          bResult = NotOk;
+			    break;
+        }
+        else
+        {
+			    // Copy the actual value of the primitive byte in the output array
+          aPrimitiveDataOuputArray[dwIndexOfArray] = lResponseByte;
+          // Increment the number of bytes copied in the output array
+          aNoOfBytesCopied++;
+        }
+      }
+		
+      if ( dwNoOfBytesToCopy == dwIndexOfArray ) // check if all data was stored in the array
+      {
+        snprintf(aCopyPrimitiveDataInfo,elcount(aCopyPrimitiveDataInfo), "Primitive data has been succesfully read from start byte: %d to end byte: %d.", aStartByte , aStopByte);
+		    if ( (byte)DebugFuncInternal & bDebugFlag)
+			    writeDbgLevel(DebugFuncInternal, aCopyPrimitiveDataInfo); 
+		    bResult = Ok;
+      }
+      else // if not all data was stored in the array, an internal error occurred
+      {
+        // aCopyPrimitiveDataInfo was already updated
+        bResult = NotOk;// error while reading some byte location
+      }
+    }
+    else
+    {
+      snprintf(aCopyPrimitiveDataInfo,elcount(aCopyPrimitiveDataInfo), "The requested interval is bigger than the total primitive size: %d, of the response received !", (lResponseSize - cc_eDIAG_THREE));
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel(DebugFuncInternal, aCopyPrimitiveDataInfo); 
+      bResult = NotOk;
+    }
+  }
+  else
+  {
+	  // Diagnostic should have been sent previously.
+	  snprintf(aCopyPrimitiveDataInfo, elCount(aCopyPrimitiveDataInfo), "Diagnostic request has not been previously sent !");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, aCopyPrimitiveDataInfo); 
+	  bResult = NotOk;
+  }
+
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGGetPrimitiveData() return: %d.", bResult); 
+
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGSendAndComparePrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, byte aPrimitiveDataArrayToBeCompared[], char aCompareOutputInfo[])
+*  \brief Sends the request, get the RAW value of a parameter and compare it with the specified array value.
+*  \param[in]  aDiagReq 		        	          - Diagnostic request.
+*  \param[in]  aStartByte 	    		            - The byte position from where the data will START to be compared.
+*  \param[in]  aStopByte                        - The byte position where the data will STOP comparing.
+*  \param[in]  aPrimitiveDataArrayToBeCompared  - The byte array which will be compared with the actual primitive data, of the response.
+*  \param[out] aCompareOutputInfo			          - Extra information regarding compare action (displayed in test report).
+* 
+*  \return 	1   - Primitive data arrays successfully compared and are identical.
+*  \return 	0  	- Arrays are not identical, diagnostic request could not be sent, range not valid.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  07.09.18             RoBi        	  Created and implemented
+*/
+
+byte bFctn_DIAGSendAndComparePrimitiveData(diagRequest *aDiagReq, dword aStartByte, dword aStopByte, byte aPrimitiveDataArrayToBeCompared[], char aCompareOutputInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  byte bSendAndGetPrimitiveDataResult;
+  byte bComparePrimitiveDataResult;
+  byte bActualPrimitiveData[5000];
+  
+  bResult = NotOk;
+  bSendAndGetPrimitiveDataResult = NotOk;
+  bComparePrimitiveDataResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSendAndComparePrimitiveData() called.");
+  
+  bSendAndGetPrimitiveDataResult = bFctn_DIAGSendAndGetPrimitiveData(aDiagReq, aStartByte, aStopByte, bActualPrimitiveData, aCompareOutputInfo);
+  
+  if ( Ok == bSendAndGetPrimitiveDataResult ) // request sent, response received and actual primitive data can be compared
+  {
+	  // Compare actual primitive data with the provided input array
+	  bComparePrimitiveDataResult = bFctn_CONV_CompareByteArrays(bActualPrimitiveData, aPrimitiveDataArrayToBeCompared, /*length*/(aStopByte - aStartByte) + cc_eDIAG_ONE, aCompareOutputInfo);
+	  
+	  // Data is identical
+	  if ( Ok == bComparePrimitiveDataResult )
+	  {
+		  snprintf(aCompareOutputInfo, elCount(aCompareOutputInfo), "The compared response primitive data, from start byte: %d to stop byte: %d, is identical.", aStartByte, aStopByte);
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+		  bResult = Ok;
+	  }
+	  else // Data is NOT equal or array comparing has failed
+	  {
+		  // aCompareOutputInfo has already been updated in bFctn_CONVCompareByteArrays()
+		  if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel(DebugFuncInternal, aCompareOutputInfo); 
+		  bResult = NotOk;
+	  }
+  }
+  else
+  {
+	  // Diagnostic request could not be sent, response not received, primitive data could not be copied or provided range is invalid (details about the action are stored in "aCompareOutputInfo")
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, aCompareOutputInfo);
+	  bResult = NotOk;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSendAndComparePrimitiveData() return: %d.", bResult); 
+
+  return bResult;
+}
+
+/*! \fn byte bFctn_DIAGSendPrimitiveData(diagRequest *aDiagReq, byte aByteArrayToSend[], char chSendPrimitiveDataInfo[])
+*  \brief Function that modify all of the primitive data, of a provided diag request, send it with the data from the provided byte array and restore the request back to its original data.
+*  \param[in]  aDiagReq                   - Diagnostic request which will be modified and sent.
+*  \param[in]  aByteArrayToSend           - Data which will replace the content of the provided diag request. 
+*  \param[out] chSendPrimitiveDataInfo    - Extra information regarding the action of the function (displayed in test report).
+* 
+*  \return 	1   - Success, the diag request has been sent using the data from the byte array and original data restored.
+*  \return 	0  	- Could not modify the diag request, send it or save/restore the original data.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info
+*  
+*  23.11.18             RoBi        	  Created and implemented
+*/
+byte bFctn_DIAGSendPrimitiveData(diagRequest *aDiagReq, byte aByteArrayToSend[], char chSendPrimitiveDataInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  long lOriginalPrimitiveSize;
+  byte bOriginalPrimitiveData[1000];
+  byte bSendStatus;
+  
+  bResult = 0;
+  bSendStatus = 0;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSendPrimitiveData() called.");
+  
+  // save the current byte size of the diagnostic request
+  lOriginalPrimitiveSize = DiagGetPrimitiveSize(aDiagReq);
+  
+  if ( (0 < lOriginalPrimitiveSize) // returned data size is greater than 0
+    && (0 < diagGetPrimitiveData(aDiagReq, bOriginalPrimitiveData, lOriginalPrimitiveSize)) ) // original data is copied in order to restore it later
+  {
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Successfully backed-up the original data of the diag object."); 
+    // copy the data in the diag object (resize is done by the function as well)
+    if ( 1 == bFctn_CONV_ConvertByteArrayToDiagObject(aByteArrayToSend, aDiagReq) )
+    {
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel(DebugFuncInternal, "Successfully replaced the original data of the diag request, with the data from the byte array."); 
+      
+      if ( 0 == lFctn_DIAGSendRequest(aDiagReq, cc_eDIAGPhysical) ) // diag request successfully sent
+      {
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel(DebugFuncInternal, "The diagnostic request has been successfully sent with the provided byte array data."); 
+        bSendStatus = 1;
+      }
+      else // could not send the request
+      {
+        snprintf(chSendPrimitiveDataInfo, elCount(chSendPrimitiveDataInfo), "The modified diagnostic request could not be sent (original data backed-up and data from the provided array was copied).");
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel(DebugFuncInternal, chSendPrimitiveDataInfo); 
+        bSendStatus = 0;
+      }
+    }
+    else // diag object could not be modified
+    {
+      snprintf(chSendPrimitiveDataInfo, elCount(chSendPrimitiveDataInfo), "Original data has been backed-up but cannot copy the byte array data in the diag object.");
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel(DebugFuncInternal, chSendPrimitiveDataInfo); 
+      bResult = 0;
+    }
+    
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, "Proceeding to restore the diagnostic object to the backed-up initial values and size."); 
+    
+    // not adequate to re-size it back to the original size by using the size of the array (it will not be always equal to the initial size of diag object)
+    if ( (0 == diagResize(aDiagReq, lOriginalPrimitiveSize)) // returned data size is greater than 0
+      && (0 < DiagSetPrimitiveData(aDiagReq, bOriginalPrimitiveData, lOriginalPrimitiveSize))) // set the data back to the original values
+    {
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel(DebugFuncInternal, "Successfully restored to its initial values and size."); 
+      // data was modified, sent and restored successfully
+      
+      if ( 1 == bSendStatus )
+      {
+        if ( (byte)DebugFuncInternal & bDebugFlag)
+		      writeDbgLevel(DebugFuncInternal, "Diagnostic object has been modified, sent and restored to initial values successfully."); 
+        bResult = 1;
+      }
+      // else: chSendPrimitiveDataInfo is already updated
+    }
+    else if ( 1 == bSendStatus ) // request successfully sent but could not restore the diag object to the initial values
+    {
+      snprintf(chSendPrimitiveDataInfo, elCount(chSendPrimitiveDataInfo), "The modified diag request has been sent but function failed when trying to restore the data to its original values and size.");
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel(DebugFuncInternal, chSendPrimitiveDataInfo); 
+      bResult = 0;
+    }
+    else // request not sent and data could not be restored
+    {
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel(DebugFuncInternal, "Request could not be sent and diag object was not restored to initial values and size"); 
+    }
+  }
+  else
+  {
+    snprintf(chSendPrimitiveDataInfo, elCount(chSendPrimitiveDataInfo), "Could not back-up the original data of the provided diagnostic request.");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, chSendPrimitiveDataInfo); 
+    bResult = 0;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSendPrimitiveData() return: %d", bResult); 
+  
+  return bResult;
+}
+
+
+/*! \fn byte bFctn_DIAGSetResponseTimeout(dword aTimeoutValue, char aMappedResponse[])
+*  \brief Function that will modify the maximum wait time for the next diag response 
+*  \param[in]  aTimeoutValue           - Max. Timeout Diag Response time in ms.
+*  \param[out] aMappedResponse         - Extra information regarding the function activity.
+* 
+*  \return 	1   - Timeouts set will be taken in consideration for the next DiagWaitForResponse function.
+*  \return 	0  	- Invalid arguments for the timeout, should be greather then 0
+*  \note This function will have effect only for the diag function which don't have the wait time argument
+*  \note In case that function is not used the default wait time for response will be the time from ini file ( entry DefaultDiagWaitTime)
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  25.02.20             CiCo        	  Created and implemented
+*/
+byte bFctn_DIAGSetResponseTimeout(dword aTimeoutValue, char aMappedResponse[])
+{  
+  byte bDebugFlag;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;// debug purpouse
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSetResponseTimeout() called.");
+  
+  if ( 0 == aTimeoutValue ) 
+  {
+    snprintf(aMappedResponse, elCount(aMappedResponse), "Invalid timeout value should be greather then 0.");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, aMappedResponse);
+    return NotOk;
+  }
+  else
+  {
+    snprintf(aMappedResponse, elCount(aMappedResponse), "Max DiagResponse timeout was set to %d [ms] for the next response.", aTimeoutValue);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, aMappedResponse);
+    
+    cv_bDiag_TimeoutFlag = cc_eDIAG_OK; // flag is set to inform other diag function that the timeout was changed
+    cv_dwDiag_RespTimeout = aTimeoutValue; // set the global diag variable to desired value
+    return Ok;
+  }
+}
+
+/*! \fn byte bFctn_DIAGSetP2Timeouts(char aECU_Target[], dword aNewP2Timeout_ms, dword aNewP2ExtendedTimeout_ms, char aSetP2TimeoutsInfo[])
+*  \brief Function that modifies the current P2 and P2* Extented timeouts, of a specified ECU Target, to the new values specified values.
+*  \param[in]  aECU_Target                - The ECU Target for which the P2/P2* timeouts will apply.
+*  \param[in]  aNewP2Timeout_ms           - The new value, in miliseconds, for the P2 timeout.
+*  \param[in]  aNewP2ExtendedTimeout_ms   - The new value, in miliseconds, for the P2* Extended timeout.
+*  \param[out] aSetP2TimeoutsInfo         - Extra information regarding the function activity (displayed in test report).
+* 
+*  \return 	1   - Timeouts successfully modified.
+*  \return 	0  	- Could not modify the P2 timeouts.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  23.11.18             RoBi        	  Created and implemented
+*/
+
+byte bFctn_DIAGSetP2Timeouts(char aECU_Target[], dword aNewP2Timeout_ms, dword aNewP2ExtendedTimeout_ms, char aSetP2TimeoutsInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  long lResultSetP2Timeouts;
+  
+  bResult = 0;
+  lResultSetP2Timeouts = 0;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGSetP2Timeouts() called.");
+  
+  // try to set the new P2/P2* values, for the specified ECU Target
+  lResultSetP2Timeouts = DiagSetP2Timeouts(aECU_Target, aNewP2Timeout_ms, aNewP2ExtendedTimeout_ms);
+  
+  if ( 0 == lResultSetP2Timeouts ) // P2 timeous applied successfully for the provided ECU
+  {
+    snprintf(aSetP2TimeoutsInfo, elCount(aSetP2TimeoutsInfo), "P2 and P2*Extended timeouts applied successfully for the provided ECU.");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, aSetP2TimeoutsInfo);
+    bResult = 1;
+  }
+  else // something went wrong, failed when trying to modify the P2 timeouts
+  {
+    snprintf(aSetP2TimeoutsInfo, elCount(aSetP2TimeoutsInfo), "Could not modify the values of the P2 Timeouts. Received Internal Error Code: %d.", lResultSetP2Timeouts);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, aSetP2TimeoutsInfo);  
+    bResult = 0;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSetP2Timeouts() return: %d.", bResult);
+  
+  return bResult;
+}
+
+/*! \fn byte bFctn_DIAGRestoreP2Timeouts(char aECU_Target[], char aRestoreP2TimeoutsInfo[])
+*  \brief Restores the P2/P2* Extended timeouts, for a specific ECU Target, to the default values from .cdd/configuration.
+*  \param[in]  aECU_Target              - The ECU Target for which the P2/P2* timeouts will apply.
+*  \param[out] aRestoreP2TimeoutsInfo   - Extra information regarding the function activity (displayed in test report).
+* 
+*  \return 	1   - Timeouts successfully restored to the values specified in the .cdd/configuration.
+*  \return 	0  	- Could not restore the P2 timeouts.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  26.11.18             RoBi        	  Created and implemented
+*/
+
+byte bFctn_DIAGRestoreP2Timeouts(char aECU_Target[], char aRestoreP2TimeoutsInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  long lDefaultP2Timeout;
+  long lDefaultP2ExtendedTimeout;
+  long lResultSetP2Timeouts;
+  
+  bResult = 0;
+  lResultSetP2Timeouts = 0;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGRestoreP2Timeouts() called.");
+  
+  // Get the default values of P2/P2* (1 - Get value for tester side, 1 - Value stored at the selected interface in the description's document (usually returns source=2))
+  // Note: Basic diagnostic devices do not have an interface defined in a description, therefore source=1 will return the value set at the configuration (source=2)
+  lDefaultP2Timeout = diagGetP2Timeout(aECU_Target, 1, 1);
+  lDefaultP2ExtendedTimeout = diagGetP2Extended(aECU_Target, 1 ,1);
+  
+  // Valid default values returned for P2 and P2* Extended
+  if ( (0 <= lDefaultP2Timeout) 
+    && (0 <= lDefaultP2ExtendedTimeout) )
+  {
+    // try to set the new P2/P2* values, for the specified ECU Target
+    lResultSetP2Timeouts = bFctn_DIAGSetP2Timeouts(aECU_Target, lDefaultP2Timeout, lDefaultP2ExtendedTimeout, aRestoreP2TimeoutsInfo);
+    
+    // successfully changed the timeout values
+    if ( 1 == lResultSetP2Timeouts )
+    {
+      snprintf(aRestoreP2TimeoutsInfo, elCount(aRestoreP2TimeoutsInfo), "Timeout values P2 = %d and P2*Extended = %d, successfully restored for ECU Target: %s.", lDefaultP2Timeout, lDefaultP2ExtendedTimeout, aECU_Target);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+	      writeDbgLevel(DebugFuncInternal, aRestoreP2TimeoutsInfo);  
+      bResult = 1;
+    }
+    else // could not change the timeout values
+    {
+      // writeDbg message is already displayed from function bFctn_DIAGSetP2Timeouts()
+      bResult = 0;
+    }
+  } // failed when trying to get the P2/P2* values from the .cdd/configuration
+  else
+  {
+    snprintf(aRestoreP2TimeoutsInfo, elCount(aRestoreP2TimeoutsInfo), "Could not get the values from .cdd/configuration. Values returned for P2 = %d and P2* = %d (if < 0 it's an Error Code).", lDefaultP2Timeout, lDefaultP2ExtendedTimeout);
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, aRestoreP2TimeoutsInfo);  
+    bResult = 0;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGRestoreP2Timeouts() return: %d.", bResult);
+  
+  return bResult;
+}
+
+/*! \fn long lFctn_DIAG_CRSendAndGetPrimitiveDataWithOffset(byte aDiagCR[], dword aStartByte, byte aPrimitiveDataOuputArray[], char aMessageResponseInfo[])
+*  \brief Sends a custom request and stores the primitive data, from start position until the end of the response, in an output byte array.
+*  \param[in]  aDiagCR                  - Array with the custom request elements (Representation example of DefaultSession_Start: aDiagCustomReqArray[0] = 0x10, aDiagCustomReqArray[1] = 0x01).
+*  \param[in]  aStartByte               - The byte position from where the data will START to be copied.
+*  \param[in]  aPrimitiveDataOuputArray - The output array which store the data of the response.
+*  \param[in]  aMessageResponseInfo     - Extra information regarding the function activity (displayed in test report).
+* 
+*  \return >0  - Number of bytes copied in the output array from the specified custom request 
+*  \return -1  - An error occured(Check the message from argument aMessageResponseInfo).
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*   19.10.19            CiCo        	  Created and implemented
+*/
+
+long lFctn_DIAG_CRSendAndGetPrimitiveDataWithOffset(byte aDiagCR[], dword aStartByte, byte aPrimitiveDataOuputArray[], char aMessageResponseInfo[])
+{
+  byte bDebugFlag;
+  dword dwNoOfBytesCopied;
+  diagRequest * req_CustomRequestCreated; // use the pre-defined data diag object to create the custom request
+
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_DIAG_CRSendAndGetPrimitiveDataWithOffset() called.");
+  
+  // Calculate the total number of desired bytes 
+  if( bFctn_CONV_ConvertByteArrayToDiagObject(aDiagCR, req_CustomRequestCreated ))
+  {
+    if ( bFctn_DIAG_SendAndGetPrimitiveDataWithOffset(req_CustomRequestCreated , aStartByte, aPrimitiveDataOuputArray, dwNoOfBytesCopied, aMessageResponseInfo ))
+    {
+      snprintf(aMessageResponseInfo, elCount(aMessageResponseInfo), "SUCCESS: %s", aMessageResponseInfo);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel(DebugFuncInternal, "bFctn_DIAG_SendAndGetPrimitiveDataWithOffset() Number of bytes copied: %d.", dwNoOfBytesCopied); 
+      return dwNoOfBytesCopied;
+    }
+    else
+    {
+      snprintf(aMessageResponseInfo, elCount(aMessageResponseInfo), "FAILED: %s", aMessageResponseInfo);
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel(DebugFuncInternal, aMessageResponseInfo);
+      return Error;
+    }
+  }
+  else
+  {
+    snprintf(aMessageResponseInfo, elCount(aMessageResponseInfo), "Conversion failed to diag object.");
+    if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, aMessageResponseInfo);
+    return Error;
+  }
+}
+
+/*! \fn byte bFctn_DIAG_SendAndGetPrimitiveDataWithOffset(diagRequest *aDiagReq, dword aStartPos, byte aPrimitiveDataOuputArray[], dword &aCopiedBytes, char aCopyPrimitiveDataInfo[])
+*  \brief Sends a specific request and stores the primitive data, from start position until the end of the response, in an output byte array.
+*  \param[in]  aDiagReq                 - Diagnostic request.
+*  \param[in]  aStartPos 	    		      - The byte position from where the data will START to be copied.
+*  \param[in]  aPrimitiveDataOuputArray - The output array which store the data of the response.
+*  \param[out] aCopiedBytes             - The number of bytes copied in the output array.
+*  \param[in]  aCopyPrimitiveDataInfo   - Extra information regarding the function activity (displayed in test report).
+* 
+*  \return 	1  - The request is succesfully sent and his primitive data is stored in the output array.
+*  \return 	0  - An error occured.(Check the message from the aCopyPrimitiveDataInfo)
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*   19.10.19            CiCo        	  Created and implemented
+*/
+
+byte bFctn_DIAG_SendAndGetPrimitiveDataWithOffset(diagRequest *aDiagReq, dword aStartPos, byte aPrimitiveDataOuputArray[], dword &aCopiedBytes, char aCopyPrimitiveDataInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  long lDiagSendStatus;
+  byte bGetPrimitiveDataResult;
+  
+  bResult = NotOk;
+  lDiagSendStatus = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+  
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAG_SendAndGetPrimitiveDataWithOffset() called.");
+  
+  // Send the request
+  lDiagSendStatus = lFctn_DIAGSendRequest(aDiagReq, cc_eDIAGPhysical); // note - by default it will be sent on physical mode
+  bGetPrimitiveDataResult = bFctn_DIAG_GetPrimitiveDataWithOffset(aDiagReq, aStartPos, aPrimitiveDataOuputArray, aCopiedBytes, aCopyPrimitiveDataInfo);
+  
+  if ( cc_eDIAG_ZERO <= lDiagSendStatus ) // check if request has been successfully sent
+  {
+		if ( Ok == bGetPrimitiveDataResult )
+		{
+      // Primitive data has been copied successfully in the ouput array (details about the action are stored in "aCopyPrimitiveDataInfo")
+			if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCopyPrimitiveDataInfo);
+			bResult = Ok;
+		}
+		else
+		{
+			// Error encountered when trying to copy the primitive data (details about the action are stored in "aCopyPrimitiveDataInfo")
+			if ( (byte)DebugFuncInternal & bDebugFlag)
+		    writeDbgLevel (DebugFuncInternal, aCopyPrimitiveDataInfo);
+			bResult = NotOk;
+		}
+  }
+  else
+  {
+	  // Request could not be sent (aCopyPrimitiveDataInfo is already updated from function bFctn_DIAGGetPrimitiveData())
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel (DebugFuncInternal, aCopyPrimitiveDataInfo);
+	  bResult = NotOk;
+  }
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "bFctn_DIAGSendAndGetPrimitiveData() return: %d.", bResult); 
+
+  return bResult;
+}
+
+/*! \fn byte bFctn_DIAG_GetPrimitiveDataWithOffset(diagRequest *aDiagReq, dword aStartPos, byte aPrimitiveDataOuputArray[], dword &aCopiedBytes, char aCopyPrimitiveDataInfo[])
+*  \brief 
+*  \param[in]  aDiagReq                 - Diagnostic request.
+*  \param[in]  aStartPos                - The byte position from where the data will START to be copied.
+*  \param[in]  aPrimitiveDataOuputArray - The output array which store the data of the response.
+*  \param[in]  aCopiedBytes             - The number of bytes copied in the output array.
+*  \param[in]  aCopyPrimitiveDataInfo   - Extra information regarding the function activity (displayed in test report).
+*
+*  \return 	1  - The primitive data of the request is succesfully stored in the output array.
+*  \return 	0  - An error occured.(Check the message from aCopyPrimitiveDataInfo)
+*
+*  \note    Timeout for the diag response can be handled using either by default from .ini file, or can be changed by calling function bFctn_DIAGSetResponseTimeout( TimeoutValue, infoMessage ) before function call
+*
+* Change History: 
+* Date(DD.MM.YY)           Author               Change info                                                          
+*  
+*   19.10.19                CiCo        	  Created and implemented
+*   25.02.20				CiCo			  Updated for handling the diag response timeout if user request it.
+*/
+
+byte bFctn_DIAG_GetPrimitiveDataWithOffset(diagRequest *aDiagReq, dword aStartPos, byte aPrimitiveDataOuputArray[], dword &aCopiedBytes, char aCopyPrimitiveDataInfo[])
+{
+  byte bResult;
+  byte bDebugFlag;
+  dword dwWaitTime;
+  diagResponse * drDummyDiagResp; // dummy response
+  long lResponseSize;
+  dword dwIndexOfArray;
+  long lResponseByte;
+  
+  bResult = NotOk;
+  bDebugFlag = ccDIAG_GlobalDebugFlag;
+
+  writeDbgLevel(DebugFuncCalls, "Function bFctn_DIAGGetPrimitiveData() called.");
+  
+  // handling of the max to wait for diag response
+  if (cc_eDIAG_OK == cv_bDiag_TimeoutFlag )// check if tester requested to use desired timeout for response
+  {
+    dwWaitTime = cv_dwDiag_RespTimeout;// use new resp Timeout
+    cv_bDiag_TimeoutFlag = cc_eDIAG_NOK;
+  }
+  else 
+  {	  
+    dwWaitTime = dwFctn_DIAGCheckIfWaitTimeIsValid(cc_eDIAG_ZERO); // use the default wait time from ini file
+  }
+
+  // NOTE: If the response was already acknowledged with TestWaitForDiagResponse() and it is used to get the same response (again), it will fail as the response was already acknowledged.
+  // WORK AROUND: if (cond_A == TRUE || cond_B == TRUE) -> if cond_A is TRUE the cond_B will not be checked, as only one condition must be true (therefore, TestWaitForDiagResponse() is not checked again)
+  if (   ( cc_eDIAG_ZERO == diagGetLastResponse(aDiagReq, drDummyDiagResp) ) // TRUE: if request was previously sent and the response has been already acknowledged with TestWaitForDiagResponse()
+	    || ( cc_eDIAG_ResponseAsExpected == lFctn_DIAGWaitForResponse(aDiagReq, dwWaitTime, cc_eDIAG_PositiveResponse, aCopyPrimitiveDataInfo)) ) // TRUE: if request has been sent but the positive response was not yet acknowledged
+  {
+  	lResponseSize = diagGetRespPrimitiveSize( aDiagReq ); // get the total response size
+    
+    if( 0 < lResponseSize - aStartPos )// check if the requested offset is available in the response
+    {
+  	  // Check to see if the total number of bytes to copy is not greater than the size of primitive data itself 
+      if ( elcount( aPrimitiveDataOuputArray ) >= ( lResponseSize - aStartPos ))// check for valid function arguments
+      {
+        for( dwIndexOfArray = 0; dwIndexOfArray < lResponseSize - aStartPos ; dwIndexOfArray++ )
+        {
+          lResponseByte = diagGetRespPrimitiveByte( aDiagReq, dwIndexOfArray + aStartPos ); // position with + offset
+  		
+          if ( lResponseByte < cc_eDIAG_ZERO ) // check for no error while reading byte data from the position
+          {
+            snprintf(aCopyPrimitiveDataInfo,elcount(aCopyPrimitiveDataInfo),"Error reading byte position: %d ! Error code: %d !", dwIndexOfArray + aStartPos, lResponseByte);
+  			    if ( (byte)DebugFuncInternal & bDebugFlag)
+  				    writeDbgLevel(DebugFuncInternal, aCopyPrimitiveDataInfo); 
+            bResult = NotOk;
+  			    break;
+          }
+          else
+          {
+  			    // copy the actual value of the primitive byte in the output array
+            aPrimitiveDataOuputArray[dwIndexOfArray] = lResponseByte;
+          }
+        }
+  		
+        if ( (lResponseSize - aStartPos ) ==  dwIndexOfArray ) // check if all data was stored in the array
+        {
+          snprintf(aCopyPrimitiveDataInfo,elcount(aCopyPrimitiveDataInfo), "Primitive data has been succesfully read from start byte: %d to end byte: %d.", aStartPos , lResponseSize - 1 );
+  		    if ( (byte)DebugFuncInternal & bDebugFlag)
+  			    writeDbgLevel(DebugFuncInternal, aCopyPrimitiveDataInfo); 
+          aCopiedBytes = dwIndexOfArray;
+  		    bResult = Ok;
+        }
+        else // if not all data was stored in the array, an internal error occurred
+        {
+          // aCopyPrimitiveDataInfo was already updated
+          snprintf(aCopyPrimitiveDataInfo,elcount(aCopyPrimitiveDataInfo), "Error while reading some byte location." );
+          bResult = NotOk;// error while reading some byte location
+        }
+      }
+      else // else for total of bytes
+      {
+        snprintf(aCopyPrimitiveDataInfo,elcount(aCopyPrimitiveDataInfo), "The output array is less than the requested primitive size: %d, of the response received !",  lResponseSize - aStartPos );
+  		  if ( (byte)DebugFuncInternal & bDebugFlag)
+  		    writeDbgLevel(DebugFuncInternal, aCopyPrimitiveDataInfo); 
+        bResult = NotOk;
+      }
+    }
+    else // else for start position
+    {
+      snprintf(aCopyPrimitiveDataInfo,elcount(aCopyPrimitiveDataInfo), "Invalid Start offset. Requested %d. Max availabe bytes in response: %d", aStartPos, lResponseSize -  1);
+      bResult = NotOk;// error while reading some byte location
+    }
+  }
+  else
+  {
+	  // Diagnostic should have been sent previously.
+	  snprintf(aCopyPrimitiveDataInfo, elCount(aCopyPrimitiveDataInfo), "Diagnostic request has not been previously sent, or no positive response !");
+	  if ( (byte)DebugFuncInternal & bDebugFlag)
+	    writeDbgLevel(DebugFuncInternal, aCopyPrimitiveDataInfo); 
+	  bResult = NotOk;
+  }
+
+  return bResult;
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief Library for handling Diagnostics(UDS) services.
+*/

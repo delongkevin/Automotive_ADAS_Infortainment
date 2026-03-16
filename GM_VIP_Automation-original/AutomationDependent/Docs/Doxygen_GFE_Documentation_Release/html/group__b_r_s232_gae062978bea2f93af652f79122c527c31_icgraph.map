@@ -1,0 +1,5 @@
+<map id="bFctn_RS232SendData" name="bFctn_RS232SendData">
+<area shape="rect" id="node1" title=" " alt="" coords="235,31,393,57"/>
+<area shape="rect" id="node2" href="$group__c_p_o_w_receive.html#ga32e767b1f49b3dadefb1ddb2de9fcccc" title="Function sets and send a specific command to the selected Power Supply, in order to get a response fr..." alt="" coords="5,5,187,32"/>
+<area shape="rect" id="node3" href="$group__c_relay_k_m_tronic_status.html#ga02823a844f38ee4ecc8d43e74b1c610e" title=" " alt="" coords="9,56,183,83"/>
+</map>

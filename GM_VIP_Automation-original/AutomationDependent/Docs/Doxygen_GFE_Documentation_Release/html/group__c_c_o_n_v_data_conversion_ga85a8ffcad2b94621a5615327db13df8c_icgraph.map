@@ -1,0 +1,5 @@
+<map id="bFctn_CONV_ConvertDiagReqToString" name="bFctn_CONV_ConvertDiagReqToString">
+<area shape="rect" id="node1" title="Function that converts BCD values coded with four bits each to a string (character array) that is sui..." alt="" coords="265,23,464,65"/>
+<area shape="rect" id="node2" href="$group__ts_d_i_a_g.html#ga7af3d29b249bcc751bef7e028cd8bec1" title="Function that sends a specific diagnostic request. NOTE: Based on how the request is defined,..." alt="" coords="34,5,189,32"/>
+<area shape="rect" id="node3" href="$group__c_d_i_a_g.html#gabebaf08418a99efdb8d3529826a84e01" title="Function will send a custom request, provided through the byte array parameter." alt="" coords="5,56,217,83"/>
+</map>

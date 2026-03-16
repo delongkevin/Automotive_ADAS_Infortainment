@@ -1,0 +1,10 @@
+<map id="bFctn_POW_GetCommand" name="bFctn_POW_GetCommand">
+<area shape="rect" id="node1" title="Function sets and send a specific command to the selected Power Supply, in order to get a response fr..." alt="" coords="5,147,187,174"/>
+<area shape="rect" id="node2" href="$group__c_c_o_n_v_data_conversion.html#gaf3dab94cda1a0976a596e29f7f507b71" title="Function that will convert a string to a floating point number." alt="" coords="245,5,428,47"/>
+<area shape="rect" id="node3" href="$group__b_r_s232.html#ga61b7ec4299170645a1811565eab05262" title="Function closes a Serial Port." alt="" coords="257,71,416,98"/>
+<area shape="rect" id="node4" href="$group__b_r_s232_receive.html#gae30654746ae6641dd0a04013b29c01d2" title="Function gets from buffer data received on RS232." alt="" coords="262,122,411,149"/>
+<area shape="rect" id="node6" href="$group__b_r_s232.html#ga11797ce4059c8c018f7564bea4ce29eb" title=" " alt="" coords="259,173,415,199"/>
+<area shape="rect" id="node7" href="$group__b_r_s232.html#gae062978bea2f93af652f79122c527c31" title=" " alt="" coords="257,223,416,250"/>
+<area shape="rect" id="node8" href="$group__c_p_o_w.html#ga8c5a2dd4ee872a25f180f449a9339a88" title="Function converts an array of bytes with floating point to an integer value ." alt="" coords="235,275,439,316"/>
+<area shape="rect" id="node5" href="$group__c_c_o_n_v_data_conversion.html#ga04fdfabf3f2093239d85ed91dd3e9aa7" title="Converts the exactly number of bytes(given in aByteDLC) from a byte array to a hex encoded strings ar..." alt="" coords="487,115,693,156"/>
+</map>

@@ -1,0 +1,12 @@
+<map id="lFctn_READFILEiniParameterNumber" name="lFctn_READFILEiniParameterNumber">
+<area shape="rect" id="node1" title="Function opens an ini file and reads a number entry." alt="" coords="505,182,700,223"/>
+<area shape="rect" id="node2" href="$group__c_d_i_a_g.html#ga01ad9d45aca6a04ff6b96df480595305" title="Function that sends a specific diagnostic request." alt="" coords="291,115,457,141"/>
+<area shape="rect" id="node6" href="$_test_main_panel_8can.html#a5f1256f4a63601b16acdca15c8050a3c" title=" " alt="" coords="301,182,447,223"/>
+<area shape="rect" id="node9" href="$_test_main_panel_8can.html#a79ff7555dc4a9bf3029b2b6c659531bd" title=" " alt="" coords="301,279,447,321"/>
+<area shape="rect" id="node3" href="$group__ts_d_i_a_g.html#ga7af3d29b249bcc751bef7e028cd8bec1" title="Function that sends a specific diagnostic request. NOTE: Based on how the request is defined,..." alt="" coords="47,5,201,32"/>
+<area shape="rect" id="node4" href="$group__c_d_i_a_g.html#ga2ecf717cfdb74176c76ec362d35c7cda" title="Sends a custom request and stores the primitive data, from start position until the end of the respon..." alt="" coords="5,57,243,98"/>
+<area shape="rect" id="node5" href="$group__c_d_i_a_g.html#gabebaf08418a99efdb8d3529826a84e01" title="Function will send a custom request, provided through the byte array parameter." alt="" coords="18,123,230,149"/>
+<area shape="rect" id="node7" href="$_test_main_panel_8can.html#a61952cc88e01b8300448d4a84e897cf9" title=" " alt="" coords="31,174,217,215"/>
+<area shape="rect" id="node8" href="$_test_main_panel_8can.html#ada3c13ae8acaf4957cae17c445853858" title=" " alt="" coords="31,239,217,281"/>
+<area shape="rect" id="node10" href="$_test_main_panel_8can.html#aa6a1e0662c5009cee829521f6c9e76cb" title=" " alt="" coords="37,305,211,346"/>
+</map>

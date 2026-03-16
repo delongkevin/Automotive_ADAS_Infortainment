@@ -1,0 +1,109 @@
+/*@!Encoding:1252*/
+includes
+{
+  #include "ccDUT.cin"
+}
+
+/*!
+* @defgroup cDTC cDTC
+* @defgroup DTC DTC
+* @ingroup controlLib
+* @{
+* @addtogroup cDTC
+* @{
+*/ 
+
+/*! \fn byte bFctn_DUT_Diag_SetTarget(enum eDUT aDUT, char aMappedResponse[])
+*  \brief Function that will set required diag target based on defined targets
+*  \param[in]   aDUT             - Diag Target eDCUA or eDCUB
+*  \param[out]  aMappedResponse  - Information about the execution of function
+* 
+*  \return  0   - Error occurs for diag set target
+*  \return  1   - Diag Target was set
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+* 15.07.21              CiCo            Created and implemented
+*/
+byte bFctn_DUT_Diag_SetTarget(enum cc_eDUT aDUT, char aMappedResponse[])
+{
+  char chDiagTarget[20]; 
+  byte bDebugFlag;
+   
+  // init local variables
+  bDebugFlag = cc_bDUT_GlobalDebugFlag;// debug only
+  
+  writeDbgLevel(DebugFuncCalls, "bFctn_DUT_Diag_SetTarget called.");
+  
+  if(eDUT1 == aDUT)
+    snprintf(chDiagTarget,elcount(chDiagTarget),"DCU_EQ6LH");
+  else if(eDUT2 == aDUT)
+    snprintf(chDiagTarget,elcount(chDiagTarget),"DCU_EQ6LH");
+  else
+    snprintf(chDiagTarget,elcount(chDiagTarget),"DCU_EQ6LH");
+  
+  if( bDebugFlag & (byte) DebugFuncInternal )
+      writeDbgLevel( DebugFuncInternal, "lFctn_DIAGSetTarget -> %d, Target Requested: %s", aDUT, chDiagTarget );
+  // Set DUT Target 
+  if (0 != lFctn_DIAGSetTarget(chDiagTarget)){
+    snprintf(aMappedResponse, elcount(aMappedResponse), "Failed: Error setting target for %s ", chDiagTarget);
+    if( bDebugFlag & (byte) DebugFuncInternal )
+      writeDbgLevel( DebugFuncInternal, "lFctn_DIAGSetTarget -> %s", aMappedResponse );
+    return NotOk;
+  }
+  
+  snprintf(aMappedResponse, elcount(aMappedResponse), "ECU target was set to %s ", chDiagTarget);
+  return Ok;
+}
+
+/*! \fn byte bFctn_DUT_Diag_SetTarget(char aMappedResponse[])
+*  \brief Function that will set required diag target based on sysVar DUT_TestSupport::DUTSelect::Type 
+*  \param[out]  aMappedResponse  - Information about the execution of function
+* 
+*  \return  0   - Error oDCUrs for diag set target
+*  \return  1   - Diag Target was set
+*  \note  - Make sure that you have sysVar DUT_TestSupport::DUTSelect::Type on your configuration
+*         
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+* 15.07.21              CiCo            Created and implemented
+*/
+byte bFctn_DUT_Diag_SetTarget(char aMappedResponse[])
+{
+  char chDiagTarget[20]; 
+  byte bDebugFlag;
+ 
+
+  // init local variables
+  bDebugFlag = pc_bGlobalDebugFlag;// debug only
+ 
+  writeDbgLevel(DebugFuncCalls, "bFctn_DUT_Diag_SetTarget called.");
+  
+  if( eDUT1 == @DUT_TestSupport::DUTSelect::Type)
+    snprintf(chDiagTarget,elcount(chDiagTarget),"DCU_EQ6LH");
+  else if( eDUT2 == @DUT_TestSupport::DUTSelect::Type)
+    snprintf(chDiagTarget,elcount(chDiagTarget),"DCU_EQ6LH");
+  else
+    snprintf(chDiagTarget,elcount(chDiagTarget),"DCU_EQ6LH");
+  
+  if( bDebugFlag & (byte) DebugFuncInternal )
+      writeDbgLevel( DebugFuncInternal, "lFctn_DIAGSetTarget -> %d, Target Requested: %s", @DUT_TestSupport::DUTSelect::Type, chDiagTarget );
+  // Set DUT Target 
+  if (0 != lFctn_DIAGSetTarget(chDiagTarget)){
+    snprintf(aMappedResponse, elcount(aMappedResponse), "Failed: Error setting target for %s ", chDiagTarget);
+    if( bDebugFlag & (byte) DebugFuncInternal )
+      writeDbgLevel( DebugFuncInternal, "lFctn_DIAGSetTarget -> %s", aMappedResponse );
+    return NotOk;
+  }
+  
+  snprintf(aMappedResponse, elcount(aMappedResponse), "ECU target was set to %s ", chDiagTarget);
+  return Ok;
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief Library for handling DTC functionality
+*/

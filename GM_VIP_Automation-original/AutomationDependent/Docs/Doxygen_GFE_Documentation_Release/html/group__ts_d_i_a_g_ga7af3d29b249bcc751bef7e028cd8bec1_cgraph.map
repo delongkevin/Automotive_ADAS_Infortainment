@@ -1,0 +1,9 @@
+<map id="A_DIAG_SendRequest" name="A_DIAG_SendRequest">
+<area shape="rect" id="node1" title="Function that sends a specific diagnostic request. NOTE: Based on how the request is defined,..." alt="" coords="5,97,160,123"/>
+<area shape="rect" id="node2" href="$group__c_c_o_n_v_data_conversion.html#ga85a8ffcad2b94621a5615327db13df8c" title="Function that converts BCD values coded with four bits each to a string (character array) that is sui..." alt="" coords="213,5,412,47"/>
+<area shape="rect" id="node3" href="$group__c_r_e_p_o_r_t.html#ga408b2b22f03e09e17faac1a06b30f6c5" title="unction writes in report desired Action text" alt="" coords="237,71,389,98"/>
+<area shape="rect" id="node4" href="$group__c_d_i_a_g.html#ga01ad9d45aca6a04ff6b96df480595305" title="Function that sends a specific diagnostic request." alt="" coords="229,122,396,149"/>
+<area shape="rect" id="node7" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="208,173,417,199"/>
+<area shape="rect" id="node5" href="$group__b_r_e_a_d_f_i_l_e.html#ga99b3eb9243d35ea686c5f9bb5612ebde" title="Function returns previous ini file, stored in the Default.ini file, used before stopping simulation." alt="" coords="466,93,659,119"/>
+<area shape="rect" id="node6" href="$group__b_r_e_a_d_f_i_l_e.html#gaa2f411dcf05539923bc880e7732d47a9" title="Function opens an ini file and reads a number entry." alt="" coords="465,144,660,185"/>
+</map>

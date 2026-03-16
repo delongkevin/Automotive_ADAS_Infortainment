@@ -1,0 +1,10 @@
+<map id="vFctn_POWSetActivePOW" name="vFctn_POWSetActivePOW">
+<area shape="rect" id="node1" title="Function sets the parameters for communication on RS232." alt="" coords="465,115,644,141"/>
+<area shape="rect" id="node2" href="$group__c_p_o_w.html#ga61c1de931408b07b9f5bb1d6510994c3" title="Function selects from ini file which Power Supply to set active (0, 1... 8)." alt="" coords="211,5,417,32"/>
+<area shape="rect" id="node4" href="$_power_supply_8can.html#a8048a45bb4a5c1e5a546050aaabbed26" title=" " alt="" coords="279,56,349,83"/>
+<area shape="rect" id="node5" href="$_power_supply_8can.html#a214b46e2ae7f5e99766453037445fd9f" title=" " alt="" coords="231,107,397,149"/>
+<area shape="rect" id="node6" href="$_power_supply_8can.html#a11bce05e2ddda2e16fdaa4f88bd20d80" title=" " alt="" coords="235,173,393,214"/>
+<area shape="rect" id="node7" href="$_power_supply_8can.html#a17915aecff0819c3ba5a228d883ffcba" title=" " alt="" coords="215,239,413,265"/>
+<area shape="rect" id="node3" href="$group__ts_p_o_w_e_r.html#gafb057f5b7ba3d0c6de4d4110d9db0a20" title="Function sets power supply voltage." alt="" coords="13,5,155,32"/>
+<area shape="rect" id="node8" href="$_power_supply_8can.html#a7b3d8ef9a69b537effb5e7f97cf10a2f" title=" " alt="" coords="5,231,163,273"/>
+</map>

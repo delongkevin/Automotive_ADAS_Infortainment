@@ -1,0 +1,8 @@
+<map id="A_RelKMT_SetRelayOutputON" name="A_RelKMT_SetRelayOutputON">
+<area shape="rect" id="node1" title="Function sets output from specified RELAY from ini file to ON." alt="" coords="5,81,208,108"/>
+<area shape="rect" id="node2" href="$group__c_relay_k_m_tronic.html#gab4d4c7d7d69743932fed3bd73153f23d" title="Function selects from ini file which RELAY to set active (0, 1... 8)." alt="" coords="263,5,458,32"/>
+<area shape="rect" id="node4" href="$group__c_relay_k_m_tronic.html#ga40b9e12c67a8c1c8285579649eb574fc" title="Function will set Relay to ON." alt="" coords="283,56,438,83"/>
+<area shape="rect" id="node5" href="$group__c_r_e_p_o_r_t.html#ga408b2b22f03e09e17faac1a06b30f6c5" title="unction writes in report desired Action text" alt="" coords="285,107,437,133"/>
+<area shape="rect" id="node6" href="$group__c_r_e_p_o_r_t.html#gadca6b8c17494ec3fdc55bfaaba709b53" title="Function Evaluates writes in report evaluated expected." alt="" coords="256,157,465,184"/>
+<area shape="rect" id="node3" href="$group__c_relay_k_m_tronic.html#ga27add8f5ed3628ed5209ca363b64427f" title="Function initializes link to specified relay from ini file." alt="" coords="513,5,645,32"/>
+</map>

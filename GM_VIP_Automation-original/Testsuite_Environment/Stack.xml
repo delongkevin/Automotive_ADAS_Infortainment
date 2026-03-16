@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?altova_sps ..\..\..\..\..\..\..\..\..\Program Files\Altova\Authentic2008\sps\Template\Vector\XMLTestSpecSimplified.sps?>
+<testmodule title="Software_Integration_Test_Cases" version="1.13">
+	<description>Software Intergration Test for ROM LLSI</description>
+		<testgroup title="ROM_SWIT">
+			<capltestcase name="To_verify_the_SMU_Init_Software_interface" title="To_verify_the_SMU_Init_Software_interface"/>
+			<capltestcase name="To_verify_the_SDLAdaptor_init_ROM_Software_interface" title="To_verify_the_SDLAdaptor_init_ROM_Software_interface"/>
+			<capltestcase name="To_verify_the_os_main_Software_interface" title="To_verify_the_os_main_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_e_CPU_Software_interface" title="To_verify_the_GetHWIO_e_CPU_Software_interface"/>
+			<capltestcase name="To_verify_the_CntrlRBSR_Background_Software_interface" title="To_verify_the_CntrlRBSR_Background_Software_interface"/>
+			<capltestcase name="To_verify_the_Os_Entry_OS_SMUSafety_ISR1_Software_interface" title="To_verify_the_Os_Entry_OS_SMUSafety_ISR1_Software_interface"/>
+			<capltestcase name="To_verify_the_Os_Entry_Task_Core0_10ms_Software_interface" title="To_verify_the_Os_Entry_Task_Core0_10ms_Software_interface"/>
+			<capltestcase name="To_verify_the_Os_Entry_Task_Core0_250ms_Software_interface" title="To_verify_the_Os_Entry_Task_Core0_250ms_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_e_RstSrc_Software_interface" title="To_verify_the_GetHWIO_e_RstSrc_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_e_ROM_Flt_Software_interface" title="To_verify_the_GetHWIO_e_ROM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_GetSDLAdaptor_e_ROM_Flt_Software_interface" title="To_verify_the_GetSDLAdaptor_e_ROM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_y_ROM_AddressFailed_Software_interface" title="To_verify_the_GetHWIO_y_ROM_AddressFailed_Software_interface"/>
+			<capltestcase name="To_verify_the_GetSDLAdaptor_y_ROM_AddressFailed_Software_interface" title="To_verify_the_GetSDLAdaptor_y_ROM_AddressFailed_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_y_ROM_InstAddressFailed_Software_interface" title="To_verify_the_GetHWIO_y_ROM_InstAddressFailed_Software_interface"/>
+			<capltestcase name="To_verify_the_GetSDLAdaptor_y_ROM_InstAddressFailed_Software_interface" title="To_verify_the_GetSDLAdaptor_y_ROM_InstAddressFailed_Software_interface"/>
+			<capltestcase name="To_verify_the_Minimum_value_GetHWIO_y_ROM_FailedCPU_Specific_Software_interface" title="To_verify_the_Minimum_value_GetHWIO_y_ROM_FailedCPU_Specific_Software_interface"/>
+			<capltestcase name="To_verify_the_MID_value_GetHWIO_y_ROM_FailedCPU_Specific_Software_interface" title="To_verify_the_MID_value_GetHWIO_y_ROM_FailedCPU_Specific_Software_interface"/>
+			<capltestcase name="To_verify_the_Max_value_GetHWIO_y_ROM_FailedCPU_Specific_Software_interface" title="To_verify_the_Max_value_GetHWIO_y_ROM_FailedCPU_Specific_Software_interface"/>
+			<capltestcase name="To_verify_the_ClrHWIO_ROM_Flt_Software_interface" title="To_verify_the_ClrHWIO_ROM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_ClrSDLAdaptor_ROM_Flt_Software_interface" title="To_verify_the_ClrSDLAdaptor_ROM_Flt_Software_interface"/>
+		</testgroup>	
+		<testgroup title="RAM_SWIT">	
+			<capltestcase name="To_verify_the_SDLAdaptor_init_RAM_Software_interface" title="To_verify_the_SDLAdaptor_init_RAM_Software_interface"/>
+			<capltestcase name="To_verify_the_SDLAdaptor_run_RAM_Software_interface" title="To_verify_the_SDLAdaptor_run_RAM_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_e_RAM_Flt_Software_interface" title="To_verify_the_GetHWIO_e_RAM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_GetSDLAdaptor_e_RAM_Flt_Software_interface" title="To_verify_the_GetSDLAdaptor_e_RAM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_y_RAM_AddressFailed_Software_interface" title="To_verify_the_GetHWIO_y_RAM_AddressFailed_Software_interface"/>
+			<capltestcase name="To_verify_the_GetSDLAdaptor_y_RAM_AddressFailed_Software_interface" title="To_verify_the_GetSDLAdaptor_y_RAM_AddressFailed_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_y_RAM_InstAddressFailed_Software_interface" title="To_verify_the_GetHWIO_y_RAM_InstAddressFailed_Software_interface"/>
+			<capltestcase name="To_verify_the_GetSDLAdaptor_y_RAM_InstAddressFailed_Software_interface" title="To_verify_the_GetSDLAdaptor_y_RAM_InstAddressFailed_Software_interface"/>
+			<capltestcase name="To_verify_the_ClrHWIO_RAM_Flt_Software_interface" title="To_verify_the_ClrHWIO_RAM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_ClrSDLAdaptor_RAM_Flt_Software_interface" title="To_verify_the_ClrSDLAdaptor_RAM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_Minimum_value_SetHWIO_h_RAM_ECC_Init_Software_interface" title="To_verify_the_Minimum_value_SetHWIO_h_RAM_ECC_Init_Software_interface"/>
+			<capltestcase name="To_verify_the_Mid_value_SetHWIO_h_RAM_ECC_Init_Software_interface" title="To_verify_the_Mid_value_SetHWIO_h_RAM_ECC_Init_Software_interface"/>
+			<capltestcase name="To_verify_the_Maximum_value_SetHWIO_h_RAM_ECC_Init_Software_interface" title="To_verify_the_Maximum_value_SetHWIO_h_RAM_ECC_Init_Software_interface"/>
+			<capltestcase name="To_verify_the_SetSDLAdaptor_h_RAM_ECC_Init_Software_interface" title="To_verify_the_SetSDLAdaptor_h_RAM_ECC_Init_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_e_CacheRAM_Flt_Software_interface" title="To_verify_the_GetHWIO_e_CacheRAM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_GetSDLAdaptor_e_CacheRAM_Flt_Software_interface" title="To_verify_the_GetSDLAdaptor_e_CacheRAM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_y_CacheRAM_AddressFailed_Software_interface" title="To_verify_the_GetHWIO_y_CacheRAM_AddressFailed_Software_interface"/>
+			<capltestcase name="To_verify_the_GetSDLAdaptor_y_CacheRAM_AddressFailed_Software_interface" title="To_verify_the_GetSDLAdaptor_y_CacheRAM_AddressFailed_Software_interface"/>
+			<capltestcase name="To_verify_the_ClrHWIO_CacheRAM_Flt_Software_interface" title="To_verify_the_ClrHWIO_CacheRAM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_ClrSDLAdaptor_CacheRAM_Flt_Software_interface" title="To_verify_the_ClrSDLAdaptor_CacheRAM_Flt_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_y_RAM_FailedCPU_Specific_Software_interface" title="To_verify_the_GetHWIO_y_RAM_FailedCPU_Specific_Software_interface"/>
+			<capltestcase name="To_verify_the_GetSDLAdaptor_y_RAM_FailedCPU_Specific_Software_interface" title="To_verify_the_GetSDLAdaptor_y_RAM_FailedCPU_Specific_Software_interface"/>
+			<capltestcase name="To_verify_the_Minimum_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_interface" title="To_verify_the_Minimum_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_interface"/>
+			<capltestcase name="To_verify_the_Mid_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_interface" title="To_verify_the_Mid_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_interface"/>
+			<capltestcase name="To_verify_the_Maximum_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_interface" title="To_verify_the_Maximum_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_Cnt_StackSize_RAM_Software_interface" title="To_verify_the_GetHWIO_Cnt_StackSize_RAM_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_Cnt_StackPeak_RAM_Software_interface" title="To_verify_the_GetHWIO_Cnt_StackPeak_RAM_Software_interface"/>
+			</testgroup>
+			
+			
+		<testgroup title="Timers_SWIT">
+			<capltestcase name="To_verify_the_MCU_Init_Software_interface" title="To_verify_the_MCU_Init_Software_interface"/>
+			<capltestcase name="To_verify_the_MCU_InitClock_Software_interface" title="To_verify_the_MCU_InitClock_Software_interface"/>
+			<capltestcase name="To_verify_the_Mcu_DistributePllClock_Software_interface" title="To_verify_the_Mcu_DistributePllClock_Software_interface"/>
+			<capltestcase name="To_verify_the_os_main_Timers_Software_interface" title="To_verify_the_os_main_Timers_Software_interface"/>
+			<capltestcase name="To_verify_the_Os_Entry_Task_Core0_100ms_Software_interface" title="To_verify_the_Os_Entry_Task_Core0_100ms_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_Cnt_SysTick_Software_interface" title="To_verify_the_GetHWIO_Cnt_SysTick_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_Cnt_SysTicksPerMicrosec_Software_interface" title="To_verify_the_GetHWIO_Cnt_SysTicksPerMicrosec_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_t_Current_Software_interface" title="To_verify_the_GetHWIO_t_Current_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_e_CPU_timers_Software_interface" title="To_verify_the_GetHWIO_e_CPU_timers_Software_interface"/>
+		</testgroup>
+	
+		<testgroup title="Mem_Protection_SWIT">
+			<capltestcase name="To_verify_the_Tc4xMemProt_App_Init_Software_interface" title="To_verify_the_Tc4xMemProt_App_Init_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_Init_Software_interface" title="To_verify_the_Tc4xMemProt_Init_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_TrapHandler_Ifx_Software_interface" title="To_verify_the_Tc4xMemProt_TrapHandler_Ifx_Software_interface"/>
+			<capltestcase name="To_verify_the_TX4xMemProt_APP_Violation_CallBack_Software_interface" title="To_verify_the_TX4xMemProt_APP_Violation_CallBack_Software_interface"/>
+			<capltestcase name="To_verify_the_hwio_reset_stack_request_Software_interface" title="To_verify_the_hwio_reset_stack_request_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_e_StackProtSt_Software_interface" title="To_verify_the_GetHWIO_e_StackProtSt_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_Get_Error_StackOverflow_Software_interface" title="To_verify_the_Tc4xMemProt_Get_Error_StackOverflow_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_Get_Error_StackUnderflow_Software_interface" title="To_verify_the_Tc4xMemProt_Get_Error_StackUnderflow_Software_interface"/>
+			<capltestcase name="To_verify_the_SetHWIO_b_WrtProtRAM_LckUnlck_Software_interface" title="To_verify_the_SetHWIO_b_WrtProtRAM_LckUnlck_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_SetWP_Protection_True_condition_Software_interface" title="To_verify_the_Tc4xMemProt_SetWP_Protection_True_condition_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_SetWP_Protection_False_condition_Software_interface" title="To_verify_the_Tc4xMemProt_SetWP_Protection_False_condition_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_b_WrtProtRAM_Flt_Stack_Software_interface" title="To_verify_the_GetHWIO_b_WrtProtRAM_Flt_Stack_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_Get_WriteProtectedAccessError_Software_interface" title="To_verify_the_Tc4xMemProt_Get_WriteProtectedAccessError_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_ptr_WrtProtRAM_FltAddr_stack_Software_interface" title="To_verify_the_GetHWIO_ptr_WrtProtRAM_FltAddr_stack_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_Get_WriteProtectedAccessError_FltAddr_Software_interface" title="To_verify_the_Tc4xMemProt_Get_WriteProtectedAccessError_FltAddr_Software_interface"/>
+			<capltestcase name="To_verify_the_GetHWIO_ptr_WrtProtRAM_FltInstAddr_stack_Software_interface" title="To_verify_the_GetHWIO_ptr_WrtProtRAM_FltInstAddr_stack_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_Get_WriteProtectedAccessError_FltInstAddr_Software_interface" title="To_verify_the_Tc4xMemProt_Get_WriteProtectedAccessError_FltInstAddr_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_APP_SetProtectionContext_Unprotected_Software_interface" title="To_verify_the_Tc4xMemProt_APP_SetProtectionContext_Unprotected_Software_interface"/>
+			<capltestcase name="To_verify_the_Tc4xMemProt_APP_SetProtectionContext_Protected_Software_interface" title="To_verify_the_Tc4xMemProt_APP_SetProtectionContext_Protected_Software_interface"/>
+			<capltestcase name="To_verify_the_Minimum_value_SetHWIO_y_WrtProtRAM_Update_Software_interface" title="To_verify_the_Minimum_value_SetHWIO_y_WrtProtRAM_Update_Software_interface"/>
+			<capltestcase name="To_verify_the_Mid_value_SetHWIO_y_WrtProtRAM_Update_Software_interface" title="To_verify_the_Mid_value_SetHWIO_y_WrtProtRAM_Update_Software_interface"/>
+			<capltestcase name="To_verify_the_Max_value_SetHWIO_y_WrtProtRAM_Update_Software_interface" title="To_verify_the_Max_value_SetHWIO_y_WrtProtRAM_Update_Software_interface"/>
+		
+		</testgroup>
+		
+		<testgroup title="Stack_SWQT">
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_0" title="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_0"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_Overflow_Underflow_condition_for_Core_0" title="To_verify_the_software_shall_report_the_status_of_the_Stack_Overflow_Underflow_condition_for_Core_0"/>
+			<capltestcase name="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_underflow_condition_gets_detected_for_Core_0" title="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_underflow_condition_gets_detected_for_Core_0"/>
+			<capltestcase name="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_0" title="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_0"/>
+			<capltestcase name="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_1" title="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_1"/>
+			<capltestcase name="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_2" title="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_2"/>
+			<capltestcase name="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_3" title="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_3"/>
+			<capltestcase name="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_4" title="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_4"/>
+			<capltestcase name="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_5" title="To_verify_the_STACK_PROTECTION_STATUS_should_reset_0_STACK_NO_ERROR_whenever_stack_overflow_condition_gets_detected_for_Core_5"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_1" title="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_1"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_2" title="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_2"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_3" title="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_3"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_4" title="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_4"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_5" title="To_verify_the_software_shall_report_the_status_of_the_Stack_overflow_condition_for_Core_5"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_0" title="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_0"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_1" title="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_1"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_2" title="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_2"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_3" title="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_3"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_4" title="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_4"/>
+			<capltestcase name="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_5" title="To_verify_the_software_shall_report_the_status_of_the_Stack_underflow_condition_for_Core_5"/>
+		</testgroup>
+	
+	
+	<completion>
+		<!--<capltestfunction name="InsertDUTInfo" title="Identification"/>-->
+	    <initialize title="Adding testreport info." wait="200">
+		</initialize>
+	</completion>
+</testmodule>

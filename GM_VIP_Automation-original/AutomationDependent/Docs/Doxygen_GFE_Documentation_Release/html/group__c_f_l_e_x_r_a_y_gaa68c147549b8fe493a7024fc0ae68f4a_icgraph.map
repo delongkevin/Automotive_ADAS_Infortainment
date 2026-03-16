@@ -1,0 +1,6 @@
+<map id="dwFctn_FR_CheckIfWaitTimeIsValid" name="dwFctn_FR_CheckIfWaitTimeIsValid">
+<area shape="rect" id="node1" title="Function that checks if the provided wait time is valid (greater than 0). If not, it will use the def..." alt="" coords="512,23,705,65"/>
+<area shape="rect" id="node2" href="$group__c_f_l_e_x_r_a_y.html#ga02fee65bd21cd1a49ed7ac926e61df2e" title=" " alt="" coords="249,5,463,32"/>
+<area shape="rect" id="node4" href="$group__c_f_l_e_x_r_a_y.html#gab06cb63598eca7df8000a78696cc3625" title="Function that evaluates if a FlexRay Frame arrives, on a certain FR Cluster and its associated channe..." alt="" coords="248,56,464,83"/>
+<area shape="rect" id="node3" href="$group__ts_f_l_e_x_r_a_y.html#ga082c5c0554458462cee5ebb41bceef66" title="Function that executes the action to check if a FlexRay Frame name is received in a specific time or ..." alt="" coords="5,5,200,32"/>
+</map>

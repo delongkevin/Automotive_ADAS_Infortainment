@@ -1,0 +1,1034 @@
+/*@!Encoding:1252*/
+
+includes
+{
+  #include "..\..\baseLib\COMMON\bcCOMMON.cin"
+  #include "..\..\baseLib\READFILE\bREADFILE.cin"
+  #include "..\..\controlLib\POWER\cPOW.cin"
+  #include "..\..\controlLib\DATA_CONVERSION\cCONVDataConversion.cin"
+}
+
+variables
+{
+  byte bChangePOW = 0;
+  byte bOnStart;
+  byte bNoDesiredChar = 0;
+  
+  //Array for Reading Data used at RS232OnReceive
+  byte bReadData[8];
+  byte bReadDataSCPI[20];
+  
+  //Flags
+  int iVoltageCommand = 0;
+  int iStatusCommand = 0;
+  int iGetActualCurrentCommand = 0;
+  int iSentCommand = 0;
+  int iSourceOff = 0;
+  int iSendConfirmed = 0;
+  int iPanelActive = 0;
+  
+  dword dwElementsRead = 0;
+  long lUpdateValue;
+  int iFlag = 0;
+  
+  //Timers for PowerSupply
+  msTimer ReadCurrentTimer;
+  msTimer UpdateVoltageAndCurrentTimer;
+  msTimer TimerForStatus;
+  msTimer WaitForCommandTimer;
+  msTimer TimerForSetVoltage;
+  msTimer TimerForSetCurrent;
+  msTimer TimerForPowerOff;
+  msTimer TimerForPowerOn;
+  
+  //Timers for SCPI410X PowerSupply
+  msTimer TimerForPrintingVoltage;
+  msTimer TimerForPrintingCurrent;
+  msTimer TimerForOpenLeds;
+}
+
+on start
+{
+  bOnStart = 1;
+  
+  setWriteDbgLevel(@sysvar::TestMainPanel_Variables::DebugLevel);
+  vFctn_POWSetActivePOW(@sysvar::PowerSupply1_Variables::COMPort1, @sysvar::PowerSupply1_Variables::BaudRate1, @sysvar::PowerSupply1_Variables::DataBits1, @sysvar::PowerSupply1_Variables::Parity1, @sysvar::PowerSupply1_Variables::StopBits1, @sysvar::PowerSupply1_Variables::Type1, @sysvar::PowerSupply1_Variables::POWwaitTime1, @sysvar::PowerSupply1_Variables::MaxVoltage1, @sysvar::PowerSupply1_Variables::MaxCurrent1, @sysvar::PowerSupply1_Variables::SCPIAddress1, @sysvar::PowerSupply1_Variables::FlowControl1, @sysvar::PowerSupply1_Variables::WaitForCommand1); 
+
+  //Set timer that verify the status of the source at the start
+  setTimer(TimerForStatus, 500);
+  
+  //Reset the combo box to be 'Disabled'
+  @sysvar::PowGeneral_Variables::UpdateVoltageAndCurrent = 0;
+  
+  //Activate the panel from beggining
+  @sysvar::PowGeneral_Variables::ActivePanel = 1;
+  iPanelActive = 1;
+}
+
+on timer UpdateVoltageAndCurrentTimer
+{
+  long lResultVoltage;
+  long lResultCurrent;
+
+  //Read the voltage and current continuously as long as timer is active (!=Disable) and OFF button was not pressed
+  if(lUpdateValue != NotOk)
+  {
+    if(iFlag == 0) //iFlag = 1-> Read Voltage
+    {
+      //Read the Voltage
+      lResultVoltage = lFctn_POW_ReadActualVoltage();
+      if(lResultVoltage && iSendConfirmed)
+      {
+        iSentCommand = 1;
+        iVoltageCommand = 1;
+        iFlag = 1;
+        iSendConfirmed = 0;
+      }
+    }
+    else // iFlag = 1-> Read Current
+    {
+      //Read the Current
+      lResultCurrent = lFctn_POW_ReadActualCurrent();
+      if(lResultCurrent && iSendConfirmed)
+      {
+        iSentCommand = 1;
+        iGetActualCurrentCommand = 1;
+        iFlag = 0;
+        iSendConfirmed = 0;
+      }
+    }
+
+    setTimer(UpdateVoltageAndCurrentTimer, lUpdateValue);
+  }
+}
+
+on timer ReadCurrentTimer
+{
+  long lResultCurrent;
+  long lResultVoltage;
+  
+  //Read the Voltage
+  lResultCurrent = lFctn_POW_ReadActualCurrent();
+  if(lResultCurrent && iSendConfirmed)
+  {
+    iSentCommand = 1;
+    iGetActualCurrentCommand = 1;
+    iSendConfirmed = 0;
+    setTimer(WaitForCommandTimer, 1000);
+  }
+}
+
+on timer TimerForStatus
+{
+  char chMappedResponseInfo[250];
+  
+  bFctn_POW_SetCommand(eGetPSStatus, "", chMappedResponseInfo);
+  iStatusCommand = 1;
+}
+
+on timer WaitForCommandTimer
+{
+  //Verify if the previous command was send or not
+  vFctn_WaitForCommand();
+}
+
+on timer TimerForSetVoltage
+{
+  byte bResultSetVoltage;
+  
+  bResultSetVoltage = 0;
+  
+  bResultSetVoltage = bFctn_POWSetVoltage(@sysvar::PowGeneral_Variables::VoltageVal);
+  if(bResultSetVoltage && iSendConfirmed)
+  {
+    iSentCommand = 1;
+    iSendConfirmed = 0;
+    setTimer(WaitForCommandTimer, 1000);
+  }
+}
+
+on timer TimerForSetCurrent
+{
+  byte bResultSetCurrent;
+  
+  bResultSetCurrent = 0;
+  
+  bResultSetCurrent = bFctn_POWSetCurrent(@sysvar::PowGeneral_Variables::CurrentVal);
+  if(bResultSetCurrent && iSendConfirmed)
+  {
+    iSentCommand = 1;
+    iSendConfirmed = 0;
+    setTimer(WaitForCommandTimer, 1000);
+  }
+}
+
+on timer TimerForPowerOff
+{
+  bFctn_POWSetOFF();
+  setTimer(TimerForStatus, 500);
+}
+
+on timer TimerForPowerOn
+{
+  bFctn_POWSetON();
+  setTimer(TimerForStatus, 500);
+}
+
+on timer TimerForPrintingVoltage
+{
+  vFctn_PrintVoltageToPanel(bReadDataSCPI, dwElementsRead);
+  
+  //Reset command status and elements read
+  iVoltageCommand = 0;
+  iSentCommand = 0;
+  dwElementsRead = 0;
+}
+
+on timer TimerForPrintingCurrent
+{
+  vFctn_PrintCurrentToPanel(bReadDataSCPI, dwElementsRead);
+  
+  //Reset command status and elements read
+  iGetActualCurrentCommand = 0;
+  iSentCommand = 0;
+  dwElementsRead = 0;
+}
+
+on timer TimerForOpenLeds
+{
+  vFctn_StatusLeds(bReadDataSCPI, dwElementsRead);
+  
+  //Reset command status and elements read
+  iStatusCommand = 0;
+  iSentCommand = 0;
+  dwElementsRead = 0;
+}
+
+on sysvar TestMainPanel_Variables::DebugLevel
+{
+  setWriteDbgLevel(@sysvar::TestMainPanel_Variables::DebugLevel);
+}
+
+on sysvar PowGeneral_Variables::POWType
+{
+  //If timer for reading V and C is active, cancel it for the next PS selected
+  if(isTimerActive(UpdateVoltageAndCurrentTimer))
+  {
+    cancelTimer(UpdateVoltageAndCurrentTimer);
+  }
+  
+  vFctn_POWSetActivePOW(@sysvar::PowGeneral_Variables::Port, @sysvar::PowGeneral_Variables::BaudRate, @sysvar::PowGeneral_Variables::DataBits, @sysvar::PowGeneral_Variables::Parity, @sysvar::PowGeneral_Variables::StopBits, @sysvar::PowGeneral_Variables::POWType, @sysvar::PowGeneral_Variables::POWwaitTime, @sysvar::PowGeneral_Variables::MaxVoltage, @sysvar::PowGeneral_Variables::MaxCurrent, @sysvar::PowGeneral_Variables::SCPIAddress, @sysvar::PowGeneral_Variables::FlowControl, @sysvar::PowGeneral_Variables::WaitForCommand); 
+  
+  //Set timer that verify the status of the new selected Power Supply
+  setTimer(TimerForStatus, 1000);
+}
+
+on sysvar PowGeneral_Variables::ReadVoltage
+{
+  long lResult;
+  byte bReadVoltage = NotOk;
+  byte bActiveTimer;
+  
+  lResult = NotOk;
+  bReadVoltage = NotOk;
+  bActiveTimer = NotOk;
+  
+  //Check the state of the "Read" button
+  bReadVoltage = @sysvar::PowGeneral_Variables::ReadVoltage;
+  if(bReadVoltage)
+  {
+    //If timer for reading V and C is active, cancel it until the command for set is SEND
+    if(isTimerActive(UpdateVoltageAndCurrentTimer))
+    {
+      cancelTimer(UpdateVoltageAndCurrentTimer);
+      bActiveTimer = 1;
+    }
+    
+    //Read the current voltage on click
+    lResult = lFctn_POW_ReadActualVoltage();
+    if(lResult && iSendConfirmed)
+    {
+      iSentCommand = 1;
+      iVoltageCommand = 1;
+      iSendConfirmed = 0;
+      setTimer(WaitForCommandTimer, 1000);
+    }
+      
+    //Reactivate the timer if it was stopped
+    if(bActiveTimer)
+    {
+      setTimer(UpdateVoltageAndCurrentTimer, 1000);
+    }
+  }
+}
+
+on sysvar PowGeneral_Variables::ReadCurrent
+{
+  long lResult;
+  byte bReadCurrent;
+  byte bActiveTimer;
+  
+  lResult = NotOk;
+  bReadCurrent = NotOk;
+  bActiveTimer = NotOk;
+  
+  //Check the state of the "Read" button
+  bReadCurrent = @sysvar::PowGeneral_Variables::ReadCurrent;
+  
+  if(bReadCurrent)
+  {
+    //If timer for reading V and C is active, cancel it until the command for set is SEND
+    if(isTimerActive(UpdateVoltageAndCurrentTimer))
+    {
+      cancelTimer(UpdateVoltageAndCurrentTimer);
+      bActiveTimer = 1;
+    }
+    
+    //Read the current voltage on click
+    lResult = lFctn_POW_ReadActualCurrent();
+    if(lResult && iSendConfirmed)
+    {
+      iSentCommand = 1;
+      iGetActualCurrentCommand = 1;
+      iSendConfirmed = 0;
+      setTimer(WaitForCommandTimer, 1000);
+    }
+    
+    //Reactivate the timer if it was stopped
+    if(bActiveTimer)
+    {
+      setTimer(UpdateVoltageAndCurrentTimer, 1000);
+    }
+  }
+}
+
+on sysvar PowGeneral_Variables::UpdateVoltageAndCurrent
+{
+  lUpdateValue = @sysvar::PowGeneral_Variables::UpdateVoltageAndCurrent;
+  
+  //Read the voltage and current continously
+  setTimer(UpdateVoltageAndCurrentTimer, lUpdateValue);
+}
+
+
+on sysvar PowGeneral_Variables::POWNumber
+{
+  long lResultVoltage;
+  
+  bChangePOW = 1;
+  //If timer for reading V and C is active, cancel it for the next PS selected
+  if(isTimerActive(UpdateVoltageAndCurrentTimer))
+  {
+    cancelTimer(UpdateVoltageAndCurrentTimer);
+    @sysvar::PowGeneral_Variables::UpdateVoltageAndCurrent = 0;
+  }
+  
+  if(1 == @sysvar::PowGeneral_Variables::POWNumber)
+  {
+      @sysvar::PowGeneral_Variables::Port             = @sysvar::PowerSupply1_Variables::COMPort1        ;
+      @sysvar::PowGeneral_Variables::BaudRate         = @sysvar::PowerSupply1_Variables::BaudRate1    ;
+      @sysvar::PowGeneral_Variables::DataBits         = @sysvar::PowerSupply1_Variables::DataBits1    ;
+      @sysvar::PowGeneral_Variables::Parity           = @sysvar::PowerSupply1_Variables::Parity1      ;
+      @sysvar::PowGeneral_Variables::StopBits         = @sysvar::PowerSupply1_Variables::StopBits1    ;
+      @sysvar::PowGeneral_Variables::POWType          = @sysvar::PowerSupply1_Variables::Type1        ;
+      @sysvar::PowGeneral_Variables::POWwaitTime      = @sysvar::PowerSupply1_Variables::POWwaitTime1 ;
+      @sysvar::PowGeneral_Variables::VoltageVal       =                                         NotOk ;
+      @sysvar::PowGeneral_Variables::CurrentVal       =                                         NotOk ;
+      @sysvar::PowGeneral_Variables::OutputVal        =                                         NotOk ;
+      @sysvar::PowGeneral_Variables::OutputValCurrent =                                         NotOk ;
+      @sysvar::PowGeneral_Variables::OutputVal        =                                         NotOk ;
+      @sysvar::PowGeneral_Variables::OutputValCurrent =                                         NotOk ;      
+      @sysvar::PowGeneral_Variables::MaxVoltage       = @sysvar::PowerSupply1_Variables::MaxVoltage1  ;
+      @sysvar::PowGeneral_Variables::MaxCurrent       = @sysvar::PowerSupply1_Variables::MaxCurrent1  ;    
+      @sysvar::PowGeneral_Variables::SCPIAddress      = @sysvar::PowerSupply1_Variables::SCPIAddress1 ;
+      @sysvar::PowGeneral_Variables::FlowControl      = @sysvar::PowerSupply1_Variables::FlowControl1 ;
+      @sysvar::PowGeneral_Variables::WaitForCommand   = @sysvar::PowerSupply1_Variables::WaitForCommand1 ;
+    
+      vFctn_POWSetActivePOW(@sysvar::PowGeneral_Variables::Port, @sysvar::PowGeneral_Variables::BaudRate, @sysvar::PowGeneral_Variables::DataBits, @sysvar::PowGeneral_Variables::Parity, @sysvar::PowGeneral_Variables::StopBits, @sysvar::PowGeneral_Variables::POWType, @sysvar::PowGeneral_Variables::POWwaitTime, @sysvar::PowGeneral_Variables::MaxVoltage, @sysvar::PowGeneral_Variables::MaxCurrent, @sysvar::PowGeneral_Variables::SCPIAddress, @sysvar::PowGeneral_Variables::FlowControl, @sysvar::PowGeneral_Variables::WaitForCommand); 
+  }
+  else if(2 == @sysvar::PowGeneral_Variables::POWNumber)
+  {
+      @sysvar::PowGeneral_Variables::Port             = @sysvar::PowerSupply2_Variables::COMPort2        ;
+      @sysvar::PowGeneral_Variables::BaudRate         = @sysvar::PowerSupply2_Variables::BaudRate2    ;
+      @sysvar::PowGeneral_Variables::DataBits         = @sysvar::PowerSupply2_Variables::DataBits2    ;
+      @sysvar::PowGeneral_Variables::Parity           = @sysvar::PowerSupply2_Variables::Parity2      ;
+      @sysvar::PowGeneral_Variables::StopBits         = @sysvar::PowerSupply2_Variables::StopBits2    ;
+      @sysvar::PowGeneral_Variables::POWType          = @sysvar::PowerSupply2_Variables::Type2     ;
+      @sysvar::PowGeneral_Variables::POWwaitTime      = @sysvar::PowerSupply2_Variables::POWwaitTime2 ;
+      @sysvar::PowGeneral_Variables::VoltageVal       =                                         NotOk ;
+      @sysvar::PowGeneral_Variables::CurrentVal       =                                         NotOk ; 
+      @sysvar::PowGeneral_Variables::OutputVal        =                                         NotOk ;
+      @sysvar::PowGeneral_Variables::OutputValCurrent =                                         NotOk ;   
+      @sysvar::PowGeneral_Variables::MaxVoltage       = @sysvar::PowerSupply2_Variables::MaxVoltage2  ;
+      @sysvar::PowGeneral_Variables::MaxCurrent       = @sysvar::PowerSupply2_Variables::MaxCurrent2  ;      
+      @sysvar::PowGeneral_Variables::SCPIAddress      = @sysvar::PowerSupply2_Variables::SCPIAddress2 ;
+      @sysvar::PowGeneral_Variables::FlowControl      = @sysvar::PowerSupply2_Variables::FlowControl2 ;
+      @sysvar::PowGeneral_Variables::WaitForCommand   = @sysvar::PowerSupply2_Variables::WaitForCommand2 ;
+    
+      vFctn_POWSetActivePOW(@sysvar::PowGeneral_Variables::Port, @sysvar::PowGeneral_Variables::BaudRate, @sysvar::PowGeneral_Variables::DataBits, @sysvar::PowGeneral_Variables::Parity, @sysvar::PowGeneral_Variables::StopBits, @sysvar::PowGeneral_Variables::POWType, @sysvar::PowGeneral_Variables::POWwaitTime, @sysvar::PowGeneral_Variables::MaxVoltage, @sysvar::PowGeneral_Variables::MaxCurrent, @sysvar::PowGeneral_Variables::SCPIAddress, @sysvar::PowGeneral_Variables::FlowControl, @sysvar::PowGeneral_Variables::WaitForCommand); 
+  }
+  else if(3 == @sysvar::PowGeneral_Variables::POWNumber)
+  {
+      //POW not available - can be added
+      @sysvar::PowGeneral_Variables::Port             = NotOk;
+      @sysvar::PowGeneral_Variables::BaudRate         = NotOk;
+      @sysvar::PowGeneral_Variables::DataBits         = NotOk;
+      @sysvar::PowGeneral_Variables::Parity           = NotOk;
+      @sysvar::PowGeneral_Variables::StopBits         = NotOk;
+      @sysvar::PowGeneral_Variables::POWType          = NotOk;
+      @sysvar::PowGeneral_Variables::POWwaitTime      = NotOk;
+      @sysvar::PowGeneral_Variables::VoltageVal       = NotOk;
+      @sysvar::PowGeneral_Variables::CurrentVal       = NotOk; 
+      @sysvar::PowGeneral_Variables::OutputVal        = NotOk;
+      @sysvar::PowGeneral_Variables::OutputValCurrent = NotOk;    
+      @sysvar::PowGeneral_Variables::SCPIAddress      = NotOk; 
+      @sysvar::PowGeneral_Variables::FlowControl      = NotOk;
+      @sysvar::PowGeneral_Variables::WaitForCommand   = NotOk;
+    
+      vFctn_POWSetActivePOW(@sysvar::PowGeneral_Variables::Port, @sysvar::PowGeneral_Variables::BaudRate, @sysvar::PowGeneral_Variables::DataBits, @sysvar::PowGeneral_Variables::Parity, @sysvar::PowGeneral_Variables::StopBits, @sysvar::PowGeneral_Variables::POWType, @sysvar::PowGeneral_Variables::POWwaitTime, @sysvar::PowGeneral_Variables::MaxVoltage, @sysvar::PowGeneral_Variables::MaxCurrent, @sysvar::PowGeneral_Variables::SCPIAddress, @sysvar::PowGeneral_Variables::FlowControl, @sysvar::PowGeneral_Variables::WaitForCommand); 
+  }
+  
+  //Read the Voltage
+  lResultVoltage = lFctn_POW_ReadActualVoltage();
+  if(lResultVoltage && iSendConfirmed)
+  {
+    iSentCommand = 1;
+    iVoltageCommand = 1;
+    iSendConfirmed = 0;
+    setTimer(ReadCurrentTimer, 300);
+  }
+}
+
+on sysvar_update PowGeneral_Variables::VoltageVal
+{
+  byte bActiveTimer;
+  
+  bActiveTimer = 0;
+  
+  if(!bChangePOW)
+  {
+    if(@sysvar::PowGeneral_Variables::VoltageVal <= @sysvar::PowGeneral_Variables::MaxVoltage)
+    {
+      //If any timer is active, cancel them until the command for set is SEND and completed
+      if(isTimerActive(UpdateVoltageAndCurrentTimer))
+      {
+        cancelTimer(UpdateVoltageAndCurrentTimer);
+        bActiveTimer = 1;
+        
+        if(isTimerActive(TimerForStatus) || isTimerActive(WaitForCommandTimer))
+        {
+          cancelTimer(WaitForCommandTimer);
+          cancelTimer(TimerForStatus);
+        }
+      }
+      
+      //Set Voltage after 100ms (make sure last command was sent)
+      setTimer(TimerForSetVoltage, 100);
+      
+      //Reactivate the timer if it was stopped
+      if(bActiveTimer)
+      {
+        setTimer(UpdateVoltageAndCurrentTimer, 1000);
+      }
+    }
+  }
+  else
+  {
+    bChangePOW = 0;
+  }
+}
+
+on sysvar PowGeneral_Variables::CurrentVal
+{
+  byte bResult;
+  byte bActiveTimer;
+  
+  bActiveTimer = 0;
+  bResult = NotOk;
+  
+  if(@sysvar::PowGeneral_Variables::CurrentVal <= @sysvar::PowGeneral_Variables::MaxCurrent)
+  {
+    //If any timer is active, cancel them until the command for set is SEND and completed
+    if(isTimerActive(UpdateVoltageAndCurrentTimer))
+    {
+      cancelTimer(UpdateVoltageAndCurrentTimer);
+      bActiveTimer = 1;
+      
+      if(isTimerActive(TimerForStatus) || isTimerActive(WaitForCommandTimer))
+      {
+        cancelTimer(WaitForCommandTimer);
+        cancelTimer(TimerForStatus);
+      }
+    }
+    
+    //Set Current after 100ms (make sure last command was sent)
+    setTimer(TimerForSetCurrent, 100);
+      
+    //Reactivate the timer if it was stopped
+    if(bActiveTimer)
+    {
+      setTimer(UpdateVoltageAndCurrentTimer, 1000);
+    }
+  }
+}
+
+on sysvar PowGeneral_Variables::SaveConf
+{
+  if(@sysvar::PowGeneral_Variables::SaveConf)
+    vFctn_PowerSupply_SaveConf();
+}
+
+on sysvar PowGeneral_Variables::POWon
+{
+  if(@sysvar::PowGeneral_Variables::POWon)
+  {
+    byte bActiveTimer;
+  
+    bActiveTimer = 0;
+    
+    //If any timer is active, cancel them until the command for set is SEND and completed
+    if(isTimerActive(UpdateVoltageAndCurrentTimer))
+    {
+      cancelTimer(UpdateVoltageAndCurrentTimer);
+      bActiveTimer = 1;
+      
+      if(isTimerActive(TimerForStatus) || isTimerActive(WaitForCommandTimer))
+      {
+        cancelTimer(WaitForCommandTimer);
+        cancelTimer(TimerForStatus);
+      }
+    }
+    
+    setTimer(TimerForPowerOn, 100);
+    
+    //Reactivate the timer if it was stopped
+    if(bActiveTimer)
+    {
+      setTimer(UpdateVoltageAndCurrentTimer, 1000);
+    }
+  }
+}
+
+on sysvar PowGeneral_Variables::POWoff
+{
+  if(@sysvar::PowGeneral_Variables::POWoff)
+  {
+    //If any timer is active, cancel them until the command for set is SEND and completed
+    if(isTimerActive(UpdateVoltageAndCurrentTimer) || isTimerActive(TimerForStatus) || isTimerActive(WaitForCommandTimer))
+    {
+      cancelTimer(WaitForCommandTimer);
+      cancelTimer(TimerForStatus);
+      cancelTimer(UpdateVoltageAndCurrentTimer);
+    }
+    
+    //Set the timer to 'Disable'
+    @sysvar::PowGeneral_Variables::UpdateVoltageAndCurrent = 0;
+    setTimer(TimerForPowerOff, 100);
+  }
+}
+
+on sysvar PowGeneral_Variables::ActivePanel
+{
+  iPanelActive = @sysvar::PowGeneral_Variables::ActivePanel;
+}
+
+void vFctn_PowerSupply_SaveConf(){
+  
+  byte bActivePow = NotOk;
+  
+  if(1 == @sysvar::PowGeneral_Variables::POWNumber)
+  {
+    @sysvar::PowerSupply1_Variables::COMPort1     = @sysvar::PowGeneral_Variables::Port          ;
+    @sysvar::PowerSupply1_Variables::BaudRate1    = @sysvar::PowGeneral_Variables::BaudRate      ;
+    @sysvar::PowerSupply1_Variables::DataBits1    = @sysvar::PowGeneral_Variables::DataBits      ;
+    @sysvar::PowerSupply1_Variables::Parity1      = @sysvar::PowGeneral_Variables::Parity        ;
+    @sysvar::PowerSupply1_Variables::StopBits1    = @sysvar::PowGeneral_Variables::StopBits      ;
+    @sysvar::PowerSupply1_Variables::Type1        = @sysvar::PowGeneral_Variables::POWType       ;
+    @sysvar::PowerSupply1_Variables::POWwaitTime1 = @sysvar::PowGeneral_Variables::POWwaitTime   ; 
+    @sysvar::PowerSupply1_Variables::MaxVoltage1  = @sysvar::PowGeneral_Variables::MaxVoltage    ;
+    @sysvar::PowerSupply1_Variables::MaxCurrent1  = @sysvar::PowGeneral_Variables::MaxCurrent    ;
+    @sysvar::PowerSupply1_Variables::SCPIAddress1 = @sysvar::PowGeneral_Variables::SCPIAddress   ;
+  }
+  
+  if(2 == @sysvar::PowGeneral_Variables::POWNumber)
+  {
+    @sysvar::PowerSupply2_Variables::COMPort2     = @sysvar::PowGeneral_Variables::Port          ;
+    @sysvar::PowerSupply2_Variables::BaudRate2    = @sysvar::PowGeneral_Variables::BaudRate      ;
+    @sysvar::PowerSupply2_Variables::DataBits2    = @sysvar::PowGeneral_Variables::DataBits      ;
+    @sysvar::PowerSupply2_Variables::Parity2      = @sysvar::PowGeneral_Variables::Parity        ;
+    @sysvar::PowerSupply2_Variables::StopBits2    = @sysvar::PowGeneral_Variables::StopBits      ;
+    @sysvar::PowerSupply2_Variables::Type2        = @sysvar::PowGeneral_Variables::POWType       ;
+    @sysvar::PowerSupply2_Variables::POWwaitTime2 = @sysvar::PowGeneral_Variables::POWwaitTime   ;
+    @sysvar::PowerSupply2_Variables::MaxVoltage2  = @sysvar::PowGeneral_Variables::MaxVoltage    ;
+    @sysvar::PowerSupply2_Variables::MaxCurrent2  = @sysvar::PowGeneral_Variables::MaxCurrent    ;
+    @sysvar::PowerSupply2_Variables::SCPIAddress2 = @sysvar::PowGeneral_Variables::SCPIAddress   ;
+  }
+  
+  if(3 == @sysvar::PowGeneral_Variables::POWNumber)
+  {
+    //POW not available - can be added
+    write("Power supply not added. Please add power supply or change power supply selection.");
+  }
+    
+  bActivePow = @sysvar::PowGeneral_Variables::POWNumber;
+  @sysvar::PowGeneral_Variables::POWNumber = 1;
+  @sysvar::PowGeneral_Variables::POWNumber = 2;
+  @sysvar::PowGeneral_Variables::POWNumber = bActivePow;
+    
+  vFctn_POWSetActivePOW(@sysvar::PowGeneral_Variables::Port, @sysvar::PowGeneral_Variables::BaudRate, @sysvar::PowGeneral_Variables::DataBits, @sysvar::PowGeneral_Variables::Parity, @sysvar::PowGeneral_Variables::StopBits, @sysvar::PowGeneral_Variables::POWType, @sysvar::PowGeneral_Variables::POWwaitTime, @sysvar::PowGeneral_Variables::MaxVoltage, @sysvar::PowGeneral_Variables::MaxCurrent, @sysvar::PowGeneral_Variables::SCPIAddress, @sysvar::PowGeneral_Variables::FlowControl, @sysvar::PowGeneral_Variables::WaitForCommand);   
+  
+  vFctn_WriteInIniFile();
+}
+
+RS232OnSend( dword port, byte buffer[], dword number )
+{
+  iSendConfirmed = 1;
+}
+
+RS232OnReceive(dword port, byte buffer[], dword number)
+{
+  if(iPanelActive)
+  {
+    int iIndex;
+
+    iIndex = 0;
+    // write("Entered");
+    for(iIndex = 0; iIndex < number; iIndex++)
+    {
+      //if RS232 Power Supply is used
+      if(cv_bPOWType != cc_bTypeSCPI)
+      {
+        //iVoltageCommand = Ok;
+        //Verify what type of command has been requested
+        if(buffer[iIndex] == 0x56) // Get Voltage command
+        {
+          //Set the global flag (iSentCommand = 0), because a response has arrived for the sent command
+          iSentCommand = 0;
+          //iVoltageCommand = Ok;
+        }
+        else if(buffer[iIndex] == 0x4F) // Status command
+        {
+          //Set the global flag (iSentCommand = 0), because a response has arrived for the sent command
+          iSentCommand = 0;
+          iStatusCommand = Ok;
+        }
+        else if(buffer[iIndex] == 0x49) // Get Actual Current command
+        {
+          //Set the global flag (iSentCommand = 0), because a response has arrived for the sent command
+          iSentCommand = 0;
+          iGetActualCurrentCommand = Ok;
+        }
+        else if( (buffer[iIndex] < 0) || (buffer[iIndex] > 127) )
+        {
+          //A no expected char has been received. Do not SEND ANY COMMAND THAT CONTAIN SUCH A CHAR
+          bNoDesiredChar = 1;
+        }
+
+        bReadData[dwElementsRead] = buffer[iIndex];
+        // write("bReadData[%d] %x",dwElementsRead,bReadData[dwElementsRead]);
+        dwElementsRead++;
+
+
+        //ResetElementsRead in order to not receive a overflow
+        if(elCount(bReadData) == dwElementsRead)
+          dwElementsRead = 0;
+
+        //All data has been stored in the buffer and no desired character has been received
+        if((buffer[iIndex] == 0xA) && !(bNoDesiredChar))
+        {
+          if(iVoltageCommand)
+          {
+            vFctn_PrintVoltageToPanel(bReadData, dwElementsRead);
+
+            //Reset the index of the read Data for the next read and the Command
+            dwElementsRead = 0;
+            iVoltageCommand = 0;
+          }
+          else if(iStatusCommand)
+          {
+            vFctn_StatusLeds(bReadData, dwElementsRead);
+
+            //Reset the index of the read Data for the next read and the Command
+            dwElementsRead = 0;
+            iStatusCommand = 0;
+          }
+          else if(iGetActualCurrentCommand)
+          {
+            vFctn_PrintCurrentToPanel(bReadData, dwElementsRead);
+
+            //Reset the index of the read Data for the next read and the Command
+            dwElementsRead = 0;
+            iGetActualCurrentCommand = 0;
+          }
+        }
+        else if (bNoDesiredChar) //The string was read with a no desired character
+        {
+          //Restart the flag for the non-desired char
+          bNoDesiredChar = 0;
+        }
+      }
+      else //SCPI Power Supply is used
+      {
+        //A no expected char has been received. Do not SEND ANY COMMAND THAT CONTAIN SUCH A CHAR
+        if( (buffer[iIndex] < 0) || (buffer[iIndex] > 127) )
+        {
+          bNoDesiredChar = 1;
+        }
+        
+        //Save every data that Power Supply returned, until cariage return
+        if(buffer[iIndex] != 0xA)
+        {
+          bReadDataSCPI[dwElementsRead] = buffer[iIndex];
+          dwElementsRead++;
+        }
+        else
+          dwElementsRead = 0;
+        
+        if(iVoltageCommand && !(bNoDesiredChar))
+        {
+          setTimer(TimerForPrintingVoltage, 25);
+        }
+        else if (iStatusCommand && !(bNoDesiredChar))
+        {
+          setTimer(TimerForOpenLeds, 25);
+        }
+        else if (iGetActualCurrentCommand && !(bNoDesiredChar))
+        {
+          setTimer(TimerForPrintingCurrent, 25);
+        }
+      }
+    }
+  }
+}
+
+float atof(char str[]) {
+  int i;
+  float result = 0.0;
+  float fraction = 0.0;
+  int isNegative = 0;
+  int afterDecimal = 0;
+  float divisor = 10.0;
+
+  i = 0;
+  result = 0.0;
+  fraction = 0.0;
+  isNegative = 0;
+  afterDecimal = 0;
+  divisor = 10.0;
+
+  // Skip whitespace
+  while (str[i] == ' ') i++;
+
+  // Handle sign
+  if (str[i] == '-') {
+    isNegative = 1;
+    i++;
+  }
+
+  // Parse digits
+  while (str[i] != 0) {
+    if (str[i] == '.') {
+      afterDecimal = 1;
+      i++;
+      continue;
+    }
+
+    if (str[i] < '0' || str[i] > '9') break;
+
+    if (!afterDecimal) {
+      result = result * 10.0 + (str[i] - '0');
+    } else {
+      fraction += (str[i] - '0') / divisor;
+      divisor *= 10.0;
+    }
+    i++;
+  }
+
+  result += fraction;
+  if (isNegative) result = -result;
+
+  return result;
+}
+
+
+float byte_arr_to_number(byte aArrayToPrint[]) {
+  /* Strips non-numeric characters from the input array
+   * This is mainly for stripping suffixes and the like.
+   */
+  char cleanStr[100];
+  int i, j;
+  float result;
+
+  i=0;
+  j=0;
+  result = 0.0;
+
+  while (aArrayToPrint[i] != 0xA && i < elCount(aArrayToPrint)) {
+    if ((aArrayToPrint[i] >= '0' && aArrayToPrint[i] <= '9') || aArrayToPrint[i] == '.' || aArrayToPrint[i] == '+' || aArrayToPrint[i] == '-') {
+      cleanStr[j++] = aArrayToPrint[i];
+    }
+    i++;
+  }
+
+  cleanStr[j] = 0; // null-terminate
+
+  result = atof(cleanStr);
+  return result;
+}
+
+
+
+vFctn_PrintVoltageToPanel(byte aArrayToPrint[], dword aNoElementsRead)
+{
+  char chAnswer[250];
+  char chConversionInformation[250];
+  double aValue;
+
+  //if RS232 Power Supply General Commands are used
+  if(cv_bPOWType != (enum cc_ePStype) eSCPI)
+  {
+    // If aArrayToPrint is 0x53 0x0A, then skip updating.  Exception for 'Korad' PSU status return.
+    if((aNoElementsRead == 2) && (aArrayToPrint[0] == 0x53) && (aArrayToPrint[1] == 0x0A))
+    {
+      return;
+    }
+    @sysvar::PowGeneral_Variables::OutputVal = ((float)byte_arr_to_number(aArrayToPrint));
+    write("OutputVal = %0.2f",@sysvar::PowGeneral_Variables::OutputVal);
+  }
+  else //SCPI PowerSupply Commands are used
+  {
+    DecodeString(chAnswer, elCount(chAnswer), aArrayToPrint, elCount(aArrayToPrint), 65001);
+    bFctn_CONV_ConvertStringToFloatingNumber(chAnswer, aValue, chConversionInformation);
+    
+    //Print the Current Voltage to the panel
+    @sysvar::PowGeneral_Variables::OutputVal = aValue;
+  }
+}
+
+vFctn_PrintCurrentToPanel(byte aArrayToPrint[], dword aNoElementsRead)
+{
+  char chAnswer[250];
+  char chConversionInformation[250];
+  double aValue;
+
+  //if RS232 Power Supply is used
+  if(cv_bPOWType != (enum cc_ePStype) eSCPI)
+  {
+    // If aArrayToPrint is 0x53 0x0A, then skip updating.  Exception for 'Korad' PSU status return.
+    if((aNoElementsRead == 2) && (aArrayToPrint[0] == 0x53) && (aArrayToPrint[1] == 0x0A))
+    {
+      return;
+    }
+    @sysvar::PowGeneral_Variables::OutputValCurrent = ((float)byte_arr_to_number(aArrayToPrint));
+    write("OutputVal = %0.2f",@sysvar::PowGeneral_Variables::OutputValCurrent);
+  }
+  else //SCPI power supply is used
+  {
+    DecodeString(chAnswer, elCount(chAnswer), aArrayToPrint, elCount(aArrayToPrint), 65001);
+    bFctn_CONV_ConvertStringToFloatingNumber(chAnswer, aValue, chConversionInformation);
+    
+    //Print the Current Voltage to the panel
+    @sysvar::PowGeneral_Variables::OutputValCurrent = aValue;
+  }
+}
+
+vFctn_StatusLeds(byte aReadData[], dword aNoElementsRead)
+{
+  int iIndex;
+  int iElementsToPrint;
+  byte bReadStatusCommand[10];
+  
+  iElementsToPrint = 0;
+  //if RS232 Power Supply is used
+  if(cv_bPOWType == cc_bTypeGeneral)
+  {
+    for(iIndex = 0; iIndex < aNoElementsRead; iIndex++)
+    {
+      //extract the status command except chars 'O' 'U' 'T' ' ' (save only N for ON and FF for OFF)
+     
+      //the reading of the status is over
+      if((aReadData[iIndex] == 0xD))
+      {
+        if(bReadStatusCommand[0] == 0x4E) // ON
+        {
+          iSourceOff = 0;
+          @sysvar::PowGeneral_Variables::GreenLed = Ok;
+          @sysvar::PowGeneral_Variables::RedLed = NotOk;
+        }
+        else // OFF
+        {
+          @sysvar::PowGeneral_Variables::GreenLed = NotOk;
+          @sysvar::PowGeneral_Variables::RedLed = Ok;
+        }
+      }
+    }
+  }
+  else //SCPI Power Supply is used
+  {
+    if(aReadData[0] == '1') // ON
+    {
+      @sysvar::PowGeneral_Variables::GreenLed = Ok;
+      @sysvar::PowGeneral_Variables::RedLed = NotOk;
+    }
+    else // OFF
+    {
+      @sysvar::PowGeneral_Variables::GreenLed = NotOk;
+      @sysvar::PowGeneral_Variables::RedLed = Ok;
+    }
+  }
+}
+
+vFctn_WaitForCommand()
+{
+  //if a command has been sent but no response has arrived, close the leds of the source
+  if(iSentCommand)
+  {
+    iSourceOff = 1;
+    
+    @sysvar::PowGeneral_Variables::GreenLed = NotOk;
+    @sysvar::PowGeneral_Variables::RedLed = NotOk;
+  }
+  
+  if(iSourceOff)
+  {
+    //Resend the status command (OUT) for the source if the comunication was lost once
+    setTimer(TimerForStatus, 500);
+  }
+}
+
+void vFctn_WriteInIniFile()
+{
+  long lReturn;
+  byte bIndex;
+  char chPath[250];
+  char chEntry[250];
+  char chSection[250];
+  
+  lReturn = NotOk;
+  
+  writeDbgLevel (DebugFuncCalls, "Function vFctn_WriteInIniFile called.");
+
+  for(bIndex = 0; bIndex < sysGetVariableArrayLength(sysvar::TestMainPanel_Variables::iniPath); bIndex++)
+    chPath[bIndex] = @sysvar::TestMainPanel_Variables::iniPath[bIndex];
+  
+  strncpy(chSection,"POWERSUPPLY",elCount(chSection));
+    
+  snprintf(chEntry, elCount(chEntry), "PS%dPresent", @sysvar::PowGeneral_Variables::POWNumber - 1);
+    
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, Ok);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dPresent- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+        
+  snprintf(chEntry, elCount(chEntry), "PS%dType", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  if(@sysvar::PowGeneral_Variables::POWType < NotOk)
+    @sysvar::PowGeneral_Variables::POWType = NotOk;
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, @sysvar::PowGeneral_Variables::POWType);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dType- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+      
+  snprintf(chEntry, elCount(chEntry), "PS%dCOMPort", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  if(@sysvar::PowGeneral_Variables::Port < NotOk)
+    @sysvar::PowGeneral_Variables::Port = NotOk;
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, @sysvar::PowGeneral_Variables::Port);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dCOMPort- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+      
+  snprintf(chEntry, elCount(chEntry), "PS%dDataBits", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  if(@sysvar::PowGeneral_Variables::DataBits < NotOk)
+    @sysvar::PowGeneral_Variables::DataBits = NotOk;
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, @sysvar::PowGeneral_Variables::DataBits);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dDataBits- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+            
+  snprintf(chEntry, elCount(chEntry), "PS%dParity", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  if(@sysvar::PowGeneral_Variables::Parity < NotOk)
+    @sysvar::PowGeneral_Variables::Parity = NotOk;
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, @sysvar::PowGeneral_Variables::Parity);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dParity- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+        
+  snprintf(chEntry, elCount(chEntry), "PS%dStopBits", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  if(@sysvar::PowGeneral_Variables::StopBits < NotOk)
+    @sysvar::PowGeneral_Variables::StopBits = NotOk;
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, @sysvar::PowGeneral_Variables::StopBits);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dStopBits- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+              
+  snprintf(chEntry, elCount(chEntry), "PS%dBaudRate", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  if(@sysvar::PowGeneral_Variables::BaudRate < NotOk)
+    @sysvar::PowGeneral_Variables::BaudRate = NotOk;
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, @sysvar::PowGeneral_Variables::BaudRate);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dBaudRate- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+     
+  snprintf(chEntry, elCount(chEntry), "PS%dMaxVoltage", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  if(@sysvar::PowGeneral_Variables::MaxVoltage < NotOk)
+    @sysvar::PowGeneral_Variables::MaxVoltage = NotOk;
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, @sysvar::PowGeneral_Variables::MaxVoltage);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dMaxVoltage- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+      
+  snprintf(chEntry, elCount(chEntry), "PS%dMaxCurrent", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  if(@sysvar::PowGeneral_Variables::MaxCurrent < NotOk)
+    @sysvar::PowGeneral_Variables::MaxCurrent = NotOk;
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, @sysvar::PowGeneral_Variables::MaxCurrent);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dMaxCurrent- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+ 
+  if(@sysvar::PowGeneral_Variables::POWType == 2) //SCPI ps is used, add the SCPI Address parameter
+  {
+    snprintf(chEntry, elCount(chEntry), "PS%dSCPIAddress", @sysvar::PowGeneral_Variables::POWNumber - 1);
+    
+    lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, Ok);
+    if(lReturn == NotOk)
+      writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+    if(lReturn == 2)
+      writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dSCPIAddress- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+  }
+      
+  snprintf(chEntry, elCount(chEntry), "PS%dFlowControl", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  if(@sysvar::PowGeneral_Variables::FlowControl < NotOk)
+    @sysvar::PowGeneral_Variables::FlowControl = NotOk;
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, @sysvar::PowGeneral_Variables::FlowControl);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dFlowControl- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  snprintf(chEntry, elCount(chEntry), "PS%dWaitForCommand", @sysvar::PowGeneral_Variables::POWNumber - 1);
+
+  if(@sysvar::PowGeneral_Variables::WaitForCommand < NotOk)
+    @sysvar::PowGeneral_Variables::WaitForCommand = NotOk;
+  lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, @sysvar::PowGeneral_Variables::WaitForCommand);
+  if(lReturn == NotOk)
+    writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+  if(lReturn == 2)
+    writeDbgLevel (DebugFuncInternal, "Could not read entry -PS%dWaitForCommand- from ini.", @sysvar::PowGeneral_Variables::POWNumber - 1);
+}

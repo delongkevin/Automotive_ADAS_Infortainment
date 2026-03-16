@@ -1,0 +1,649 @@
+/*@!Encoding:1252*/
+
+includes
+{
+  
+  #include "..\..\ProjectSpecific\GenLib_Includes.cin"
+
+}
+
+variables
+{
+  char chTestDescription[500];
+  char chActionText[500];
+  char chExpectedText[500];
+  char chTestTitle[100];
+  
+  byte dat_102[3] = {0xAA,0x55,0xAA};
+  
+}
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_Q-36649610: Test_case_to_verify_the_functionality_of_interface_DisableHWIO_AllTasks_to_Disable_all_the_task_from_any_one_CPU()
+----------------------------------------------------------------------------------------------------
+Description:   test case to verify the functionality of interface DisableHWIO_AllTasks() to Disable all the task from any one CPU.
+
+***************************************************************************************************/
+testcase Test_case_to_verify_the_functionality_of_interface_DisableHWIO_AllTasks_to_Disable_all_the_task_from_any_one_CPU()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "Test_case_to_verify_the_functionality_of_interface_DisableHWIO_AllTasks_to_Disable_all_the_task_from_any_one_CPU" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:Test case to verify the functionality of interface DisableHWIO_AllTasks() to Disable all the task from any one CPU");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_Q-36649610", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo();
+  E_DBGR_CheckState(T32_State_Running);
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 Delet All Breakpoints
+  /***************************************************************************************************************/
+  
+//  snprintf( chActionText, elCount(chActionText), "delete breakpoint all and reset"); 
+//  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoints deleted and target is running"); 
+//  TestStepAddActionExpected( chActionText, chExpectedText );
+  
+ //delete all breakpoints
+  //A_DBGR_BreakpointDeleteAll();
+
+   /***************************************************************************************************************/    
+                                              // Test Step 2 Check all cores are in running state
+  /***************************************************************************************************************/
+  
+  //Check Core0 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core0 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_1000ms_Count", taskvalue, Greater);
+  
+  //Check Core1 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core1 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_1000ms_Count", taskvalue, Greater);
+  
+  //Check Core2 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core2 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_1000ms_Count", taskvalue, Greater);
+    
+  //Check Core3 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core3 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_1000ms_Count", taskvalue, Greater);
+    
+  //Check Core4 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core4 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core4 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core4_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core4_1000ms_Count", taskvalue, Greater);
+    
+  //Check Core5 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core5 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core5 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core5_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core5_1000ms_Count", taskvalue, Greater);
+ 
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 3 At runtime set core0 disable flag as TRUE in file app\hwio\os_hwio\Implementation\appl_dummy_impl.c static boolean disableAllTasks[ OS_NUM_OS_CORES ] = { FALSE , FALSE, FALSE, FALSE, FALSE, FALSE}; disableAllTasks[0]=TRUE
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Disable core 0 tasks"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "core 0 disabled"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableSet("disableAllTasks[0]", "1");
+  E_DBGR_VariableCheck("disableAllTasks[0]", 0, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 4 check the task counters for all the cores stopped.
+  /***************************************************************************************************************/
+  
+  //Check All tasks of Core0 are stopped
+  snprintf( chActionText, elCount(chActionText), "Check 2pt5ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "2pt5ms Counter from Core0 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_2pt5ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_2pt5ms_Count", taskvalue, Equal);
+  
+    
+  snprintf( chActionText, elCount(chActionText), "Check 10ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "10ms Counter from Core0 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_10ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_10ms_Count", taskvalue, Equal);  
+  
+  snprintf( chActionText, elCount(chActionText), "Check 25ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "25ms Counter from Core0 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_25ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_25ms_Count", taskvalue, Equal);  
+
+  snprintf( chActionText, elCount(chActionText), "Check 250ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "250ms Counter from Core0 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_250ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_250ms_Count", taskvalue, Equal);
+  
+  snprintf( chActionText, elCount(chActionText), "Check 100ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "100ms Counter from Core0 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_100ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_100ms_Count", taskvalue, Equal); 
+
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core0 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_1000ms_Count", taskvalue, Equal);
+  
+  
+  //Check All tasks of Core1 are stopped
+  snprintf( chActionText, elCount(chActionText), "Check 2pt5ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "2pt5ms Counter from Core1 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_2pt5ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_2pt5ms_Count", taskvalue, Equal);
+  
+    
+  snprintf( chActionText, elCount(chActionText), "Check 10ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "10ms Counter from Core1 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_10ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_10ms_Count", taskvalue, Equal);  
+  
+  snprintf( chActionText, elCount(chActionText), "Check 25ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "25ms Counter from Core1 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_25ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_25ms_Count", taskvalue, Equal);  
+
+  snprintf( chActionText, elCount(chActionText), "Check 250ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "250ms Counter from Core1 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_250ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_250ms_Count", taskvalue, Equal);
+  
+  snprintf( chActionText, elCount(chActionText), "Check 100ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "100ms Counter from Core1 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_100ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_100ms_Count", taskvalue, Equal); 
+
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core1 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_1000ms_Count", taskvalue, Equal);
+  
+  
+  //Check All tasks of Core2 are stopped
+  snprintf( chActionText, elCount(chActionText), "Check 2pt5ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "2pt5ms Counter from Core2 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_2pt5ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_2pt5ms_Count", taskvalue, Equal);
+  
+    
+  snprintf( chActionText, elCount(chActionText), "Check 10ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "10ms Counter from Core2 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_10ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_10ms_Count", taskvalue, Equal);  
+  
+  snprintf( chActionText, elCount(chActionText), "Check 25ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "25ms Counter from Core2 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_25ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_25ms_Count", taskvalue, Equal);  
+
+  snprintf( chActionText, elCount(chActionText), "Check 250ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "250ms Counter from Core2 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_250ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_250ms_Count", taskvalue, Equal);
+  
+  snprintf( chActionText, elCount(chActionText), "Check 100ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "100ms Counter from Core2 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_100ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_100ms_Count", taskvalue, Equal); 
+
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core2 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_1000ms_Count", taskvalue, Equal);
+  
+  
+    //Check All tasks of Core3 are stopped
+  snprintf( chActionText, elCount(chActionText), "Check 2pt5ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "2pt5ms Counter from Core3 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_2pt5ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_2pt5ms_Count", taskvalue, Equal);
+  
+    
+  snprintf( chActionText, elCount(chActionText), "Check 10ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "10ms Counter from Core3 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_10ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_10ms_Count", taskvalue, Equal);  
+  
+  snprintf( chActionText, elCount(chActionText), "Check 25ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "25ms Counter from Core3 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_25ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_25ms_Count", taskvalue, Equal);  
+
+  snprintf( chActionText, elCount(chActionText), "Check 250ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "250ms Counter from Core3 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_250ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_250ms_Count", taskvalue, Equal);
+  
+  snprintf( chActionText, elCount(chActionText), "Check 100ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "100ms Counter from Core3 is stop incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_100ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_100ms_Count", taskvalue, Equal); 
+
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core3 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_1000ms_Count", taskvalue, Equal);
+  
+    //Check task from Core4 is stopped
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core4 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core4 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core4_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core4_1000ms_Count", taskvalue, Equal);
+    
+  //Check task from Core5 is stopped
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core5 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core5 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core5_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core5_1000ms_Count", taskvalue, Equal);
+  
+}
+  
+
+
+/***************************************************************************************************
+----------------------------------------------------------------------------------------------------
+Test case name:  TC_L30SW_Q-36649611: Test_case_to_verify_the_functionality_of_interface_EnableHWIO_AllTasks_to_Enable_all_the_task_from_any_one_CPU()
+----------------------------------------------------------------------------------------------------
+Description:   test case to verify the functionality of interface EnableHWIO_AllTasks() to Enable all the task from any one CPU.
+
+***************************************************************************************************/
+testcase Test_case_to_verify_the_functionality_of_interface_EnableHWIO_AllTasks_to_Enable_all_the_task_from_any_one_CPU()
+{
+  /***************************************************************************************************************/    
+                                                // Variable Definition
+  /***************************************************************************************************************/ 
+  
+  long taskvalue;
+  
+  /***************************************************************************************************************/    
+                                               // Local Values
+  /***************************************************************************************************************/ 
+  
+
+  
+  /***************************************************************************************************************/    
+                                              // Test Case Info
+  /***************************************************************************************************************/
+  setWriteDbgLevel(DebugOff);
+  snprintf( chTestTitle, elCount(chTestTitle), "Test_case_to_verify_the_functionality_of_interface_EnableHWIO_AllTasks_to_Enable_all_the_task_from_any_one_CPU" );
+  snprintf( chTestDescription, elCount(chTestDescription), "Purpose:Test case to verify the functionality of interface EnableHWIO_AllTasks() to Enable all the task from any one CPU");
+  TestCaseAddInfo( chTestTitle, "TC_L30SW_Q-36649611", chTestDescription );
+
+  /***************************************************************************************************************/    
+                                              // Start of Test Case
+  /***************************************************************************************************************/
+  
+  /***************************************************************************************************************/    
+                                              // Test Step 1 PRECONDITIONS
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_RnGo();
+  E_DBGR_CheckState(T32_State_Running);
+  
+
+   /***************************************************************************************************************/    
+                      // Test Step 3 Check all cores are in running state
+  /***************************************************************************************************************/
+  
+  //Check Core0 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core0 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_1000ms_Count", taskvalue, Greater);
+  
+  //Check Core1 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core1 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_1000ms_Count", taskvalue, Greater);
+  
+  //Check Core2 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core2 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_1000ms_Count", taskvalue, Greater);
+    
+  //Check Core3 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core3 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_1000ms_Count", taskvalue, Greater);
+    
+  //Check Core4 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core4 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core4 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core4_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core4_1000ms_Count", taskvalue, Greater);
+    
+  //Check Core5 is running
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core5 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core5 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core5_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core5_1000ms_Count", taskvalue, Greater);
+  
+  /***************************************************************************************************************/    
+    // Test Step 3 Disable All Task using interface DisableHWIO_AllTasks() & Check Tasks from each Core is stopped
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Disable core 0 tasks"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "core 0 disabled"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableSet("disableAllTasks[0]", "1");
+  E_DBGR_VariableCheck("disableAllTasks[0]", 0, Equal);  //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
+ 
+    //Check Core0 is stopped
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core0 is Stopped"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_1000ms_Count", taskvalue, Equal);
+  
+  //Check Core1 is stopped
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core1 is Stopped"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_1000ms_Count", taskvalue, Equal);
+  
+  //Check Core2 is stopped
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core2 is Stopped"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_1000ms_Count", taskvalue, Equal);
+    
+  //Check Core3 is stopped
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core3 is Stopped"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_1000ms_Count", taskvalue, Equal);
+    
+  //Check Core4 is stopped
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core4 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core4 is Stopped"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core4_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core4_1000ms_Count", taskvalue, Equal);
+    
+  //Check Core5 is stopped
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core5 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core5 is Stopped"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core5_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core5_1000ms_Count", taskvalue, Equal);
+  
+  
+  /***************************************************************************************************************/    
+    // Test Step 4 At runtime set core0 Enable flag as TRUE in file app\hwio\os_hwio\Implementation\appl_dummy_impl.c static boolean EnableAllTasks[ OS_NUM_OS_CORES ] = { FALSE , FALSE, FALSE, FALSE, FALSE, FALSE}; EnableAllTasks[0]=TRUE
+  /***************************************************************************************************************/
+  
+  snprintf( chActionText, elCount(chActionText), "Enable core 0 tasks"); 
+  snprintf( chExpectedText, elCount(chExpectedText), "core 0 Enabled"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableSet("enableAllTasks[0]", "1");
+  E_DBGR_VariableCheck("enableAllTasks[0]", 0, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
+  
+  /***************************************************************************************************************/    
+                // Test Step 5 check the task counters for all the cores Running.
+  /***************************************************************************************************************/
+  
+  //Check All tasks of Core0 are Running
+  snprintf( chActionText, elCount(chActionText), "Check 2pt5ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "2pt5ms Counter from Core0 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_2pt5ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_2pt5ms_Count", taskvalue, Greater);
+  
+    
+  snprintf( chActionText, elCount(chActionText), "Check 10ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "10ms Counter from Core0 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_10ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_10ms_Count", taskvalue, Greater);  
+  
+  snprintf( chActionText, elCount(chActionText), "Check 25ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "25ms Counter from Core0 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_25ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_25ms_Count", taskvalue, Greater);  
+
+  snprintf( chActionText, elCount(chActionText), "Check 250ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "250ms Counter from Core0 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_250ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_250ms_Count", taskvalue, Greater);
+  
+  snprintf( chActionText, elCount(chActionText), "Check 100ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "100ms Counter from Core0 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_100ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_100ms_Count", taskvalue, Greater); 
+
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core0 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core0 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core0_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core0_1000ms_Count", taskvalue, Greater);
+  
+  
+  //Check All tasks of Core1 are Running
+  snprintf( chActionText, elCount(chActionText), "Check 2pt5ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "2pt5ms Counter from Core1 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_2pt5ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_2pt5ms_Count", taskvalue, Greater);
+  
+    
+  snprintf( chActionText, elCount(chActionText), "Check 10ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "10ms Counter from Core1 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_10ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_10ms_Count", taskvalue, Greater);  
+  
+  snprintf( chActionText, elCount(chActionText), "Check 25ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "25ms Counter from Core1 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_25ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_25ms_Count", taskvalue, Greater);  
+
+  snprintf( chActionText, elCount(chActionText), "Check 250ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "250ms Counter from Core1 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_250ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_250ms_Count", taskvalue, Greater);
+  
+  snprintf( chActionText, elCount(chActionText), "Check 100ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "100ms Counter from Core1 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_100ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_100ms_Count", taskvalue, Greater); 
+
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core1 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core1 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core1_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core1_1000ms_Count", taskvalue, Greater);
+  
+  
+  //Check All tasks of Core2 are Running
+  snprintf( chActionText, elCount(chActionText), "Check 2pt5ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "2pt5ms Counter from Core2 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_2pt5ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_2pt5ms_Count", taskvalue, Greater);
+  
+    
+  snprintf( chActionText, elCount(chActionText), "Check 10ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "10ms Counter from Core2 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_10ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_10ms_Count", taskvalue, Greater);  
+  
+  snprintf( chActionText, elCount(chActionText), "Check 25ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "25ms Counter from Core2 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_25ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_25ms_Count", taskvalue, Greater);  
+
+  snprintf( chActionText, elCount(chActionText), "Check 250ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "250ms Counter from Core2 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_250ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_250ms_Count", taskvalue, Greater);
+  
+  snprintf( chActionText, elCount(chActionText), "Check 100ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "100ms Counter from Core2 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_100ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_100ms_Count", taskvalue, Greater); 
+
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core2 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core2 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core2_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core2_1000ms_Count", taskvalue, Greater);
+  
+  
+    //Check All tasks of Core3 are Running
+  snprintf( chActionText, elCount(chActionText), "Check 2pt5ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "2pt5ms Counter from Core3 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_2pt5ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_2pt5ms_Count", taskvalue, Greater);
+  
+    
+  snprintf( chActionText, elCount(chActionText), "Check 10ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "10ms Counter from Core3 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_10ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_10ms_Count", taskvalue, Greater);  
+  
+  snprintf( chActionText, elCount(chActionText), "Check 25ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "25ms Counter from Core3 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_25ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_25ms_Count", taskvalue, Greater);  
+
+  snprintf( chActionText, elCount(chActionText), "Check 250ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "250ms Counter from Core3 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_250ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_250ms_Count", taskvalue, Greater);
+  
+  snprintf( chActionText, elCount(chActionText), "Check 100ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "100ms Counter from Core3 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_100ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_100ms_Count", taskvalue, Greater); 
+
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core3 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core3 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core3_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core3_1000ms_Count", taskvalue, Greater);
+  
+    //Check task from Core4 is incrementing
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core4 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core4 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core4_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core4_1000ms_Count", taskvalue, Greater);
+    
+  //Check task from Core5 is incrementing
+  snprintf( chActionText, elCount(chActionText), "Check 1000ms Task Counter from Core5 "); 
+  snprintf( chExpectedText, elCount(chExpectedText), "1000ms Counter from Core5 is incrementing"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_VariableRead( "Task_Core5_1000ms_Count", taskvalue);
+  E_DBGR_VariableCheck("Task_Core5_1000ms_Count", taskvalue, Greater);
+  
+}
+  
+
+
+
+void MainTest ()
+{
+  Test_case_to_verify_the_functionality_of_interface_DisableHWIO_AllTasks_to_Disable_all_the_task_from_any_one_CPU();
+  Test_case_to_verify_the_functionality_of_interface_EnableHWIO_AllTasks_to_Enable_all_the_task_from_any_one_CPU();
+}
+

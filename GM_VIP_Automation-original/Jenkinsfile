@@ -1,0 +1,777 @@
+// =============================================================================
+// GM VIP Automation - Jenkins Declarative Pipeline
+// =============================================================================
+//
+// PATH RULE - how tool and file paths work in this pipeline
+// ---------------------------------------------------------
+// GM_VIP_Automation is the automation root directory.
+//   - Everything INSIDE it is referenced as  AUTO_ROOT\<subpath>
+//     where <subpath> is the fixed folder structure inside GM_VIP_Automation.
+//   - AUTO_ROOT itself is discovered at runtime by scanning the workspace,
+//     so the pipeline works regardless of where the repo is cloned on any PC.
+//
+// External tools (CANoe, Trace32, Python, dotnet) are found entirely through
+// the Windows PATH variable on each PC.  The pipeline calls the standard
+// Windows "where" command - no drive letters or install paths are written here.
+//
+// What must be in the Windows PATH on each PC
+// --------------------------------------------
+//   CANoe64.exe    - add the CANoe Exec64 folder to PATH
+//                      example: ...\Vector CANoe 19\Exec64
+//   t32rem.exe     - add the Trace32 install folder to PATH
+//                      example: ...\Lauterbach\T32
+//   python.exe     - add the Python install folder to PATH
+//   dotnet.exe     - add the .NET SDK folder to PATH
+//
+// What must be set as Jenkins agent node environment variables
+// (Manage Jenkins -> Nodes -> <node> -> Environment variables)
+// -----------------------------------------------------------
+//   POWERSUPPLY_PORT  - COM port for the Tenma power supply (e.g. COM3)
+//                       Required on windows-bench nodes only.
+//   FLASH_TOOL_EXE    - flash tool exe name (just the name if it is already
+//                       in the Windows PATH, or full path if not).
+//                       Set this when flashing scripts are added to the repo.
+//   BENCH_STAGING_DIR - optional: if set, GM_VIP_Automation is copied here
+//                       before testing so CANoe/T32 use a stable fixed path.
+//                       If absent, tests run directly from the workspace.
+//
+// Agent labels
+// ------------
+//   windows-agent  - any Windows PC with python, dotnet, and git in PATH.
+//                    No CANoe or bench hardware needed.
+//                    Stages: Checkout, Install Dependencies, Discover Paths,
+//                            CAPL Validation, Build .NET DLL
+//
+//   windows-bench  - dedicated test bench PC.
+//                    Same as windows-agent PLUS:
+//                      CANoe64.exe and t32rem.exe in PATH
+//                      Physical ECU connected
+//                      POWERSUPPLY_PORT set on the node
+//                    Stages: Deploy, Flash ECU, BVT, Execute Tests, Reports
+//
+// Stage order
+// -----------
+//   Checkout -> Install Python Dependencies -> Discover Paths
+//   -> CAPL Validation -> Build .NET DLL
+//   -> Deploy to Bench -> Flash ECU -> BVT
+//   -> Execute Test Suite -> Aggregate Reports
+// =============================================================================
+
+pipeline {
+
+    agent { label 'windows-agent' }
+
+    // -------------------------------------------------------------------------
+    // Sub-paths inside GM_VIP_Automation and non-path constants only.
+    // No drive letters.  No path fragments above GM_VIP_Automation.
+    // AUTO_ROOT and resolved tool paths are populated in Discover Paths.
+    // -------------------------------------------------------------------------
+    environment {
+        AUTO_ROOT = ''   // set dynamically in Discover Paths
+
+        // Sub-paths relative to GM_VIP_Automation (folder structure is fixed)
+        REL_REQUIREMENTS = 'requirements.txt'
+        REL_VALIDATE     = 'validate_capl.py'
+        REL_MERGE        = 'merge_reports.py'
+        REL_DOTNET_PS1   = 'AutomationDependent\\GenericLibraries\\dotnetT32dll\\Build-dotnetT32dll.ps1'
+        REL_CANOE_CFG    = 'GM_VIP_RBS\\GM_VIP_SWtest.cfg'
+        REL_REPORT_DIR   = 'Test Reports'
+        REL_BVT_T32      = 'misc\\bvt_t32_check.cmm'
+        REL_FIRMWARE     = 'firmware\\firmware.hex'
+        REL_SIMULATE     = 'simulate_tests.py'
+        REL_EMAIL        = 'email_report.py'
+
+        // Non-path constants
+        DOTNET_CONFIG           = 'Release'
+        BVT_HEARTBEAT_ID        = '0x101'
+        BVT_HEARTBEAT_TIMEOUT_S = '30'
+    }
+
+    options {
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '20'))
+        timeout(time: 4, unit: 'HOURS')
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    parameters {
+        booleanParam(
+            name:         'RUN_ON_BENCH',
+            defaultValue: true,
+            description:  'Run bench stages (Flash, BVT, Test Suite). ' +
+                          'Uncheck for a validation-only build with no bench hardware.'
+        )
+        booleanParam(
+            name:         'FLASH_ECU',
+            defaultValue: true,
+            description:  'Flash the ECU before testing. ' +
+                          'Uncheck if the ECU already has the correct firmware.'
+        )
+        string(
+            name:         'FIRMWARE_FILE',
+            defaultValue: '',
+            description:  'Full path to the firmware file. ' +
+                          'Leave blank to use AUTO_ROOT\\firmware\\firmware.hex.'
+        )
+        booleanParam(
+            name:         'SKIP_TEST_SUITE',
+            defaultValue: false,
+            description:  'Stop after BVT without running the full test suite.'
+        )
+        choice(
+            name:         'TEST_SUITE',
+            choices:      ['Sanity', 'Full', 'Wakeup', 'OS', 'FPU', 'BINVDM'],
+            description:  'Test suite to execute.  Sanity is the default smoke run.'
+        )
+        booleanParam(
+            name:         'SIMULATE',
+            defaultValue: true,
+            description:  'Generate a simulated test report from CAPL definitions. ' +
+                          'Runs on windows-agent only – no bench hardware required. ' +
+                          'Confirms all testcase definitions resolve before a bench run ' +
+                          'and provides stakeholders a pre-flight report.'
+        )
+    }
+
+    // =========================================================================
+    stages {
+
+        // ---------------------------------------------------------------------
+        stage('Checkout') {
+        // ---------------------------------------------------------------------
+            steps {
+                cleanWs()
+                checkout scm
+                echo "Branch : ${env.BRANCH_NAME ?: 'detached HEAD'}"
+                echo "Commit : ${env.GIT_COMMIT}"
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Install Python Dependencies') {
+        // ---------------------------------------------------------------------
+        // python.exe must be in the Windows PATH.
+        // pyserial is the only third-party package (Serial.py power-supply).
+        // validate_capl.py and merge_reports.py are stdlib-only.
+        // requirements.txt is installed after AUTO_ROOT is resolved in the
+        // next stage; only pip is upgraded here.
+        // ---------------------------------------------------------------------
+            steps {
+                bat 'python -m pip install --upgrade pip --quiet'
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Discover Paths') {
+        // ---------------------------------------------------------------------
+        // 1. Locates GM_VIP_Automation anywhere under the workspace and sets
+        //    AUTO_ROOT.  Works wherever the repo is cloned on any PC.
+        //
+        // 2. Resolves external tools via the Windows PATH using the "where"
+        //    command.  No drive letters or install paths are written here.
+        //    Each PC controls tool discovery by having the right folders in PATH:
+        //      CANoe64.exe  -> CANoe Exec64 folder must be in PATH
+        //      t32rem.exe   -> Trace32 install folder must be in PATH
+        //
+        // 3. Derives CANOE_EXEC_PATH (NETDev folder for DLL build) from the
+        //    resolved CANoe64.exe location - no NETDev path specified here.
+        //
+        // 4. Warns about POWERSUPPLY_PORT and FLASH_TOOL_EXE if not set on the
+        //    agent node when a bench run is requested.
+        // ---------------------------------------------------------------------
+            steps {
+                script {
+
+                    // 1. Find GM_VIP_Automation under the workspace
+                    def psScript = '''
+$found = Get-ChildItem -Path $env:WORKSPACE `
+             -Filter "GM_VIP_Automation" `
+             -Directory -Recurse `
+             -ErrorAction SilentlyContinue |
+         Select-Object -First 1
+if (-not $found) {
+    Write-Error "FATAL: GM_VIP_Automation not found under $env:WORKSPACE"
+    exit 1
+}
+$found.FullName
+'''
+                    env.AUTO_ROOT = powershell(
+                        returnStdout: true, script: psScript
+                    ).trim()
+                    echo "AUTO_ROOT         : ${env.AUTO_ROOT}"
+
+                    // Install pyserial now that AUTO_ROOT is known
+                    bat "python -m pip install -r \"%AUTO_ROOT%\\%REL_REQUIREMENTS%\" --quiet"
+
+                    // 2. Derive full paths from AUTO_ROOT + fixed sub-paths
+                    env.REPORT_DIR     = "${env.AUTO_ROOT}\\${env.REL_REPORT_DIR}"
+                    env.MERGED_REPORT  = "${env.AUTO_ROOT}\\${env.REL_REPORT_DIR}\\merged_report.html"
+                    env.SIM_REPORT_DIR = "${env.AUTO_ROOT}\\${env.REL_REPORT_DIR}\\simulation"
+                    env.BVT_T32_SCRIPT = "${env.AUTO_ROOT}\\${env.REL_BVT_T32}"
+                    env.CANOE_CFG_FULL = "${env.AUTO_ROOT}\\${env.REL_CANOE_CFG}"
+                    echo "REPORT_DIR        : ${env.REPORT_DIR}"
+                    echo "SIM_REPORT_DIR    : ${env.SIM_REPORT_DIR}"
+                    echo "CANOE_CFG_FULL    : ${env.CANOE_CFG_FULL}"
+
+                    // 3. Find CANoe64.exe via Windows PATH
+                    //    Add ...\Vector CANoe xx\Exec64 to PATH on each PC.
+                    def canoeExe = ''
+                    try {
+                        canoeExe = bat(script: '@where CANoe64.exe',
+                                       returnStdout: true).trim().readLines().first().trim()
+                    } catch (ignored) {
+                        echo "WARNING: CANoe64.exe not found in PATH. " +
+                             "Add the CANoe Exec64 folder to the Windows PATH on this agent."
+                    }
+                    if (canoeExe) {
+                        env.CANOE_EXE_RESOLVED = canoeExe
+                        // NETDev is a fixed sub-folder next to the exe - no hardcoding
+                        env.CANOE_EXEC_PATH = powershell(
+                            returnStdout: true,
+                            script: "Join-Path (Split-Path '${canoeExe}' -Parent) 'NETDev'"
+                        ).trim()
+                        echo "CANoe64.exe found : ${env.CANOE_EXE_RESOLVED}"
+                        echo "NETDev folder     : ${env.CANOE_EXEC_PATH}"
+                    } else {
+                        env.CANOE_EXE_RESOLVED = ''
+                        env.CANOE_EXEC_PATH    = ''
+                    }
+
+                    // 4. Find t32rem.exe via Windows PATH
+                    //    Add the Trace32 install folder to PATH on each bench PC.
+                    def t32Exe = ''
+                    try {
+                        t32Exe = bat(script: '@where t32rem.exe',
+                                     returnStdout: true).trim().readLines().first().trim()
+                    } catch (ignored) {
+                        echo "INFO: t32rem.exe not found in PATH. " +
+                             "Add the Trace32 install folder to the Windows PATH on bench PCs " +
+                             "to enable the BVT T32 connectivity check."
+                    }
+                    env.T32_REMOTE_EXE = t32Exe ?: ''
+                    if (t32Exe) { echo "t32rem.exe found  : ${env.T32_REMOTE_EXE}" }
+
+                    // 5. Warn about agent node variables not discoverable via PATH
+                    if (params.RUN_ON_BENCH) {
+                        def missing = []
+                        if (!env.POWERSUPPLY_PORT) {
+                            missing << 'POWERSUPPLY_PORT  (e.g. COM3)'
+                        }
+                        if (params.FLASH_ECU && !env.FLASH_TOOL_EXE) {
+                            missing << 'FLASH_TOOL_EXE  (flash tool exe name or full path)'
+                        }
+                        if (missing) {
+                            echo "WARNING: Set these in Manage Jenkins -> Nodes -> " +
+                                 "<node> -> Environment variables: " + missing.join(', ')
+                        }
+                    }
+
+                    echo "======================================================"
+                    echo "  Discovery summary"
+                    echo "  AUTO_ROOT        : ${env.AUTO_ROOT}"
+                    echo "  CANoe64.exe      : ${env.CANOE_EXE_RESOLVED  ?: '(not in PATH)'}"
+                    echo "  t32rem.exe       : ${env.T32_REMOTE_EXE      ?: '(not in PATH)'}"
+                    echo "  POWERSUPPLY_PORT : ${env.POWERSUPPLY_PORT     ?: '(not set)'}"
+                    echo "======================================================"
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Validate and Build') {
+        // ---------------------------------------------------------------------
+        // Run CAPL Validation and Build .NET DLL in parallel to reduce total
+        // pipeline time.  Both stages are independent: validation only reads
+        // CAPL/XML source files; the DLL build only touches the dotnetT32dll
+        // project tree.  A failure in either branch fails the whole stage.
+        // ---------------------------------------------------------------------
+            parallel {
+
+                // -----------------------------------------------------------------
+                stage('CAPL Validation') {
+                // -----------------------------------------------------------------
+                // Fast-fail gate before any bench time is consumed.
+                // validate_capl.py checks:
+                //   1. Bracket balance in every .can / .cin file
+                //   2. Every #include path resolves on disk
+                //   3. Every testcase/testfunction declaration has a paired opening brace
+                //   4. Every XML <capltestcase> name matches a .can testcase definition
+                // Exit 1 -> stage fails and the pipeline aborts.
+                // -----------------------------------------------------------------
+                    steps {
+                        bat "python \"%AUTO_ROOT%\\%REL_VALIDATE%\" --root \"%AUTO_ROOT%\""
+                    }
+                    post {
+                        failure {
+                            echo 'CAPL validation failed - fix reported issues before retrying.'
+                        }
+                    }
+                }
+
+                // -----------------------------------------------------------------
+                stage('Build .NET DLL') {
+                // -----------------------------------------------------------------
+                // Compiles dotnetT32dll.csproj (net8.0, x64) - the CAPL #pragma netlibrary
+                // bridge to the Lauterbach T32 API.
+                //
+                // CANoe64.exe must be in PATH.  CANOE_EXEC_PATH (NETDev folder) is
+                // derived from the where-resolved exe path in Discover Paths.
+                // No CANoe path is written in this file.
+                //
+                // Skips gracefully (UNSTABLE) when CANoe is not in PATH.
+                // -----------------------------------------------------------------
+                    steps {
+                        script {
+                            if (!env.CANOE_EXEC_PATH) {
+                                echo "Build .NET DLL skipped: CANoe64.exe not in PATH. " +
+                                     "Add the CANoe Exec64 folder to PATH on this agent."
+                                currentBuild.result = 'UNSTABLE'
+                                return
+                            }
+                            def threadingDll = "${env.CANOE_EXEC_PATH}\\net8.0\\Vector.CANoe.Threading.dll"
+                            def dllPresent = bat(
+                                script: "if exist \"${threadingDll}\" (exit 0) else (exit 1)",
+                                returnStatus: true
+                            ) == 0
+                            if (dllPresent) {
+                                bat """
+                                    powershell -ExecutionPolicy Bypass ^
+                                        -File "%AUTO_ROOT%\\%REL_DOTNET_PS1%" ^
+                                        -Configuration %DOTNET_CONFIG% ^
+                                        -CANoeExecPath "%CANOE_EXEC_PATH%"
+                                """
+                            } else {
+                                echo "WARNING: CANoe NETDev assemblies not found at ${env.CANOE_EXEC_PATH}."
+                                currentBuild.result = 'UNSTABLE'
+                            }
+                        }
+                    }
+                    post {
+                        success {
+                            archiveArtifacts(
+                                artifacts: '**\\dotnetT32dll\\bin\\**\\*.dll', allowEmptyArchive: true
+                            )
+                        }
+                    }
+                }
+
+            } // end parallel
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Simulate Test Cases') {
+        // ---------------------------------------------------------------------
+        // Runs on windows-agent (no bench hardware required).
+        //
+        // simulate_tests.py:
+        //   1. Discovers every testcase definition in the .can source files.
+        //   2. Reads every Testsuite_Environment XML for <capltestcase> refs.
+        //   3. Writes per-suite CANoe-schema XMLs to Test Reports\simulation\
+        //      (verdict="simulated" when found, verdict="error" when not found).
+        //   4. Writes JUnit XMLs to Test Reports\simulation\junit\ for the
+        //      Jenkins test-results panel.
+        //
+        // Exit 0  – all refs resolved (all testcases found in .can files).
+        // Exit 1  – one or more refs unresolved (logged as UNSTABLE so the
+        //           pipeline can still proceed to Generate Simulation Report).
+        // ---------------------------------------------------------------------
+            when { expression { params.SIMULATE == true } }
+            steps {
+                script {
+                    def rc = bat(
+                        script: "python \"%AUTO_ROOT%\\%REL_SIMULATE%\" --root \"%AUTO_ROOT%\"",
+                        returnStatus: true
+                    )
+                    if (rc != 0) {
+                        echo "Simulation WARNING: simulate_tests.py exited with code ${rc}. " +
+                             "One or more <capltestcase> references could not be resolved " +
+                             "to a .can definition. " +
+                             "See output above for details. " +
+                             "Marking build UNSTABLE so the report is still generated."
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+            }
+            post {
+                always {
+                    junit(
+                        testResults:       '**\\Test Reports\\simulation\\junit\\*.xml',
+                        allowEmptyResults: true,
+                        keepLongStdio:     true
+                    )
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Generate Simulation Report') {
+        // ---------------------------------------------------------------------
+        // Merges all per-suite simulated CANoe XMLs from Test Reports\simulation\
+        // into a single HTML report with a prominent SIMULATED banner.
+        //
+        // The report is published via the HTML Publisher plugin and archived
+        // so stakeholders can review it immediately without bench hardware.
+        //
+        // merge_reports.py exits 1 when any testcase has verdict="error"
+        // (i.e. an unresolved ref), which marks the build UNSTABLE.
+        // ---------------------------------------------------------------------
+            when { expression { params.SIMULATE == true } }
+            steps {
+                script {
+                    def rc = bat(
+                        script: """
+                            python "%AUTO_ROOT%\\%REL_MERGE%" ^
+                                   --root    "%AUTO_ROOT%" ^
+                                   --simulated ^
+                                   --xml-dir "%SIM_REPORT_DIR%" ^
+                                   --out     "%SIM_REPORT_DIR%\\simulation_report.html"
+                        """,
+                        returnStatus: true
+                    )
+                    if (rc != 0) {
+                        echo "Simulation report contains errors (unresolved testcase refs)."
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+            }
+            post {
+                always {
+                    publishHTML(target: [
+                        allowMissing:          true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll:               true,
+                        reportDir:             env.SIM_REPORT_DIR,
+                        reportFiles:           'simulation_report.html',
+                        reportName:            'GM VIP Simulation Report',
+                        reportTitles:          'GM VIP Simulated Test Results'
+                    ])
+                    archiveArtifacts(
+                        artifacts:         '**\\Test Reports\\simulation\\*',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Deploy to Bench') {
+        // ---------------------------------------------------------------------
+        // If the agent node variable BENCH_STAGING_DIR is set, copies
+        // GM_VIP_Automation to that fixed path so CANoe/T32 always reference
+        // the same location regardless of Jenkins workspace naming.
+        // If BENCH_STAGING_DIR is not set, tests run from AUTO_ROOT directly.
+        // ---------------------------------------------------------------------
+            when { expression { params.RUN_ON_BENCH == true } }
+            agent { label 'windows-bench' }
+            steps {
+                script {
+                    if (env.BENCH_STAGING_DIR) {
+                        echo "Copying ${env.AUTO_ROOT} -> ${env.BENCH_STAGING_DIR}"
+                        bat "xcopy /E /I /Y \"%AUTO_ROOT%\" \"%BENCH_STAGING_DIR%\""
+                        env.AUTO_ROOT      = env.BENCH_STAGING_DIR
+                        env.REPORT_DIR     = "${env.BENCH_STAGING_DIR}\\${env.REL_REPORT_DIR}"
+                        env.MERGED_REPORT  = "${env.BENCH_STAGING_DIR}\\${env.REL_REPORT_DIR}\\merged_report.html"
+                        env.SIM_REPORT_DIR = "${env.BENCH_STAGING_DIR}\\${env.REL_REPORT_DIR}\\simulation"
+                        env.CANOE_CFG_FULL = "${env.BENCH_STAGING_DIR}\\${env.REL_CANOE_CFG}"
+                        echo "AUTO_ROOT updated to staging: ${env.AUTO_ROOT}"
+                    } else {
+                        echo "BENCH_STAGING_DIR not set - running directly from workspace."
+                        echo "AUTO_ROOT: ${env.AUTO_ROOT}"
+                    }
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Flash ECU') {
+        // ---------------------------------------------------------------------
+        // *** PLACEHOLDER STAGE ***
+        // Flashing scripts will be added to the repo in a future commit.
+        //
+        // When ready:
+        //   1. Add scripts to GM_VIP_Automation\misc\flash\
+        //   2. Add the flash tool to the Windows PATH on the bench PC.
+        //   3. Set FLASH_TOOL_EXE on the agent node (just the exe name if it
+        //      is in PATH, or full path if not).
+        //   4. Replace the placeholder block below with the real command, e.g.:
+        //        bat "\"${env.FLASH_TOOL_EXE}\" --image \"${firmware}\""
+        //   5. Remove the currentBuild.result = 'UNSTABLE' line.
+        //
+        // Skipped when FLASH_ECU = false.
+        // ---------------------------------------------------------------------
+            when {
+                allOf {
+                    expression { params.RUN_ON_BENCH == true }
+                    expression { params.FLASH_ECU    == true }
+                }
+            }
+            agent { label 'windows-bench' }
+            steps {
+                script {
+                    def firmware  = params.FIRMWARE_FILE?.trim()
+                        ? params.FIRMWARE_FILE.trim()
+                        : "${env.AUTO_ROOT}\\${env.REL_FIRMWARE}"
+                    def flashTool = env.FLASH_TOOL_EXE ?: ''
+
+                    echo "======================================================"
+                    echo "  Flash ECU - PLACEHOLDER"
+                    echo "  Firmware  : ${firmware}"
+                    echo "  Flash tool: ${flashTool ?: '(FLASH_TOOL_EXE not set on agent node)'}"
+                    echo "  Add flashing scripts to GM_VIP_Automation\\misc\\flash\\"
+                    echo "  and replace this block with the real flash command."
+                    echo "======================================================"
+
+                    if (flashTool) {
+                        // Check via PATH first, then as an explicit path
+                        def found = bat(
+                            script: "@where \"${flashTool}\" 2>NUL || if exist \"${flashTool}\" (exit 0) else (exit 1)",
+                            returnStatus: true
+                        ) == 0
+                        if (!found) {
+                            echo "WARNING: '${flashTool}' not found in PATH or on disk. " +
+                                 "Add the flash tool to the Windows PATH on this bench PC."
+                        } else {
+                            // TODO: replace with real command once scripts are added:
+                            //   bat "\"${flashTool}\" --image \"${firmware}\""
+                            echo "Flash tool found. Replace this line with the real flash command."
+                        }
+                    } else {
+                        echo "WARNING: FLASH_TOOL_EXE not set. " +
+                             "Set it in Manage Jenkins -> Nodes -> <node> -> Environment variables."
+                    }
+                    currentBuild.result = 'UNSTABLE' // remove when real scripts are added
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('BVT - Bench Verification Test') {
+        // ---------------------------------------------------------------------
+        // Mandatory gate between flashing and the full test suite.
+        // Aborts immediately if the ECU is unresponsive - no value running
+        // 745 tests on a non-communicating ECU.
+        //
+        // Check 1 - Bench COM port / power supply reachable
+        //   Opens POWERSUPPLY_PORT via pyserial.
+        //   POWERSUPPLY_PORT is an agent node variable (COM port number is
+        //   hardware config, not discoverable via PATH).
+        //
+        // Check 2 - T32 connectivity
+        //   Runs GM_VIP_Automation\misc\bvt_t32_check.cmm via t32rem.exe.
+        //   t32rem.exe is found via Windows PATH (no path written here).
+        //   Skipped if t32rem.exe is not in PATH or the script is not yet
+        //   committed to the repo.
+        // ---------------------------------------------------------------------
+            when { expression { params.RUN_ON_BENCH == true } }
+            agent { label 'windows-bench' }
+            steps {
+                echo "======================================================"
+                echo "  BVT - Bench Verification Test"
+                echo "  Heartbeat CAN ID : ${env.BVT_HEARTBEAT_ID}"
+                echo "  Heartbeat timeout: ${env.BVT_HEARTBEAT_TIMEOUT_S} s"
+                echo "  T32 script       : ${env.BVT_T32_SCRIPT}"
+                echo "  t32rem.exe       : ${env.T32_REMOTE_EXE ?: '(not in PATH)'}"
+                echo "======================================================"
+
+                // Check 1: COM port reachable
+                bat """
+                    python -c "
+import sys, os
+try:
+    import serial
+except ImportError:
+    print('BVT CHECK 1 SKIP: pyserial not installed')
+    sys.exit(0)
+port = os.environ.get('POWERSUPPLY_PORT', '')
+if not port:
+    print('BVT CHECK 1 SKIP: POWERSUPPLY_PORT not set on agent node')
+    sys.exit(0)
+print('BVT CHECK 1: verifying COM port', port)
+try:
+    s = serial.Serial(port, 9600, timeout=2)
+    s.close()
+    print('BVT CHECK 1 PASS: COM port reachable -', port)
+    sys.exit(0)
+except Exception as e:
+    print('BVT CHECK 1 FAIL:', e)
+    sys.exit(1)
+"
+                """
+
+                // Check 2: T32 connectivity via PRACTICE script
+                // t32rem.exe resolved through PATH in Discover Paths
+                script {
+                    if (!env.T32_REMOTE_EXE) {
+                        echo "BVT CHECK 2 SKIP: t32rem.exe not in PATH. " +
+                             "Add the Trace32 install folder to the Windows PATH on this bench PC."
+                    } else {
+                        def scriptExists = bat(
+                            script: "if exist \"%BVT_T32_SCRIPT%\" (exit 0) else (exit 1)",
+                            returnStatus: true
+                        ) == 0
+                        if (scriptExists) {
+                            bat "\"${env.T32_REMOTE_EXE}\" localhost port=20000 \"DO \\\"%BVT_T32_SCRIPT%\\\"\""
+                        } else {
+                            echo "BVT CHECK 2 SKIP: bvt_t32_check.cmm not found at " +
+                                 "${env.BVT_T32_SCRIPT}. " +
+                                 "Add misc\\bvt_t32_check.cmm under GM_VIP_Automation to enable."
+                        }
+                    }
+                }
+
+                echo "BVT PASSED - ECU alive, bench ready for testing."
+            }
+            post {
+                failure {
+                    echo "BVT FAILED - pipeline aborted. " +
+                         "Check ECU power, CAN connections, and T32 probe."
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Execute Test Suite') {
+        // ---------------------------------------------------------------------
+        // Launches CANoe in command-line mode and waits for completion.
+        //
+        // CANoe64.exe is resolved via PATH in Discover Paths (CANOE_EXE_RESOLVED).
+        // CANOE_CFG_FULL = AUTO_ROOT\GM_VIP_RBS\GM_VIP_SWtest.cfg
+        //
+        // CANoe flags:
+        //   /Start          - open the project
+        //   /RunTestModules - run all test modules in the cfg
+        //   /Quit           - close when the run finishes
+        //
+        // Skipped when RUN_ON_BENCH=false OR SKIP_TEST_SUITE=true.
+        // ---------------------------------------------------------------------
+            when {
+                allOf {
+                    expression { params.RUN_ON_BENCH    == true  }
+                    expression { params.SKIP_TEST_SUITE == false }
+                }
+            }
+            agent { label 'windows-bench' }
+            steps {
+                script {
+                    if (!env.CANOE_EXE_RESOLVED) {
+                        error "Execute Test Suite: CANoe64.exe not found in PATH. " +
+                              "Add the CANoe Exec64 folder to the Windows PATH on this bench PC."
+                    }
+                }
+                echo "Starting CANoe test suite: ${params.TEST_SUITE}"
+                bat """
+                    if exist "%REPORT_DIR%" (
+                        del /Q /F "%REPORT_DIR%\\*.xml" 2>NUL
+                    ) else (
+                        mkdir "%REPORT_DIR%"
+                    )
+                """
+                bat """
+                    "%CANOE_EXE_RESOLVED%" /Start ^
+                                           /RunTestModules ^
+                                           /Quit ^
+                                           "%CANOE_CFG_FULL%"
+                """
+                echo "CANoe run finished."
+            }
+            post {
+                always {
+                    junit(
+                        testResults:       '**\\Test Reports\\**\\*.xml',
+                        allowEmptyResults: true,
+                        keepLongStdio:     true
+                    )
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('Aggregate Reports') {
+        // ---------------------------------------------------------------------
+        // Merges all CANoe and T32 XML reports into a single HTML file.
+        // All paths derived from AUTO_ROOT - nothing hardcoded.
+        // Runs regardless of test-suite outcome to capture partial results.
+        // ---------------------------------------------------------------------
+            when { expression { params.RUN_ON_BENCH == true } }
+            agent { label 'windows-bench' }
+            steps {
+                bat """
+                    python "%AUTO_ROOT%\\%REL_MERGE%" ^
+                           --root "%AUTO_ROOT%" ^
+                           --out  "%MERGED_REPORT%"
+                """
+            }
+            post {
+                always {
+                    publishHTML(target: [
+                        allowMissing:          true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll:               true,
+                        reportDir:             env.REPORT_DIR,
+                        reportFiles:           'merged_report.html',
+                        reportName:            'GM VIP Test Report',
+                        reportTitles:          'GM VIP Consolidated Test Results'
+                    ])
+                    archiveArtifacts(
+                        artifacts:         '**\\Test Reports\\**\\*',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+
+    } // end stages
+    // =========================================================================
+
+    post {
+        success {
+            echo "Pipeline PASSED. All stages completed successfully."
+        }
+        unstable {
+            echo "Pipeline UNSTABLE. " +
+                 "Check warnings (CANoe/T32 not in PATH, Flash placeholder active, etc.)."
+        }
+        failure {
+            echo "Pipeline FAILED. Review stage logs for details."
+            // Optional: also send a plain-text alert via emailext on failure.
+            // Requires the Email Extension plugin and SMTP configured in
+            // Manage Jenkins -> Configure System -> E-mail Notification.
+            // Uncomment and set the recipient address to enable:
+            // emailext(
+            //     subject: "FAILED: GM VIP - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            //     body:    "Build URL: ${env.BUILD_URL}\n\nReview the GM VIP Test Report for details.",
+            //     to:      "your-team@example.com"
+            // )
+        }
+        always {
+            echo "Build: ${env.JOB_NAME} #${env.BUILD_NUMBER} | Result: ${currentBuild.currentResult}"
+            // -----------------------------------------------------------------
+            // Send the merged HTML report by e-mail.
+            //
+            // Requires these environment variables on the Jenkins agent node
+            // (Manage Jenkins -> Nodes -> <node> -> Environment variables):
+            //   EMAIL_SMTP_HOST      – SMTP server hostname
+            //   EMAIL_SMTP_PORT      – SMTP port (usually 587)
+            //   EMAIL_SMTP_USER      – sender address / SMTP username
+            //   EMAIL_USE_TLS        – true (STARTTLS) or false
+            //   EMAIL_RECIPIENTS     – comma-separated recipient list
+            //
+            // Store the SMTP password as a Jenkins "Secret text" credential
+            // (e.g. with ID "gm-vip-smtp-pass") so it is never logged.
+            //
+            // Replace 'gm-vip-smtp-pass' below with your credential ID and
+            // remove the surrounding /* ... */ block comment to activate.
+            /* withCredentials([string(credentialsId: 'gm-vip-smtp-pass',
+                                       variable:      'EMAIL_SMTP_PASS')]) {
+                script {
+                    def reportArg = (env.MERGED_REPORT?.trim())
+                        ? "--report \"${env.MERGED_REPORT}\""
+                        : ""
+                    bat """
+                        python "%AUTO_ROOT%\\%REL_EMAIL%" ${reportArg}
+                    """
+                }
+            } */
+        }
+    }
+}

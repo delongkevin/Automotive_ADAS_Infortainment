@@ -1,0 +1,4 @@
+<map id="dwFctn_READFILEOpenFileReadMode" name="dwFctn_READFILEOpenFileReadMode">
+<area shape="rect" id="node1" title="This function opens a file only for reading purpose, in ASCII or BINARY mode." alt="" coords="272,13,520,39"/>
+<area shape="rect" id="node2" href="$group__c_r_e_a_d_f_i_l_e.html#ga952617da719f26ee385f604c1a786886" title="Function is going to parse each file line and search within for the provided Keyword/Phrase." alt="" coords="5,5,224,47"/>
+</map>

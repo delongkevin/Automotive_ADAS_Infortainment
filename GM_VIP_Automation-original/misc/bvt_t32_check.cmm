@@ -1,0 +1,14 @@
+; bvt_t32_check.cmm - minimal T32 connectivity check for BVT
+; Called by t32rem.exe (found via Windows PATH).
+; Exits 0 on success, 1 on failure.
+SYStem.Mode.Attach
+IF STATE.RUN()
+(
+  PRINT "BVT T32 CHECK PASS: CPU is running"
+  ENDDO 0
+)
+ELSE
+(
+  PRINT "BVT T32 CHECK FAIL: CPU state: " STATE()
+  ENDDO 1
+)

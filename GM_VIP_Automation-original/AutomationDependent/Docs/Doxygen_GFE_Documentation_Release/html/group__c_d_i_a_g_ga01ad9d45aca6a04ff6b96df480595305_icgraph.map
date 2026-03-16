@@ -1,0 +1,6 @@
+<map id="lFctn_DIAGSendRequest" name="lFctn_DIAGSendRequest">
+<area shape="rect" id="node1" title="Function that sends a specific diagnostic request." alt="" coords="291,64,457,91"/>
+<area shape="rect" id="node2" href="$group__ts_d_i_a_g.html#ga7af3d29b249bcc751bef7e028cd8bec1" title="Function that sends a specific diagnostic request. NOTE: Based on how the request is defined,..." alt="" coords="47,5,201,32"/>
+<area shape="rect" id="node3" href="$group__c_d_i_a_g.html#ga2ecf717cfdb74176c76ec362d35c7cda" title="Sends a custom request and stores the primitive data, from start position until the end of the respon..." alt="" coords="5,57,243,98"/>
+<area shape="rect" id="node4" href="$group__c_d_i_a_g.html#gabebaf08418a99efdb8d3529826a84e01" title="Function will send a custom request, provided through the byte array parameter." alt="" coords="18,123,230,149"/>
+</map>

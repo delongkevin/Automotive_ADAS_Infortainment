@@ -1,0 +1,591 @@
+/*@!Encoding:1252*/
+
+includes
+{
+  #include "..\..\baseLib\COMMON\bcCOMMON.cin"
+  #include "..\..\controlLib\DATA_CONVERSION\cCONVDataConversion.cin"  
+  #include "..\..\baseLib\READFILE\bREADFILE.cin"
+}
+
+variables 
+{
+}
+
+on start
+{
+  char chLastINI[256];
+  
+  setWriteDbgLevel(@sysvar::TestMainPanel_Variables::DebugLevel);
+  
+  if(bFctn_READFILELastINIused(chLastINI))
+    sysSetVariableString(sysvar::TestMainPanel_Variables::iniPath, chLastINI);
+  else
+    sysSetVariableString(sysvar::TestMainPanel_Variables::iniPath, "Unable to read last ini file used.");
+}
+
+on preStop
+{
+  char chPath[256];
+  char chRelPath[256];
+  char chLastINI[256];
+  
+  sysGetVariableString(sysvar::TestMainPanel_Variables::iniPath, chPath, elcount(chPath));
+  if(bFctn_READFILELastINIused(chLastINI)){
+    if( -1 == strstr(chPath, chLastINI) ){
+      if(!bFctn_TestMainPanel_UsrIniRelPath(chPath, chRelPath))
+        sysSetVariableString(sysvar::TestMainPanel_Variables::iniPath, "Unable to save last ini file used.");
+      else
+        if(!bFctn_READFILESaveUsedINI(chRelPath))
+          sysSetVariableString(sysvar::TestMainPanel_Variables::iniPath, "Unable to save last ini file used.");  
+    }
+    else{
+      sysSetVariableString(sysvar::TestMainPanel_Variables::iniPath, "Same ini file was used.");
+    }
+  }
+  else
+    sysSetVariableString(sysvar::TestMainPanel_Variables::iniPath, "Unable to read last ini file used. Save aborted");
+ 
+  
+}
+
+on sysvar_update TestMainPanel_Variables::DebugLevel
+{
+  setWriteDbgLevel(@sysvar::TestMainPanel_Variables::DebugLevel);
+  writeDbgLevel (DebugFuncCalls, "Debug Level changed.");
+  writeDbgLevel (DebugFuncParam, "Debug Level changed to: %d.", @sysvar::TestMainPanel_Variables::DebugLevel);
+}
+
+on sysvar_update TestMainPanel_Variables::iniPath
+{
+  vFctn_TestMainPanel_LoadConf();
+}
+
+on sysvar_update TestMainPanel_Variables::LoadConf
+{
+  vFctn_TestMainPanel_LoadConf();
+}
+
+on sysvar TestMainPanel_Variables::SaveConf
+{
+
+  if(@sysvar::TestMainPanel_Variables::SaveConf)
+  {
+    vFctn_TestMainPanel_SaveConf();
+  }
+}
+
+void vFctn_TestMainPanel_SaveConf() 
+{  
+  byte bIndex;
+  byte bIndexOfEntries;
+  long lReturn;
+  long lPowerSupplyNumber;
+  long lWrite;
+  byte bSCPIFlag;
+  char chPath[200];
+  char chSection[48];
+  char chWrite[50];
+  char chEntry[48];
+  char chEntries[11][50];
+  char chSysvarName[100];
+  
+  lReturn = Error;
+  bSCPIFlag = NotOk;
+  
+  snprintf(chEntries[0], elcount(chEntries[0]), "Type");
+  snprintf(chEntries[1], elcount(chEntries[1]), "COMPort");
+  snprintf(chEntries[2], elcount(chEntries[2]), "DataBits");
+  snprintf(chEntries[3], elcount(chEntries[3]), "Parity");
+  snprintf(chEntries[4], elcount(chEntries[4]), "StopBits");
+  snprintf(chEntries[5], elcount(chEntries[5]), "BaudRate");
+  snprintf(chEntries[6], elcount(chEntries[6]), "MaxVoltage");
+  snprintf(chEntries[7], elcount(chEntries[7]), "MaxCurrent");
+  snprintf(chEntries[8], elcount(chEntries[8]), "SCPIAddress");
+  snprintf(chEntries[9], elcount(chEntries[9]), "FlowControl");
+  snprintf(chEntries[10], elcount(chEntries[10]), "WaitForCommand");
+  
+  for(bIndex = NotOk;bIndex<sysGetVariableArrayLength(sysvar::TestMainPanel_Variables::iniPath);bIndex++)
+    chPath[bIndex] = @sysvar::TestMainPanel_Variables::iniPath[bIndex];
+  
+  if(NotOk != strlen(chPath))
+  {
+    strncpy(chSection,"GENERAL",elCount(chSection));
+      
+    snprintf(chEntry, elCount(chEntry), "Tester", bIndex); 
+    sysGetVariableString(sysvar::TestMainPanel_Variables::TesterName, chWrite, elcount(chWrite));
+    lReturn = bFctn_READFILEiniWriteParameterString(chPath, chEntry, chSection, chWrite);
+    if(lReturn == NotOk)
+      writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+    if(lReturn == 2)
+      writeDbgLevel (DebugFuncInternal, "Could not write entry -Tester- in ini.");
+    lReturn = Error;  
+    
+    snprintf(chEntry, elCount(chEntry), "Company", bIndex); 
+    sysGetVariableString(sysvar::TestMainPanel_Variables::CompanyName, chWrite, elcount(chWrite));
+    lReturn = bFctn_READFILEiniWriteParameterString(chPath, chEntry, chSection, chWrite);   
+    if(lReturn == NotOk)
+      writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+    if(lReturn == 2)
+      writeDbgLevel (DebugFuncInternal, "Could not write entry -Company- in ini.");
+    lReturn = Error;
+    
+    strncpy(chSection,"DUT",elCount(chSection));
+      
+    snprintf(chEntry, elCount(chEntry), "SW", bIndex);
+    sysGetVariableString(sysvar::TestMainPanel_Variables::SWVersion, chWrite, elcount(chWrite));
+    lReturn = bFctn_READFILEiniWriteParameterString(chPath, chEntry, chSection, chWrite);
+    if(lReturn == NotOk)
+      writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+    if(lReturn == 2)
+      writeDbgLevel (DebugFuncInternal, "Could not write entry -SW- in ini.");
+    lReturn = Error;    
+      
+    snprintf(chEntry, elCount(chEntry), "HW", bIndex);
+    sysGetVariableString(sysvar::TestMainPanel_Variables::HWVersion, chWrite, elcount(chWrite));
+    lReturn = bFctn_READFILEiniWriteParameterString(chPath, chEntry, chSection, chWrite);
+    if(lReturn == NotOk)
+      writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+    if(lReturn == 2)
+      writeDbgLevel (DebugFuncInternal, "Could not write entry -HW- in ini.");
+    lReturn = Error;    
+         
+    strncpy(chSection,"POWERSUPPLY",elCount(chSection));
+    lPowerSupplyNumber = lFctn_READFILEiniParameterNumber(chPath, "PSNumber", "POWERSUPPLY");
+    
+    if(lPowerSupplyNumber == Error)
+    {
+      lPowerSupplyNumber = 1;
+      snprintf(chEntry, elCount(chEntry), "PSNumber");
+      lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, lPowerSupplyNumber);
+      writeDbgLevel (DebugFuncInternal, "Error reading parameter 'PSNumber' from ini file. Default number of power supplies are given: 1.");
+    }
+    
+    for(bIndex = 0; bIndex < lPowerSupplyNumber; bIndex++)
+    {
+      for(bIndexOfEntries = 0; bIndexOfEntries < elCount(chEntries); bIndexOfEntries++)
+      {
+        snprintf(chEntry, elCount(chEntry), "PS%d%s", bIndex, chEntries[bIndexOfEntries]);
+        
+        if(bIndex == 0)
+        {
+          snprintf(chSysvarName, elCount(chSysvarName), chEntries[bIndexOfEntries]);
+          strncat(chSysvarName, "1", elCOunt(chSysvarName));
+          sysGetVariableInt("PowerSupply1_Variables", chSysvarName, lWrite);
+          
+          //Verify that the Type of PS is a valid one
+          if(strncmp(chEntries[bIndexOfEntries], "Type", strlen("Type")) == 0)
+          {
+            if(lWrite < Ok)
+            {
+              writeDbgLevel (DebugFuncInternal, "A invalid Type of Power Supply was given. Valid ones are: 1-General, 2-SCPI.");
+              break;
+            }
+            else
+            {
+              //Write the valid Type in ini file
+              lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, lWrite);
+              if(lReturn == NotOk)
+                writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+              if(lReturn == 2)
+                writeDbgLevel (DebugFuncInternal, "Could not write entry -PS%dType- in ini.", bIndex);
+              
+              //Mark the presence of the PS in ini file if a valid Type of PS was given
+              snprintf(chEntry, elCount(chEntry), "PS%dPresent", bIndex);
+              lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, Ok);
+              if(lReturn == NotOk)
+                writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+              if(lReturn == 2)
+                writeDbgLevel (DebugFuncInternal, "Could not write entry -%s- in ini.", chEntry);
+              //Remember the SCPI PS
+              if(lWrite == 2)
+                bSCPIFlag = Ok;
+            }
+          }
+          else if(strncmp(chEntries[bIndexOfEntries], "SCPIAddress", strlen("SCPIAddress")) == 0)
+          {
+            //Write the specific parameter for SCPI's Power Supplies
+            if(bSCPIFlag)
+            {
+              if(lWrite < NotOk)
+              {
+                lWrite = NotOk;
+                writeDbgLevel (DebugFuncInternal, "The %s must be write in the ini file. It is added now with default value: 0", chEntry);
+              }
+              lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, lWrite);
+              if(lReturn == NotOk)
+                writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+              if(lReturn == 2)
+                writeDbgLevel (DebugFuncInternal, "Could not write entry -%s- in ini.", chEntry);
+            }
+          }
+          else //Any other entries must be write in ini with a valid value
+          {
+            if(lWrite < NotOk)
+            {
+              lWrite = NotOk;
+              writeDbgLevel (DebugFuncInternal, "The %s must be write in the ini file. It is added now with default value: 0", chEntry);
+            }
+            lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, lWrite);
+            if(lReturn == NotOk)
+              writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+            if(lReturn == 2)
+              writeDbgLevel (DebugFuncInternal, "Could not write entry -%s- in ini.", chEntry);
+            lReturn = Error; 
+          }
+        }
+        else if (bIndex == 1)
+        {
+          snprintf(chSysvarName, elCount(chSysvarName), chEntries[bIndexOfEntries]);
+          strncat(chSysvarName, "2", elCOunt(chSysvarName));
+          sysGetVariableInt("PowerSupply2_Variables", chSysvarName, lWrite);
+          
+          //Verify that the Type of PS is a valid one
+          if(strncmp(chEntries[bIndexOfEntries], "Type", strlen("Type")) == 0)
+          {
+            if(lWrite < Ok)
+            {
+              writeDbgLevel (DebugFuncInternal, "A invalid Type of Power Supply was given. Valid ones are: 1-General, 2-SCPI.");
+              break;
+            }
+            else
+            {
+              //Write the valid Type in ini file
+              lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, lWrite);
+              if(lReturn == NotOk)
+                writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+              if(lReturn == 2)
+                writeDbgLevel (DebugFuncInternal, "Could not write entry -%s- in ini.", chEntry);
+              
+              //Mark the presence of the PS in ini file if a valid Type of PS was given
+              snprintf(chEntry, elCount(chEntry), "PS%dPresent", bIndex);
+              lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, Ok);
+              if(lReturn == NotOk)
+                writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+              if(lReturn == 2)
+                writeDbgLevel (DebugFuncInternal, "Could not write entry -%s- in ini.", chEntry);
+              //Remember the SCPI PS
+              if(lWrite == 2)
+                bSCPIFlag = Ok;
+            }
+          }
+          else if(strncmp(chEntries[bIndexOfEntries], "SCPIAddress", strlen("SCPIAddress")) == 0)
+          {
+            //Write the specific parameter for SCPI's Power Supplies
+            if(bSCPIFlag)
+            { 
+              if(lWrite < NotOk)
+              {
+                lWrite = NotOk;
+                writeDbgLevel (DebugFuncInternal, "The %s must be write in the ini file. It is added now with default value: 0", chEntry);
+              }
+              lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, lWrite);
+              if(lReturn == NotOk)
+                writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+              if(lReturn == 2)
+                writeDbgLevel (DebugFuncInternal, "Could not write entry -%s- in ini.", chEntry);
+            }
+          }
+          else //Any other entries must be write in ini with a valid value
+          {
+            if(lWrite < NotOk)
+            {
+              lWrite = NotOk;
+              writeDbgLevel (DebugFuncInternal, "The %s must be write in the ini file. It is added now with default value: 0", chEntry);
+            }
+            lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, lWrite);
+            if(lReturn == NotOk)
+              writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+            if(lReturn == 2)
+              writeDbgLevel (DebugFuncInternal, "Could not write entry -%s- in ini.", chEntry);
+            lReturn = Error; 
+          }
+        }
+        else //The 3rd,4th Power Supplies should be added
+        {
+          lWrite = 0;
+          
+          lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, lWrite);
+          if(lReturn == NotOk)
+            writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+          if(lReturn == 2)
+            writeDbgLevel (DebugFuncInternal, "Could not write entry -%s- in ini.", chEntry);
+        }
+      }
+    }
+    if(!bFctn_READFILESaveUsedINI(chPath))
+      sysSetVariableString(sysvar::TestMainPanel_Variables::iniPath, "Unable to save last ini file used.");
+  }
+  
+}
+
+void vFctn_TestMainPanel_LoadConf() 
+{  
+  byte bIndex;
+  byte bIndexOfEntries;
+  long lReturn;
+  long lRead;
+  long lPowerSupplyNumber;
+  char chParameter[250];
+  char chPath[255];
+  char chReturn[100];
+  char chSection[24];
+  char chEntry[50];
+  char chEntries[11][50];
+  char chSysvarName[100];
+  byte bSCPIFlag;
+  
+  writeDbgLevel (DebugFuncCalls, "iniPath changed.");
+  
+  bSCPIFlag = NotOk;
+  snprintf(chEntries[0], elcount(chEntries[0]), "Type");
+  snprintf(chEntries[1], elcount(chEntries[1]), "COMPort");
+  snprintf(chEntries[2], elcount(chEntries[2]), "DataBits");
+  snprintf(chEntries[3], elcount(chEntries[3]), "Parity");
+  snprintf(chEntries[4], elcount(chEntries[4]), "StopBits");
+  snprintf(chEntries[5], elcount(chEntries[5]), "BaudRate");
+  snprintf(chEntries[6], elcount(chEntries[6]), "MaxVoltage");
+  snprintf(chEntries[7], elcount(chEntries[7]), "MaxCurrent");
+  snprintf(chEntries[8], elcount(chEntries[8]), "SCPIAddress");
+  snprintf(chEntries[9], elcount(chEntries[9]), "FlowControl");
+  snprintf(chEntries[10], elcount(chEntries[10]), "WaitForCommand");
+  for(bIndex = NotOk;bIndex<255;bIndex++)
+    chPath[bIndex] = 0x00;
+  
+  for(bIndex = NotOk;bIndex<sysGetVariableArrayLength(sysvar::TestMainPanel_Variables::iniPath);bIndex++)
+    chPath[bIndex] = @sysvar::TestMainPanel_Variables::iniPath[bIndex];
+  
+  writeDbgLevel (DebugFuncParam, "iniPath changed to: %s.", chPath);
+  
+  if(NotOk != strlen(chPath))
+  {
+    strncpy(chSection,"GENERAL",elCount(chSection));
+    writeDbgLevel (DebugFuncInternal, "Reading section: %s.", chSection);
+    
+    snprintf(chParameter, elCount(chParameter), "Tester", bIndex); 
+    lReturn = bFctn_READFILEiniParameterString(chPath, chParameter, chSection, chReturn);
+    if(lReturn == NotOk)
+      writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+    if(lReturn == 2)
+      writeDbgLevel (DebugFuncInternal, "Could not read entry -Tester- from ini.");
+    lReturn = Error;
+    sysSetVariableString(sysvar::TestMainPanel_Variables::TesterName,chReturn);
+    writeDbgLevel (DebugFuncInternal, "Reading entry: %s. Value = %s", chParameter, chReturn);
+    
+    snprintf(chParameter, elCount(chParameter), "Company", bIndex); 
+    lReturn = bFctn_READFILEiniParameterString(chPath, chParameter, chSection, chReturn);
+    if(lReturn == NotOk)
+      writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+    if(lReturn == 2)
+      writeDbgLevel (DebugFuncInternal, "Could not read entry -Company- from ini.");    
+    sysSetVariableString(sysvar::TestMainPanel_Variables::CompanyName,chReturn); 
+    writeDbgLevel (DebugFuncInternal, "Reading entry: %s. Value = %s", chParameter, chReturn);
+    
+    
+    strncpy(chSection,"DUT",elCount(chSection));
+    writeDbgLevel (DebugFuncInternal, "Reading section: %s.", chSection);
+    
+    snprintf(chParameter, elCount(chParameter), "SW", bIndex); 
+    lReturn = bFctn_READFILEiniParameterString(chPath, chParameter, chSection, chReturn);
+    if(lReturn == NotOk)
+      writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+    if(lReturn == 2)
+      writeDbgLevel (DebugFuncInternal, "Could not read entry -SW- from ini.");    
+    sysSetVariableString(sysvar::TestMainPanel_Variables::SWVersion,chReturn);  
+    writeDbgLevel (DebugFuncInternal, "Reading entry: %s. Value = %s", chParameter, chReturn);
+    
+    snprintf(chParameter, elCount(chParameter), "HW", bIndex); 
+    lReturn = bFctn_READFILEiniParameterString(chPath, chParameter, chSection, chReturn);
+    if(lReturn == NotOk)
+      writeDbgLevel (DebugFuncInternal, "Could not open file: %s", chPath);
+    if(lReturn == 2)
+      writeDbgLevel (DebugFuncInternal, "Could not read entry -HW- from ini.");    
+    sysSetVariableString(sysvar::TestMainPanel_Variables::HWVersion,chReturn);  
+    writeDbgLevel (DebugFuncInternal, "Reading entry: %s. Value = %s", chParameter, chReturn);
+    
+    strncpy(chSection,"POWERSUPPLY",elCount(chSection));
+    writeDbgLevel (DebugFuncInternal, "Reading section: %s.", chSection);
+
+    lPowerSupplyNumber = lFctn_READFILEiniParameterNumber(chPath, "PSNumber", chSection);
+    
+    if(lPowerSupplyNumber == Error)
+    {
+      lPowerSupplyNumber = 1;
+      snprintf(chEntry, elCount(chEntry), "PSNumber");
+      lReturn = bFctn_READFILEiniWriteParameterNumber(chPath, chEntry, chSection, lPowerSupplyNumber);
+      writeDbgLevel (DebugFuncInternal, "Error reading parameter 'PSNumber' from ini file. Default number of power supplies is given: 1.");
+    }
+    
+    for(bIndex = 0; bIndex < lPowerSupplyNumber; bIndex++)
+    {
+      for(bIndexOfEntries = 0; bIndexOfEntries < elCount(chEntries); bIndexOfEntries++)
+      {
+        snprintf(chEntry, elCount(chEntry), "PS%d%s", bIndex, chEntries[bIndexOfEntries]);
+        
+        if(bIndex == 0)
+        {
+          snprintf(chSysvarName, elCount(chSysvarName), chEntries[bIndexOfEntries]);
+          strncat(chSysvarName, "1", elCOunt(chSysvarName));
+          lRead = lFctn_READFILEiniParameterNumber(chPath, chEntry, chSection); 
+          
+          if(lRead < NotOk)
+          {
+            writeDbgLevel (DebugFuncInternal, "The entry -%s- was not read properly from ini file. It is loaded now with default value: 0.", chEntry);
+            lRead = NotOk;
+          }
+          //Verify that the Type of PS is a valid one
+          if(strncmp(chEntries[bIndexOfEntries], "Type", strlen("Type")) == 0)
+          {
+            if(lRead == NotOk)
+            {
+              sysSetVariableInt("PowerSupply1_Variables", chSysvarName, NotOk);
+              writeDbgLevel (DebugFuncInternal, "A invalid Type of Power Supply was given. Valid ones are: 1-General, 2-SCPI.");
+              break;
+            }
+            else
+            {
+              //Load the valid Type from ini file
+              lReturn = sysSetVariableInt("PowerSupply1_Variables", chSysvarName, lRead);
+              if(lReturn != NotOk)
+                writeDbgLevel (DebugFuncInternal, "The sysvar: -%s- couldn't be load with the read value from ini file: %d. Error status: %d.", chSysvarName, lRead, lReturn);
+              
+              //Remember the SCPI PS
+              if(lRead == 2)
+                bSCPIFlag = Ok;
+            }
+          }
+          else if(strncmp(chEntries[bIndexOfEntries], "SCPIAddress", strlen("SCPIAddress")) == 0)
+          {
+            //Read the specific parameter for SCPI's Power Supplies
+            if(bSCPIFlag)
+            {
+              lReturn = sysSetVariableInt("PowerSupply1_Variables", chSysvarName, lRead);
+              if(lReturn != NotOk)
+                writeDbgLevel (DebugFuncInternal, "The sysvar: -%s- couldn't be load with the read value from ini file: %d. Error status: %d.", chSysvarName, lRead, lReturn);
+            }
+          }
+          else //Any other entries must be read from ini
+          {
+            lReturn = sysSetVariableInt("PowerSupply1_Variables", chSysvarName, lRead);
+            if(lReturn != NotOk)
+              writeDbgLevel (DebugFuncInternal, "The sysvar: -%s- couldn't be load with the read value from ini file: %d. Error status: %d.", chSysvarName, lRead, lReturn);
+          }
+        }
+        else if (bIndex == 1)
+        {
+          snprintf(chSysvarName, elCount(chSysvarName), chEntries[bIndexOfEntries]);
+          strncat(chSysvarName, "2", elCOunt(chSysvarName));
+          lRead = lFctn_READFILEiniParameterNumber(chPath, chEntry, chSection); 
+          
+          if(lRead < NotOk)
+          {
+            writeDbgLevel (DebugFuncInternal, "The entry -%s- was not read properly from ini file. It is loaded now with default value: 0.", chEntry);
+            lRead = NotOk;
+          }
+          //Verify that the Type of PS is a valid one
+          if(strncmp(chEntries[bIndexOfEntries], "Type", strlen("Type")) == 0)
+          {
+            if(lRead == NotOk)
+            {
+              sysSetVariableInt("PowerSupply2_Variables", chSysvarName, NotOk);
+              writeDbgLevel (DebugFuncInternal, "A invalid Type of Power Supply was given. Valid ones are: 1-General, 2-SCPI.");
+              break;
+            }
+            else
+            {
+              //Load the valid Type from ini file
+              lReturn = sysSetVariableInt("PowerSupply2_Variables", chSysvarName, lRead);
+              if(lReturn != NotOk)
+                writeDbgLevel (DebugFuncInternal, "The sysvar: -%s- couldn't be load with the read value from ini file: %d. Error status: %d.", chSysvarName, lRead, lReturn);
+              
+              //Remember the SCPI PS
+              if(lRead == 2)
+                bSCPIFlag = Ok;
+            }
+          }
+          else if(strncmp(chEntries[bIndexOfEntries], "SCPIAddress", strlen("SCPIAddress")) == 0)
+          {
+            //Write the specific parameter for SCPI's Power Supplies
+            if(bSCPIFlag)
+            {
+              lReturn = sysSetVariableInt("PowerSupply2_Variables", chSysvarName, lRead);
+              if(lReturn != NotOk)
+                writeDbgLevel (DebugFuncInternal, "The sysvar: -%s- couldn't be load with the read value from ini file: %d. Error status: %d.", chSysvarName, lRead, lReturn);
+            }
+          }
+          else //Any other entries must be write in ini with a valid value
+          {
+            lReturn = sysSetVariableInt("PowerSupply2_Variables", chSysvarName, lRead);
+            if(lReturn != NotOk)
+              writeDbgLevel (DebugFuncInternal, "The sysvar: -%s- couldn't be load with the read value from ini file: %d. Error status: %d.", chSysvarName, lRead, lReturn);
+          }
+        }
+      }
+    }
+    //Use this switch to update the power supply panel
+    @sysvar::PowGeneral_Variables::POWNumber = 2;
+    @sysvar::PowGeneral_Variables::POWNumber = 1;
+  }
+}
+
+/*! \fn byte bFctn_TestMainPanel_UsrIniRelPath(char aIniAbsPath[], char aRelIniPath[])
+*  \brief Function that convert the ini abosuluth path to relative
+*  \param[in]  aIniAbsPath 			- Diagnostic request will be converted to string.
+*  \param[out] aRelIniPath 	    - The string output resulted from the conversion.
+* 
+*  \return  0 - Not ok, relative path could not be created.
+*  \return  1 - Ok, realtive path created.
+*
+*  \note
+*       - Ini file should be placed in the same project repo folder
+ *      - 3 elements should match (Drive\MainRepoFolder\ProjectFolder ) otherwise NotOk will be returned 
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*  
+*  17.12.21             CiCo            Created and Implemented
+*/
+byte bFctn_TestMainPanel_UsrIniRelPath(char aIniAbsPath[], char aRelIniPath[])
+{
+  char chCfgPath[150];
+  char chSubPath[150];
+  long lFoundPos;
+  dword dwMatchNbr;
+  dword dwPosArray[20];
+  byte bCount;
+  byte bStartPos;
+  bStartPos = 0;
+  
+  writeDbgLevel (DebugFuncCalls, " bFctn_TestMainPanel_UsrIniRelPath -> iniPath to relative path.");
+  
+  lFctn_READFILEConfigurationPath(chCfgPath);// get configuration path
+  writeDbgLevel (DebugFuncInternal, "Configuration Path -> %s", chCfgPath);
+  dwMatchNbr = dwFctn_CONV_FindCharPosInStr( chCfgPath,'\\', dwPosArray);// split path by '\'
+  writeDbgLevel (DebugFuncInternal, "dwFctn_CONV_FindCharPosInStr -> Number of matches for '\' %d", dwMatchNbr);
+  
+  for( bCount=0; bCount < dwMatchNbr; bCount++ )// search for elements from configuration path
+  {
+    bFctn_CONV_GetSubString(chCfgPath, bStartPos, dwPosArray[bCount], chSubPath);
+    writeDbgLevel (DebugFuncInternal, "bFctn_CONV_GetSubString -> Element under compare: %s", chSubPath);
+    lFoundPos = strstr_off(aIniAbsPath, bStartPos, chSubPath );
+    writeDbgLevel (DebugFuncInternal, "strstr_off -> Return: %d , Offset: %d", lFoundPos, bStartPos);
+    
+    if(-1 == lFoundPos || bStartPos != lFoundPos){
+      break;    
+    }
+    bStartPos = dwPosArray[bCount];
+  }
+  
+  if(3 <  bCount){// check if we match the Drive/MainFolder/ProjectFolder
+    bFctn_CONV_GetSubString(aIniAbsPath, dwPosArray[bCount-1]+1, strlen(aIniAbsPath), chSubPath);
+    snprintf(aRelIniPath, elCount(aRelIniPath), "%s",chSubPath);
+    writeDbgLevel (DebugFuncInternal, "bFctn_CONV_GetSubString -> Dif path %s", aRelIniPath);
+    for(bStartPos=0; bStartPos < (dwMatchNbr - bCount); bStartPos++){
+      snprintf(aRelIniPath, elCount(aRelIniPath), "..\\%s",aRelIniPath);// build the relative path
+    }
+    writeDbgLevel (DebugFuncInternal, "Rel path -> %s", aRelIniPath);
+  }
+  else
+    return NotOk;
+  
+  return Ok;
+}

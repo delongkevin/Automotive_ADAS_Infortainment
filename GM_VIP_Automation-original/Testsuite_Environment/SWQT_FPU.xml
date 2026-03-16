@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?altova_sps ..\..\..\..\..\..\..\..\..\Program Files\Altova\Authentic2008\sps\Template\Vector\XMLTestSpecSimplified.sps?>
+<testmodule title="SWQT_Floating_Point_Unit" version="1.13">
+	<description>Software Qualification Test for Floating Point Unit</description>	
+	<testgroup title="Functionality">		
+		<testgroup title="Normal_Operation">	
+		    <testgroup title="Core0">
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_1_Core0" title="TC_L30SW_QT_36425892: Testcase_Verify_Divide_by_Zero_Scenerio_1_Core0"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_2_Core0" title="TC_L30SW_QT_36425893: Testcase_Verify_Divide_by_Zero_Scenerio_2_Core0"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_3_Core0" title="TC_L30SW_QT_36425894: Testcase_Verify_Divide_by_Zero_Scenerio_3_Core0"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core0" title="TC_L30SW_QT_36425895: Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core0"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core0" title="TC_L30SW_QT_36425896: Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core0"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core0" title="TC_L30SW_QT_36425897: Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core0"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_1_Core0" title="TC_L30SW_QT_36425898: Testcase_Verify_Inexact_Exception_Scenerio_1_Core0"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_2_Core0" title="TC_L30SW_QT_36425899: Testcase_Verify_Inexact_Exception_Scenerio_2_Core0"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_1_Core0" title="TC_L30SW_QT_36425900: Testcase_Verify_Underflow_Scenerio_1_Core0"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_2_Core0" title="TC_L30SW_QT_36425901: Testcase_Verify_Underflow_Scenerio_2_Core0"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_3_Core0" title="TC_L30SW_QT_36425902: Testcase_Verify_Underflow_Scenerio_3_Core0"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_1_Core0" title="TC_L30SW_QT_36425903: Testcase_Verify_Overflow_Scenerio_1_Core0"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_2_Core0" title="TC_L30SW_QT_36425904: Testcase_Verify_Overflow_Scenerio_2_Core0"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core0" title="TC_L30SW_QT_36425905: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core0"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core0" title="TC_L30SW_QT_36425906: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core0"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core0" title="TC_L30SW_QT_36425907: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core0"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core0" title="TC_L30SW_QT_36425908: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core0"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core0" title="TC_L30SW_QT_36425909: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core0"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core0" title="TC_L30SW_QT_36425910: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core0"/>
+            </testgroup>
+			<testgroup title="Core1">
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_1_Core1" title="TC_L30SW_QT_36645507: Testcase_Verify_Divide_by_Zero_Scenerio_1_Core1"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_2_Core1" title="TC_L30SW_QT_36645508: Testcase_Verify_Divide_by_Zero_Scenerio_2_Core1"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_3_Core1" title="TC_L30SW_QT_36645509: Testcase_Verify_Divide_by_Zero_Scenerio_3_Core1"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core1" title="TC_L30SW_QT_36645510: Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core1"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core1" title="TC_L30SW_QT_36645511: Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core1"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core1" title="TC_L30SW_QT_36645512: Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core1"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_1_Core1" title="TC_L30SW_QT_36645513: Testcase_Verify_Inexact_Exception_Scenerio_1_Core1"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_2_Core1" title="TC_L30SW_QT_36645514: Testcase_Verify_Inexact_Exception_Scenerio_2_Core1"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_1_Core1" title="TC_L30SW_QT_36645515: Testcase_Verify_Underflow_Scenerio_1_Core1"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_2_Core1" title="TC_L30SW_QT_36645516: Testcase_Verify_Underflow_Scenerio_2_Core1"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_3_Core1" title="TC_L30SW_QT_36645517: Testcase_Verify_Underflow_Scenerio_3_Core1"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_1_Core1" title="TC_L30SW_QT_36645518: Testcase_Verify_Overflow_Scenerio_1_Core1"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_2_Core1" title="TC_L30SW_QT_36645519: Testcase_Verify_Overflow_Scenerio_2_Core1"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core1" title="TC_L30SW_QT_36645520: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core1"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core1" title="TC_L30SW_QT_36645521: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core1"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core1" title="TC_L30SW_QT_36645522: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core1"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core1" title="TC_L30SW_QT_36645523: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core1"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core1" title="TC_L30SW_QT_36645524: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core1"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core1" title="TC_L30SW_QT_36645525: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core1"/>
+			</testgroup>
+			<testgroup title="Core2">
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_1_Core2" title="TC_L30SW_QT_36645823: Testcase_Verify_Divide_by_Zero_Scenerio_1_Core2"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_2_Core2" title="TC_L30SW_QT_36645824: Testcase_Verify_Divide_by_Zero_Scenerio_2_Core2"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_3_Core2" title="TC_L30SW_QT_36645825: Testcase_Verify_Divide_by_Zero_Scenerio_3_Core2"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core2" title="TC_L30SW_QT_36645826: Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core2"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core2" title="TC_L30SW_QT_36645827: Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core2"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core2" title="TC_L30SW_QT_36645828: Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core2"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_1_Core2" title="TC_L30SW_QT_36645829: Testcase_Verify_Inexact_Exception_Scenerio_1_Core2"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_2_Core2" title="TC_L30SW_QT_36645830: Testcase_Verify_Inexact_Exception_Scenerio_2_Core2"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_1_Core2" title="TC_L30SW_QT_36645831: Testcase_Verify_Underflow_Scenerio_1_Core2"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_2_Core2" title="TC_L30SW_QT_36645832: Testcase_Verify_Underflow_Scenerio_2_Core2"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_3_Core2" title="TC_L30SW_QT_36645833: Testcase_Verify_Underflow_Scenerio_3_Core2"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_1_Core2" title="TC_L30SW_QT_36645834: Testcase_Verify_Overflow_Scenerio_1_Core2"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_2_Core2" title="TC_L30SW_QT_36645835: Testcase_Verify_Overflow_Scenerio_2_Core2"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core2" title="TC_L30SW_QT_36645836: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core2"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core2" title="TC_L30SW_QT_36645837: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core2"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core2" title="TC_L30SW_QT_36645838: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core2"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core2" title="TC_L30SW_QT_36645839: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core2"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core2" title="TC_L30SW_QT_36645840: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core2"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core2" title="TC_L30SW_QT_36645841: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core2"/>
+			</testgroup>
+			<testgroup title="Core3">
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_1_Core3" title="TC_L30SW_QT_36645842: Testcase_Verify_Divide_by_Zero_Scenerio_1_Core3"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_2_Core3" title="TC_L30SW_QT_36645843: Testcase_Verify_Divide_by_Zero_Scenerio_2_Core3"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_3_Core3" title="TC_L30SW_QT_36645844: Testcase_Verify_Divide_by_Zero_Scenerio_3_Core3"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core3" title="TC_L30SW_QT_36645845: Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core3"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core3" title="TC_L30SW_QT_36645846: Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core3"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core3" title="TC_L30SW_QT_36645847: Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core3"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_1_Core3" title="TC_L30SW_QT_36645848: Testcase_Verify_Inexact_Exception_Scenerio_1_Core3"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_2_Core3" title="TC_L30SW_QT_36645849: Testcase_Verify_Inexact_Exception_Scenerio_2_Core3"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_1_Core3" title="TC_L30SW_QT_36645850: Testcase_Verify_Underflow_Scenerio_1_Core3"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_2_Core3" title="TC_L30SW_QT_36645851: Testcase_Verify_Underflow_Scenerio_2_Core3"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_3_Core3" title="TC_L30SW_QT_36645852: Testcase_Verify_Underflow_Scenerio_3_Core3"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_1_Core3" title="TC_L30SW_QT_36645853: Testcase_Verify_Overflow_Scenerio_1_Core3"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_2_Core3" title="TC_L30SW_QT_36645854: Testcase_Verify_Overflow_Scenerio_2_Core3"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core3" title="TC_L30SW_QT_36645855: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core3"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core3" title="TC_L30SW_QT_36645856: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core3"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core3" title="TC_L30SW_QT_36645857: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core3"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core3" title="TC_L30SW_QT_36645858: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core3"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core3" title="TC_L30SW_QT_36645859: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core3"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core3" title="TC_L30SW_QT_36645860: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core3"/>
+			</testgroup>
+			<testgroup title="Core4">
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_1_Core4" title="TC_L30SW_QT_36645785: Testcase_Verify_Divide_by_Zero_Scenerio_1_Core4"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_2_Core4" title="TC_L30SW_QT_36645786: Testcase_Verify_Divide_by_Zero_Scenerio_2_Core4"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_3_Core4" title="TC_L30SW_QT_36645787: Testcase_Verify_Divide_by_Zero_Scenerio_3_Core4"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core4" title="TC_L30SW_QT_36645788: Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core4"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core4" title="TC_L30SW_QT_36645789: Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core4"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core4" title="TC_L30SW_QT_36645790: Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core4"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_1_Core4" title="TC_L30SW_QT_36645791: Testcase_Verify_Inexact_Exception_Scenerio_1_Core4"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_2_Core4" title="TC_L30SW_QT_36645792: Testcase_Verify_Inexact_Exception_Scenerio_2_Core4"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_1_Core4" title="TC_L30SW_QT_36645793: Testcase_Verify_Underflow_Scenerio_1_Core4"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_2_Core4" title="TC_L30SW_QT_36645794: Testcase_Verify_Underflow_Scenerio_2_Core4"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_3_Core4" title="TC_L30SW_QT_36645795: Testcase_Verify_Underflow_Scenerio_3_Core4"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_1_Core4" title="TC_L30SW_QT_36645796: Testcase_Verify_Overflow_Scenerio_1_Core4"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_2_Core4" title="TC_L30SW_QT_36645797: Testcase_Verify_Overflow_Scenerio_2_Core4"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core4" title="TC_L30SW_QT_36645798: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core4"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core4" title="TC_L30SW_QT_36645799: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core4"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core4" title="TC_L30SW_QT_36645800: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core4"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core4" title="TC_L30SW_QT_36645801: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core4"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core4" title="TC_L30SW_QT_36645802: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core4"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core4" title="TC_L30SW_QT_36645803: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core4"/>
+			</testgroup>
+			<testgroup title="Core5">
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_1_Core5" title="TC_L30SW_QT_36645804: Testcase_Verify_Divide_by_Zero_Scenerio_1_Core5"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_2_Core5" title="TC_L30SW_QT_36645805: Testcase_Verify_Divide_by_Zero_Scenerio_2_Core5"/>
+			    <capltestcase name="Testcase_Verify_Divide_by_Zero_Scenerio_3_Core5" title="TC_L30SW_QT_36645806: Testcase_Verify_Divide_by_Zero_Scenerio_3_Core5"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core5" title="TC_L30SW_QT_36645807: Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core5"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core5" title="TC_L30SW_QT_36645808: Testcase_Verify_Round_Towards_Zero_Scenerio_2_Core5"/>
+			    <capltestcase name="Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core5" title="TC_L30SW_QT_36645809: Testcase_Verify_Round_Towards_Zero_Scenerio_3_Core5"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_1_Core5" title="TC_L30SW_QT_36645810: Testcase_Verify_Inexact_Exception_Scenerio_1_Core5"/>
+			    <capltestcase name="Testcase_Verify_Inexact_Exception_Scenerio_2_Core5" title="TC_L30SW_QT_36645811: Testcase_Verify_Inexact_Exception_Scenerio_2_Core5"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_1_Core5" title="TC_L30SW_QT_36645812: Testcase_Verify_Underflow_Scenerio_1_Core5"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_2_Core5" title="TC_L30SW_QT_36645813: Testcase_Verify_Underflow_Scenerio_2_Core5"/>
+			    <capltestcase name="Testcase_Verify_Underflow_Scenerio_3_Core5" title="TC_L30SW_QT_36645814: Testcase_Verify_Underflow_Scenerio_3_Core5"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_1_Core5" title="TC_L30SW_QT_36645815: Testcase_Verify_Overflow_Scenerio_1_Core5"/>
+			    <capltestcase name="Testcase_Verify_Overflow_Scenerio_2_Core5" title="TC_L30SW_QT_36645816: Testcase_Verify_Overflow_Scenerio_2_Core5"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core5" title="TC_L30SW_QT_36645817: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_1_Core5"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core5" title="TC_L30SW_QT_36645818: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_2_Core5"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core5" title="TC_L30SW_QT_36645819: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_3_Core5"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core5" title="TC_L30SW_QT_36645820: Testcase_Verify_Invalid_Operations_without_running_reset_Divide_Zero_by_Zero_Scenerio_4_Core5"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core5" title="TC_L30SW_QT_36645821: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Core5"/>
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core5" title="TC_L30SW_QT_36645822: Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Core5"/>
+		    </testgroup> 
+		</testgroup>
+		<testgroup title="Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined">
+			<testgroup title="Core0">		
+				<capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core0" title="TC_L30SW_QT_36425917: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core0" title="TC_L30SW_QT_36686915: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core0" title="TC_L30SW_QT_36686921: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core0" title="TC_L30SW_QT_36686927: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core0" title="TC_L30SW_QT_36686935: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core0" title="TC_L30SW_QT_36686941: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core0" title="TC_L30SW_QT_36686947: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core0"/>
+			</testgroup>
+			<testgroup title="Core1">
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core1" title="TC_L30SW_QT_36686068: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core1" title="TC_L30SW_QT_36686916: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core1" title="TC_L30SW_QT_36686922: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core1" title="TC_L30SW_QT_36686928: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core1" title="TC_L30SW_QT_36686936: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core1" title="TC_L30SW_QT_36686942: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core1" title="TC_L30SW_QT_36686948: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core1"/>
+            </testgroup>
+			<testgroup title="Core2">
+				<capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core2" title="TC_L30SW_QT_36686067: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core2" title="TC_L30SW_QT_36686917: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core2" title="TC_L30SW_QT_36686923: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core2" title="TC_L30SW_QT_36686929: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core2" title="TC_L30SW_QT_36686937: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core2" title="TC_L30SW_QT_36686943: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core2" title="TC_L30SW_QT_36686949: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core2"/>
+            </testgroup>
+			<testgroup title="Core3">
+				<capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core3" title="TC_L30SW_QT_36686071: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core3" title="TC_L30SW_QT_36686918: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core3" title="TC_L30SW_QT_36686924: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core3" title="TC_L30SW_QT_36686930: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core3" title="TC_L30SW_QT_36686938: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core3" title="TC_L30SW_QT_36686944: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core3" title="TC_L30SW_QT_36686950: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core3"/>
+            </testgroup>
+			<testgroup title="Core4">
+				<capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core4" title="TC_L30SW_QT_36686072: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core4" title="TC_L30SW_QT_36686919: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core4" title="TC_L30SW_QT_36686925: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core4" title="TC_L30SW_QT_36686931: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core4" title="TC_L30SW_QT_36686939: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core4" title="TC_L30SW_QT_36686945: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core4" title="TC_L30SW_QT_36686951: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core4"/>
+            </testgroup>
+			<testgroup title="Core5">
+				<capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core5" title="TC_L30SW_QT_36686073: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_x_NaN_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core5" title="TC_L30SW_QT_36686920: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_FLOAT_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core5" title="TC_L30SW_QT_36686926: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_ADD_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core5" title="TC_L30SW_QT_36686932: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_SUB_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core5" title="TC_L30SW_QT_36686940: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_MUL_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core5" title="TC_L30SW_QT_36686946: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core5" title="TC_L30SW_QT_36686952: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP_Core5"/>   
+            </testgroup>
+		</testgroup>
+        <testgroup title="Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined">
+			<testgroup title="Core0">
+			    <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core0" title="TC_L30SW_QT_36724338: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core0" title="TC_L30SW_QT_36724344: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core0" title="TC_L30SW_QT_36724350: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core0" title="TC_L30SW_QT_36724356: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core0" title="TC_L30SW_QT_36724362: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core0" title="TC_L30SW_QT_36724368: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core0"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core0" title="TC_L30SW_QT_36724374: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core0"/>
+            </testgroup>
+			<testgroup title="Core1">
+				<capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core1" title="TC_L30SW_QT_36724339: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core1" title="TC_L30SW_QT_36724345: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core1" title="TC_L30SW_QT_36724351: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core1" title="TC_L30SW_QT_36724357: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core1" title="TC_L30SW_QT_36724363: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core1" title="TC_L30SW_QT_36724369: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core1"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core1" title="TC_L30SW_QT_36724375: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core1"/>
+            </testgroup>
+			<testgroup title="Core2">       
+				<capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core2" title="TC_L30SW_QT_36724340: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core2" title="TC_L30SW_QT_36724346: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core2" title="TC_L30SW_QT_36724352: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core2" title="TC_L30SW_QT_36724358: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core2" title="TC_L30SW_QT_36724364: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core2" title="TC_L30SW_QT_36724370: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core2"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core2" title="TC_L30SW_QT_36724376: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core2"/>
+            </testgroup>
+			<testgroup title="Core3">        
+				<capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core3" title="TC_L30SW_QT_36724341: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core3" title="TC_L30SW_QT_36724347: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core3" title="TC_L30SW_QT_36724353: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core3" title="TC_L30SW_QT_36724359: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core3" title="TC_L30SW_QT_36724365: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core3" title="TC_L30SW_QT_36724371: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core3"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core3" title="TC_L30SW_QT_36724377: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core3"/>
+            </testgroup>
+			<testgroup title="Core4">
+				<capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core4" title="TC_L30SW_QT_36724342: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core4" title="TC_L30SW_QT_36724348: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core4" title="TC_L30SW_QT_36724354: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core4" title="TC_L30SW_QT_36724360: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core4" title="TC_L30SW_QT_36724366: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core4" title="TC_L30SW_QT_36724372: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core4"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core4" title="TC_L30SW_QT_36724378: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core4"/>
+            </testgroup>
+			<testgroup title="Core5">
+				<capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core5" title="TC_L30SW_QT_36724343: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_x_NaN_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core5" title="TC_L30SW_QT_36724349: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_FLOAT_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core5" title="TC_L30SW_QT_36724355: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_ADD_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core5" title="TC_L30SW_QT_36724361: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_SUB_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core5" title="TC_L30SW_QT_36724367: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_MUL_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core5" title="TC_L30SW_QT_36724373: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_DIV_Core5"/>
+                <capltestcase name="Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core5" title="TC_L30SW_QT_36724379: Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_not_defined_CMP_Core5"/>   
+            </testgroup> 
+		</testgroup>			
+	</testgroup>	
+	<completion>
+	    <initialize title="Adding testreport info." wait="200">
+		</initialize>
+	</completion>
+</testmodule>

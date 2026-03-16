@@ -1,0 +1,4 @@
+<map id="iFctn_FR_GetFrameDataByName" name="iFctn_FR_GetFrameDataByName">
+<area shape="rect" id="node1" title="Function that waits a specific time for the arrival of provided FlexRay Frame Name and store its payl..." alt="" coords="5,13,223,39"/>
+<area shape="rect" id="node2" href="$group__c_c_o_n_v_data_conversion.html#ga04fdfabf3f2093239d85ed91dd3e9aa7" title="Converts the exactly number of bytes(given in aByteDLC) from a byte array to a hex encoded strings ar..." alt="" coords="271,5,477,47"/>
+</map>

@@ -1,0 +1,77 @@
+/*@!Encoding:1252*/
+/*!
+* @defgroup ccPOW ccPOW
+* @defgroup POWER POWER
+* @ingroup controlLib
+* @{
+* @addtogroup ccPOW
+* @{
+*/ 
+
+includes
+{
+  #include "cvPOW.cin"
+}
+
+variables {
+  
+  enum cc_eCommandToSend {eGetVoltage = 0, eGetCurrent = 1, eGetStatus = 2, eSetVoltage = 3, eSetCurrent = 4, ePowerSupply_ON = 5, ePowerSupply_OFF = 6, eSelectAddress = 7, eGetPSVoltage = 8, eGetPSCurrent = 9, eGetPSStatus = 10};
+  enum cc_ePStype {eGeneral = 1, eSCPI = 2, eGeneralDual_1 = 3, eGeneralDual_2 = 4};
+  const byte cc_bPOWCarriageReturn = 10;
+  const byte cc_bTypeGeneral = eGeneral;
+  const byte cc_bTypeSCPI = eSCPI;
+  const byte cc_bPOW_GlobalDebugFlag = 0x01;
+  
+  struct cv_stPowerSupplycommand cc_stPS_General =
+  {
+    chGetCurrent = "IOUT1?",
+    chGetVoltage = "VOUT1?",
+    chSetCurrent = "ISET1:",
+    chSetVoltage = "VSET1:",
+    chSetOn = "OUT1",
+    chSetOff = "OUT0",
+    chGetStatus = "STATUS?"
+  };
+  
+  struct cv_stPowerSupplycommand cc_stPS_GeneralDual_1 =
+  {
+    chGetCurrent = "I1O?",
+    chGetVoltage = "V1O?",
+    chSetCurrent = "I1 ",
+    chSetVoltage = "V1 ",
+    chSetOn = "OP1 1",
+    chSetOff = "OP1 0",
+    chGetStatus = "OP1?"
+  };
+  
+  struct cv_stPowerSupplycommand cc_stPS_GeneralDual_2 =
+  {
+    chGetCurrent = "I2O?",
+    chGetVoltage = "V2O?",
+    chSetCurrent = "I2 ",
+    chSetVoltage = "V2 ",
+    chSetOn = "OP2 1",
+    chSetOff = "OP2 0",
+    chGetStatus = "OP2?"
+  }; 
+  
+  struct cv_stPowerSupplycommand cc_stPS_SCPI=
+  {
+    chGetCurrent = "MEASURE:CURR?",
+    chGetVoltage = "MEASURE:VOLT?",
+    chSetCurrent = "CURR ",
+    chSetVoltage = "VOLT ",
+    chSetOn = "OUTP 1",
+    chSetOff = "OUTP 0",
+    chGetStatus = "OUTP?",
+    chSelectAddress = "INSTrument:NSELect "
+  }; 
+}
+
+/*! @}*/
+/*! @}*/
+/*!
+*   \file
+*   \ingroup controlLib
+*   \brief Power Supply control library constants.
+*/

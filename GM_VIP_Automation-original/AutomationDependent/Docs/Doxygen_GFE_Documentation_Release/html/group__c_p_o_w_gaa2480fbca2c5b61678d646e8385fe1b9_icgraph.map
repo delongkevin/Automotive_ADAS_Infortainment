@@ -1,0 +1,6 @@
+<map id="lFctn_POW_ReadActualCurrent" name="lFctn_POW_ReadActualCurrent">
+<area shape="rect" id="node1" title="Function send the command (IO?) for reading the actual current of the source." alt="" coords="240,71,447,98"/>
+<area shape="rect" id="node2" href="$_power_supply_8can.html#a6de5b90c3ebb79dc4eea705d14775af5" title=" " alt="" coords="17,5,180,47"/>
+<area shape="rect" id="node3" href="$_power_supply_8can.html#ae0f477f2aa70a5aefac485721e4a64e4" title=" " alt="" coords="7,71,190,98"/>
+<area shape="rect" id="node4" href="$_power_supply_8can.html#a14fdcb3fb65265d44742caed8155d579" title=" " alt="" coords="5,123,192,164"/>
+</map>

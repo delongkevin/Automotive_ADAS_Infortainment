@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?altova_sps ..\..\..\..\..\..\..\..\..\Program Files\Altova\Authentic2008\sps\Template\Vector\XMLTestSpecSimplified.sps?>
+<testmodule title="SWIT_Test_Cases_Execution" version="1.13">
+	<description>Software Qualification Test for Lockstep_Dual-CPU_Status_Module</description>
+
+	
+		
+		<testgroup title="LockStep DUAL CPU">
+			
+				<capltestcase name="The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_0" title="TC_L30SW_IT_36449718: Test_case_The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFailure'_of_the_Lockstep_Dual-CPU_comparison_for_the_specified_CPU_Core_0"/>
+				<capltestcase name="The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_1" title="TC_L30SW_IT_36449719: Test_case_The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFailure'_of_the_Lockstep_Dual-CPU_comparison_for_the_specified_CPU_Core_1"/>
+				<capltestcase name="The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_2" title="TC_L30SW_IT_36449720: Test_case_The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFailure'_of_the_Lockstep_Dual-CPU_comparison_for_the_specified_CPU_Core_2"/>
+				<capltestcase name="The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_3" title="TC_L30SW_IT_36449721: Test_case_The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFailure'_of_the_Lockstep_Dual-CPU_comparison_for_the_specified_CPU_Core_3"/>
+				<capltestcase name="The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_4" title="TC_L30SW_IT_36449722: Test_case_The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFailure'_of_the_Lockstep_Dual-CPU_comparison_for_the_specified_CPU_Core_4"/>
+				<capltestcase name="The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_5" title="TC_L30SW_IT_36449723: Test_case_The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFailure'_of_the_Lockstep_Dual-CPU_comparison_for_the_specified_CPU_Core_5"/>
+				<capltestcase name="The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_for_the_specified_CPU_Core_6" title="TC_L30SW_IT_36449724: The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NO_LOCKSTEP_of_the_Lockstep_Dual-CPU_comparison_for_the_specified_CPU_Core_6"/>
+				<capltestcase name="The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_for_the_specified_CPU_Core_128" title="TC_L30SW_IT_36449725: The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NO_LOCKSTEP_of_the_Lockstep_Dual-CPU_comparison_for_the_specified_CPU_Core_128"/>
+				<capltestcase name="The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_for_the_specified_CPU_Core_255" title="TC_L30SW_IT_36449726: The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NO_LOCKSTEP_of_the_Lockstep_Dual-CPU_comparison_for_the_specified_CPU_Core_266"/>
+				
+		</testgroup>
+		
+		
+			
+
+	
+	<completion>
+		<!--<capltestfunction name="InsertDUTInfo" title="Identification"/>-->
+	    <initialize title="Adding testreport info." wait="200">
+		</initialize>
+	</completion>
+</testmodule>

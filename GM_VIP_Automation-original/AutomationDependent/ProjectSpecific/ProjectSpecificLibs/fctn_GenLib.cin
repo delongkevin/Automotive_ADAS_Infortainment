@@ -1,0 +1,52 @@
+/*@!Encoding:1252*/
+//  ====================================================
+//   MAGNA - DCU_EQ6 low level test function definition
+//  ====================================================
+//
+//  File name: fctn_DCU_EQ6_Common_Library.cin
+//
+//  Created(DD.MM.YYYY): 27.01.2025
+//
+//  Description: Test function definition for DCU_EQ6 using generic function
+//               framework.
+//          
+//  References: -
+//  --------------------------------------------------------------------   
+//  --------------------------------------------------------------------
+//  GENERAL NOTES
+//  -------------------------------------------------------------------- 
+
+
+/*! \fn void vFctn_DCU_SupportData_Path(char aOutputStringPath[])
+*  \brief Function that will create the path of SupportData folder from test environment.
+*
+*\param[out] aOutputStringPath - The path of SupportData folder from test environment.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 24.05.23               AnPa            Created and implemented
+*/
+void vFctn_DCU_SupportData_Path(char aOutputStringPath[])
+{
+  char chCfgPath[500]; 
+  dword dwMatchNbr;
+  dword dwPosArray[20];
+  byte bDebugFlag;
+  
+  bDebugFlag = pc_bGlobalDebugFlag;
+  writeDbgLevel (DebugFuncCalls , "Function vFctn_DUT_SupportData_Path() called.");
+
+  snprintf(aOutputStringPath,elcount(aOutputStringPath),""); //clear the string
+  
+  lFctn_READFILEConfigurationPath(chCfgPath);                                 //  get absolute configuration path 
+  
+  dwMatchNbr = dwFctn_CONV_FindCharPosInStr( chCfgPath,'\\', dwPosArray);     //  split path by '\'
+
+  bFctn_CONV_GetSubString(chCfgPath,0, dwPosArray[dwMatchNbr-2], aOutputStringPath);     //  get substring
+  
+  snprintf(aOutputStringPath,elcount(aOutputStringPath),"%s\\SupportData\\",aOutputStringPath); // add folder structure to substring
+
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "The modified path aOutputStringPath = %s.", aOutputStringPath); 
+  
+ }

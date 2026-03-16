@@ -1,0 +1,1818 @@
+/*@!Encoding:1252*/
+//  ====================================================
+//   VEONEER - Functions for T32
+//  ====================================================
+//
+//  File name: tsT32.cin
+//
+//  Created(DD.MM.YYYY): 04.05.2022
+//
+//  Description: Functions for T32 library
+//          
+//  --------------------------------------------------------------------
+includes
+{
+
+  #include "..\..\controlLib\T32\cT32.cin"
+}
+
+variables
+{
+  char msgInfo[1024];
+}
+
+/// <GENERIC>
+/*! void  A_DBGR_Go()
+*  \brief Function that sends GO command.
+* 
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 31.08.20              CrJu         Refactoring the code.
+* 16.02.22              IuSo         Refactoring the variable chT32Cmd.
+*/
+export testfunction A_DBGR_Go()
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+  
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+
+
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_Go() checking if already running.");
+  if (isRunning())
+  {
+    snprintf(chPassText, elcount(chPassText), "ECU is already running.");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+    vFctn_REPORTActionEvaluation(chPassText, PASS);
+    return;
+  }
+
+
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_Go() entered.");
+  snprintf(chT32Cmd, elcount(chT32Cmd),"\"GO\"");
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Set the ECU in running mode.");
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "ECU is running.");
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "ECU is NOT running!.\nAPI error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+
+  waitForRunning(250);
+}
+
+export testfunction A_DBGR_GoUp()
+{
+  // same implementation as go, but used go.up
+  long lApiExitCode[1];
+  char chApiMessage[512];
+
+  lFctn_CallT32API("\"Go.Up\"", chApiMessage, lApiExitCode);
+  waitForNotRunning(10000);
+}
+
+export testfunction  A_DBGR_StepOver()
+{
+    long lApiExitCode[1];
+    char chApiMessage[512];
+
+    lFctn_CallT32API("\"STEP.OVER\"", chApiMessage, lApiExitCode);
+    waitForNotRunning(10000);
+}
+
+
+/// <GENERIC>
+/*! void  A_DBGR_Go_Safe()
+*  \brief Function that sends GO command with reset detection and retry logic.
+*         If the ECU stops at the reset vector (PP register = 0A0000000), it will
+*         automatically retry the GO command up to 25 times.
+*
+*  \return no return
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+*
+* 31.01.26              Copilot         Created function with soft-reset detection and retry logic.
+*/
+export testfunction A_DBGR_Go_Safe()
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128];
+  char chPPValue[128];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+  int maxRetries;
+  int retryCount;
+
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+  maxRetries = 25;
+  retryCount = 0;
+
+  writeDbgLevel(DebugFuncCalls, "Function A_DBGR_Go_Safe() checking if already running.");
+  if (isRunning())
+  {
+    snprintf(chPassText, elcount(chPassText), "ECU is already running.");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "PASS: %s.", chPassText);
+    vFctn_REPORTActionEvaluation(chPassText, PASS);
+    return;
+  }
+
+  writeDbgLevel(DebugFuncCalls, "Function A_DBGR_Go_Safe() entered.");
+
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Set the ECU in running mode (safe mode with reset detection).");
+  bResultAction = bFctn_REPORTAction(chAction);
+
+    while (retryCount < maxRetries)
+    {
+      snprintf(chT32Cmd, elcount(chT32Cmd), "\"GO\"");
+      lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+
+      testWaitForTimeoutSilent(200);  // Allow ECU to hit the soft-reset.  It may not be instant, so giving a small buffer.
+      if (isRunning())
+      {
+        if (retryCount > 0)
+        {
+          snprintf(chPassText, elcount(chPassText), "ECU is running. Soft-Reset Recovered after %d retries.", retryCount);
+        }
+        else
+        {
+          snprintf(chPassText, elcount(chPassText), "ECU is running.");
+        }
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal, "PASS: %s.", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+        return;
+      }
+
+      // ECU is not running, check if stopped at reset vector
+      readPPRegister(chPPValue);
+
+      if (strncmp(chPPValue, "0A0000000", 9) == 0)
+      {
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal, "WARNING: Soft-Reset Detected!");
+        retryCount++;
+      }
+      else
+      {
+        // Stopped for another reason (breakpoint, etc.) - exit normally
+        snprintf(chPassText, elcount(chPassText), "ECU stopped (breakpoint or other reason).");
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal, "PASS: %s.", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+        return;
+      }
+    }
+
+    // Max retries exhausted
+    snprintf(chFailText, elcount(chFailText), "ECU is NOT running! Indefinite Soft-Resets Detected after %d retries.", maxRetries);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "FAIL: %s.", chFailText);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+
+  // `Go` is used to either `Go` or `Proceed to next breakpoint`.  Doing a `Is running` - `Is not running` should shorten when breakpoints are intended to be hit
+  waitForRunning(250);  // Ensure T32 has given PLENTY of opportunity to start.  (overkill)
+}
+
+
+/// <GENERIC>
+/*! void  A_DBGR_Break()
+*  \brief Function that STOP the ECU from running.
+* 
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 31.08.20              CrJu         Refactoring the code.
+* 16.02.22              IuSo         Refactoring the variable chT32Cmd.
+*/
+void A_DBGR_Break()
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_Break() entered.");
+
+  snprintf(chT32Cmd, elcount(chT32Cmd),"\"BREAK\"");
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Stop the ECU from running mode.");
+  bResultAction = bFctn_REPORTAction(chAction);
+
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "ECU is stopped.");
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <GENERIC>
+/*! void A_DBGR_R()
+*  \brief Function that reset the ECU without reloading symbols
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 16.09.20              CrJu         Refactoring the code.
+*/
+void A_DBGR_R()
+{
+  long lResult;
+  char chCommand[1024];
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  long lEvaluationResult;
+  char chApiMessage[512];
+  char chT32Cmd[128] = "";
+  long lApiExitCode[1];
+  byte bResultAction;
+  byte bDebugFlag;
+  
+  // initial values
+  lResult = Error;
+  bResultAction = NotOk;
+  bDebugFlag = NotOk;
+  lEvaluationResult = Error;
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_R() entered.");
+  
+  snprintf(chT32Cmd, elcount(chT32Cmd),"\"SYStem.RESetTarget\"");
+  lResult = lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  testWaitForTimeoutSilent(250);
+
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Send the 'R' command to T32.");
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  { 
+    if ((lResult==Ok)||(lResult==NotOk))
+    {
+
+      if ((waitForNotRunning(cc_dwT32_MaxTimeout)) && (NotOk != lFctn_G_T32_GET_STATE())) // condition evaluation has returned: True
+      {
+        snprintf(chPassText, elcount(chPassText), "The ECU has been reseted.");
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "API is missing or couldn't be executed for command R !!!");
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+    }
+    else
+    {
+      snprintf(chFailText, elcount(chFailText), "API is missing or couldn't be executed for command R !!!");
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "Error: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <GENERIC>
+/*! void A_DBGR_RnGo()
+*  \brief Function that reset the ECU without reloading symbols, deletes all the BPs & put the ECU in running mode.
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 16.09.20              CrJu         Refactoring the code.
+*/
+void A_DBGR_RnGo()
+{
+  long lResult;
+  char chCommand[1024];
+  char chAction[250];
+  char chPassText[250];
+  char chFailText[250];
+  long lEvaluationResult;
+  char chApiMessage[512];
+  char chT32Cmd[128] = "";
+  long lApiExitCode[1];
+  byte bResultAction;
+  byte bDebugFlag;
+  
+  // initial values
+  lResult = Error;
+  bResultAction = NotOk;
+  bDebugFlag = NotOk;
+  lEvaluationResult = Error;
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_RnGo() entered.");
+
+
+  A_DBGR_R();
+  A_DBGR_Go();
+
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Send the 'RnGO' command to T32.");
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  { 
+    if ((lResult==Ok)||(lResult==NotOk))
+    {
+      lEvaluationResult = isRunning();
+
+      if (lEvaluationResult) // condition evaluation has returned: True 
+      {
+        snprintf(chPassText, elcount(chPassText), "The ECU has been reseted and now is in Running.");
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+        vFctn_REPORTActionEvaluation(chPassText, PASS);
+      }
+      else
+      {
+        snprintf(chFailText, elcount(chFailText), "API is missing or couldn't be executed for command RnGO !!!");
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+        vFctn_REPORTActionEvaluation(chFailText, FAIL);
+      }
+    }
+    else
+    {
+      snprintf(chFailText, elcount(chFailText), "API is missing or couldn't be executed for command RnGO !!!");
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "Error: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <GENERIC>
+/*! void  A_DBGR_RunCommand(char aCommand[])
+*  \brief Function that RUN practice command line.
+* 
+*  \param[in] aCommand - the command to run
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 10.09.20              CrJu         Refactoring the code.
+*/
+void A_DBGR_RunCommand(char aCommand[])
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+  char chT32Cmd[128] = "";
+ 
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+  snprintf(chT32Cmd, elcount(chT32Cmd), "\"%s\"", aCommand);
+ 
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_RunCommand() entered.");
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Run practice cmm line: '%s'.", aCommand);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "Command '%s' was succesfully executed.", aCommand);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <GENERIC>
+/*! void E_DBGR_CheckState(char aAddress[])
+*  \brief Function to verify current T32 state
+*  \param[in]   aT32State      - Expected T32 State (Values : T32_State_Down, ..., T32_State_Running --> See eT32State)
+*  \return None
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+* 03.11.21              AnPu            Created and implemented
+* 24.11.21				      AnPu			      Implement remarks after review
+*/
+void E_DBGR_CheckState(enum eT32State aT32State)
+{
+  long lState;
+  char chPassText[250];
+  char chFailText[250];
+  byte bDebugFlag;
+  
+  bDebugFlag = NotOk;
+  lState = Error;
+  
+  writeDbgLevel (DebugFuncCalls , "Function E_DBGR_CheckState() called.");
+  lState = lFctn_G_T32_GET_STATE(msgInfo);
+  if (lState == aT32State)
+    {
+      snprintf(chPassText, elcount(chPassText),  msgInfo);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTStepEvaluation(chPassText, PASS);
+    }
+    else{
+      snprintf(chFailText, elcount(chFailText),  msgInfo);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTStepEvaluation(chFailText, FAIL);
+    }
+
+  
+  if((byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, msgInfo);
+}
+
+/// <BREAKPOINTS>
+/*! void  A_DBGR_BreakpointSet(char aAddress[])
+*  \brief Function that SET a specific BP.
+* 
+*  \param[in] aAddress - name of the BP ("Symbol")
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 31.08.20              CrJu         Refactoring the code.
+*/
+export testfunction A_DBGR_BreakpointSet(char aAddress[])
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+  char chT32Cmd[128] = "";
+
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"BREAK.SET %s\"", aAddress);
+ 
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_BreakpointSet() entered.");
+  
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Set a specific BreakPoint: %s.", aAddress);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "Breakpoint %s set (and met?).", aAddress);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+  
+  //timeout after execution
+   waitForNotRunning(5000);
+}
+
+/// <BREAKPOINTS>
+/*! void  A_DBGR_BreakpointWrite(char aAddress[])
+*  \brief Function that SET a specific BP to write.
+* 
+*  \param[in] aAddress - name of the BP ("Symbol")
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 10.09.20              CrJu         Refactoring the code.
+*/
+void A_DBGR_BreakpointWrite(char aAddress[])
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+  char chT32Cmd[128] = "";
+ 
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"VAR.BREAK.SET %s /W\"", aAddress);
+ 
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_BreakpointWrite() entered.");
+  
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Set a specific BreakPoint: %s to write.", aAddress);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "Breakpoint write access at adress: %s is set.", aAddress);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+   waitForNotRunning(5000);
+}
+
+/// <BREAKPOINTS>
+/*! void  A_DBGR_BreakpointRead(char aAddress[])
+*  \brief Function that SET a specific BP to read.
+* 
+*  \param[in] aAddress - name of the BP ("Symbol")
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 10.09.20              CrJu         Refactoring the code.
+*/
+void A_DBGR_BreakpointRead(char aAddress[])
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+  char chT32Cmd[128] = "";
+ 
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+  snprintf(chT32Cmd, elcount(chT32Cmd), "\"VAR.BREAK.SET %s /R\"", aAddress);
+
+   waitForNotRunning(5000);
+
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_BreakpointRead() entered.");
+  
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Set a specific BreakPoint: %s to read.", aAddress);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "Breakpoint read access at adress: %s is set.", aAddress);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <BREAKPOINTS>
+/*! void  A_DBGR_BreakpointDeleteAll()
+*  \brief Function that delete all the BP from TRACE32.
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 31.08.20              CrJu         Refactoring the code.
+* 16.02.22              IuSo         Refactoring the variable chT32Cmd.
+*/
+void A_DBGR_BreakpointDeleteAll()
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+  char chT32Cmd[128];
+ 
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+ 
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_BreakpointDeleteAll() entered.");
+  snprintf(chT32Cmd, elcount(chT32Cmd),"\"BREAK.DELETE\"");
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Delete all the BP from TRACE32");
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "Breakpoint/s deleted.");
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <BREAKPOINTS>
+/*! void A_DBGR_BreakpointDelete(char aAddress[])
+*  \brief Function that delete a specific BP from TRACE32.
+*
+*  \param[in] aAddress - name of the BP ("Symbol")
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 31.08.20              CrJu         Refactoring the code.
+*/
+void A_DBGR_BreakpointDelete(char aAddress[])
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+  char chT32Cmd[128] = "";
+ 
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"BREAK.DELETE %s\"", aAddress);
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_BreakpointDelete() entered.");
+  
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Delete BP: %s from TRACE32", aAddress);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "Breakpoint '%s' was successfully deleted", aAddress);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+
+
+
+
+
+
+/// <BREAKPOINTS>
+/*! void E_DBGR_BreakpointCheckForHalt(char aAddress[])
+*  \brief Function that verify if a specific BP is halted.
+*
+*  \param[in] aAddress - name of the BP ("Symbol")
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 09.09.20              CrJu         Refactoring the code.
+*/
+void E_DBGR_BreakpointCheckForHalt(char aAddress[])
+{
+  byte bDebugFlag;
+  long lEvaluationResult;
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[500] = "";
+  char chPassText[500];
+  char chFailText[500];
+
+  bDebugFlag = NotOk;
+  writeDbgLevel(DebugFuncCalls , "Function E_DBGR_BreakpointCheckForHalt() entered.");
+
+  // Poll for not running with timeout
+  if ( waitForNotRunning(15000))
+  {
+    snprintf(chT32Cmd, elcount(chT32Cmd),"\"EVAL (P:R(PC)==%s)\"", aAddress);
+    lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+    
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chT32Cmd, elcount(chT32Cmd),  "\"PRINT EVAL()\"");
+      lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+      lEvaluationResult = atol(chApiMessage);
+      if(lEvaluationResult)
+      {
+        snprintf(chPassText, elcount(chPassText), "Breakpoint at: %s was reached.", aAddress);
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+        vFctn_REPORTStepEvaluation(chPassText, PASS);
+      }
+      else 
+      {
+        snprintf(chFailText, elcount(chFailText), "Breakpoint at: %s was NOT reached. API error message: %s", aAddress, chApiMessage);
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+        vFctn_REPORTStepEvaluation(chFailText, FAIL);
+      }
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTStepEvaluation(chFailText, FAIL);
+    }
+  }
+  else 
+  {
+    snprintf(chFailText, elcount(chFailText), "Timeout: ECU did not halt (STATE.RUN()!=FALSE) within %d ms.", cc_dwT32_MaxTimeout);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <BREAKPOINTS>
+/*! void E_DBGR_BreakpointCheckForHaltCore(char aAddress[], char aCore[])
+*  \brief Function that verify if a specific BP is halted on a specific core.
+*
+*  \param[in] aAddress - name of the BP ("Symbol")
+*  \param[in] aCore - the core where BP should be
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 09.09.20              CrJu         Refactoring the code.
+*/
+void E_DBGR_BreakpointCheckForHaltCore(char aAddress[], char aCore[])
+{
+  byte bDebugFlag;
+  long lEvaluationResult;
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128] = "";
+  char chPassText[250];
+  char chFailText[250];
+
+  bDebugFlag = NotOk;
+  if( waitForNotRunning(5000))
+  {
+    snprintf(chT32Cmd, elcount(chT32Cmd),"\"EVAL P:R(PC)==%s&&CORE()==%s\"", aAddress, aCore);
+    lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+    
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chT32Cmd, elcount(chT32Cmd),  "\"PRINT EVAL()\"");
+      lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+      lEvaluationResult = atol(chApiMessage);
+      if(lEvaluationResult)
+      {
+        snprintf(chPassText, elcount(chPassText), "Breakpoint at: %s was reached.", aAddress);
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+        vFctn_REPORTStepEvaluation(chPassText, PASS);
+      }
+      else 
+      {
+        snprintf(chFailText, elcount(chFailText), "Breakpoint at: %s was NOT reached. API error message: %s", aAddress, chApiMessage);
+        if((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+        vFctn_REPORTStepEvaluation(chFailText, FAIL);
+      }
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTStepEvaluation(chFailText, FAIL);
+    }
+  }
+  else 
+  {
+    snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <VARIABLE>
+/*! void A_DBGR_VariableSet(char aAddress[], char aValue[])
+*  \brief Function that set a value of a variable in TRACE32.
+*
+*  \param[in] aAddress - name of the variable
+*  \param[in] aValue - the value to set
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 07.09.20              CrJu         Refactoring the code.
+*/
+void A_DBGR_VariableSet(char aAddress[], char aValue[])
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[500];
+  char chT32Cmd[500] = "";
+
+   waitForNotRunning(5000);  // Risk that assignment is ran to trigger BP.  Optimization risk mitigation.
+
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+  snprintf(chT32Cmd, elcount(chT32Cmd), "\"VAR.SET %s=%s\"", aAddress, aValue);
+
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_VariableSet() entered.");
+
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Set value: %s to register: %s.", aValue, aAddress);
+  bResultAction = bFctn_REPORTAction(chAction);
+
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "Variable '%s' was successfully set with value: '%s'", aAddress, aValue);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+
+  //timeout after execution
+   waitForNotRunning(5000);  // Reading is typically only ever wanted when stopped at a breakpoint.  Optimization risk mitigation.
+}
+
+/// <VARIABLE>
+/*! void  A_DBGR_VariableRead( char aAddress[], long& aVarValue)
+*  \brief Function that read the value of a variable.
+*
+*  \param[in] aAddress - name of the variable
+*  \param[out] aVarValue - value of the variable
+*
+*  \return no return
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 09.09.20              CrJu         Refactoring the code.
+* 15.11.21              AnPu         Update function
+*/
+void  A_DBGR_VariableRead( char aAddress[], long& aVarValue)
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+
+   waitForNotRunning(5000);  // Reading is typically only ever wanted when stopped at a breakpoint.  Optimization risk mitigation.
+
+  snprintf(chT32Cmd, elcount(chT32Cmd),"\"var.PRINT %s\"", aAddress);
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_VariableRead() entered.");
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Read the value of variable: %s.", aAddress);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "Variable value is: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      aVarValue=atol(chApiMessage);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "ECU is NOT running!.\nAPI error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      aVarValue = -9999;
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    aVarValue = -9999;
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <VARIABLE>
+/*! void E_DBGR_VariableReadCheck(char aAddress[], long aValueToCompare, enum eCompareType aCompareType)
+*  \brief Function that read the value at address & compares it with expected value.
+*
+*  \param[in] aAddress - name of the BP ("Symbol")
+*  \param[in] aValueToCompare - the expected value of the register
+*  \param[in] aCompareType - compare type (e.q. equal, not equal, greatter, smaller)
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 08.09.20              CrJu         Refactoring the code.
+* 17.11.21              AnPu         Update function
+* 27.02.25              SeSu         Update function
+*/
+void E_DBGR_VariableCheck(char aAddress[], long aValueToCompare, enum eCompareType aCompareType)
+{
+  byte bDebugFlag;
+  long lReadValue;
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[500] = "";
+  char chPassText[500];
+  char chFailText[500];
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+
+   waitForNotRunning(5000);  // Reading is typically only ever wanted when stopped at a breakpoint.  Optimization risk mitigation.
+
+  writeDbgLevel(DebugFuncCalls , "Function E_DBGR_VariableCheck() entered.");
+  
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"print var.value(%s)*1.\"", aAddress);
+  writeDbgLevel (DebugFuncInternal, "Calling function lFctn_CallT32API.");
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+
+  if (lApiExitCode[0] == 0)
+  {
+    if ( (byte)DebugFuncParam & bDebugFlag )
+        writeDbgLevel (DebugFuncParam, "Parameters: char aAddress[]: -- %s --, long aValueToCompare: -- %d --,  enum eCompareType aCompareType: -- %d -- (Equal = 0, NotEqual = 1, Greater = 2, Smaller = 3).", aAddress, aValueToCompare, aCompareType);
+    
+    lReadValue = atol(chApiMessage); 
+    switch(aCompareType){
+      case Equal:
+        if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Case Equal: Variable aAddress -- %s -- has value lReadValue: -- %d --, compare value: aValueToCompare: -- %d --.", aAddress, lReadValue, aValueToCompare);
+        
+        if(lReadValue == aValueToCompare)
+        {
+          snprintf(chPassText, elcount(chPassText), "Variable %s has the expected value: %d", aAddress, lReadValue);
+          if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Test Expected passed. Calling function vFctn_REPORTStepEvaluation.");
+          vFctn_REPORTStepEvaluation(chPassText, PASS);
+        }
+        else 
+        {
+          snprintf(chFailText, elcount(chFailText), "Variable %s has the value: %d, DIFFERENT than expected: %d.", aAddress, lReadValue, aValueToCompare);
+          if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Test Expected failed. Calling function vFctn_REPORTStepEvaluation.");
+          vFctn_REPORTStepEvaluation(chFailText, FAIL);
+        }
+        break;
+      case NotEqual:
+        if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Case NotEqual: Variable aAddress -- %s -- has value lReadValue: -- %d --, compare value: aValueToCompare: -- %d --.", aAddress, lReadValue, aValueToCompare);
+        
+        if(lReadValue != aValueToCompare)
+        {
+          snprintf(chPassText, elcount(chPassText), "Variable %s is different than expected value: %d", aAddress, lReadValue);
+          if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Test Expected passed. Calling function vFctn_REPORTStepEvaluation.");
+          vFctn_REPORTStepEvaluation(chPassText, PASS);
+        }
+        else 
+        {
+          snprintf(chFailText, elcount(chFailText), "Variable %s has the value: %d, EQUAL to: %d.", aAddress, lReadValue, aValueToCompare);
+          if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Test Expected failed. Calling function vFctn_REPORTStepEvaluation.");
+          vFctn_REPORTStepEvaluation(chFailText, FAIL);
+        }
+        break;
+       case Greater:
+        if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Case Greater: Variable aAddress -- %s -- has value lReadValue: -- %d --, compare value: aValueToCompare: -- %d --.", aAddress, lReadValue, aValueToCompare);
+        
+        if(lReadValue > aValueToCompare)
+        {
+          snprintf(chPassText, elcount(chPassText), "Variable %s is Greater then expected value: %d", aAddress, lReadValue);
+          if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Test Expected passed. Calling function vFctn_REPORTStepEvaluation.");
+          vFctn_REPORTStepEvaluation(chPassText, PASS);
+        }
+        else 
+        {
+          snprintf(chFailText, elcount(chFailText), "Variable %s has the value: %d, smaller or equal with: %d.", aAddress, lReadValue, aValueToCompare);
+          if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Test Expected failed. Calling function vFctn_REPORTStepEvaluation.");
+          vFctn_REPORTStepEvaluation(chFailText, FAIL);
+        }
+        break;
+       case Smaller:
+        if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Case Smaller: Variable aAddress -- %s -- has value lReadValue: -- %d --, compare value: aValueToCompare: -- %d --.", aAddress, lReadValue, aValueToCompare);
+        
+        if(lReadValue < aValueToCompare)
+        {
+          snprintf(chPassText, elcount(chPassText), "Variable %s is smaller then expected value: %d", aAddress, lReadValue);
+          if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Test Expected passed. Calling function vFctn_REPORTStepEvaluation.");
+          vFctn_REPORTStepEvaluation(chPassText, PASS);
+        }
+        else 
+        {
+          snprintf(chFailText, elcount(chFailText), "Variable %s has the value: %d, greater or equal with: %d.", aAddress, lReadValue, aValueToCompare);
+          if((byte)DebugFuncInternal & bDebugFlag)
+            writeDbgLevel (DebugFuncInternal, "Test Expected failed. Calling function vFctn_REPORTStepEvaluation.");
+          vFctn_REPORTStepEvaluation(chFailText, FAIL);
+        }
+        break;
+    }
+  }
+  else // API Command Fail
+  {
+    snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "Test Expected failed. API error message: %s. Calling function vFctn_REPORTStepEvaluation.", chApiMessage);
+    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <VARIABLE>
+/*! void E_DBGR_VariableCheck_until(char aAddress[], long aValueToCompare, enum eCompareType aCompareType)
+*  \brief Function that repeatedly checks the value at address until the expected condition is met.
+*         Useful when hitting a breakpoint multiple times waiting for a specific value (e.g., channelId == 1).
+*         Waits for ECU to halt, checks condition, if not met issues GO and retries up to max attempts.
+*
+*  \param[in] aAddress - name of the variable ("Symbol")
+*  \param[in] aValueToCompare - the expected value of the variable
+*  \param[in] aCompareType - compare type (e.q. equal, not equal, greater, smaller)
+*  \return no return
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+*
+* 01.02.26              Copilot        Initial creation based on E_DBGR_VariableCheck
+*/
+void E_DBGR_VariableCheck_until(char aAddress[], long aValueToCompare, enum eCompareType aCompareType)
+{
+  byte bDebugFlag;
+  long lReadValue;
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[500] = "";
+  char chPassText[500];
+  char chFailText[500];
+  int nMaxRetries = 25;
+  int nRetryCount;
+  byte bConditionMet;
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+  bConditionMet = 0;
+
+  writeDbgLevel(DebugFuncCalls , "Function E_DBGR_VariableCheck_until() entered.");
+
+  for (nRetryCount = 0; nRetryCount < nMaxRetries; nRetryCount++)
+  {
+    // Wait for ECU to stop at breakpoint
+    if (!waitForNotRunning(5000))
+    {
+      write("Retry %d/%d: ECU did not halt within timeout, issuing GO.", nRetryCount + 1, nMaxRetries);
+      snprintf(chT32Cmd, elcount(chT32Cmd), "\"GO\"");
+      lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+      continue;
+    }
+
+    // Read the variable value
+    snprintf(chT32Cmd, elcount(chT32Cmd), "\"print var.value(%s)*1.\"", aAddress);
+    writeDbgLevel(DebugFuncInternal, "Calling function lFctn_CallT32API.");
+    lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+
+    if (lApiExitCode[0] != 0)
+    {
+      write("Retry %d/%d: API error reading variable, issuing GO. Error: %s", nRetryCount + 1, nMaxRetries, chApiMessage);
+      snprintf(chT32Cmd, elcount(chT32Cmd), "\"GO\"");
+      lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+      continue;
+    }
+
+    lReadValue = atol(chApiMessage);
+
+    if ((byte)DebugFuncParam & bDebugFlag)
+      writeDbgLevel(DebugFuncParam, "Retry %d/%d: Variable %s has value %d, comparing to %d with type %d.", nRetryCount + 1, nMaxRetries, aAddress, lReadValue, aValueToCompare, aCompareType);
+
+    // Check condition based on compare type
+    switch(aCompareType)
+    {
+      case Equal:
+        if (lReadValue == aValueToCompare)
+          bConditionMet = 1;
+        break;
+      case NotEqual:
+        if (lReadValue != aValueToCompare)
+          bConditionMet = 1;
+        break;
+      case Greater:
+        if (lReadValue > aValueToCompare)
+          bConditionMet = 1;
+        break;
+      case Smaller:
+        if (lReadValue < aValueToCompare)
+          bConditionMet = 1;
+        break;
+    }
+
+    if (bConditionMet)
+    {
+      // Condition met - report success and return
+      switch(aCompareType)
+      {
+        case Equal:
+          snprintf(chPassText, elcount(chPassText), "Variable %s has the expected value: %d (after %d attempt(s))", aAddress, lReadValue, nRetryCount + 1);
+          break;
+        case NotEqual:
+          snprintf(chPassText, elcount(chPassText), "Variable %s is different than expected value: %d (after %d attempt(s))", aAddress, lReadValue, nRetryCount + 1);
+          break;
+        case Greater:
+          snprintf(chPassText, elcount(chPassText), "Variable %s is greater than expected value: %d (after %d attempt(s))", aAddress, lReadValue, nRetryCount + 1);
+          break;
+        case Smaller:
+          snprintf(chPassText, elcount(chPassText), "Variable %s is smaller than expected value: %d (after %d attempt(s))", aAddress, lReadValue, nRetryCount + 1);
+          break;
+      }
+      if ((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel(DebugFuncInternal, "Condition met. Calling function vFctn_REPORTStepEvaluation.");
+      vFctn_REPORTStepEvaluation(chPassText, PASS);
+      return;
+    }
+
+    // Condition not met - log retry message and issue GO
+    writeDbgLevel(DebugFuncInternal, "Retry %d/%d: Variable %s has value %d, expected condition not met. Retrying...", nRetryCount + 1, nMaxRetries, aAddress, lReadValue);
+    write("E_DBGR_VariableCheck_until: Retry %d/%d - Variable %s = %d, condition not met. Retrying...", nRetryCount + 1, nMaxRetries, aAddress, lReadValue);
+
+    snprintf(chT32Cmd, elcount(chT32Cmd), "\"GO\"");
+    lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  }
+
+  // Max retries exceeded - report failure
+  snprintf(chFailText, elcount(chFailText), "Variable %s did not meet expected condition after %d attempts. Last value: %d, expected: %d.", aAddress, nMaxRetries, lReadValue, aValueToCompare);
+  if ((byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel(DebugFuncInternal, "Max retries exceeded. Calling function vFctn_REPORTStepEvaluation.");
+  vFctn_REPORTStepEvaluation(chFailText, FAIL);
+}
+
+/// <VARIABLE>
+/*! void E_DBGR_VariableCheckArrayElement(char aAddress[], long aIndex, long aValueToCompare)
+*  \brief Function that reads the value at address[index] & compares it with expected value
+*
+*  \param[in] aAddress - name of the BP ("Symbol")
+*  \param[in] aIndex - index in the array
+*  \param[in] aValueToCompare - the expected value of the register
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 09.09.20              CrJu         Refactoring the code.
+*/
+void E_DBGR_VariableCheckArrayElement(char aAddress[], long aIndex, long aValueToCompare)
+{
+  byte bDebugFlag;
+  long lReadValue;
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128] = "";
+  char chPassText[250];
+  char chFailText[250];
+
+  bDebugFlag = NotOk;
+
+   waitForNotRunning(5000);  // Reading is typically only ever wanted when stopped at a breakpoint.  Optimization risk mitigation.
+
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"var.PRINT %s[%d]\"", aAddress, aIndex);
+ 
+  writeDbgLevel(DebugFuncCalls , "Function E_DBGR_VariableCheckArrayElement() entered.");
+  
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+
+  if (lApiExitCode[0] == 0)
+  {
+    lReadValue = atol(chApiMessage); 
+    
+    if(lReadValue == aValueToCompare)
+    {
+      snprintf(chPassText, elcount(chPassText), "Variable %s has the expected value: %d", aAddress, lReadValue);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTStepEvaluation(chPassText, PASS);
+    }
+    else 
+    {
+      snprintf(chFailText, elcount(chFailText), "Variable %s has the value: %d, DIFFERENT than expected: %d.", aAddress, lReadValue, aValueToCompare);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTStepEvaluation(chFailText, FAIL);
+    }
+  }
+  else // API Command Fail
+  {
+    snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <REGISTER>
+/*! void A_DBGR_RegisterSet(char aAddress[], char aValue[])
+*  \brief Function that set a value of a register by address in TRACE32.
+*
+*  \param[in] aAddress - name of the BP ("Symbol")
+*  \param[in] aValue - the value to set
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 07.09.20              CrJu         Refactoring the code.
+*/
+void A_DBGR_RegisterSet(char aAddress[], char aValue[])
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+  char chT32Cmd[128] = "";
+ 
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+
+   waitForNotRunning(5000);  // Reading is typically only ever wanted when stopped at a breakpoint.  Optimization risk mitigation.
+
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"PER.Set.simple %s %% Long %s\"", aAddress, aValue);
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_RegisterSet() entered.");
+  
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Set value: %s to register: %s.", aValue, aAddress);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "Register with address: %s was set to value: 0x%s.", aAddress, aValue);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+   waitForNotRunning(5000);  // Reading is typically only ever wanted when stopped at a breakpoint.  Optimization risk mitigation.
+}
+
+/// <REGISTER>
+/*! void A_DBGR_RegisterSetByMask(char aAddress[], char aMask[])
+*  \brief Function that SET a value of a specific mask from register by address in TRACE32.
+* 
+*  \param[in] aAddress - name of the BP ("Symbol")
+*  \param[in] aMask - the mask
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 15.09.20              CrJu         Refactoring the code.
+*/
+void A_DBGR_RegisterSetByMask(char aAddress[], char aMask[])
+{
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  byte bResultAction;
+  byte bDebugFlag;
+  char chPassText[250];
+  char chFailText[250];
+  char chAction[250];
+  char chT32Cmd[128] = "";
+  char chT32Cmd1[128]= "";
+  char chT32Cmd2[128]= "";
+  char chT32Cmd3[128]= "";
+  char chT32Cmd4[128]= "";
+  
+  bDebugFlag = NotOk;
+  bResultAction = NotOk;
+  snprintf(chT32Cmd1, elcount(chT32Cmd1), "\"PER.Set.simple %s %%", aAddress);
+  snprintf(chT32Cmd2, elcount(chT32Cmd2), "Long (d.l(%s)", aAddress);
+  snprintf(chT32Cmd3, elcount(chT32Cmd3), "&~%s)", aMask);
+  snprintf(chT32Cmd4, elcount(chT32Cmd4), "|%s\"", aMask);
+  strncat(chT32Cmd1, chT32Cmd2, elcount(chT32Cmd));
+  strncat(chT32Cmd1, chT32Cmd3, elcount(chT32Cmd));
+  strncat(chT32Cmd1, chT32Cmd4, elcount(chT32Cmd));
+  strncpy(chT32Cmd, chT32Cmd1, elcount(chT32Cmd));
+  
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_RegisterSetByMask() entered.");
+  
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  //Print the action text to the raport
+  snprintf(chAction, elcount(chAction), "Set a value of a specific mask: '%s' from register by address: '%s'.", aMask, aAddress);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    if (lApiExitCode[0] == 0)
+    {
+      snprintf(chPassText, elcount(chPassText), "Register with address: %s was set to value: 0x%s.", aAddress, aMask);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTActionEvaluation(chPassText, PASS);
+    }
+    else // API Command Fail
+    {
+      snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTActionEvaluation(chFailText, FAIL);
+    }
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+   waitForNotRunning(5000);
+}
+
+/// <REGISTER>
+/*! void A_DBGR_RegisterRead(char aAddress[], int64 &aRegisterValue)
+*  \brief Function that read the value of a register by address in TRACE32.
+*
+*  \param[in] aAddress - name of the BP ("Symbol")
+*  \param[out] aRegisterValue - the value of the register
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 08.09.20              CrJu         Refactoring the code.
+* 28.04.22              GaMo         Updated the strncat part to save the entire value of the register.
+* 20.05.22              AnPa         Updated to use low level function
+*/
+void A_DBGR_RegisterRead(char aAddress[], int64 &aRegisterValue)
+{
+  long lApiExitCode[1];
+  byte bResultAction;
+  char chFailText[250];
+  char chAction[250];
+  char chMappedResponse[256];
+ 
+  bResultAction = NotOk;
+
+  writeDbgLevel (DebugFuncCalls , "Function A_DBGR_RegisterRead() entered.");
+  
+  //Print the action text to the report
+  snprintf(chAction, elcount(chAction), "Read register value from address: %s.", aAddress);
+  bResultAction = bFctn_REPORTAction(chAction);
+  
+  if(bResultAction)
+  {
+    if (lFctn_T32_ReadRegister_AddressValue(aAddress, aRegisterValue, chMappedResponse) == 0)
+      vFctn_REPORTActionEvaluation(chMappedResponse, PASS);
+    else // API Command Fail
+      vFctn_REPORTActionEvaluation(chMappedResponse, FAIL);
+  }
+  else//The reporting function has failed
+  {
+    snprintf(chFailText, elcount(chFailText), "ERROR: The action text could not be added in the Report. bFctn_REPORTAction() return: %d.", bResultAction);
+    vFctn_REPORTActionEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <REGISTER>
+/*! void E_DBGR_RegisterReadCheck(char aAddress[], char aValueToCompare[])
+*  \brief Function that read & check the value of a register by address.
+*
+*  \param[in] aAddress - name of the BP ("Symbol")
+*  \param[in] aValueToCompare - the expected value of the register
+*
+*  \return no return
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 07.09.20              CrJu         Refactoring the code.
+*/
+void E_DBGR_RegisterCheck(char aAddress[], char aValueToCompare[])
+{
+  byte bDebugFlag;
+  long lCompareValue;
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128] = "";
+  char chPassText[250];
+  char chFailText[250];
+
+  bDebugFlag = NotOk;
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"EVAL data.long(%s)==%s\"", aAddress, aValueToCompare);
+ 
+  writeDbgLevel(DebugFuncCalls , "Function E_DBGR_RegisterCheck() entered.");
+  
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+
+  if (lApiExitCode[0] == 0)
+  {
+    lCompareValue = atol(chApiMessage); 
+    
+    if(lCompareValue)
+    {
+      snprintf(chPassText, elcount(chPassText), "Register with address: %s has the expected value: %s", aAddress, aValueToCompare);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "PASS: %s.", chPassText);
+      vFctn_REPORTStepEvaluation(chPassText, PASS);
+    }
+    else 
+    {
+      snprintf(chFailText, elcount(chFailText), "Register with address: %s was read his value is DIFFERENT from expected value: %s", aAddress, aValueToCompare);
+      if((byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+      vFctn_REPORTStepEvaluation(chFailText, FAIL);
+    }
+  }
+  else // API Command Fail
+  {
+    snprintf(chFailText, elcount(chFailText), "API error message: %s", chApiMessage);
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+    vFctn_REPORTStepEvaluation(chFailText, FAIL);
+  }
+}
+
+/// <REGISTER>
+/*! \fn void E_DBGR_RegisterCheckBitStatus(char aAddress[], int aBit_Number, enum eBitStatus aBitStatus)
+*  \brief Function that will check the status of a specific bit number of a specific address
+*  \param[in]  char aAddress[]            - address from where the register value is read
+*  \param[in]  byte aBit_Number            - the bit number to be verified. (bit numbers start from 0, e.g. to verify the Port2 Pin7 the aBit_Number param should be 8 )
+*                                                                                                    (e.g. to verify bit 0 of an address the aBit_Number param should be 1)
+*  \param[in]  enum eBitStatus aBitStatus -   BitStatus_NotSet = 0 
+*                                             BitStatus_Set = 1
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 20.05.22               AnPa            Created and implemented
+*/
+void E_DBGR_RegisterCheckBitStatus(char aAddress[], byte aBit_Number, enum eBitStatus aBitStatus)
+{
+  int iRet_val;
+  char chMappedResponseInfo[256];
+  
+  writeDbgLevel (DebugFuncCalls , "Function E_DBGR_RegisterCheckBitStatus() called.");
+  
+  iRet_val = lFctn_T32_Register_Check_Bit_Status( aAddress, aBit_Number, aBitStatus,chMappedResponseInfo);
+
+  if(iRet_val == Ok)    
+    vFctn_REPORTStepEvaluation(chMappedResponseInfo, PASS); 
+  else
+    vFctn_REPORTStepEvaluation(chMappedResponseInfo, FAIL);  
+}
+
+
+/**
+ * Helper function to poll for STATE.RUN()==FALSE() with timeout
+ * Returns 1 if not running, 0 if still running after timeout
+ */
+long waitForNotRunning(long timeoutMs)
+{
+  long elapsed;
+  long result;
+  long pollInterval;
+  int apiWait = 60;
+
+  pollInterval = 500;
+  elapsed = 0;
+  result = 0;
+
+  while (elapsed < timeoutMs)
+  {
+    result = !isRunning();
+    elapsed += apiWait;
+
+    if (result)
+      return 1; // Not running
+
+    if (pollInterval > apiWait)
+    {
+      testWaitForTimeoutSilent(pollInterval - apiWait);
+      elapsed += pollInterval;
+    }
+  }
+  return 0; // Timed out, still running
+}
+
+long waitForRunning(long timeoutMs)
+{
+  long elapsed;
+  long result;
+  long pollInterval;
+  int apiWait = 60;
+
+  pollInterval = 100;
+  elapsed = 0;
+  result = 0;
+
+  while (elapsed < timeoutMs)
+  {
+    result = isRunning();
+    elapsed += apiWait;
+
+    if (result)
+      return 1; // Running
+
+    if (pollInterval > apiWait)
+    {
+      testWaitForTimeoutSilent(pollInterval - apiWait);
+      elapsed += pollInterval;
+    }
+  }
+  return 0; // Timed out, still not running
+}
+
+long isRunning()
+{
+  long lApiExitCode[1];
+  char chApiMessage[128];
+  char chT32Cmd[32] =  "\"EVAL STATE.RUN()==TRUE()\"";
+  long result;
+
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  return atol(chApiMessage);
+}
+
+/// <GENERIC>
+/*! void readPPRegister(char aResult[])
+*  \brief Function that reads the PP (Program Pointer) register value.
+*
+*  \param[out] aResult - the PP register value as a string
+*
+*  \return no return
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+*
+* 31.01.26              Copilot         Created function to support A_DBGR_Go_Safe reset detection.
+*/
+void readPPRegister(char aResult[])
+{
+  long lApiExitCode[1];
+  char chApiMessage[128];
+  char chT32Cmd[32] = "\"PRINT Register(PP)\"";
+
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  strncpy(aResult, chApiMessage, elcount(aResult));
+}
+

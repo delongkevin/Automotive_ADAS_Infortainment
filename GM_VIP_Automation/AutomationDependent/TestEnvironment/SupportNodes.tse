@@ -1,16 +1,21 @@
-;CANoe Version |4|18|0|53105 SupportNodes 
-Version: 18.4.26 Build 26
+;CANoe Version |4|18|0|36720 SupportNodes 
+Version: 19.3.118 Build 118
 32 PRO
-10
-APPDIR Vector.CANoe.SignalGenerators.DLL
-Vector.CANoe.SignalGenerators, Version=18.4.26.0, Culture=neutral, PublicKeyToken=null
-Vector.CANoe.SignalGenerators.ComponentWrapper
-1
-1.0.1
+15
 APPDIR Vector.CANalyzer.CAN.InteractiveGenerator.DLL
-Vector.CANalyzer.CAN.InteractiveGenerator, Version=18.4.26.0, Culture=neutral, PublicKeyToken=null
+Vector.CANalyzer.CAN.InteractiveGenerator, Version=19.3.118.0, Culture=neutral, PublicKeyToken=null
 Vector.CANalyzer.CAN.InteractiveGenerator.Controller.CANwinCommunicator
+1
+1.0.0
+APPDIR Vector.CANoe.SignalGenerators.DLL
+Vector.CANoe.SignalGenerators, Version=19.3.118.0, Culture=neutral, PublicKeyToken=null
+Vector.CANoe.SignalGenerators.ComponentWrapper
 2
+1.0.1
+APPDIR Vector.CANalyzer.ETH.SegmentView.DLL
+Vector.CANalyzer.ETH.SegmentView, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+Vector.CANalyzer.ETH.SegmentView.SegmentViewController
+3
 1.0.0
 VTSPersistentRoot 1 Begin_Of_Object
 1
@@ -24,7 +29,7 @@ VTSWrapper<class_VProgrammedNode> 3 Begin_Of_Object
 2
 VTSItem 4 Begin_Of_Object
 1
-3 1713785227 0
+3 1704791449 0
 1
 END_OF_ITEM_DATA
 End_Of_Object VTSItem 4
@@ -32,13 +37,13 @@ End_Of_Object VTSItem 4
 VSimulationNode 4 Begin_Of_Object
 8
 VProgrammedNode 5 Begin_Of_Object
-7
+9
 VConfigurationRoot 6 Begin_Of_Object
 1
 End_Of_Object VConfigurationRoot 6
 <VFileName V9 QL> 1 "..\GenericLibraries\SupportNodes\PowerSupply\PowerSupply.can" 
 1
-
+C:\Kevin_GM_VIP_Repo\L2H7890_Software\SWTest\GM_VIP_Automation\AutomationDependent\GenericLibraries\SupportNodes\PowerSupply\PowerSupply.cbf
 << default >>
 
 5
@@ -107,11 +112,11 @@ VSimulinkModelViewerConfiguration 5 Begin_Of_Object
 End_Of_Object VSimulinkModelViewerConfiguration 5
 1
 0
-613168039
+676043722
 0
 NodeSignalPanelBustypeCount 0
 0
-613168039
+676043722
 0
 End_Of_Object VSimulationNode 4
 TS_WRP_DATA_END
@@ -128,7 +133,7 @@ VTSWrapper<class_VProgrammedNode> 3 Begin_Of_Object
 2
 VTSItem 4 Begin_Of_Object
 1
-3 1713792651 0
+3 1704797545 0
 1
 END_OF_ITEM_DATA
 End_Of_Object VTSItem 4
@@ -136,13 +141,13 @@ End_Of_Object VTSItem 4
 VSimulationNode 4 Begin_Of_Object
 8
 VProgrammedNode 5 Begin_Of_Object
-7
+9
 VConfigurationRoot 6 Begin_Of_Object
 1
 End_Of_Object VConfigurationRoot 6
 <VFileName V9 QL> 1 "..\GenericLibraries\SupportNodes\TestMain\TestMainPanel.can" 
 1
-
+C:\Kevin_GM_VIP_Repo\L2H7890_Software\SWTest\GM_VIP_Automation\AutomationDependent\GenericLibraries\SupportNodes\TestMain\TestMainPanel.cbf
 << default >>
 
 5
@@ -230,15 +235,15 @@ VTSFolder 2 Begin_Of_Object
 1
 VTSItem 3 Begin_Of_Object
 1
-3 1715432299 0
+3 1779725545 0
 1
 END_OF_ITEM_DATA
 End_Of_Object VTSItem 3
 4
 SupportNodes
 2
-1713792651
-1713785227
+1704797545
+1704791449
 <VFileName V9 QL> 1 "..\..\..\TestRBS\03_VariantDependent\SYST\report.xml" 
 END_OF_FILE_NAME
 <VFileName V9 QL> 1 "" 
@@ -248,17 +253,17 @@ END_OF_FILE_NAME
 END_OF_FOLDER_DATA
 End_Of_Object VTSFolder 2
 1
-1715432299
+1779725545
 3
 1
-1713785227
+1704791449
 0
 1
-1713792651
+1704797545
 0
 1
-1715432299
+1779725545
 2
-1713792651
-1713785227
+1704797545
+1704791449
 End_Of_Object VTSPersistentRoot 1

@@ -1,0 +1,5 @@
+<map id="bFctn_POWSetVoltage" name="bFctn_POWSetVoltage">
+<area shape="rect" id="node1" title="Function sets command to set voltage from PowerSupply." alt="" coords="248,31,407,57"/>
+<area shape="rect" id="node2" href="$group__ts_p_o_w_e_r.html#gafb057f5b7ba3d0c6de4d4110d9db0a20" title="Function sets power supply voltage." alt="" coords="32,5,173,32"/>
+<area shape="rect" id="node3" href="$_power_supply_8can.html#a0576b66dab69eb748cb88c70a8c50239" title=" " alt="" coords="5,56,200,83"/>
+</map>
