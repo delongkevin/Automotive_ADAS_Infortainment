@@ -48,6 +48,16 @@ Checks performed
                              (e.g. "C:\\Automation\\..." or "python C:\\...").
                              Handles multi-line calls.  Use automation_root
                              as the working-directory instead.
+13. Invalid hex literals    – hexadecimal literals (0x…) that contain one or
+                             more characters that are not valid hex digits
+                             (0–9, a–f, A–F), e.g. 0x8000x or 0x800x.
+                             These are always typos and cause an immediate
+                             "unexpected character" compile error in CANoe.
+14. Undeclared loop vars    – variables used as the loop counter in a for()
+                             initializer (e.g. for (i = 0; i < n; i++))
+                             that are not declared anywhere in the same file
+                             with a CAPL type keyword (int, long, dword …).
+                             CANoe reports these as "Unknown symbol" errors.
 
 Usage
 -----
@@ -771,6 +781,144 @@ def check_sysexec_hardcoded_paths(filepath: Path, text: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# Check 13 – invalid hex literals (e.g. 0x8000x, 0x800x)
+# ---------------------------------------------------------------------------
+#
+# A hex literal beginning with ``0x`` must only contain the digits 0–9 and
+# the letters a–f / A–F.  Any other alphabetic character (e.g. a stray ``x``,
+# ``g``, or ``y``) is a typo that makes the token unparseable in CANoe CAPL
+# and causes an immediate compile error.  These are very hard to spot by eye
+# (``0x8000x`` looks almost identical to ``0x80007000``).
+#
+# The check scans comment-stripped source so it does not fire on diagnostic
+# strings like ``"Transmit CAN message. ID:0x80007000"``; those never contain
+# malformed hex literals.  String-embedded tokens such as
+# ``write("value=0x%x", val)`` are benign (the literal digits after 0x are
+# valid), so false positives are essentially impossible in this codebase.
+#
+
+_HEX_TOKEN_RE = re.compile(r'\b0x([0-9a-zA-Z_]+)\b')
+_VALID_HEX_CHARS = frozenset('0123456789abcdefABCDEF')
+
+
+def check_invalid_hex_literals(filepath: Path, text: str) -> list[str]:
+    """Return an error for every hex literal that contains non-hex characters.
+
+    Only inspects code tokens — hex-like tokens that appear inside string
+    literals (e.g. the placeholder ``"0xXXXXXXXX"`` in snprintf action text)
+    are intentional and are silently skipped.
+    """
+    issues = []
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        # Walk the line character-by-character, skipping string contents, so
+        # that intentional placeholder text like "0xXXXXXXXX" is not flagged.
+        code_chars: list[str] = []
+        in_str = False
+        pos = 0
+        while pos < len(line):
+            ch = line[pos]
+            if in_str:
+                if ch == '\\':
+                    pos += 2          # skip escaped character inside string
+                    code_chars.append(' ')
+                    code_chars.append(' ')
+                    continue
+                if ch == '"':
+                    in_str = False
+                code_chars.append(' ')  # blank-out string content
+            else:
+                if ch == '"':
+                    in_str = True
+                    code_chars.append(' ')
+                else:
+                    code_chars.append(ch)
+            pos += 1
+        code_only = ''.join(code_chars)
+
+        for m in _HEX_TOKEN_RE.finditer(code_only):
+            digits = m.group(1)
+            if not all(c in _VALID_HEX_CHARS for c in digits):
+                bad = sorted({c for c in digits if c not in _VALID_HEX_CHARS})
+                issues.append(
+                    f"  {filepath}:{lineno}:{m.start() + 1}: "
+                    f"invalid hex literal '0x{digits}' — "
+                    f"non-hex character(s) {bad} found; "
+                    f"check for a typo (e.g. '0x8000x' should be '0x80007000')"
+                )
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Check 14 – undeclared for-loop variables
+# ---------------------------------------------------------------------------
+#
+# CAPL follows C89 scoping rules: every variable used in a ``for`` loop
+# initialiser (``for (i = 0; ...)``) must be declared before use with a type
+# keyword (``int``, ``long``, ``dword``, ``word``, ``byte``, ``float``,
+# ``double``, ``char``, ``qword``, ``int64``), either in the global
+# ``variables { }`` block or as a local variable at the top of the enclosing
+# function body.  CANoe reports undeclared loop variables as
+# "Unknown symbol '<name>'" compile errors.
+#
+# The check collects every distinct identifier used as the initialiser
+# variable in a ``for`` loop, then checks whether that identifier appears in
+# any type declaration in the same file.  It reports each missing variable
+# once, at the line of its first undeclared use, with a suggestion to add the
+# declaration to the ``variables {}`` block.
+#
+
+_FOR_INIT_VAR_RE = re.compile(
+    r'\bfor\s*\(\s*([a-zA-Z_]\w*)\s*='
+)
+
+_TYPE_KEYWORDS = r'(?:int|long|dword|word|byte|float|double|char|qword|int64)'
+
+# Match a declaration statement: type [whitespace] comma-sep-list ;
+# Works for "int i = 0;", "long val, cnt = 0;", "int i, j, k;"
+_DECL_STMT_RE = re.compile(
+    r'\b' + _TYPE_KEYWORDS + r'\b\s+([^;{]+);'
+)
+_IDENT_IN_DECL_RE = re.compile(r'([a-zA-Z_]\w*)')
+
+
+def _collect_declared_variables(text: str) -> set[str]:
+    """Return the set of all variable names declared with a CAPL type keyword."""
+    declared: set[str] = set()
+    for m in _DECL_STMT_RE.finditer(text):
+        decl_body = m.group(1)
+        # Each comma-separated item is  name[array]  or  name = initialiser
+        for item in decl_body.split(','):
+            item = item.strip()
+            # First identifier token is the variable name (skip type-qualifier
+            # repetitions that can appear in nested declarations)
+            nm = _IDENT_IN_DECL_RE.match(item)
+            if nm:
+                declared.add(nm.group(1))
+    return declared
+
+
+def check_undeclared_loop_variables(filepath: Path, text: str) -> list[str]:
+    """Return an error for every for-loop variable not declared in this file."""
+    issues = []
+    declared = _collect_declared_variables(text)
+
+    reported: set[str] = set()    # report each missing name only once per file
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        for m in _FOR_INIT_VAR_RE.finditer(line):
+            varname = m.group(1)
+            if varname in declared or varname in reported:
+                continue
+            reported.add(varname)
+            issues.append(
+                f"  {filepath}:{lineno}:{m.start() + 1}: "
+                f"loop variable '{varname}' used in 'for' initialiser "
+                f"but not declared anywhere in this file — "
+                f"add 'int {varname} = 0;' to the variables{{}} block"
+            )
+    return issues
+
+
+# ---------------------------------------------------------------------------
 # Main driver
 # ---------------------------------------------------------------------------
 
@@ -838,6 +986,8 @@ def main() -> int:
         file_issues += check_missing_semicolons(fp, cleaned)
         file_issues += check_consecutive_go_calls(fp, cleaned)
         file_issues += check_sysexec_hardcoded_paths(fp, raw)   # raw: string literals intact
+        file_issues += check_invalid_hex_literals(fp, cleaned)
+        file_issues += check_undeclared_loop_variables(fp, cleaned)
 
         if file_issues:
             print(f"[FAIL] {fp.relative_to(root)}")
