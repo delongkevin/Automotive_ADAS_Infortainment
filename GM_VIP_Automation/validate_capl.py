@@ -81,6 +81,16 @@ from pathlib import Path
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _count_preceding_backslashes(text: str, pos: int) -> int:
+    """Return the number of consecutive backslashes immediately before *pos* in *text*."""
+    count = 0
+    j = pos - 1
+    while j >= 0 and text[j] == '\\':
+        count += 1
+        j -= 1
+    return count
+
+
 def _strip_line_comments(text: str) -> str:
     """Remove // … comments (but not inside strings)."""
     result = []
@@ -88,7 +98,11 @@ def _strip_line_comments(text: str) -> str:
     in_string = False
     while i < len(text):
         ch = text[i]
-        if ch == '"' and (i == 0 or text[i - 1] != '\\'):
+        # Toggle string state only for unescaped quotes.  Count preceding
+        # backslashes: an odd count means the quote itself is escaped (\");
+        # an even count means the backslashes cancel each other out (\\) and
+        # the quote is a real delimiter (\\" or just ").
+        if ch == '"' and _count_preceding_backslashes(text, i) % 2 == 0:
             in_string = not in_string
         if not in_string and ch == '/' and i + 1 < len(text) and text[i + 1] == '/':
             # skip to end of line
@@ -108,7 +122,9 @@ def _strip_block_comments(text: str) -> str:
     while i < len(text):
         ch = text[i]
         # Track string literal state to avoid stripping comment markers inside strings.
-        if ch == '"' and (i == 0 or text[i - 1] != '\\'):
+        # Use backslash-parity counting so that \\" (escaped backslash + real quote)
+        # correctly toggles the string state, while \" (escaped quote) does not.
+        if ch == '"' and _count_preceding_backslashes(text, i) % 2 == 0:
             in_string = not in_string
         # Only treat /* as a comment start when we're not inside a string.
         if not in_string and text[i:i + 2] == '/*':

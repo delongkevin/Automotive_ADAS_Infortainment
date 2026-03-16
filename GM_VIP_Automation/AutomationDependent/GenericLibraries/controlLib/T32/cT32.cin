@@ -165,19 +165,25 @@ void vFctn_T32_CommandCreate_StartUpScripts(char aOutputStringCommand[],char aCo
 *
 *  04.05.22              GaMo         Refactoring the code.
 *  31.01.26              Auto         Performance optimisation – removed unnecessary waits.
-*  12.03.26              Copilot      Fixed T32_API.exe path via vFctn_T32_ConfigPathCreate.
 *  12.03.26              Copilot      Added post-call gap (cc_dwT32_APICallMinGap) to prevent
 *                                     back-to-back socket contention.  Removed retry logic per
 *                                     project requirement: fail fast, re-run the test case.
+*  16.03.26              Copilot      Reverted T32_API.exe path to relative form.
+*                                     vFctn_T32_ConfigPathCreate + "TestSuites\..." assumed a
+*                                     specific bench directory structure that does not match every
+*                                     deployment.  The relative path "../AutomationDependent/
+*                                     GenericLibraries/T32_API.exe" is resolved from CANoe's
+*                                     working directory (the config-file folder) and works
+*                                     regardless of where the project is installed.
 */
 long lFctn_CallT32API(char aCommand[], char aRetApiMessage[], long aRetApiExitCode[])
 {
   long returnExeCall;
-  char T32ApiExe[256];
-
-  // Build the absolute path to T32_API.exe located in AutomationDependent\GenericLibraries\
-  vFctn_T32_ConfigPathCreate(T32ApiExe);
-  strncat(T32ApiExe, "TestSuites\\AutomationDependent\\GenericLibraries\\T32_API.exe", elcount(T32ApiExe));
+  // Relative path from the CANoe config-file directory to T32_API.exe.
+  // ".." from GM_VIP_RBS\ reaches the project root, then into
+  // AutomationDependent\GenericLibraries\.  Works on any bench
+  // regardless of where the project is installed.
+  char T32ApiExe[256] = "../AutomationDependent/GenericLibraries/T32_API.exe";
 
   aRetApiExitCode[0] = -1;
 
@@ -384,7 +390,8 @@ long lFctn_G_T32_GET_STATE(char aMsgInfo[])
 /*! long lFctn_G_T32_RUN_CMM_CORE(char aAddress[], char aCore[], long aTimeOut, char aNumberOfParameters[])
 *  \brief Runs a CMM script via T32_API.exe using TestWaitForSyscall and checks the exit code.
 *         The script path is resolved relative to Generic_Tools\Lauterbach\TC4_Aurix\.
-*         T32_API.exe is resolved from AutomationDependent\GenericLibraries\.
+*         T32_API.exe is also resolved from that same directory via
+*         vFctn_T32_CommandCreate_StartUpScripts so the command is self-contained.
 *
 *  \param[in] aAddress - CMM script filename or sub-path relative to Generic_Tools\Lauterbach\TC4_Aurix\
 *                        (e.g. "StartUp_Scripts\\startup.cmm" or "Cmm_Commands\\cmd.cmm").
@@ -402,16 +409,17 @@ long lFctn_G_T32_GET_STATE(char aMsgInfo[])
 * Date(DD.MM.YY)        Author          Change info                                                          
 *   
 * 09.09.20              CrJu         Refactoring the code.
-* 06.03.26              Copilot      Fixed T32_API.exe path: now resolved from GenericLibraries (was incorrectly
-*                                    placed inside Generic_Tools\Lauterbach\TC4_Aurix\). CMM script path now
-*                                    correctly built via vFctn_T32_CommandCreate_StartUpScripts separately.
+* 16.03.26              Copilot      Reverted T32_API.exe path back to the original
+*                                    vFctn_T32_CommandCreate_StartUpScripts approach.
+*                                    The prior change used vFctn_T32_ConfigPathCreate +
+*                                    "TestSuites\..." which breaks on benches where the project
+*                                    is not installed under a "TestSuites\" parent folder.
 */
 long lFctn_G_T32_RUN_CMM_CORE(char aAddress[], char aCore[], long aTimeOut, char aNumberOfParameters[])
 {
   byte bDebugFlag;
   long lResult;
   char chCommand[1024];
-  char chCmmPath[1024];
   char chPassText[250];
   char chFailText[250];
   
@@ -419,15 +427,12 @@ long lFctn_G_T32_RUN_CMM_CORE(char aAddress[], char aCore[], long aTimeOut, char
   
   writeDbgLevel (DebugFuncCalls , "Function G_T32_RUN_CMM_CORE() entered.");
   
-  // Build the absolute path to T32_API.exe in GenericLibraries and start the DO command
-  vFctn_T32_ConfigPathCreate(chCommand);
-  strncat(chCommand, "TestSuites\\AutomationDependent\\GenericLibraries\\T32_API.exe \"DO ", 1024);
+  // Build the command using vFctn_T32_CommandCreate_StartUpScripts which resolves the
+  // TC4_Aurix folder path and places T32_API.exe at the start of the command string.
+  vFctn_T32_CommandCreate_StartUpScripts(chCommand,"T32_API.exe \"DO "); // create StartUpScript folder structure path
 
-  // Build the full absolute path to the CMM startup script
-  vFctn_T32_CommandCreate_StartUpScripts(chCmmPath, aAddress);
-
-  // Append the CMM script path and any additional parameters
-  strncat(chCommand, chCmmPath, 1000);
+  // Append the CMM script address and any additional parameters
+  strncat(chCommand, aAddress, 1000);
   strncat(chCommand, " ", 1000);
   strncat(chCommand, aNumberOfParameters, 1000);
   
@@ -878,7 +883,9 @@ long lFctn_T32_ParseConfigPort(char aConfigPath[])
 *
 *         t32.ini is expected to live alongside T32_API.exe in the
 *         AutomationDependent\GenericLibraries\ directory.  The path is
-*         derived using vFctn_T32_ConfigPathCreate().
+*         derived by going up one level from the CANoe config-file directory
+*         (e.g. from GM_VIP_RBS\ to the project root) and then appending
+*         AutomationDependent\GenericLibraries\.
 *
 *  \param[in] aPort - The NETASSIST port number to write (e.g. 20000).
 *                     Ignored (and a warning logged) when <= 0.
@@ -888,6 +895,9 @@ long lFctn_T32_ParseConfigPort(char aConfigPath[])
 * Change History:
 * Date(DD.MM.YY)        Author          Change info
 * 15.03.26              Copilot         Created – syncs t32.ini with the port detected in config.t32.
+* 16.03.26              Copilot         Fixed GenericLibraries path: replaced broken
+*                                       vFctn_T32_ConfigPathCreate + "TestSuites\..." with
+*                                       a direct computation from the config-file directory.
 */
 void vFctn_T32_SyncT32ini(long aPort)
 {
@@ -895,6 +905,9 @@ void vFctn_T32_SyncT32ini(long aPort)
   char chT32iniFullPath[600];
   dword dwHandle;
   char chLine[64];
+  int len;
+  int i;
+  int lastSep;
   byte bDebugFlag;
 
   bDebugFlag = cc_bT32_GlobalDebugFlag;
@@ -907,8 +920,37 @@ void vFctn_T32_SyncT32ini(long aPort)
   }
 
   // Build the path to the GenericLibraries directory (where t32.ini lives).
-  vFctn_T32_ConfigPathCreate(chGenericLibsDir);
-  strncat(chGenericLibsDir, "TestSuites\\AutomationDependent\\GenericLibraries\\", elcount(chGenericLibsDir));
+  // 1. Get the CANoe config-file directory (e.g. "C:\bench\GM_VIP_Automation\GM_VIP_RBS\").
+  // 2. Strip the trailing backslash.
+  // 3. Find the last backslash and truncate there (+1) to get the project root
+  //    (e.g. "C:\bench\GM_VIP_Automation\").
+  // 4. Append "AutomationDependent\GenericLibraries\".
+  // This mirrors the logic in config.cin and works on any bench regardless of
+  // where the project is installed.
+  lFctn_READFILEConfigurationPath(chGenericLibsDir);
+
+  len = strlen(chGenericLibsDir);
+  if (len > 0 && chGenericLibsDir[len - 1] == '\\')
+  {
+    chGenericLibsDir[len - 1] = '\0';
+    len--;
+  }
+
+  lastSep = -1;
+  for (i = 0; i < len; i++)
+  {
+    if (chGenericLibsDir[i] == '\\')
+      lastSep = i;
+  }
+
+  if (lastSep < 0)
+  {
+    write("vFctn_T32_SyncT32ini: WARNING – could not determine project root from path '%s'. t32.ini not updated.", chGenericLibsDir);
+    return;
+  }
+  chGenericLibsDir[lastSep + 1] = '\0';  // project root with trailing backslash
+
+  strncat(chGenericLibsDir, "AutomationDependent\\GenericLibraries\\", elcount(chGenericLibsDir));
 
   snprintf(chT32iniFullPath, elcount(chT32iniFullPath), "%st32.ini", chGenericLibsDir);
 
