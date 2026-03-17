@@ -1,0 +1,37 @@
+{
+  "_comment": "GM VIP Automation Framework – editable configuration file.",
+  "_comment2": "Edit the values below and call settings.load_from_json('config.json') in your test script.",
+
+  "t32_exe_path": "C:\\T32\\bin\\windows64\\t32marm64.exe",
+  "t32_config_path": "C:\\T32\\config.t32",
+  "t32_search_dirs": [
+    "C:\\T32\\bin\\windows64",
+    "C:\\T32",
+    "C:\\t32\\bin",
+    "C:\\t32"
+  ],
+  "t32_exe_names": [
+    "t32marm.exe",
+    "t32marm64.exe",
+    "t32mppc.exe",
+    "t32mrisc.exe",
+    "t32mrisc64.exe"
+  ],
+
+  "rcl_port": 20000,
+  "rcl_protocol": "UDP",
+  "rcl_timeout_s": 1.0,
+  "connect_max_wait_s": 60.0,
+
+  "halt_timeout_s": 20.0,
+  "run_timeout_s": 3.0,
+  "poll_interval_s": 0.2,
+
+  "bp_max_retries": 10,
+  "bp_retry_interval_s": 0.5,
+  "bp_symbol_reload_at": 5,
+  "symbol_reload_wait_s": 5.0,
+
+  "cmm_timeout_s": 60.0,
+  "temp_dir": ""
+}
