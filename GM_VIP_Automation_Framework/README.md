@@ -81,7 +81,7 @@ All settings can also be provided via environment variables:
 
 | Environment variable       | Default                          | Description                          |
 |----------------------------|----------------------------------|--------------------------------------|
-| `T32_EXE_PATH`             | `C:\T32\bin\t32marm.exe`         | Path to Trace32 executable           |
+| `T32_EXE_PATH`             | `C:\T32\bin\windows64\t32marm64.exe`         | Path to Trace32 executable           |
 | `T32_CONFIG_PATH`          | `C:\T32\config.t32`              | Path to Trace32 config file          |
 | `T32_RCL_PORT`             | `20000`                          | RCL socket port                      |
 | `T32_RCL_PROTOCOL`         | `UDP`                            | RCL protocol (`UDP` or `TCP`)        |

@@ -45,7 +45,7 @@ class T32Settings:
     #: Full path to the Trace32 executable (e.g. ``t32marm.exe``).
     #: env: T32_EXE_PATH
     t32_exe_path: str = field(
-        default_factory=lambda: os.environ.get("T32_EXE_PATH", r"C:\T32\bin\t32marm.exe")
+        default_factory=lambda: os.environ.get("T32_EXE_PATH", r"C:\T32\bin\windows64\t32marm64.exe")
     )
 
     #: Full path to the Trace32 config file (``config.t32``).
@@ -60,7 +60,7 @@ class T32Settings:
         default_factory=lambda: _parse_search_dirs(
             os.environ.get(
                 "T32_SEARCH_DIRS",
-                r"C:\T32\bin;C:\T32;C:\t32\bin;C:\t32",
+                r"C:\T32\bin\windows64\t32marm64.exe;C:\T32;C:\t32\bin;C:\t32",
             )
         )
     )

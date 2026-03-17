@@ -5,4 +5,4 @@
 # The framework's ONLY required runtime dependency is the official Lauterbach
 # Python library for Trace32 Remote Control Link communication.
 #
-lauterbach.trace32.rcl>=3.0.0
+lauterbach.trace32.rcl>=1.0.0
