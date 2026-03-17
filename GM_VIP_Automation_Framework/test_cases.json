@@ -1,0 +1,85 @@
+{
+  "_comment": "GM VIP Automation Framework – test case definitions.",
+  "_comment2": "Edit this file to add/change test cases, expected values, and CAPL references.",
+  "_comment3": "Pass the path to this file to runner.run_from_json() – no Python changes needed.",
+
+  "test_suite": "MySuite",
+
+  "test_cases": [
+    {
+      "_comment": "--- Test case 1: Reset and basic ECU state check ---",
+      "name": "TC_Reset_BasicState",
+      "capl_reference": "SWQT_MyFeature.can::testcase TC_Reset_BasicState",
+      "enabled": true,
+      "reset_before": true,
+
+      "breakpoints": [],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "myModule.myStatus": {
+          "expected": null,
+          "description": "Read status after reset – no assertion, just log"
+        }
+      },
+
+      "symbols_inspect": [
+        "myModule"
+      ]
+    },
+
+    {
+      "_comment": "--- Test case 2: Breakpoint + pre-condition write + post-halt variable checks ---",
+      "name": "TC_Breakpoint_VarCheck",
+      "capl_reference": "SWQT_MyFeature.can::testcase TC_Breakpoint_VarCheck",
+      "enabled": true,
+      "reset_before": false,
+
+      "breakpoints": [
+        "myTargetFunction"
+      ],
+
+      "variables_write": {
+        "myModule.myFlag": {
+          "value": "1",
+          "description": "Set flag before GO – mirrors A_DBGR_VariableWrite in CAPL"
+        }
+      },
+
+      "variables_check": {
+        "myModule.myCounter": {
+          "expected": null,
+          "description": "Read counter after halt – no assertion, value logged in report"
+        },
+        "myModule.myStatus": {
+          "expected": "0x01",
+          "description": "Status must equal 0x01 after myTargetFunction runs"
+        }
+      },
+
+      "symbols_inspect": [
+        "myTargetFunction",
+        "myModule"
+      ]
+    },
+
+    {
+      "_comment": "--- Test case 3: Register check ---",
+      "name": "TC_Register_Check",
+      "capl_reference": "SWQT_MyFeature.can::testcase TC_Register_Check",
+      "enabled": false,
+      "reset_before": true,
+
+      "breakpoints": [
+        "myTargetFunction"
+      ],
+
+      "variables_write": {},
+
+      "variables_check": {},
+
+      "symbols_inspect": []
+    }
+  ]
+}

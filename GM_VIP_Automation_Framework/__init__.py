@@ -35,6 +35,8 @@ Quick start
 """
 
 from .config import settings, T32Settings
+from .report import TestCaseReport, TestCaseResult
+from . import runner
 from .utils import (
     T32FrameworkError,
     T32ConnectionError,
@@ -103,13 +105,18 @@ from .core import (
     check_cmm_script_result,
 )
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 
 __all__ = [
     "__version__",
     # config
     "settings",
     "T32Settings",
+    # report
+    "TestCaseReport",
+    "TestCaseResult",
+    # runner
+    "runner",
     # exceptions
     "T32FrameworkError",
     "T32ConnectionError",

@@ -20,12 +20,29 @@ importing the framework::
     T32_EXE_PATH=C:/T32/t32marm.exe
     T32_RCL_PORT=20001
     T32_RCL_PROTOCOL=UDP
+
+JSON Config File
+----------------
+All settings can also be persisted to / loaded from a ``config.json`` file::
+
+    from GM_VIP_Automation_Framework.config import settings
+
+    # Load from a file (merges values over any defaults / env-var overrides):
+    settings.load_from_json("config.json")
+
+    # Save current settings back to a file for editing:
+    settings.save_to_json("config.json")
+
+The JSON keys mirror the dataclass field names (e.g. ``"t32_exe_path"``,
+``"rcl_port"``).  Unknown keys in the JSON file are silently ignored so that
+hand-edited files remain forward-compatible.
 """
 
 from __future__ import annotations
 
+import json
 import os
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
@@ -173,6 +190,89 @@ class T32Settings:
         if os.environ.get("T32_TEMP_DIR")
         else Path(__file__).parent / "_tmp"
     )
+
+    # ------------------------------------------------------------------
+    # JSON config file I/O
+    # ------------------------------------------------------------------
+
+    def load_from_json(self, path: str) -> "T32Settings":
+        """Load settings from a JSON config file, merging over current values.
+
+        Only keys that exist as dataclass fields are applied; unknown keys in
+        the JSON file are silently ignored so that hand-edited files remain
+        forward-compatible.
+
+        Parameters
+        ----------
+        path:
+            Path to the ``config.json`` file.
+
+        Returns
+        -------
+        T32Settings
+            ``self`` (for chaining).
+
+        Raises
+        ------
+        FileNotFoundError
+            If *path* does not exist.
+        ValueError
+            If the file cannot be parsed as JSON.
+        """
+        config_path = Path(path)
+        if not config_path.is_file():
+            raise FileNotFoundError(f"Config file not found: {path}")
+
+        try:
+            raw = json.loads(config_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid JSON in '{path}': {exc}") from exc
+
+        _field_names = {f.name for f in self.__dataclass_fields__.values()}  # type: ignore[attr-defined]
+        for key, value in raw.items():
+            if key not in _field_names:
+                continue
+            current = getattr(self, key)
+            if isinstance(current, Path):
+                setattr(self, key, Path(value))
+            elif isinstance(current, list):
+                if isinstance(value, list):
+                    setattr(self, key, [str(v) for v in value])
+                elif isinstance(value, str):
+                    setattr(self, key, _parse_search_dirs(value))
+            elif isinstance(current, bool):
+                setattr(self, key, bool(value))
+            elif isinstance(current, int):
+                setattr(self, key, int(value))
+            elif isinstance(current, float):
+                setattr(self, key, float(value))
+            else:
+                setattr(self, key, value)
+        return self
+
+    def save_to_json(self, path: str) -> None:
+        """Serialize current settings to a JSON config file.
+
+        The file is human-readable and can be edited then reloaded with
+        :meth:`load_from_json`.
+
+        Parameters
+        ----------
+        path:
+            Destination file path.  Parent directories must exist.
+        """
+        data = {}
+        for f in self.__dataclass_fields__.values():  # type: ignore[attr-defined]
+            val = getattr(self, f.name)
+            if isinstance(val, Path):
+                data[f.name] = str(val)
+            elif isinstance(val, list):
+                data[f.name] = list(val)
+            else:
+                data[f.name] = val
+        Path(path).write_text(
+            json.dumps(data, indent=2) + "\n", encoding="utf-8"
+        )
 
 
 def _parse_search_dirs(raw: str) -> List[str]:
