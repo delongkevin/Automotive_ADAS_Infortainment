@@ -1,6 +1,6 @@
 {
   "_comment": "GM VIP Automation Framework – editable configuration file.",
-  "_comment2": "Edit the values below and call settings.load_from_json('config.json') in your test script.",
+  "_comment2": "Edit only the values relevant to your setup. t32_exe_path and t32_config_path are only needed when auto_launch=True and Trace32 is not already running.",
 
   "t32_exe_path": "C:\\T32\\bin\\windows64\\t32marm64.exe",
   "t32_config_path": "C:\\T32\\config.t32",
@@ -17,6 +17,9 @@
     "t32mrisc.exe",
     "t32mrisc64.exe"
   ],
+
+  "_comment3": "Optional: path to a *.cmm startup script. When set and Trace32 needs to be launched, it is passed via '-s <cmm_entry_script>'. Leave empty when Trace32 is already running.",
+  "cmm_entry_script": "",
 
   "rcl_port": 20000,
   "rcl_protocol": "UDP",

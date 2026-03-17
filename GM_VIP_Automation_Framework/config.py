@@ -192,6 +192,22 @@ class T32Settings:
     )
 
     # ------------------------------------------------------------------
+    # CMM entry-point script
+    # ------------------------------------------------------------------
+
+    #: Optional path to a CMM (PRACTICE macro) script that serves as the
+    #: Trace32 entry-point.  When set and Trace32 is launched by the
+    #: framework, the process is started with ``-s <cmm_entry_script>`` so
+    #: that the script executes at startup and can perform all T32
+    #: setup (loading symbols, opening the API port, etc.).
+    #: Leave empty (``""``) when Trace32 is already running or when no
+    #: startup script is needed.
+    #: env: T32_CMM_ENTRY_SCRIPT
+    cmm_entry_script: str = field(
+        default_factory=lambda: os.environ.get("T32_CMM_ENTRY_SCRIPT", "")
+    )
+
+    # ------------------------------------------------------------------
     # JSON config file I/O
     # ------------------------------------------------------------------
 

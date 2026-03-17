@@ -114,6 +114,68 @@ class TestConnection(unittest.TestCase):
         # After __exit__, should be disconnected.
         self.assertFalse(conn.is_connected())
 
+    def test_t32connection_cmm_entry_script_stored(self):
+        from GM_VIP_Automation_Framework.core.connection import T32Connection
+        conn = T32Connection(cmm_entry_script=r"C:\scripts\startup.cmm")
+        self.assertEqual(conn._cmm_entry_script, r"C:\scripts\startup.cmm")
+
+    def test_launch_with_cmm_script(self):
+        """launch() should include '-s <script>' in the Popen command when cmm_entry_script is set."""
+        from GM_VIP_Automation_Framework.core.connection import T32Connection
+        conn = T32Connection(
+            exe_path="t32marm64.exe",
+            config_path="config.t32",
+            cmm_entry_script="startup.cmm",
+        )
+        with patch("subprocess.Popen") as mock_popen:
+            mock_proc = MagicMock()
+            mock_proc.pid = 1234
+            mock_popen.return_value = mock_proc
+            conn.launch()
+        args = mock_popen.call_args[0][0]
+        self.assertIn("-s", args)
+        self.assertIn("startup.cmm", args)
+
+    def test_launch_without_cmm_script(self):
+        """launch() should NOT include '-s' when cmm_entry_script is empty."""
+        from GM_VIP_Automation_Framework.core.connection import T32Connection
+        conn = T32Connection(
+            exe_path="t32marm64.exe",
+            config_path="config.t32",
+            cmm_entry_script="",
+        )
+        with patch("subprocess.Popen") as mock_popen:
+            mock_proc = MagicMock()
+            mock_proc.pid = 1234
+            mock_popen.return_value = mock_proc
+            conn.launch()
+        args = mock_popen.call_args[0][0]
+        self.assertNotIn("-s", args)
+
+    def test_try_connect_success(self):
+        """try_connect() should return True and set _connected when pyrcl.connect succeeds."""
+        from GM_VIP_Automation_Framework.core.connection import T32Connection
+        conn = T32Connection()
+        mock_debugger = MagicMock()
+        with patch.object(
+            sys.modules["lauterbach.trace32.rcl"], "connect", return_value=mock_debugger
+        ):
+            result = conn.try_connect()
+        self.assertTrue(result)
+        self.assertTrue(conn.is_connected())
+
+    def test_try_connect_failure_returns_false(self):
+        """try_connect() should return False without raising when the connection is refused."""
+        from GM_VIP_Automation_Framework.core.connection import T32Connection
+        conn = T32Connection()
+        with patch.object(
+            sys.modules["lauterbach.trace32.rcl"], "connect",
+            side_effect=OSError("connection refused"),
+        ):
+            result = conn.try_connect()
+        self.assertFalse(result)
+        self.assertFalse(conn.is_connected())
+
 
 # ---------------------------------------------------------------------------
 # debugger

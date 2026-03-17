@@ -22,18 +22,25 @@ script execution) but:
 GM_VIP_Automation_Framework/
 ├── __init__.py            # Top-level package – re-exports entire public API
 ├── config.py              # Centralised T32Settings dataclass + singleton
+├── config.json            # Editable configuration template
+├── test_cases.json        # Editable test-cases template
 ├── requirements.txt       # Python runtime dependencies
 ├── README.md              # This file
 │
 ├── core/
 │   ├── __init__.py        # Re-exports all core functions
-│   ├── connection.py      # T32Connection class, connect(), auto_detect_t32()
+│   ├── connection.py      # T32Connection class, connect(), auto_detect_t32(), try_connect()
 │   ├── debugger.py        # go(), break_execution(), reset_target(), step_over(), …
 │   ├── breakpoints.py     # set_breakpoint(), check_halted_at(), …
 │   ├── variables.py       # read_variable(), set_variable(), check_variable_until(), …
 │   ├── registers.py       # read_register(), set_register(), check_register_bit(), …
 │   ├── symbols.py         # reload_symbols(), symbol_exists(), get_symbol_address(), …
 │   └── cmm.py             # run_cmm_command(), run_cmm_script(), check_cmm_script_result()
+│
+├── templates/
+│   ├── connect_t32_running.py   # Connect to already-running T32 (no launch)
+│   ├── connect_t32_launch.py    # Launch T32 from config.json paths
+│   └── connect_with_cmm.py      # CMM-first: connect to running T32 or launch via *.cmm
 │
 ├── utils/
 │   ├── __init__.py
@@ -44,7 +51,8 @@ GM_VIP_Automation_Framework/
 └── tests/
     ├── __init__.py
     ├── test_utils.py      # Tests for exceptions, logger, retry utilities
-    └── test_core.py       # Tests for all core modules (mocked hardware)
+    ├── test_core.py       # Tests for all core modules (mocked hardware)
+    └── test_config_and_report.py  # Tests for config I/O and report generation
 ```
 
 ---
@@ -79,19 +87,20 @@ settings.halt_timeout_s  = 20.0
 
 All settings can also be provided via environment variables:
 
-| Environment variable       | Default                          | Description                          |
-|----------------------------|----------------------------------|--------------------------------------|
-| `T32_EXE_PATH`             | `C:\T32\bin\windows64\t32marm64.exe`         | Path to Trace32 executable           |
-| `T32_CONFIG_PATH`          | `C:\T32\config.t32`              | Path to Trace32 config file          |
-| `T32_RCL_PORT`             | `20000`                          | RCL socket port                      |
-| `T32_RCL_PROTOCOL`         | `UDP`                            | RCL protocol (`UDP` or `TCP`)        |
-| `T32_HALT_TIMEOUT_S`       | `20.0`                           | Seconds to wait for ECU halt         |
-| `T32_RUN_TIMEOUT_S`        | `3.0`                            | Seconds to wait for ECU run          |
-| `T32_BP_MAX_RETRIES`       | `10`                             | BREAK.SET retry count                |
-| `T32_BP_RETRY_INTERVAL_S`  | `0.5`                            | Delay between BREAK.SET retries      |
-| `T32_SYMBOL_RELOAD_WAIT_S` | `5.0`                            | Wait after `SYMBOL.RELOAD`           |
-| `T32_LOG_LEVEL`            | `DEBUG`                          | Logger level                         |
-| `T32_LOG_FILE`             | *(empty – stdout only)*          | Log file path                        |
+| Environment variable         | Default                                      | Description                                                   |
+|------------------------------|----------------------------------------------|---------------------------------------------------------------|
+| `T32_EXE_PATH`               | `C:\T32\bin\windows64\t32marm64.exe`         | Path to Trace32 executable (only needed when launching T32)   |
+| `T32_CONFIG_PATH`            | `C:\T32\config.t32`                          | Path to Trace32 config file (only needed when launching T32)  |
+| `T32_CMM_ENTRY_SCRIPT`       | *(empty – no startup script)*                | CMM startup script passed to T32 via `-s` when launching      |
+| `T32_RCL_PORT`               | `20000`                                      | RCL socket port                                               |
+| `T32_RCL_PROTOCOL`           | `UDP`                                        | RCL protocol (`UDP` or `TCP`)                                 |
+| `T32_HALT_TIMEOUT_S`         | `20.0`                                       | Seconds to wait for ECU halt                                  |
+| `T32_RUN_TIMEOUT_S`          | `3.0`                                        | Seconds to wait for ECU run                                   |
+| `T32_BP_MAX_RETRIES`         | `10`                                         | BREAK.SET retry count                                         |
+| `T32_BP_RETRY_INTERVAL_S`    | `0.5`                                        | Delay between BREAK.SET retries                               |
+| `T32_SYMBOL_RELOAD_WAIT_S`   | `5.0`                                        | Wait after `SYMBOL.RELOAD`                                    |
+| `T32_LOG_LEVEL`              | `DEBUG`                                      | Logger level                                                  |
+| `T32_LOG_FILE`               | *(empty – stdout only)*                      | Log file path                                                 |
 
 ### 2 – Connect and run a basic test sequence
 
@@ -118,7 +127,63 @@ with t32.T32Connection(port=20000) as conn:
     t32.go()
 ```
 
-### 3 – Auto-detect Trace32 installation
+### 3 – CMM-first workflow (connect to already-running Trace32)
+
+This is the **recommended workflow** when your Trace32 environment is
+managed by a single ``*.cmm`` PRACTICE macro script.
+
+**How it works:**
+
+1. You run your ``*.cmm`` script in Trace32 (manually or via another
+   tool).  The script handles all hardware configuration and opens the
+   Trace32 API port.
+2. The Python framework connects to the **already-running** Trace32 on
+   the configured port – no ``exe_path`` update required.
+3. If Trace32 is not yet running and ``auto_launch=True``, the framework
+   launches it automatically using the CMM script as the startup script.
+
+```python
+from GM_VIP_Automation_Framework import runner
+
+# Trace32 is already running – the framework will connect automatically.
+# No exe_path is needed.
+report = runner.run_from_json(
+    "test_cases.json",
+    config_json_path="config.json",  # only rcl_port matters here
+)
+print(report.summary())
+```
+
+To also handle the case where Trace32 is not yet running:
+
+```python
+report = runner.run_from_json(
+    "test_cases.json",
+    cmm_entry_script=r"C:\workspace\tc4d9xe_debug.cmm",
+    auto_launch=True,   # launch T32 with the CMM script if not running
+)
+```
+
+Or using the convenience ``connect()`` factory:
+
+```python
+from GM_VIP_Automation_Framework import connect
+
+# Try to connect to running T32; launch via CMM script if not found.
+with connect(
+    port=20000,
+    cmm_entry_script=r"C:\workspace\tc4d9xe_debug.cmm",
+    auto_launch=True,
+    resilient_connect=True,
+) as conn:
+    from GM_VIP_Automation_Framework import core
+    core.debugger.default_connection = conn
+    # … test steps …
+```
+
+See ``templates/connect_with_cmm.py`` for a full ready-to-run example.
+
+### 4 – Auto-detect Trace32 installation
 
 ```python
 from GM_VIP_Automation_Framework import auto_detect_t32, T32Connection
@@ -131,7 +196,7 @@ with T32Connection(exe_path=exe, config_path=cfg) as conn:
     # … test steps …
 ```
 
-### 4 – Launch Trace32 automatically
+### 5 – Launch Trace32 automatically
 
 ```python
 with T32Connection() as conn:
@@ -149,13 +214,14 @@ with T32Connection() as conn:
 
 | Function / Class                              | Description                                                        |
 |-----------------------------------------------|--------------------------------------------------------------------|
-| `T32Connection(exe_path, config_path, port)`  | Connection lifecycle manager (context manager supported)           |
-| `T32Connection.launch()`                      | Start the Trace32 process via `subprocess.Popen`                  |
+| `T32Connection(exe_path, config_path, port, cmm_entry_script)` | Connection lifecycle manager (context manager supported) |
+| `T32Connection.launch(cmm_entry_script)`      | Start the Trace32 process; passes `-s <script>` when `cmm_entry_script` is set |
 | `T32Connection.connect()`                     | Establish the RCL socket (polls until timeout)                     |
+| `T32Connection.try_connect() → bool`          | Non-raising probe: returns `True` if a running T32 is found        |
 | `T32Connection.disconnect()`                  | Close the RCL socket gracefully                                    |
 | `T32Connection.cmd(command)`                  | Send a raw PRACTICE command                                        |
 | `T32Connection.fnc(expression)`               | Evaluate a PRACTICE expression and return the result string        |
-| `connect(exe_path, port, auto_launch)`        | Factory – returns a connected `T32Connection`                      |
+| `connect(exe_path, port, auto_launch, cmm_entry_script, resilient_connect)` | Factory – returns a connected `T32Connection` |
 | `auto_detect_t32(search_dirs, exe_names)`     | Scan for T32 installation, return `(exe_path, config_path)`        |
 | `parse_config_port(config_path)`              | Parse `PORT=` from a `config.t32` / `t32.ini` file                |
 
@@ -270,3 +336,4 @@ library is completely mocked via `unittest.mock`.
 4. **Configurable via `settings`** – all timeouts and retry counts live in one place and can be overridden per-bench via environment variables.
 5. **Testable without hardware** – no global state that prevents mocking; every function accepts an explicit `connection` parameter.
 6. **Structured logging** – all operations log at `DEBUG`/`INFO` level with a consistent format; coloured console output when connected to a TTY.
+7. **CMM-first / resilient connect** – `run_from_json` (and the `connect()` factory with `resilient_connect=True`) probes for a running Trace32 instance before deciding whether to launch one.  When Trace32 is already running (your `*.cmm` script opened the port), no `exe_path` or `config.t32` path is required.  The launch paths in `config.json` serve only as a fallback when `auto_launch=True`.

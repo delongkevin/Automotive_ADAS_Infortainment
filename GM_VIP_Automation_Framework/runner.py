@@ -11,20 +11,31 @@ without any changes to Python source code:
 
 Typical workflow
 ----------------
-1. Edit ``config.json`` to point at your ``t32marm64.exe`` and
-   ``config.t32``.
+1. (Optional) Edit ``config.json`` to set ``rcl_port`` and, only if you
+   need the framework to launch Trace32, ``t32_exe_path`` / ``t32_config_path``.
 2. Edit ``test_cases.json`` to describe your CAPL test cases (one JSON
    object per test case).
-3. Run the tests in one line::
+3. Start Trace32 manually (run your ``*.cmm`` startup script so that the
+   API port is already open).
+4. Run the tests::
 
        python -c "
        from GM_VIP_Automation_Framework import runner
-       runner.run_from_json('test_cases.json', connect_only=True)
+       runner.run_from_json('test_cases.json')
        "
 
-   Or connect and launch T32 automatically::
+   The framework will detect the running Trace32 instance automatically
+   (``resilient_connect=True`` by default).  ``exe_path`` in
+   ``config.json`` is **not required** when Trace32 is already running.
 
-       runner.run_from_json('test_cases.json', auto_launch=True)
+   To supply a CMM startup script (launched via ``-s`` when Trace32 is
+   not yet running)::
+
+       runner.run_from_json(
+           'test_cases.json',
+           cmm_entry_script=r'C:\\workspace\\tc4d9xe_debug.cmm',
+           auto_launch=True,
+       )
 
 Public API
 ----------
@@ -93,6 +104,8 @@ def run_from_json(
     test_cases_path: str,
     config_json_path: Optional[str] = None,
     auto_launch: bool = False,
+    cmm_entry_script: Optional[str] = None,
+    resilient_connect: bool = True,
     report_json: Optional[str] = None,
     report_html: Optional[str] = None,
 ) -> TestCaseReport:
@@ -109,10 +122,26 @@ def run_from_json(
         Pass ``""`` to skip JSON config loading entirely (use current
         :data:`~config.settings` values or environment variables).
     auto_launch:
-        When ``True`` the Trace32 process is started before connecting,
-        using :attr:`~config.T32Settings.t32_exe_path` and
-        :attr:`~config.T32Settings.t32_config_path`.  When ``False``
-        (default) the framework connects to an already-running Trace32.
+        When ``True`` the Trace32 process is started before connecting
+        (only needed when Trace32 is not already running).  When
+        *resilient_connect* is ``True`` (the default) the process is only
+        launched if an initial connection attempt fails.
+    cmm_entry_script:
+        Optional path to a CMM (``*.cmm``) startup script.  When supplied
+        (or when :attr:`~config.T32Settings.cmm_entry_script` is set in
+        the config) and Trace32 needs to be launched, the script is passed
+        to Trace32 via the ``-s`` flag so it executes at startup and can
+        perform all hardware setup (symbol loading, API port opening, etc.).
+        Leave ``None`` when Trace32 is already running with the script
+        having been executed separately.
+    resilient_connect:
+        When ``True`` (default) the framework first attempts to connect to
+        an already-running Trace32 instance on the configured RCL port.
+        If that succeeds, no launch is performed and ``exe_path`` in
+        ``config.json`` is not required.  Only when the initial connection
+        attempt fails *and* *auto_launch* is ``True`` will a new Trace32
+        process be started.  Set to ``False`` to restore the original
+        behaviour where *auto_launch* unconditionally starts a new process.
     report_json:
         Output path for the JSON report.  Defaults to
         ``<test_cases_path_stem>_report.json``.
@@ -147,7 +176,12 @@ def run_from_json(
     test_case_defs = raw_json.get("test_cases", [])
 
     # ------------------------------------------------------------------
-    # 3. Connect to Trace32
+    # 3. Resolve CMM entry script (parameter overrides settings)
+    # ------------------------------------------------------------------
+    entry_script = cmm_entry_script if cmm_entry_script is not None else settings.cmm_entry_script
+
+    # ------------------------------------------------------------------
+    # 4. Connect to Trace32
     # ------------------------------------------------------------------
     report = TestCaseReport(name=suite_name)
     conn = t32.T32Connection(
@@ -155,18 +189,34 @@ def run_from_json(
         config_path=settings.t32_config_path,
         port=settings.rcl_port,
         protocol=settings.rcl_protocol,
+        cmm_entry_script=entry_script,
     )
-    if auto_launch:
+
+    if resilient_connect:
+        # Try to connect to a running instance first.
+        if not conn.try_connect():
+            if auto_launch:
+                conn.launch()
+            else:
+                from .utils.exceptions import T32ConnectionError
+                raise T32ConnectionError(
+                    f"No running Trace32 found on port {settings.rcl_port}. "
+                    "Start Trace32 manually (your *.cmm script can open the API "
+                    "port), or set auto_launch=True to have the framework launch "
+                    "Trace32 automatically."
+                )
+    elif auto_launch:
         conn.launch()
 
     with conn:
-        conn.connect()
+        if not conn.is_connected():
+            conn.connect()
 
         import GM_VIP_Automation_Framework.core.debugger as _dbg
         _dbg.default_connection = conn
 
         # ------------------------------------------------------------------
-        # 4. Execute each test case
+        # 5. Execute each test case
         # ------------------------------------------------------------------
         for tc_def in test_case_defs:
             # Skip disabled or comment-only entries.
@@ -182,7 +232,7 @@ def run_from_json(
         _dbg.default_connection = None
 
     # ------------------------------------------------------------------
-    # 5. Save reports
+    # 6. Save reports
     # ------------------------------------------------------------------
     stem = str(tc_path.with_suffix(""))
     if report_json is None:
