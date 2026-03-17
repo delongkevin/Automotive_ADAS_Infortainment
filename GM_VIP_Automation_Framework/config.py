@@ -144,6 +144,24 @@ class T32Settings:
         default_factory=lambda: float(os.environ.get("T32_POLL_INTERVAL_S", "0.2"))
     )
 
+    #: Extra settle time in seconds added after the ECU confirms a halted state
+    #: following ``SYStem.RESetTarget``.  A non-zero value lets T32 finish
+    #: rebuilding its internal state (register map, symbol accessibility, etc.)
+    #: before the next command is issued.  Increase when variable reads or
+    #: symbol lookups fail immediately after a reset.
+    #: env: T32_POST_RESET_SETTLE_S
+    post_reset_settle_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_POST_RESET_SETTLE_S", "1.0"))
+    )
+
+    #: Brief pause in seconds after a ``GO`` command before the framework
+    #: begins polling ``STATE.RUN()``.  Prevents a false "not running" reading
+    #: in the milliseconds before the CPU has actually started executing.
+    #: env: T32_GO_SETTLE_S
+    go_settle_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_GO_SETTLE_S", "0.3"))
+    )
+
     # ------------------------------------------------------------------
     # Breakpoint set retry logic  (mirrors CAPL cc_nT32_BP* constants)
     # ------------------------------------------------------------------
@@ -189,6 +207,22 @@ class T32Settings:
         default_factory=lambda: Path(os.environ.get("T32_TEMP_DIR", ""))
         if os.environ.get("T32_TEMP_DIR")
         else Path(__file__).parent / "_tmp"
+    )
+
+    # ------------------------------------------------------------------
+    # CMM entry-point script
+    # ------------------------------------------------------------------
+
+    #: Optional path to a CMM (PRACTICE macro) script that serves as the
+    #: Trace32 entry-point.  When set and Trace32 is launched by the
+    #: framework, the process is started with ``-s <cmm_entry_script>`` so
+    #: that the script executes at startup and can perform all T32
+    #: setup (loading symbols, opening the API port, etc.).
+    #: Leave empty (``""``) when Trace32 is already running or when no
+    #: startup script is needed.
+    #: env: T32_CMM_ENTRY_SCRIPT
+    cmm_entry_script: str = field(
+        default_factory=lambda: os.environ.get("T32_CMM_ENTRY_SCRIPT", "")
     )
 
     # ------------------------------------------------------------------

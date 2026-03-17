@@ -161,11 +161,13 @@ class T32Connection:
         config_path: Optional[str] = None,
         port: Optional[int] = None,
         protocol: Optional[str] = None,
+        cmm_entry_script: Optional[str] = None,
     ) -> None:
         self._exe_path = exe_path or settings.t32_exe_path
         self._config_path = config_path or settings.t32_config_path
         self._port = port or settings.rcl_port
         self._protocol = protocol or settings.rcl_protocol
+        self._cmm_entry_script = cmm_entry_script if cmm_entry_script is not None else settings.cmm_entry_script
 
         self.debugger = None
         self.process: Optional[subprocess.Popen] = None
@@ -179,6 +181,7 @@ class T32Connection:
         self,
         exe_path: Optional[str] = None,
         config_path: Optional[str] = None,
+        cmm_entry_script: Optional[str] = None,
     ) -> subprocess.Popen:
         """Start the Trace32 process.
 
@@ -188,6 +191,12 @@ class T32Connection:
             Override the executable path for this call only.
         config_path:
             Override the config file path for this call only.
+        cmm_entry_script:
+            Override the CMM startup script for this call only.  When
+            provided (or when :attr:`T32Connection._cmm_entry_script` is
+            set), Trace32 is launched with the ``-s <script>`` flag so
+            that the script executes at startup and can perform all T32
+            setup (loading symbols, opening the API port, etc.).
 
         Returns
         -------
@@ -201,11 +210,16 @@ class T32Connection:
         """
         exe = exe_path or self._exe_path
         cfg = config_path or self._config_path
+        cmm = cmm_entry_script if cmm_entry_script is not None else self._cmm_entry_script
 
-        logger.info("Launching Trace32: '%s' -c '%s'", exe, cfg)
+        cmd = [exe, "-c", cfg]
+        if cmm:
+            cmd.extend(["-s", str(cmm)])
+
+        logger.info("Launching Trace32: %s", " ".join(f"'{a}'" for a in cmd))
         try:
             self.process = subprocess.Popen(
-                [exe, "-c", cfg],
+                cmd,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
@@ -276,6 +290,59 @@ class T32Connection:
             f"T32 did not accept RCL connection on port {p} within {wait}s. "
             f"Last error: {last_exc}"
         )
+
+    def try_connect(
+        self,
+        port: Optional[int] = None,
+        protocol: Optional[str] = None,
+        timeout_s: Optional[float] = None,
+    ) -> bool:
+        """Attempt to connect to an already-running Trace32 instance.
+
+        Unlike :meth:`connect`, this method does **not** raise on failure.
+        It makes a single, non-blocking attempt and returns ``True`` when the
+        connection is established, or ``False`` when Trace32 is not reachable
+        on the given port.  This allows callers to implement a
+        *try-connect-first* pattern without catching exceptions::
+
+            if not conn.try_connect():
+                conn.launch()
+                conn.connect()
+
+        Parameters
+        ----------
+        port:
+            Override the port number for this call.
+        protocol:
+            Override the protocol (``"UDP"`` or ``"TCP"``) for this call.
+        timeout_s:
+            Individual API call timeout.
+
+        Returns
+        -------
+        bool
+            ``True`` when the connection was established successfully,
+            ``False`` otherwise.
+        """
+        p = port or self._port
+        proto = protocol or self._protocol
+        tmo = timeout_s or settings.rcl_timeout_s
+
+        logger.debug(
+            "Probing for running T32 on %s port %d (timeout=%.1fs)…", proto, p, tmo
+        )
+        try:
+            import lauterbach.trace32.rcl as pyrcl  # lazy import
+            self.debugger = pyrcl.connect(port=p, protocol=proto, timeout=tmo)
+            self._connected = True
+            logger.info("Connected to already-running Trace32 on port %d.", p)
+            return True
+        except OSError as exc:
+            logger.debug("No running Trace32 found on port %d: %s", p, exc)
+            return False
+        except Exception as exc:  # noqa: BLE001 – pyrcl may raise library-specific types
+            logger.debug("No running Trace32 found on port %d: %s", p, exc)
+            return False
 
     def disconnect(self) -> None:
         """Close the RCL connection gracefully."""
@@ -369,6 +436,8 @@ def connect(
     port: Optional[int] = None,
     protocol: Optional[str] = None,
     auto_launch: bool = False,
+    cmm_entry_script: Optional[str] = None,
+    resilient_connect: bool = False,
 ) -> T32Connection:
     """Create and return a connected :class:`T32Connection`.
 
@@ -385,6 +454,16 @@ def connect(
         RCL protocol (``"UDP"`` or ``"TCP"``).
     auto_launch:
         When ``True`` the Trace32 process is started before connecting.
+    cmm_entry_script:
+        Optional path to a CMM startup script.  When *auto_launch* is
+        ``True`` and this path is set, Trace32 is started with the
+        ``-s <script>`` flag so the script executes at startup.
+    resilient_connect:
+        When ``True`` the function first tries to connect to a running
+        Trace32 instance.  Only if that fails and *auto_launch* is also
+        ``True`` will a new Trace32 process be launched.  When ``False``
+        (default for this factory) the behaviour is unchanged: launch when
+        *auto_launch* is set, otherwise connect directly.
 
     Returns
     -------
@@ -396,8 +475,21 @@ def connect(
         config_path=config_path,
         port=port,
         protocol=protocol,
+        cmm_entry_script=cmm_entry_script,
     )
-    if auto_launch:
-        conn.launch()
-    conn.connect()
+    if resilient_connect:
+        if not conn.try_connect():
+            if auto_launch:
+                conn.launch()
+                conn.connect()
+            else:
+                from ..utils.exceptions import T32ConnectionError as _T32CE
+                raise _T32CE(
+                    f"No running Trace32 found on port {conn._port}. "
+                    "Start Trace32 manually or pass auto_launch=True."
+                )
+    else:
+        if auto_launch:
+            conn.launch()
+        conn.connect()
     return conn

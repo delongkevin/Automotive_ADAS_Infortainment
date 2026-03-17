@@ -195,6 +195,9 @@ def go(connection=None) -> None:
     ------
     T32CommandError
         If the GO command fails.
+    T32TimeoutError
+        If the ECU does not enter the running state within
+        :attr:`~config.T32Settings.run_timeout_s` seconds.
     """
     conn = _conn(connection)
 
@@ -205,9 +208,22 @@ def go(connection=None) -> None:
     logger.info("GO: resuming ECU execution.")
     conn.cmd("GO")
 
-    # Brief wait to ensure the ECU has entered running state before the
-    # caller proceeds (mirrors the waitForRunning(250) in A_DBGR_Go).
-    wait_for_running(timeout_s=settings.run_timeout_s, connection=conn)
+    # Brief pause before polling so the CPU bus has time to leave the halted
+    # state.  Without this, STATE.RUN() can return FALSE immediately after GO
+    # because the ECU hasn't been released yet (go_settle_s).
+    if settings.go_settle_s > 0:
+        time.sleep(settings.go_settle_s)
+
+    # Wait until the ECU is confirmed running before returning.  Raise a clear
+    # error if it doesn't start — this prevents downstream checks from falsely
+    # "passing" because the ECU is still halted at the reset vector.
+    reached = wait_for_running(timeout_s=settings.run_timeout_s, connection=conn)
+    if not reached:
+        raise T32TimeoutError(
+            f"ECU did not enter running state within {settings.run_timeout_s}s after GO. "
+            "Check that the target is powered, the debug connection is active, and "
+            "no breakpoint is set at the current PC."
+        )
 
 
 def go_safe(
@@ -297,6 +313,12 @@ def reset_target(connection=None) -> bool:
     -------
     bool
         ``True`` when the ECU reached a halted state after the reset.
+        ``False`` when the ECU did not halt within
+        :attr:`~config.T32Settings.halt_timeout_s` seconds — the caller
+        should treat this as a non-fatal warning and decide whether to
+        abort the test case.  No exception is raised because some targets
+        (e.g. powertrain ECUs) require explicit GO+breakpoint sequences to
+        reach a stable halted state after reset.
     """
     conn = _conn(connection)
     logger.info("RESET: sending SYStem.RESetTarget.")
@@ -305,8 +327,25 @@ def reset_target(connection=None) -> bool:
     time.sleep(0.25)
     halted = wait_for_halt(connection=conn)
     if not halted:
-        logger.error("RESET: ECU did not halt after reset within %.1fs.", settings.halt_timeout_s)
-    return halted
+        logger.error(
+            "RESET: ECU did not halt after reset within %.1fs. "
+            "The test case may fail — verify hardware and debug connection.",
+            settings.halt_timeout_s,
+        )
+        return False
+
+    # Extra settle time: lets T32 finish rebuilding its internal state
+    # (register map, symbol table, memory map) after the reset sequence
+    # completes.  Without this pause, subsequent variable reads or
+    # breakpoint-set commands can fail because T32 is still processing.
+    if settings.post_reset_settle_s > 0:
+        logger.debug(
+            "RESET: waiting %.2fs for T32 post-reset settle (post_reset_settle_s).",
+            settings.post_reset_settle_s,
+        )
+        time.sleep(settings.post_reset_settle_s)
+
+    return True
 
 
 def reset_and_go(connection=None) -> bool:

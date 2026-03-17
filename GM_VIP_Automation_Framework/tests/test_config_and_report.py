@@ -130,6 +130,19 @@ class TestConfigJson(unittest.TestCase):
         data = json.loads(template.read_text(encoding="utf-8"))
         self.assertIn("rcl_port", data)
         self.assertIn("t32_exe_path", data)
+        self.assertIn("cmm_entry_script", data)
+
+    def test_load_from_json_cmm_entry_script(self):
+        s = self._fresh_settings()
+        data = {"cmm_entry_script": r"C:\scripts\startup.cmm"}
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump(data, f)
+            tmp_path = f.name
+        try:
+            s.load_from_json(tmp_path)
+            self.assertEqual(s.cmm_entry_script, r"C:\scripts\startup.cmm")
+        finally:
+            os.unlink(tmp_path)
 
 
 # ---------------------------------------------------------------------------
@@ -444,6 +457,97 @@ class TestRunFromJson(unittest.TestCase):
             result = report.results[0]
             self.assertIn("_capl_reference", result.variables)
             self.assertEqual(result.variables["_capl_reference"], "MyFeature.can::TC1")
+        finally:
+            os.unlink(path)
+
+    def test_resilient_connect_uses_already_running(self):
+        """run_from_json with resilient_connect=True should skip launch when try_connect succeeds."""
+        from GM_VIP_Automation_Framework import runner as r
+        tcs = [
+            {"name": "TC1", "enabled": True, "reset_before": False,
+             "breakpoints": [], "variables_write": {}, "variables_check": {},
+             "symbols_inspect": []},
+        ]
+        path = self._build_tc_json(tcs)
+        mock_conn = self._mock_conn()
+        # Simulate try_connect() returning True (already-running T32 found).
+        mock_conn.try_connect.return_value = True
+        try:
+            with (
+                patch("GM_VIP_Automation_Framework.runner.t32.T32Connection",
+                      return_value=mock_conn),
+                patch("GM_VIP_Automation_Framework.runner.settings.load_from_json"),
+            ):
+                report = r.run_from_json(
+                    path,
+                    config_json_path="",
+                    auto_launch=True,    # even with auto_launch=True, launch should be skipped
+                    resilient_connect=True,
+                    report_json="/tmp/_r4.json",
+                    report_html="/tmp/_r4.html",
+                )
+            # launch() should NOT have been called because try_connect succeeded.
+            mock_conn.launch.assert_not_called()
+            self.assertEqual(report.total, 1)
+            self.assertEqual(report.passed, 1)
+        finally:
+            os.unlink(path)
+
+    def test_resilient_connect_launches_when_not_running(self):
+        """run_from_json with resilient_connect=True should launch when try_connect fails."""
+        from GM_VIP_Automation_Framework import runner as r
+        tcs = [
+            {"name": "TC1", "enabled": True, "reset_before": False,
+             "breakpoints": [], "variables_write": {}, "variables_check": {},
+             "symbols_inspect": []},
+        ]
+        path = self._build_tc_json(tcs)
+        mock_conn = self._mock_conn()
+        # try_connect() fails → framework should call launch() + connect().
+        mock_conn.try_connect.return_value = False
+        try:
+            with (
+                patch("GM_VIP_Automation_Framework.runner.t32.T32Connection",
+                      return_value=mock_conn),
+                patch("GM_VIP_Automation_Framework.runner.settings.load_from_json"),
+            ):
+                report = r.run_from_json(
+                    path,
+                    config_json_path="",
+                    auto_launch=True,
+                    resilient_connect=True,
+                    report_json="/tmp/_r5.json",
+                    report_html="/tmp/_r5.html",
+                )
+            mock_conn.launch.assert_called_once()
+            self.assertEqual(report.total, 1)
+        finally:
+            os.unlink(path)
+
+    def test_resilient_connect_no_auto_launch_raises(self):
+        """run_from_json with resilient_connect=True and auto_launch=False should raise when not running."""
+        from GM_VIP_Automation_Framework import runner as r
+        from GM_VIP_Automation_Framework.utils.exceptions import T32ConnectionError
+        tcs = [{"name": "TC1", "enabled": True, "breakpoints": [],
+                "variables_write": {}, "variables_check": {}, "symbols_inspect": []}]
+        path = self._build_tc_json(tcs)
+        mock_conn = self._mock_conn()
+        mock_conn.try_connect.return_value = False
+        try:
+            with (
+                patch("GM_VIP_Automation_Framework.runner.t32.T32Connection",
+                      return_value=mock_conn),
+                patch("GM_VIP_Automation_Framework.runner.settings.load_from_json"),
+            ):
+                with self.assertRaises(T32ConnectionError):
+                    r.run_from_json(
+                        path,
+                        config_json_path="",
+                        auto_launch=False,
+                        resilient_connect=True,
+                        report_json="/tmp/_r6.json",
+                        report_html="/tmp/_r6.html",
+                    )
         finally:
             os.unlink(path)
 
