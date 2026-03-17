@@ -275,5 +275,178 @@ class TestTestCaseResult(unittest.TestCase):
             self.assertIn(key, d)
 
 
+# ---------------------------------------------------------------------------
+# runner.load_test_cases
+# ---------------------------------------------------------------------------
+
+class TestLoadTestCases(unittest.TestCase):
+    """Tests for runner.load_test_cases (pure JSON parsing, no Trace32 needed)."""
+
+    def _write_json(self, data: dict) -> str:
+        f = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+        json.dump(data, f)
+        f.close()
+        return f.name
+
+    def test_load_basic(self):
+        from GM_VIP_Automation_Framework.runner import load_test_cases
+        path = self._write_json({
+            "test_suite": "S",
+            "test_cases": [
+                {"name": "TC1", "enabled": True, "breakpoints": ["f"]},
+            ],
+        })
+        try:
+            tcs = load_test_cases(path)
+            self.assertEqual(len(tcs), 1)
+            self.assertEqual(tcs[0]["name"], "TC1")
+        finally:
+            os.unlink(path)
+
+    def test_load_missing_raises(self):
+        from GM_VIP_Automation_Framework.runner import load_test_cases
+        with self.assertRaises(FileNotFoundError):
+            load_test_cases("/no/such/file.json")
+
+    def test_load_invalid_json_raises(self):
+        from GM_VIP_Automation_Framework.runner import load_test_cases
+        f = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+        f.write("{ bad json")
+        f.close()
+        try:
+            with self.assertRaises(ValueError):
+                load_test_cases(f.name)
+        finally:
+            os.unlink(f.name)
+
+    def test_load_missing_test_cases_key_raises(self):
+        from GM_VIP_Automation_Framework.runner import load_test_cases
+        path = self._write_json({"test_suite": "S"})
+        try:
+            with self.assertRaises(ValueError):
+                load_test_cases(path)
+        finally:
+            os.unlink(path)
+
+    def test_template_is_valid(self):
+        """The shipped test_cases.json template must be valid JSON."""
+        from GM_VIP_Automation_Framework.runner import load_test_cases
+        template = Path(__file__).parent.parent / "test_cases.json"
+        self.assertTrue(template.is_file(), "test_cases.json template is missing")
+        tcs = load_test_cases(str(template))
+        # At least the two enabled test cases should be present.
+        names = [tc.get("name") for tc in tcs if "name" in tc]
+        self.assertIn("TC_Reset_BasicState", names)
+        self.assertIn("TC_Breakpoint_VarCheck", names)
+
+
+# ---------------------------------------------------------------------------
+# runner.run_from_json (mocked Trace32)
+# ---------------------------------------------------------------------------
+
+class TestRunFromJson(unittest.TestCase):
+    """Tests for runner.run_from_json using fully mocked Trace32 calls."""
+
+    def _build_tc_json(self, test_cases: list, suite: str = "Suite") -> str:
+        f = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+        json.dump({"test_suite": suite, "test_cases": test_cases}, f)
+        f.close()
+        return f.name
+
+    def _mock_conn(self):
+        """Return a mock T32Connection."""
+        from unittest.mock import MagicMock
+        conn = MagicMock()
+        conn.is_connected.return_value = True
+        conn.__enter__ = lambda s: s
+        conn.__exit__ = MagicMock(return_value=False)
+
+        def _fnc(expr):
+            if "STATE.RUN" in expr:
+                return "FALSE()"
+            if "SYMBOL.EXIST" in expr:
+                return "TRUE()"
+            if "ADDRESS.OFFSET" in expr:
+                return "0x80001234"
+            if "VAR.VALUE" in expr:
+                return "42"
+            if "P:R(PC)" in expr and "==" in expr:
+                return "TRUE()"
+            return "0"
+
+        conn.fnc.side_effect = _fnc
+        conn.cmd.return_value = None
+        return conn
+
+    def test_run_skips_disabled(self):
+        from GM_VIP_Automation_Framework import runner as r
+        tcs = [
+            {"name": "TC_Skip", "enabled": False, "breakpoints": [],
+             "variables_write": {}, "variables_check": {}, "symbols_inspect": []},
+        ]
+        path = self._build_tc_json(tcs)
+        mock_conn = self._mock_conn()
+        try:
+            with (
+                patch("GM_VIP_Automation_Framework.runner.t32.T32Connection",
+                      return_value=mock_conn),
+                patch("GM_VIP_Automation_Framework.runner.settings.load_from_json"),
+            ):
+                report = r.run_from_json(path, config_json_path="", auto_launch=False,
+                                         report_json="/tmp/_r.json",
+                                         report_html="/tmp/_r.html")
+            self.assertEqual(report.total, 0)
+        finally:
+            os.unlink(path)
+
+    def test_run_passes_enabled(self):
+        from GM_VIP_Automation_Framework import runner as r
+        tcs = [
+            {"name": "TC1", "enabled": True, "reset_before": False,
+             "breakpoints": [], "variables_write": {},
+             "variables_check": {"myVar": {"expected": None}},
+             "symbols_inspect": ["myFunc"]},
+        ]
+        path = self._build_tc_json(tcs)
+        mock_conn = self._mock_conn()
+        try:
+            with (
+                patch("GM_VIP_Automation_Framework.runner.t32.T32Connection",
+                      return_value=mock_conn),
+                patch("GM_VIP_Automation_Framework.runner.settings.load_from_json"),
+            ):
+                report = r.run_from_json(path, config_json_path="", auto_launch=False,
+                                         report_json="/tmp/_r2.json",
+                                         report_html="/tmp/_r2.html")
+            self.assertEqual(report.total, 1)
+            self.assertEqual(report.passed, 1)
+        finally:
+            os.unlink(path)
+
+    def test_run_records_capl_reference(self):
+        from GM_VIP_Automation_Framework import runner as r
+        tcs = [
+            {"name": "TC1", "enabled": True, "capl_reference": "MyFeature.can::TC1",
+             "reset_before": False, "breakpoints": [],
+             "variables_write": {}, "variables_check": {}, "symbols_inspect": []},
+        ]
+        path = self._build_tc_json(tcs)
+        mock_conn = self._mock_conn()
+        try:
+            with (
+                patch("GM_VIP_Automation_Framework.runner.t32.T32Connection",
+                      return_value=mock_conn),
+                patch("GM_VIP_Automation_Framework.runner.settings.load_from_json"),
+            ):
+                report = r.run_from_json(path, config_json_path="", auto_launch=False,
+                                         report_json="/tmp/_r3.json",
+                                         report_html="/tmp/_r3.html")
+            result = report.results[0]
+            self.assertIn("_capl_reference", result.variables)
+            self.assertEqual(result.variables["_capl_reference"], "MyFeature.can::TC1")
+        finally:
+            os.unlink(path)
+
+
 if __name__ == "__main__":
     unittest.main()
