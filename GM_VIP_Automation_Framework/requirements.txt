@@ -1,0 +1,8 @@
+# GM VIP Automation Framework – Python dependencies
+#
+# Install with:  pip install -r requirements.txt
+#
+# The framework's ONLY required runtime dependency is the official Lauterbach
+# Python library for Trace32 Remote Control Link communication.
+#
+lauterbach.trace32.rcl>=3.0.0
