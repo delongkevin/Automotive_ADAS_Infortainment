@@ -503,5 +503,232 @@ class TestSymbols(unittest.TestCase):
         conn.cmd.assert_any_call("SYMBOL.RELOAD")
 
 
+# ---------------------------------------------------------------------------
+# Synchronization: post_reset_settle_s and go_settle_s / go() error
+# ---------------------------------------------------------------------------
+
+class TestSynchronization(unittest.TestCase):
+    """Tests for the new synchronization / handshaking improvements."""
+
+    def setUp(self):
+        from GM_VIP_Automation_Framework import config
+        self._orig_post_reset = config.settings.post_reset_settle_s
+        self._orig_go_settle = config.settings.go_settle_s
+        self._orig_run_timeout = config.settings.run_timeout_s
+        self._orig_poll = config.settings.poll_interval_s
+        config.settings.poll_interval_s = 0.01
+
+    def tearDown(self):
+        from GM_VIP_Automation_Framework import config
+        config.settings.post_reset_settle_s = self._orig_post_reset
+        config.settings.go_settle_s = self._orig_go_settle
+        config.settings.run_timeout_s = self._orig_run_timeout
+        config.settings.poll_interval_s = self._orig_poll
+
+    def test_post_reset_settle_applied_after_reset(self):
+        """reset_target() should sleep post_reset_settle_s after the ECU halts."""
+        import time
+        from GM_VIP_Automation_Framework import config
+        from GM_VIP_Automation_Framework.core import debugger as dbg
+
+        config.settings.post_reset_settle_s = 0.05  # short but measurable
+
+        conn = _make_conn(running=False)
+        start = time.monotonic()
+        dbg.reset_target(conn)
+        elapsed = time.monotonic() - start
+
+        # Should have slept at least post_reset_settle_s (0.05s).
+        # Use 60% of the target as the lower bound to avoid flakiness under load.
+        self.assertGreaterEqual(elapsed, 0.03)
+
+    def test_post_reset_settle_zero_no_extra_delay(self):
+        """reset_target() should not add any delay when post_reset_settle_s=0."""
+        import time
+        from GM_VIP_Automation_Framework import config
+        from GM_VIP_Automation_Framework.core import debugger as dbg
+
+        config.settings.post_reset_settle_s = 0.0
+
+        conn = _make_conn(running=False)
+        start = time.monotonic()
+        dbg.reset_target(conn)
+        elapsed = time.monotonic() - start
+
+        # reset_target() always includes a fixed 0.25s transient-phase sleep.
+        # With post_reset_settle_s=0 there should be no additional delay beyond
+        # that 0.25s + poll overhead, so the total should stay well under 0.5s.
+        self.assertLess(elapsed, 0.5)
+
+    def test_go_raises_timeout_when_ecu_does_not_run(self):
+        """go() should raise T32TimeoutError when the ECU never starts running."""
+        from GM_VIP_Automation_Framework import config
+        from GM_VIP_Automation_Framework.core import debugger as dbg
+        from GM_VIP_Automation_Framework.utils.exceptions import T32TimeoutError
+
+        config.settings.run_timeout_s = 0.05
+        config.settings.go_settle_s = 0.0
+
+        # ECU stays halted even after GO.
+        conn = _make_conn(running=False)
+
+        with self.assertRaises(T32TimeoutError) as ctx:
+            dbg.go(conn)
+
+        self.assertIn("running state", str(ctx.exception).lower())
+
+    def test_go_succeeds_when_ecu_starts_running(self):
+        """go() should complete without error when ECU enters running state."""
+        from GM_VIP_Automation_Framework import config
+        from GM_VIP_Automation_Framework.core import debugger as dbg
+
+        config.settings.go_settle_s = 0.0
+
+        # ECU transitions to running after the first STATE.RUN() poll.
+        call_count = [0]
+        def _fnc(expr):
+            if "STATE.RUN" in expr:
+                call_count[0] += 1
+                return "TRUE()" if call_count[0] > 1 else "FALSE()"
+            return "FALSE()"
+
+        conn = _make_conn(running=False)
+        conn.fnc.side_effect = _fnc
+
+        dbg.go(conn)  # must not raise
+        conn.cmd.assert_any_call("GO")
+
+    def test_new_settings_have_correct_defaults(self):
+        """post_reset_settle_s and go_settle_s defaults should be sensible."""
+        from GM_VIP_Automation_Framework.config import T32Settings
+        fresh = T32Settings()
+        self.assertGreater(fresh.post_reset_settle_s, 0)
+        self.assertGreaterEqual(fresh.go_settle_s, 0)
+
+
+# ---------------------------------------------------------------------------
+# Runner: go_before_check workflow
+# ---------------------------------------------------------------------------
+
+class TestRunnerGoBeforeCheck(unittest.TestCase):
+    """Tests for the go_before_check JSON key in the test runner."""
+
+    def _make_runner_conn(self, halt_after_go: bool = True):
+        """Return a mock connection that starts halted, goes to running on GO,
+        then halts again (simulating a natural halt after init code runs).
+        The mock also responds to all RCL functions used by the runner."""
+        conn = MagicMock()
+        conn.is_connected.return_value = True
+
+        go_issued = [False]
+
+        def _fnc(expr):
+            if "STATE.RUN" in expr:
+                # Running only briefly right after GO.
+                if go_issued[0] and halt_after_go:
+                    go_issued[0] = False  # reset so next poll returns halted
+                    return "TRUE()"       # one "running" poll after GO
+                return "FALSE()"          # otherwise halted
+            if "P:R(PC)" in expr and "==" in expr:
+                return "TRUE()"
+            if "R(PC)" in expr:
+                return "0x80001234"
+            if "VAR.VALUE" in expr:
+                return "42"
+            if "SYMBOL.EXIST" in expr:
+                return "TRUE()"
+            if "ADDRESS.OFFSET" in expr:
+                return "0xA0000000"
+            if "CORE()" in expr:
+                return "TRUE()"
+            return "0"
+
+        def _cmd(c):
+            if c == "GO":
+                go_issued[0] = True
+
+        conn.fnc.side_effect = _fnc
+        conn.cmd.side_effect = _cmd
+        return conn
+
+    def test_go_before_check_issues_go_then_reads_variable(self):
+        """Runner should issue GO + wait-for-halt before variable checks when
+        go_before_check=True and no breakpoints are defined."""
+        import sys
+        from pathlib import Path
+        from unittest.mock import patch, MagicMock
+
+        from GM_VIP_Automation_Framework import runner, config
+
+        # Use very short timeouts.
+        config.settings.halt_timeout_s = 1.0
+        config.settings.run_timeout_s = 0.5
+        config.settings.poll_interval_s = 0.01
+        config.settings.go_settle_s = 0.0
+        config.settings.post_reset_settle_s = 0.0
+
+        tc_def = {
+            "name": "TC_GoBeforeCheck",
+            "enabled": True,
+            "reset_before": False,
+            "go_before_check": True,
+            "breakpoints": [],
+            "variables_write": {},
+            "variables_check": {
+                "myModule.myStatus": {"expected": None, "description": "just log"}
+            },
+            "symbols_inspect": [],
+        }
+
+        conn = self._make_runner_conn(halt_after_go=True)
+        from GM_VIP_Automation_Framework.report import TestCaseReport
+        report = TestCaseReport(name="test")
+
+        runner._run_one(tc_def, conn, report)
+
+        # GO must have been issued.
+        go_calls = [str(a) for a in conn.cmd.call_args_list if "GO" in str(a)]
+        self.assertTrue(any("GO" in c for c in go_calls), "GO was not issued")
+        # VAR.VALUE must have been read.
+        fnc_calls = [str(a) for a in conn.fnc.call_args_list]
+        self.assertTrue(
+            any("VAR.VALUE" in c for c in fnc_calls),
+            "VAR.VALUE not called after go_before_check GO",
+        )
+
+    def test_go_before_check_false_does_not_issue_go(self):
+        """Runner should NOT issue GO when go_before_check=False and no breakpoints."""
+        from GM_VIP_Automation_Framework import runner, config
+
+        config.settings.halt_timeout_s = 1.0
+        config.settings.run_timeout_s = 0.5
+        config.settings.poll_interval_s = 0.01
+        config.settings.go_settle_s = 0.0
+        config.settings.post_reset_settle_s = 0.0
+
+        tc_def = {
+            "name": "TC_NoGo",
+            "enabled": True,
+            "reset_before": False,
+            "go_before_check": False,
+            "breakpoints": [],
+            "variables_write": {},
+            "variables_check": {
+                "myModule.myStatus": {"expected": None}
+            },
+            "symbols_inspect": [],
+        }
+
+        conn = self._make_runner_conn(halt_after_go=False)
+        from GM_VIP_Automation_Framework.report import TestCaseReport
+        report = TestCaseReport(name="test")
+
+        runner._run_one(tc_def, conn, report)
+
+        # cmd should not have received a bare "GO" call
+        go_calls = [str(a) for a in conn.cmd.call_args_list if str(a) == "call('GO')"]
+        self.assertEqual(len(go_calls), 0, "GO should NOT have been issued")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -37,6 +37,30 @@ Typical workflow
            auto_launch=True,
        )
 
+Test-case JSON keys
+-------------------
+Each entry in the ``test_cases`` list supports:
+
+- ``name`` (str, required) – unique test case identifier.
+- ``enabled`` (bool, default ``true``) – skip when ``false``.
+- ``reset_before`` (bool, default ``false``) – issue ``SYStem.RESetTarget``
+  and wait for halt before running the test.  A configurable
+  ``post_reset_settle_s`` delay is then applied (see ``config.json``)
+  to let T32 rebuild its internal state before proceeding.
+- ``go_before_check`` (bool, default ``false``) – after writing
+  ``variables_write`` and setting any ``breakpoints``, issue ``GO`` and
+  wait for the ECU to halt *before* reading ``variables_check``.  Use
+  this when variables only reach their expected values after the ECU has
+  executed some initialisation code.
+- ``breakpoints`` (list[str]) – symbols at which to set execution
+  breakpoints.  The runner does ``GO``, waits for each breakpoint to be
+  hit, then reads variables.
+- ``variables_write`` (dict) – variables to write before the GO step.
+- ``variables_check`` (dict) – variables to read (and optionally assert)
+  after the ECU halts.
+- ``symbols_inspect`` (list[str]) – symbols whose existence and address
+  are logged (no assertion).
+
 Public API
 ----------
 - :func:`run_from_json` – load both JSON files and execute the suite.
@@ -258,6 +282,11 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
     variables_write: Dict[str, Any] = tc_def.get("variables_write", {})
     variables_check: Dict[str, Any] = tc_def.get("variables_check", {})
     symbols_inspect: List[str] = tc_def.get("symbols_inspect", [])
+    # When True: after variable writes and breakpoint setup, issue GO and
+    # wait for the ECU to halt before reading variables.  Use this when the
+    # ECU must run its initialisation / processing code before the variables
+    # you want to check reach their expected values.
+    go_before_check: bool = tc_def.get("go_before_check", False)
 
     report.begin_test_case(name)
     # Store CAPL reference as a special variable entry for traceability.
@@ -288,16 +317,37 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
             t32.set_variable(sym, val, connection=conn)
             report.record_variable(f"{sym} (write)", val)
 
-        # -- Set breakpoints and run ----------------------------------------
+        # -- Set breakpoints ------------------------------------------------
         if breakpoints:
             for sym in breakpoints:
                 t32.set_breakpoint(sym, connection=conn)
 
+        # -- GO + wait-for-halt (either via breakpoint or go_before_check) --
+        # Case A: explicit breakpoints → GO + wait for each breakpoint hit.
+        # Case B: go_before_check=True, no breakpoints → GO + wait for any
+        #         halt (e.g. ECU finishes init and reaches a natural break).
+        if breakpoints:
             t32.go(connection=conn)
 
             for sym in breakpoints:
                 t32.check_halted_at(sym, connection=conn)
                 report.record_breakpoint(sym, hit=True)
+
+        elif go_before_check:
+            # Let the ECU run without any breakpoints set.  The ECU will
+            # stop when it naturally halts (e.g. hits a programmed break,
+            # completes an init sequence, or a watchdog fires).  This is
+            # useful when variable values are only valid after the ECU has
+            # executed some initialisation code.
+            t32.go(connection=conn)
+            halted = t32.wait_for_halt(connection=conn)
+            if not halted:
+                from .utils.exceptions import T32TimeoutError
+                raise T32TimeoutError(
+                    f"ECU did not halt within {settings.halt_timeout_s}s "
+                    "after GO (go_before_check=true). "
+                    "Ensure the ECU has a breakpoint or naturally halts."
+                )
 
         # -- Read / validate variables --------------------------------------
         for sym, spec in variables_check.items():

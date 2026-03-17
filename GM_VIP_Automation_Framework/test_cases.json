@@ -2,6 +2,8 @@
   "_comment": "GM VIP Automation Framework – test case definitions.",
   "_comment2": "Edit this file to add/change test cases, expected values, and CAPL references.",
   "_comment3": "Pass the path to this file to runner.run_from_json() – no Python changes needed.",
+  "_comment4": "Key reference: enabled, reset_before, go_before_check, breakpoints, variables_write, variables_check, symbols_inspect.",
+  "_comment5": "go_before_check=true: after variable writes + breakpoint setup, issue GO and wait for halt before reading variables. Use when variables are only valid after the ECU has run its init code.",
 
   "test_suite": "MySuite",
 
@@ -12,6 +14,7 @@
       "capl_reference": "SWQT_MyFeature.can::testcase TC_Reset_BasicState",
       "enabled": true,
       "reset_before": true,
+      "go_before_check": false,
 
       "breakpoints": [],
 
@@ -35,6 +38,7 @@
       "capl_reference": "SWQT_MyFeature.can::testcase TC_Breakpoint_VarCheck",
       "enabled": true,
       "reset_before": false,
+      "go_before_check": false,
 
       "breakpoints": [
         "myTargetFunction"
@@ -65,11 +69,42 @@
     },
 
     {
-      "_comment": "--- Test case 3: Register check ---",
+      "_comment": "--- Test case 3: go_before_check example (no explicit breakpoint – ECU runs until natural halt) ---",
+      "_comment2": "Use this pattern when variables only have expected values AFTER the ECU has executed its init code.",
+      "name": "TC_GoBeforeCheck_Example",
+      "capl_reference": "SWQT_MyFeature.can::testcase TC_GoBeforeCheck_Example",
+      "enabled": false,
+      "reset_before": true,
+      "go_before_check": true,
+
+      "breakpoints": [],
+
+      "variables_write": {
+        "myModule.myFlag": {
+          "value": "1",
+          "description": "Set flag, then GO so the ECU processes it"
+        }
+      },
+
+      "variables_check": {
+        "myModule.myStatus": {
+          "expected": "0x01",
+          "description": "Status after ECU init – checked after ECU halts"
+        }
+      },
+
+      "symbols_inspect": [
+        "myModule"
+      ]
+    },
+
+    {
+      "_comment": "--- Test case 4: Register check ---",
       "name": "TC_Register_Check",
       "capl_reference": "SWQT_MyFeature.can::testcase TC_Register_Check",
       "enabled": false,
       "reset_before": true,
+      "go_before_check": false,
 
       "breakpoints": [
         "myTargetFunction"

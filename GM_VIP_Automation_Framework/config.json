@@ -30,6 +30,10 @@
   "run_timeout_s": 3.0,
   "poll_interval_s": 0.2,
 
+  "_comment4": "Synchronization timing. post_reset_settle_s: extra wait after SYStem.RESetTarget halts (lets T32 rebuild symbol/register state). go_settle_s: brief pause after GO before polling STATE.RUN().",
+  "post_reset_settle_s": 1.0,
+  "go_settle_s": 0.3,
+
   "bp_max_retries": 10,
   "bp_retry_interval_s": 0.5,
   "bp_symbol_reload_at": 5,

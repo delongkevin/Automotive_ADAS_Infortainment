@@ -144,6 +144,24 @@ class T32Settings:
         default_factory=lambda: float(os.environ.get("T32_POLL_INTERVAL_S", "0.2"))
     )
 
+    #: Extra settle time in seconds added after the ECU confirms a halted state
+    #: following ``SYStem.RESetTarget``.  A non-zero value lets T32 finish
+    #: rebuilding its internal state (register map, symbol accessibility, etc.)
+    #: before the next command is issued.  Increase when variable reads or
+    #: symbol lookups fail immediately after a reset.
+    #: env: T32_POST_RESET_SETTLE_S
+    post_reset_settle_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_POST_RESET_SETTLE_S", "1.0"))
+    )
+
+    #: Brief pause in seconds after a ``GO`` command before the framework
+    #: begins polling ``STATE.RUN()``.  Prevents a false "not running" reading
+    #: in the milliseconds before the CPU has actually started executing.
+    #: env: T32_GO_SETTLE_S
+    go_settle_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_GO_SETTLE_S", "0.3"))
+    )
+
     # ------------------------------------------------------------------
     # Breakpoint set retry logic  (mirrors CAPL cc_nT32_BP* constants)
     # ------------------------------------------------------------------
