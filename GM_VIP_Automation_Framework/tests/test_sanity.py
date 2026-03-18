@@ -133,6 +133,42 @@ USE_LIVE_T32    = False  # ← flip to True to connect to real Trace32 hardware
 T32_LIVE_PORT    = 20000  # Trace32 API/intercom port  (must match PORT= in config.t32)
 T32_LIVE_PACKLEN = 1024   # RCL packet length in bytes (must match PACKLEN= in config.t32)
 
+# ============================================================================
+# CANOE MODE
+# ============================================================================
+# When USE_LIVE_T32 = True, CAN breakpoints (Group 1 / Group 3) require CAN
+# frames to be sent to the ECU so it reaches the expected functions.
+#
+# USE_CANOE = True   → attach to the already-open Vector CANoe instance via
+#                      COM automation (Windows; pip install pywin32).
+# USE_CANOE = False  → skip CAN stimulus; the ECU may not reach CAN
+#                      breakpoints naturally without external messages.
+#
+# USE_CAN_BUS = True → send CAN stimulus directly via a hardware adapter
+#                      (python-can) instead of CANoe.  Useful when CANoe is
+#                      not available but you have a Vector/PEAK CAN interface.
+# ============================================================================
+USE_CANOE       = False  # ← flip to True when CANoe is open (live mode only)
+USE_CAN_BUS     = False  # ← flip to True to use python-can hardware adapter
+
+# CANoe / python-can settings (only used when USE_LIVE_T32 = True)
+CANOE_CAN_CHANNEL   = 1          # 1-based CAN channel in your CANoe config
+CAN_BUS_INTERFACE   = "vector"   # python-can interface: "vector", "pcan", "socketcan"
+CAN_BUS_CHANNEL     = 0          # 0-based channel for the CAN hardware adapter
+CAN_BUS_BITRATE     = 500_000    # bits per second
+
+# ============================================================================
+# POWER SUPPLY
+# ============================================================================
+# USE_POWER_SUPPLY = True  → control the BK Precision 1687B on COM4 to
+#                            power-cycle the ECU before test groups.
+# USE_POWER_SUPPLY = False → ECU is already powered; power supply untouched.
+# ============================================================================
+USE_POWER_SUPPLY = False      # ← flip to True when PSU is connected on COM4
+PSU_PORT         = "COM4"    # Serial port (matches the bench USB-CDC assignment)
+PSU_VOLTAGE_V    = 12.0      # ECU supply voltage in volts
+PSU_CURRENT_A    = 2.0       # ECU supply current limit in amperes
+
 # ---------------------------------------------------------------------------
 # Command-line override: python test_sanity.py True  (or "live")
 # Strip any recognised live-mode flag from sys.argv before unittest sees it,
@@ -170,6 +206,41 @@ if USE_LIVE_T32:
           f"(packlen={T32_LIVE_PACKLEN})\n")
 else:
     _LIVE_CONN = None  # mock mode – each test creates a fresh mock
+
+# ---------------------------------------------------------------------------
+# Optional hardware clients (live mode only)
+# ---------------------------------------------------------------------------
+
+# Vector CANoe client (USE_CANOE = True, live mode only)
+_CANOE = None
+if USE_LIVE_T32 and USE_CANOE:
+    from GM_VIP_Automation_Framework.core.canoe import CANoeClient as _CANoeClient
+    _CANOE = _CANoeClient(mock=False)
+    _CANOE.connect()
+    print("[test_sanity] CANoe client connected.")
+
+# Direct python-can bus client (USE_CAN_BUS = True, live mode only, no CANoe)
+_CAN_BUS = None
+if USE_LIVE_T32 and USE_CAN_BUS and not USE_CANOE:
+    from GM_VIP_Automation_Framework.core.can_bus import CANBusClient as _CANBusClient
+    _CAN_BUS = _CANBusClient(
+        interface=CAN_BUS_INTERFACE,
+        channel=CAN_BUS_CHANNEL,
+        bitrate=CAN_BUS_BITRATE,
+    )
+    _CAN_BUS.connect()
+    print(f"[test_sanity] python-can bus connected ({CAN_BUS_INTERFACE}/{CAN_BUS_CHANNEL}).")
+
+# BK Precision 1687B power supply client (USE_POWER_SUPPLY = True, live mode only)
+_PSU = None
+if USE_LIVE_T32 and USE_POWER_SUPPLY:
+    from GM_VIP_Automation_Framework.core.power_supply import BKPrecision1687B as _BKP
+    _PSU = _BKP(port=PSU_PORT, mock=False)
+    _PSU.connect()
+    _PSU.set_output(PSU_VOLTAGE_V, PSU_CURRENT_A)
+    _PSU.output_on()
+    print(f"[test_sanity] BK Precision 1687B on {PSU_PORT}: "
+          f"{PSU_VOLTAGE_V} V / {PSU_CURRENT_A} A – output ON.")
 
 
 # ---------------------------------------------------------------------------
@@ -364,6 +435,67 @@ class _SanityBase(unittest.TestCase):
         if not USE_LIVE_T32:
             conn.cmd.assert_any_call("SYStem.RESetTarget")
 
+    @staticmethod
+    def _send_can_stimulus(
+        can_id: int,
+        data=None,
+        is_extended_id: bool = False,
+        delay_after_s: float = 0.05,
+    ) -> None:
+        """Send a CAN frame to the ECU bus (live mode only).
+
+        This is the bridge between Python test control and the ECU's CAN
+        receive path.  In live mode the ECU must receive CAN frames to
+        progress through its CAN initialisation functions and hit the T32
+        breakpoints.  Without this stimulus the ECU stays idle and T32
+        times out waiting for a halt.
+
+        Delivery priority:
+          1. Vector CANoe COM (USE_CANOE = True) – preferred; CANoe drives
+             the bus simulation nodes simultaneously.
+          2. python-can hardware adapter (USE_CAN_BUS = True) – direct frame
+             injection without CANoe.
+          3. Mock / no-op – in mock mode or when neither is enabled, the mock
+             connection's state machine simulates the halt internally and no
+             real CAN frame is needed.
+
+        Parameters
+        ----------
+        can_id:
+            CAN arbitration ID (11-bit standard or 29-bit extended).
+        data:
+            Payload bytes (list[int]).  Defaults to ``[0x00]*8``.
+        is_extended_id:
+            ``True`` for 29-bit extended frame format.
+        delay_after_s:
+            Short sleep after sending to let the frame propagate before T32
+            continues polling for a halt.
+        """
+        if not USE_LIVE_T32:
+            return  # Mock state machine handles this internally.
+
+        if data is None:
+            data = [0x00] * 8
+
+        if _CANOE is not None:
+            _CANOE.trigger_can_rx(
+                channel=CANOE_CAN_CHANNEL,
+                can_id=can_id,
+                data=data,
+                is_extended_id=is_extended_id,
+                delay_after_s=delay_after_s,
+            )
+        elif _CAN_BUS is not None:
+            _CAN_BUS.trigger_can_rx(
+                can_id=can_id,
+                data=data,
+                is_extended_id=is_extended_id,
+            )
+            import time as _time
+            _time.sleep(delay_after_s)
+        # else: no CAN interface configured – the ECU may still hit the
+        # breakpoint if CANoe is already running autonomously.
+
 
 # ============================================================================
 # GROUP 1 – CAN (50 executed tests, all pass)
@@ -379,12 +511,17 @@ class TestSanityGroup1CAN(_SanityBase):
     def _can_rx_init_setup(self, conn):
         """Steps 0.1-0.5: delete BPs → set BP TestCan_Init → reset
         → set BP TestCan_Init → go_safe → check halted at TestCan_Init.
+
+        In live mode, a CAN init frame is sent after go_safe() so that the
+        ECU's CAN stack begins initialisation and reaches TestCan_Init.
         """
         _bp.delete_all_breakpoints(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.go_safe(connection=conn)
+        # Live: send CAN init stimulus so ECU reaches TestCan_Init breakpoint.
+        self._send_can_stimulus(can_id=0x401)
         _bp.check_halted_at("TestCan_Init", connection=conn)
 
     def _set_can_rx_msg_vars(self, conn, can_id, filter_mask, rx_msg_idx,
@@ -409,16 +546,29 @@ class TestSanityGroup1CAN(_SanityBase):
         Output variables (CanrxmsgIdx, CanpdumsgId, Canpdudatalength) are
         pre-seeded in the mock because no real ECU computes them.  The calls
         to check_variable() then exercise the framework's comparison logic.
+
+        In live mode a CAN Rx frame is injected at each go() so the ECU
+        progresses through MngCNDD_CanRxInit → SetCNDD_e_CanControllerMode
+        → SetCANR_h_CanIfRxIndication.
         """
         _bp.set_breakpoint("MngCNDD_CanRxInit", conn)
         _dbg.go(conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger MngCNDD_CanRxInit
         _bp.check_halted_at("MngCNDD_CanRxInit", connection=conn)
         _bp.set_breakpoint("SetCNDD_e_CanControllerMode", conn)
         _dbg.go(conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger CanControllerMode
         _bp.check_halted_at("SetCNDD_e_CanControllerMode", connection=conn)
         _bp.set_breakpoint("SetCANR_h_CanIfRxIndication", conn)
         _dbg.go(conn)
+        self._send_can_stimulus(can_id=pdu_msg_id,
+                                is_extended_id=(pdu_msg_id > 0x7FF))  # Rx indication
+        # The original report shows two consecutive GO+stimulus cycles here:
+        # the ECU processes the first Rx frame, increments an internal counter,
+        # then needs a second Rx frame before halting at SetCANR_h_CanIfRxIndication.
         _dbg.go(conn)
+        self._send_can_stimulus(can_id=pdu_msg_id,
+                                is_extended_id=(pdu_msg_id > 0x7FF))  # second Rx frame
         _bp.check_halted_at("SetCANR_h_CanIfRxIndication", connection=conn)
         # Pre-seed ECU-computed RX output variables then verify (simulates ECU writes).
         self._sim_ecu_output("CanrxmsgIdx", 0, conn)
@@ -426,11 +576,16 @@ class TestSanityGroup1CAN(_SanityBase):
         self._sim_ecu_output("Canpdudatalength", data_length, conn)
 
     def _can_tx_setup(self, conn):
-        """Common preamble for CAN-TX tests."""
+        """Common preamble for CAN-TX tests.
+
+        In live mode, a CAN init frame is sent after go_safe() so that the
+        ECU reaches TestCan_Init.
+        """
         _bp.delete_all_breakpoints(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
         _dbg.go_safe(connection=conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger TestCan_Init
         _bp.check_halted_at("TestCan_Init", connection=conn)
 
     def _set_pdu_vars(self, conn, pdu_idx, can_id, length, pdu_id):
@@ -448,15 +603,18 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
         _dbg.go_safe(connection=conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger TestCan_Init
         _bp.check_halted_at("TestCan_Init", connection=conn)
         _bp.set_breakpoint("SetCNDD_e_CanTrcvOpMode", conn)
         _dbg.go(conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger CanTrcvOpMode
         _bp.check_halted_at("SetCNDD_e_CanTrcvOpMode", connection=conn)
         _var.set_variable("CanTrcvOpMode", mode_value, conn)
         _var.check_variable("CanTrcvOpMode", mode_value, conn)
         _bp.delete_all_breakpoints(conn)
         _bp.set_breakpoint(bp_confirm, conn)
         _dbg.go(conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger confirm BP
         _bp.check_halted_at(bp_confirm, connection=conn)
 
     def _ctrl_mode_test(self, conn, mode_var, mode_value, setup_bp, confirm_bp):
@@ -465,14 +623,17 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
         _dbg.go_safe(connection=conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger TestCan_Init
         _bp.check_halted_at("TestCan_Init", connection=conn)
         _bp.set_breakpoint(setup_bp, conn)
         _dbg.go(conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger setup_bp
         _bp.check_halted_at(setup_bp, connection=conn)
         _var.set_variable(mode_var, mode_value, conn)
         _var.check_variable(mode_var, mode_value, conn)
         _bp.set_breakpoint(confirm_bp, conn)
         _dbg.go(conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger confirm_bp
         _bp.check_halted_at(confirm_bp, connection=conn)
 
     def _trcv_init_test(self, conn):
@@ -481,9 +642,11 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.set_breakpoint("TestCanTrcv_Init", conn)
         _dbg.reset_target(conn)
         _dbg.go_safe(connection=conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger TestCanTrcv_Init
         _bp.check_halted_at("TestCanTrcv_Init", connection=conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.go(conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger TestCan_Init
         _bp.check_halted_at("TestCan_Init", connection=conn)
         # PN frame data / config variables
         _var.set_variable("VsCANR_PnFrameData1[0].CanTrcvPnFrameDataMaskIndex", 0, conn)
@@ -513,6 +676,7 @@ class TestSanityGroup1CAN(_SanityBase):
         _var.set_variable("VsCANR_CanTrcvConfig.CanTrcvNumberOfChannels", 2, conn)
         _var.check_variable("VsCANR_CanTrcvConfig.CanTrcvNumberOfChannels", 2, conn)
         _dbg.go(conn)
+        self._send_can_stimulus(can_id=0x401)          # trigger post-init path
         _var.set_variable("StartPowerDown", 1, conn)
         _var.check_variable("StartPowerDown", 1, conn)
 
@@ -1501,4 +1665,13 @@ class TestSanityGroup6SPDeviceSupport(_SanityBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    from GM_VIP_Automation_Framework.html_report import SanityHtmlRunner
+    _mode = "LIVE" if USE_LIVE_T32 else "MOCK"
+    unittest.main(
+        testRunner=SanityHtmlRunner(
+            suite_name="GM_VIP_Sanity",
+            mode=_mode,
+            verbosity=2,
+        ),
+        exit=True,
+    )
