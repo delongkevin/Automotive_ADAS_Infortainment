@@ -52,6 +52,11 @@ LIVE mode (real Trace32 required)
 
       USE_LIVE_T32 = True          # ← flip this
 
+  Or pass "True" as the first argument on the command line (no file edit needed):
+
+      python path/to/test_sanity.py True
+      python path/to/test_sanity.py True -v
+
   Optionally adjust the port/packlen if your config.t32 uses different values:
 
       T32_LIVE_PORT    = 20000
@@ -111,16 +116,34 @@ if _REPO_ROOT not in sys.path:
 # Default: USE_LIVE_T32 = False
 #   → runs entirely against mocked connections; no hardware needed.
 #
-# To use real Trace32 hardware:
+# To use real Trace32 hardware, either:
+#   a) Edit this file and change the line below to:  USE_LIVE_T32 = True
+#   b) Pass "True" (or "live") as the first positional argument on the command
+#      line – the in-file flag is then overridden automatically:
+#          python test_sanity.py True
+#          python test_sanity.py live
+#          python test_sanity.py True -v   (verbose unittest output)
+#
+# Full pre-requisites for live mode:
 #   1. Install:  pip install lauterbach.trace32.rcl
 #   2. Open Trace32 and load your ARM debug session.
 #   3. Confirm config.t32 has:  RCL=NETASSIST  PACKLEN=1024  PORT=20000
-#   4. Change the line below to:  USE_LIVE_T32 = True
-#   5. Run:  python test_sanity.py -v   (or press F5 in IDLE)
 # ============================================================================
 USE_LIVE_T32    = False  # ← flip to True to connect to real Trace32 hardware
 T32_LIVE_PORT    = 20000  # Trace32 API/intercom port  (must match PORT= in config.t32)
 T32_LIVE_PACKLEN = 1024   # RCL packet length in bytes (must match PACKLEN= in config.t32)
+
+# ---------------------------------------------------------------------------
+# Command-line override: python test_sanity.py True  (or "live")
+# Strip any recognised live-mode flag from sys.argv before unittest sees it,
+# so that unittest.main() does not misinterpret it as a test selector.
+# ---------------------------------------------------------------------------
+_LIVE_FLAGS = {"true", "1", "live", "yes"}
+_argv_live = [a for a in sys.argv[1:] if a.lower() in _LIVE_FLAGS]
+if _argv_live:
+    USE_LIVE_T32 = True
+    # Remove the consumed flag(s) so unittest.main() only sees test names / -v.
+    sys.argv = [sys.argv[0]] + [a for a in sys.argv[1:] if a.lower() not in _LIVE_FLAGS]
 
 # ---------------------------------------------------------------------------
 # Mode-specific setup
