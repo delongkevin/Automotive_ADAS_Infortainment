@@ -18,25 +18,29 @@ full target execution state.  :func:`get_ecu_state` queries all of them and
 returns a typed :class:`ECUState` value that the framework uses to drive
 control-flow decisions:
 
-+-------------------+-----------------+--------------------------------------------------+
-| ECUState          | T32 expression  | What it means                                    |
-+===================+=================+==================================================+
-| ``DOWN``          | STATE.DOWN()    | Target powered off or debug probe disconnected.  |
-|                   |                 | No commands will reach the ECU.                  |
-+-------------------+-----------------+--------------------------------------------------+
-| ``RESET``         | STATE.RESET()   | T32 is holding the ECU in hardware reset.        |
-|                   |                 | Wait ~800 ms (intermediate_halt_go_delay_s)      |
-|                   |                 | before issuing GO.                               |
-+-------------------+-----------------+--------------------------------------------------+
-| ``RUNNING``       | STATE.RUN()     | ECU is executing code.  Send stimulus or wait    |
-|                   |                 | for a breakpoint halt.                           |
-+-------------------+-----------------+--------------------------------------------------+
-| ``HALTED``        | all FALSE       | ECU stopped at breakpoint or BREAK command.      |
-|                   |                 | Safe to read/write variables and inspect the PC. |
-+-------------------+-----------------+--------------------------------------------------+
-| ``UNKNOWN``       | (error)         | Unable to determine state (comm error, T32 not   |
-|                   |                 | connected).                                      |
-+-------------------+-----------------+--------------------------------------------------+
++-------------------+---------------------------+--------------------------------------------------+
+| ECUState          | T32 expression            | What it means                                    |
++===================+===========================+==================================================+
+| ``DOWN``          | SYStem.Mode() == "DOWN"   | Target powered off or debug probe disconnected.  |
+|                   |                           | No commands will reach the ECU.                  |
+|                   |                           | (Note: STATE.DOWN is a PRACTICE *command* —      |
+|                   |                           | using STATE.DOWN() as a function produces the    |
+|                   |                           | Trace32 message "don't use commands as           |
+|                   |                           | functions".  Use SYStem.Mode() instead.)         |
++-------------------+---------------------------+--------------------------------------------------+
+| ``RESET``         | STATE.RESET()             | T32 is holding the ECU in hardware reset.        |
+|                   |                           | Wait ~800 ms (intermediate_halt_go_delay_s)      |
+|                   |                           | before issuing GO.                               |
++-------------------+---------------------------+--------------------------------------------------+
+| ``RUNNING``       | STATE.RUN()               | ECU is executing code.  Send stimulus or wait    |
+|                   |                           | for a breakpoint halt.                           |
++-------------------+---------------------------+--------------------------------------------------+
+| ``HALTED``        | all FALSE                 | ECU stopped at breakpoint or BREAK command.      |
+|                   |                           | Safe to read/write variables and inspect the PC. |
++-------------------+---------------------------+--------------------------------------------------+
+| ``UNKNOWN``       | (error)                   | Unable to determine state (comm error, T32 not   |
+|                   |                           | connected).                                      |
++-------------------+---------------------------+--------------------------------------------------+
 
 Public API
 ----------
@@ -122,9 +126,16 @@ class ECUState(Enum):
     issuing GO so the reset line has time to de-assert."""
 
     DOWN    = "down"
-    """Target is powered off or the debug probe is disconnected
-    (``STATE.DOWN()`` is TRUE).  No commands will reach the ECU.
-    Check the power supply and debug-probe USB connection."""
+    """Target is powered off or the debug probe is disconnected.
+
+    Detected via ``SYStem.Mode()`` returning ``"DOWN"``.
+
+    .. note::
+        ``STATE.DOWN`` is a PRACTICE **command** (not a function).  Using it
+        as ``STATE.DOWN()`` in an expression produces the Trace32 status-window
+        warning *"STATE.DOWN exists – don't use commands as functions"*.
+        Always use ``SYStem.Mode()`` for connection-state queries.
+    """
 
     UNKNOWN = "unknown"
     """State cannot be determined (T32 communication error or not connected).
@@ -197,9 +208,20 @@ def is_running(connection=None) -> bool:
 def is_down(connection=None) -> bool:
     """Return ``True`` when the target is powered off or the probe is disconnected.
 
-    Uses the PRACTICE expression ``STATE.DOWN()`` which returns ``TRUE()``
-    when Trace32 has lost contact with the target (power removed, probe
-    unplugged, etc.).  In this state no ECU commands are possible.
+    Uses the PRACTICE **function** ``SYStem.Mode()`` which returns the current
+    debug-connection mode as a string.  When the string is ``"DOWN"`` the target
+    is not reachable and no ECU commands are possible.
+
+    .. warning::
+        ``STATE.DOWN`` is a PRACTICE **command**, not a function.  Evaluating
+        ``STATE.DOWN()`` in an expression (via ``conn.fnc()``) causes the Trace32
+        status-window message::
+
+            STATE.DOWN exists – don't use commands as functions – Press F1 for more details.
+
+        Use ``SYStem.Mode()`` instead, which is a proper function and returns the
+        connection state as a readable string (``"DOWN"``, ``"UP"``, ``"ATTACH"``,
+        ``"STANDBY"``, …).
 
     Parameters
     ----------
@@ -208,8 +230,10 @@ def is_down(connection=None) -> bool:
     """
     conn = _conn(connection)
     try:
-        result = conn.fnc("STATE.DOWN()")
-        return _is_true(result)
+        # SYStem.Mode() returns the debug-connection mode as a string.
+        # Strip surrounding quotes that Trace32 sometimes includes.
+        mode = conn.fnc("SYStem.Mode()").strip().strip('"').strip("'").upper()
+        return mode == "DOWN"
     except Exception as exc:  # noqa: BLE001
         logger.debug("is_down() query failed: %s", exc)
         return False
@@ -219,14 +243,21 @@ def get_ecu_state(connection=None) -> "ECUState":
     """Query all Trace32 state expressions and return a typed :class:`ECUState`.
 
     This is the single authoritative state query for the framework.  It
-    evaluates the four T32 PRACTICE boolean functions in priority order and
+    evaluates the T32 PRACTICE state functions in priority order and
     maps them to the appropriate :class:`ECUState` value:
 
-    1. ``STATE.DOWN()``  → :attr:`ECUState.DOWN`   – target not reachable
-    2. ``STATE.RESET()`` → :attr:`ECUState.RESET`  – held in hardware reset
-    3. ``STATE.RUN()``   → :attr:`ECUState.RUNNING` – actively executing
-    4. all FALSE         → :attr:`ECUState.HALTED`  – stopped at breakpoint
-    5. error             → :attr:`ECUState.UNKNOWN` – comm / query failure
+    1. ``SYStem.Mode()=="DOWN"``  → :attr:`ECUState.DOWN`   – target not reachable
+    2. ``STATE.RESET()``          → :attr:`ECUState.RESET`  – held in hardware reset
+    3. ``STATE.RUN()``            → :attr:`ECUState.RUNNING` – actively executing
+    4. all FALSE                  → :attr:`ECUState.HALTED`  – stopped at breakpoint
+    5. error                      → :attr:`ECUState.UNKNOWN` – comm / query failure
+
+    .. note::
+        ``STATE.DOWN`` is a PRACTICE **command**, not a function.  Using it as
+        ``STATE.DOWN()`` in an expression triggers the Trace32 status-window
+        message *"STATE.DOWN exists – don't use commands as functions"*.
+        The correct function for connection-state queries is ``SYStem.Mode()``,
+        which returns a string (``"DOWN"``, ``"UP"``, ``"ATTACH"``, etc.).
 
     Use this function wherever the control-flow decision depends on the full
     target state (e.g. before issuing GO, after reset, after a breakpoint
@@ -260,14 +291,20 @@ def get_ecu_state(connection=None) -> "ECUState":
     try:
         # Query each flag directly so that any T32 communication error
         # propagates to the outer except clause and returns UNKNOWN.
-        # (The individual is_*() helpers swallow exceptions for backward
-        # compatibility; here we want to distinguish "all FALSE" from "comm error".)
+
         def _q(expr: str) -> bool:
             return _is_true(conn.fnc(expr))
 
-        if _q("STATE.DOWN()"):
-            logger.debug("get_ecu_state() → DOWN")
+        # DOWN: SYStem.Mode() is the correct PRACTICE *function* for the
+        # debug-connection state.  STATE.DOWN is a PRACTICE *command* and
+        # cannot be used as STATE.DOWN() in an expression – doing so produces
+        # the Trace32 status-window message:
+        #   "STATE.DOWN exists – don't use commands as functions"
+        mode = conn.fnc("SYStem.Mode()").strip().strip('"').strip("'").upper()
+        if mode == "DOWN":
+            logger.debug("get_ecu_state() → DOWN (SYStem.Mode()=DOWN)")
             return ECUState.DOWN
+
         if _q("STATE.RESET()"):
             logger.debug("get_ecu_state() → RESET")
             return ECUState.RESET

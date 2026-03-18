@@ -29,14 +29,18 @@ def _make_conn(running: bool = False, reset: bool = False, down: bool = False):
     reset : bool
         When True, STATE.RESET() returns TRUE (and running is implicitly False).
     down : bool
-        When True, STATE.DOWN() returns TRUE (and running/reset are implicitly False).
+        When True, SYStem.Mode() returns "DOWN" (and running/reset are implicitly
+        False).  Note: STATE.DOWN is a PRACTICE *command*, not a function — the
+        framework uses SYStem.Mode() for DOWN detection instead.
     """
     conn = MagicMock()
     conn.is_connected.return_value = True
 
     def _fnc(expr):
-        if "STATE.DOWN" in expr:
-            return "TRUE()" if down else "FALSE()"
+        # SYStem.Mode() is the correct PRACTICE function for connection-state.
+        # STATE.DOWN is a command (not callable as a function expression).
+        if "SYStem.Mode" in expr:
+            return "DOWN" if down else "UP"
         if "STATE.RESET" in expr:
             return "TRUE()" if reset else "FALSE()"
         if "STATE.RUN" in expr:
@@ -268,6 +272,8 @@ class TestDebugger(unittest.TestCase):
         # Subsequent STATE.RUN calls → True so wait_for_running succeeds.
         run_calls = [0]
         def _fnc(expr):
+            if "SYStem.Mode" in expr:
+                return "UP"   # not down
             if "STATE.RESET" in expr:
                 return "TRUE()"
             if "STATE.RUN" in expr:
@@ -346,12 +352,12 @@ class TestDebugger(unittest.TestCase):
     # ------------------------------------------------------------------
 
     def test_is_down_true_when_state_down(self):
-        """is_down() must return True when STATE.DOWN() returns TRUE."""
+        """is_down() must return True when SYStem.Mode() returns "DOWN"."""
         conn = _make_conn(down=True)
         self.assertTrue(self.dbg.is_down(conn))
 
     def test_is_down_false_when_running(self):
-        """is_down() must return False when STATE.DOWN() returns FALSE."""
+        """is_down() must return False when SYStem.Mode() returns "UP"."""
         conn = _make_conn(running=True)
         self.assertFalse(self.dbg.is_down(conn))
 
@@ -384,13 +390,13 @@ class TestDebugger(unittest.TestCase):
         self.assertEqual(self.dbg.get_ecu_state(conn), ECUState.RESET)
 
     def test_get_ecu_state_down(self):
-        """get_ecu_state() → DOWN when STATE.DOWN() is TRUE (highest priority)."""
+        """get_ecu_state() → DOWN when SYStem.Mode() returns "DOWN" (highest priority)."""
         from GM_VIP_Automation_Framework.core.debugger import ECUState
         conn = _make_conn(down=True)
         self.assertEqual(self.dbg.get_ecu_state(conn), ECUState.DOWN)
 
     def test_get_ecu_state_down_priority_over_reset(self):
-        """DOWN takes priority over RESET when both flags are set."""
+        """DOWN takes priority over RESET when SYStem.Mode()=DOWN and RESET=TRUE."""
         from GM_VIP_Automation_Framework.core.debugger import ECUState
         conn = _make_conn(down=True, reset=True)
         self.assertEqual(self.dbg.get_ecu_state(conn), ECUState.DOWN)
@@ -701,8 +707,8 @@ class TestBreakpoints(unittest.TestCase):
             reset_given = [False]  # give STATE.RESET=TRUE exactly once
 
             def _fnc(expr):
-                if "STATE.DOWN" in expr:
-                    return "FALSE()"
+                if "SYStem.Mode" in expr:
+                    return "UP"        # not down
                 if "STATE.RESET" in expr:
                     if not reset_given[0]:
                         reset_given[0] = True   # fire RESET only on first get_ecu_state()
