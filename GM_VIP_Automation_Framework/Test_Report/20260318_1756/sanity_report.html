@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>T32 Sanity Report – GM_VIP_Sanity</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f0f2f5;
+      color: #222;
+      padding: 28px 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.10);
+      padding: 22px 28px;
+      margin-bottom: 24px;
+    }
+    h1 { font-size: 1.65em; margin-bottom: 2px; }
+    h2 { font-size: 1.05em; color: #666; font-weight: normal; margin-bottom: 18px; }
+    h3 { font-size: 1.05em; border-bottom: 2px solid #e9ecef;
+          padding-bottom: 8px; margin-bottom: 14px; }
+    .kpi-row { display: flex; gap: 28px; flex-wrap: wrap; margin: 16px 0 10px; }
+    .kpi { text-align: center; }
+    .kpi-num { font-size: 2.2em; font-weight: bold; line-height: 1.1; }
+    .kpi-lbl { font-size: 0.78em; color: #888; text-transform: uppercase; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: 7px 12px; text-align: left; border-bottom: 1px solid #e9ecef; }
+    th { background: #f4f4f4; font-size: 0.82em; color: #555; font-weight: 600; }
+    tr:hover td { background: #fafbfc; }
+    details {
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      padding: 10px 14px;
+    }
+    summary {
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary:hover { color: #0056b3; }
+    .overall {
+      font-size: 1.15em;
+      font-weight: bold;
+      color: #28a745;
+      margin: 10px 0 6px;
+    }
+    .meta { color: #888; font-size: 0.83em; margin-top: 4px; }
+    .footer {
+      text-align: center;
+      color: #bbb;
+      font-size: 0.78em;
+      margin-top: 36px;
+    }
+    .note { color: #888; font-size: 0.83em; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <!-- ═══ Header card ═══ -->
+  <div class="card">
+    <h1>🔬 T32 Sanity Test Report</h1>
+    <h2>GM_VIP_Sanity &nbsp;<span style="color:#aaa;font-size:0.9em">Mode: MOCK</span></h2>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-num">180</div>
+        <div class="kpi-lbl">Total</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:#28a745">180</div>
+        <div class="kpi-lbl">Pass</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:#dc3545">0</div>
+        <div class="kpi-lbl">Fail</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:#fd7e14">0</div>
+        <div class="kpi-lbl">Error</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:#6c757d">0</div>
+        <div class="kpi-lbl">Skip</div>
+      </div>
+    </div>
+
+    <p class="overall">✅ OVERALL: PASS</p>
+    <p class="meta">Generated: 2026-03-18T17:56:04</p>
+  </div>
+
+  <!-- ═══ Failure / Error detail card ═══ -->
+  <div class="card">
+    <h3>Failure &amp; Error Details</h3>
+    <p class="note">
+      PASS results are intentionally omitted from this section to keep the
+      report focused on actionable issues.  See the <em>Full Summary</em>
+      table below for a complete list of all test outcomes.
+    </p>
+    <p style="color:#28a745;font-size:1.05em;padding:12px;background:#d4edda;border-radius:6px">✅ All tests passed – no failures or errors to report.</p>
+  </div>
+
+  <!-- ═══ Full summary card ═══ -->
+  <div class="card">
+    <h3>Full Test Summary</h3>
+    <table>
+      <thead><tr><th>Test Case</th><th>Status</th></tr></thead>
+      <tbody><tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestConfigJson::test_config_json_template_is_valid</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestConfigJson::test_load_from_json_cmm_entry_script</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestConfigJson::test_load_from_json_ignores_unknown_keys</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestConfigJson::test_load_from_json_invalid_json_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestConfigJson::test_load_from_json_list_field</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestConfigJson::test_load_from_json_missing_file_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestConfigJson::test_load_from_json_path_field</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestConfigJson::test_load_from_json_updates_fields</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestConfigJson::test_save_to_json_round_trip</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_begin_without_close_auto_errors</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_fail_increments_failed</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_multiple_test_cases</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_no_begin_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_pass_increments_passed</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_record_breakpoint</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_record_symbol</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_record_variable</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_save_html</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_save_html_omits_pass_by_default</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_save_json</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_summary_string</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseReport::test_to_dict_structure</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestTestCaseResult::test_to_dict_keys</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestLoadTestCases::test_load_basic</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestLoadTestCases::test_load_invalid_json_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestLoadTestCases::test_load_missing_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestLoadTestCases::test_load_missing_test_cases_key_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestLoadTestCases::test_template_is_valid</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestRunFromJson::test_resilient_connect_launches_when_not_running</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestRunFromJson::test_resilient_connect_no_auto_launch_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestRunFromJson::test_resilient_connect_uses_already_running</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestRunFromJson::test_run_passes_enabled</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestRunFromJson::test_run_records_capl_reference</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_config_and_report.py::TestRunFromJson::test_run_skips_disabled</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConfig::test_settings_defaults</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConnection::test_auto_detect_no_dirs_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConnection::test_launch_with_cmm_script</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConnection::test_launch_without_cmm_script</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConnection::test_parse_config_port</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConnection::test_parse_config_port_missing</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConnection::test_t32connection_cmm_entry_script_stored</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConnection::test_t32connection_context_manager_disconnects</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConnection::test_t32connection_not_connected_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConnection::test_try_connect_failure_returns_false</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestConnection::test_try_connect_success</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_break_execution</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_get_pp_register</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_get_state</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_go_no_op_when_running</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_go_sends_go_when_halted</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_go_up</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_is_running_false</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_is_running_true</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_no_default_connection_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_reset_target</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_step_over</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_wait_for_halt_already_halted</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestDebugger::test_wait_for_halt_timeout</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_check_halted_at_intermediate_halt_exhausted_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_check_halted_at_intermediate_halt_retry</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_check_halted_at_max_gos_zero_disables_retry</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_check_halted_at_pass</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_check_halted_at_timeout_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_delete_all_breakpoints</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_delete_breakpoint</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_set_breakpoint_exhausted_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_set_breakpoint_read</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_set_breakpoint_retries_on_exception</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_set_breakpoint_success</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestBreakpoints::test_set_breakpoint_write</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestVariables::test_check_array_element</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestVariables::test_check_variable_fail_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestVariables::test_check_variable_pass</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestVariables::test_check_variable_until_success</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestVariables::test_check_variable_until_timeout_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestVariables::test_read_variable</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestVariables::test_set_variable</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestRegisters::test_check_register_bit_invalid_expected</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestRegisters::test_check_register_bit_pass</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestRegisters::test_check_register_fail_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestRegisters::test_check_register_pass</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestRegisters::test_read_register</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestRegisters::test_set_register</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestSymbols::test_get_symbol_address</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestSymbols::test_get_symbol_address_not_found_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestSymbols::test_reload_symbols</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestSymbols::test_symbol_exists_false</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestSymbols::test_symbol_exists_true</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestSynchronization::test_go_raises_timeout_when_ecu_does_not_run</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestSynchronization::test_go_succeeds_when_ecu_starts_running</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestSynchronization::test_new_settings_have_correct_defaults</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestSynchronization::test_post_reset_settle_applied_after_reset</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestSynchronization::test_post_reset_settle_zero_no_extra_delay</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestRunnerGoBeforeCheck::test_go_before_check_false_does_not_issue_go</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_core.py::TestRunnerGoBeforeCheck::test_go_before_check_issues_go_then_reads_variable</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_01_can_rx_init_min_msg_len_cana_can2</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_02_can_rx_init_canb_can8</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_03_can_rx_init_cana_and_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_04_can_rx_init_min_msg_len_canb_can8</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_05_can_rx_init_max_msg_len_canb_can8</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_06_can_rx_init_max_msg_len_cana_can2</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_07_can_rx_init_extended_id_cana_can2</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_08_can_rx_init_extended_id_canb_can8</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_09_can_rx_init_standard_id_cana_can2</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_10_can_rx_init_standard_id_canb_can8</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_11_canwrt_tx_max_msg_len_canb_can8</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_12_canwrt_tx_max_msg_len_cana_can2</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_13_canwrt_tx_success_cana_can2</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_14_canwrt_tx_min_msg_len_cana_can2</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_15_canif_tx_confirmation_standard_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_16_canif_tx_confirmation_standard_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_17_canwrt_tx_success_canb_can8</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_18_canwrt_tx_success_cana_and_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_19_canwrt_tx_min_msg_len_canb_can8</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_20_can_controller_mode_stop_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_21_can_controller_mode_stop_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_22_can_controller_mode_invalid_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_23_can_controller_mode_invalid_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_24_can_controller_mode_start_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_25_can_controller_mode_start_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_26_can_controller_mode_sleep_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_27_can_controller_mode_start_after_sleep_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_28_can_controller_mode_wakeup_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_29_can_controller_mode_start_after_wakeup_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_30_can_main_mode_stop_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_31_can_main_mode_start_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_32_can_main_read_rx_callback_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_33_can_main_read_rx_callback_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_34_can_trcv_op_mode_normal_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_35_can_trcv_op_mode_sleep_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_36_can_trcv_op_mode_standby_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_37_can_trcv_op_mode_listen_only_cana</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_38_can_trcv_op_mode_normal_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_39_can_trcv_op_mode_sleep_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_40_can_trcv_op_mode_standby_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_41_can_trcv_op_mode_listen_only_canb</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_42_canwrt_disabled_channel_no_tx</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_43_can_trcv_initialize_cana_can2</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_44_can_rx_init_cana_post_trcv_init</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_45_can_trcv_initialize_cana_negative_wrong_canid</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_46_can_trcv_initialize_canb_can8</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_47_can_trcv_initialize_canb_negative_wrong_canid</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_48_can_trcv_main_canb_can8</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_49_can_trcv_main_cana_can2</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup1CAN::test_tc1_50_can_main_bus_off_cana_can2</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup2Battery::test_tc2_01_battery_disconnected_status_returns_1</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup2Battery::test_tc2_02_battery_disconnect_status_retained</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup3Wakeup::test_tc3_01_last_wakeup_event_zero</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup3Wakeup::test_tc3_02_wakeup_can_bus_a_llsi</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup3Wakeup::test_tc3_03_wakeup_can_bus_a_event_detected</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup3Wakeup::test_tc3_04_wakeup_can_bus_a_error_frame_count</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup3Wakeup::test_tc3_05_wakeup_can_bus_b_ecu_timeout_then_retry_pass</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup4ConfigReg::test_tc4_01_failed_register_id_default_power_up</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup4ConfigReg::test_tc4_02_failed_bit_id_default_power_up</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup4ConfigReg::test_tc4_03_failed_register_recover_status_default_power_up</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup4ConfigReg::test_tc4_04_config_reg_test_status_returns_1_when_pass</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup4ConfigReg::test_tc4_05_failed_reg_id_zero_when_no_failures</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup4ConfigReg::test_tc4_06_failed_bit_id_zero_when_no_failures</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup4ConfigReg::test_tc4_07_failed_reg_recov_st_zero_on_success</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup5LockStep::test_tc5_01_lockstep_no_lockstep_status_core6</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup6SPDeviceSupport::test_tc6_01_csm_random_number_generate</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup6SPDeviceSupport::test_tc6_02_csm_random_seed_finish</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup6SPDeviceSupport::test_tc6_03_csm_symmetric_key_wrapping_finish</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup6SPDeviceSupport::test_tc6_04_csm_symmetric_key_wrapping_update</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup6SPDeviceSupport::test_tc6_05_csm_symmetric_key_wrapping_start</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup6SPDeviceSupport::test_tc6_06_csm_symmetric_key_extract_finish</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_sanity.py::TestSanityGroup6SPDeviceSupport::test_tc6_07_csm_mac_verify_finish</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestExceptions::test_breakpoint_not_reached_message</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestExceptions::test_command_error_message</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestExceptions::test_exception_hierarchy</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestExceptions::test_symbol_error_message</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestLogger::test_configure_logger_no_duplicate_handlers</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestLogger::test_get_logger_returns_logger</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestRetry::test_poll_until_timeout_raises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestRetry::test_poll_until_timeout_returns_false</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestRetry::test_poll_until_true_after_delay</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestRetry::test_poll_until_true_immediately</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestRetry::test_retry_exhausts_and_reraises</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestRetry::test_retry_retries_on_exception</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+<tr><td style="font-family:monospace;font-size:0.82em">GM_VIP_Automation_Framework/tests/test_utils.py::TestRetry::test_retry_succeeds_on_first_attempt</td><td><span style="color:#28a745;font-weight:bold">PASS</span></td></tr>
+</tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    GM VIP Automation Framework &middot; T32 Sanity Suite &middot; 2026-03-18T17:56:04
+  </div>
+</body>
+</html>

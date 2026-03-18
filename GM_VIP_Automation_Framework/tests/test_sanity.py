@@ -1501,4 +1501,13 @@ class TestSanityGroup6SPDeviceSupport(_SanityBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    from GM_VIP_Automation_Framework.html_report import SanityHtmlRunner
+    _mode = "LIVE" if USE_LIVE_T32 else "MOCK"
+    unittest.main(
+        testRunner=SanityHtmlRunner(
+            suite_name="GM_VIP_Sanity",
+            mode=_mode,
+            verbosity=2,
+        ),
+        exit=True,
+    )

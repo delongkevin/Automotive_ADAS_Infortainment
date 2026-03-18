@@ -262,11 +262,31 @@ class TestTestCaseReport(unittest.TestCase):
         with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False) as f:
             tmp = f.name
         try:
-            r.save_html(tmp)
+            # show_pass=True: PASS entries are rendered in the body.
+            r.save_html(tmp, show_pass=True)
             content = Path(tmp).read_text(encoding="utf-8")
             self.assertIn("<!DOCTYPE html>", content)
             self.assertIn("TC1", content)
             self.assertIn("PASS", content)
+        finally:
+            os.unlink(tmp)
+
+    def test_save_html_omits_pass_by_default(self):
+        """By default (show_pass=False) PASS entries are excluded from the detail section."""
+        r = self._report()
+        r.begin_test_case("TC1")
+        r.pass_test_case()
+        with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False) as f:
+            tmp = f.name
+        try:
+            r.save_html(tmp)  # show_pass=False (default)
+            content = Path(tmp).read_text(encoding="utf-8")
+            self.assertIn("<!DOCTYPE html>", content)
+            # Summary stats must still contain "PASS" count.
+            self.assertIn("PASS", content)
+            # TC1 must NOT appear in the detail section (omitted for PASS).
+            # The detail block would contain the name in a <summary> element.
+            self.assertNotIn("<summary", content.split("Test Case Details")[-1].split("Full")[0] if "Full" in content else content)
         finally:
             os.unlink(tmp)
 

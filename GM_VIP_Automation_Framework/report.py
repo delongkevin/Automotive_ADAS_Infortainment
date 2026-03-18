@@ -276,15 +276,21 @@ class TestCaseReport:
             encoding="utf-8",
         )
 
-    def save_html(self, path: str) -> None:
+    def save_html(self, path: str, show_pass: bool = False) -> None:
         """Write the report as a self-contained HTML file.
 
         Parameters
         ----------
         path:
             Destination file path.
+        show_pass:
+            When ``True``, PASS test cases are rendered with a collapsed
+            ``<details>`` block in the body.  When ``False`` (default) PASS
+            entries are intentionally omitted from the detail section so the
+            report focuses on actionable failures; they still appear in the
+            summary statistics at the top.
         """
-        Path(path).write_text(_render_html(self), encoding="utf-8")
+        Path(path).write_text(_render_html(self, show_pass=show_pass), encoding="utf-8")
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -317,8 +323,18 @@ def _now() -> str:
 # HTML renderer
 # ---------------------------------------------------------------------------
 
-def _render_html(report: TestCaseReport) -> str:
-    """Produce a self-contained HTML report string."""
+def _render_html(report: TestCaseReport, show_pass: bool = False) -> str:
+    """Produce a self-contained HTML report string.
+
+    Parameters
+    ----------
+    report:
+        Completed :class:`TestCaseReport`.
+    show_pass:
+        When ``True``, PASS test cases are included in the detail section
+        (collapsed).  When ``False`` (default) PASS entries are omitted from
+        the detail section so the report focuses on actionable failures.
+    """
 
     def _badge(status: str) -> str:
         colour = {"PASS": "#28a745", "FAIL": "#dc3545", "ERROR": "#fd7e14"}.get(
@@ -347,22 +363,75 @@ def _render_html(report: TestCaseReport) -> str:
         th = "".join(f"<th>{h}</th>" for h in headers)
         return f"<table border='1' cellpadding='4'><tr>{th}</tr>{rows}</table>"
 
+    # Unknown-symbol diagnostic keywords (lower-case for comparison).
+    _UNKNOWN_SYM_KW = (
+        "t32symbolerror", "symbol not found", "unknown symbol",
+        "symbolerror", "symbol.exist",
+    )
+    _TIMEOUT_KW = (
+        "t32timeouterror", "timeout", "timed out",
+        "did not halt", "did not reach",
+    )
+
+    def _diag_banners(msg: str) -> str:
+        low = msg.lower()
+        parts = []
+        if any(k in low for k in _UNKNOWN_SYM_KW):
+            parts.append(
+                "<p style='background:#fff3cd;border-left:4px solid #ffc107;"
+                "padding:6px 10px;margin:4px 0;border-radius:0 4px 4px 0'>"
+                "⚠️ <strong>Unknown / unresolved T32 symbol detected</strong> – "
+                "verify the ELF is loaded and the symbol name is correct.</p>"
+            )
+        if any(k in low for k in _TIMEOUT_KW):
+            parts.append(
+                "<p style='background:#cce5ff;border-left:4px solid #004085;"
+                "padding:6px 10px;margin:4px 0;border-radius:0 4px 4px 0'>"
+                "⏱️ <strong>T32 / ECU timeout detected</strong> – "
+                "check hardware connections and timing settings.</p>"
+            )
+        return "\n".join(parts)
+
+    # Build detail section: omit PASS entries unless show_pass=True.
     tcs_html = ""
+    rendered_count = 0
     for tc in report.results:
-        bp_html = _table(tc.breakpoints, ("Symbol", "Hit"))
-        var_html = _table(tc.variables, ("Symbol", "Value"))
-        sym_html = _table(tc.symbols, ("Symbol", "Exists", "Address"))
+        if tc.status == "PASS" and not show_pass:
+            continue
+        rendered_count += 1
+        bp_html  = _table(tc.breakpoints, ("Symbol", "Hit"))
+        var_html = _table(tc.variables,   ("Symbol", "Value"))
+        sym_html = _table(tc.symbols,     ("Symbol", "Exists", "Address"))
+        err_html = (
+            f"<p style='color:red;margin:4px 0'>{tc.error_message}</p>"
+            + _diag_banners(tc.error_message)
+            if tc.error_message else ""
+        )
         tcs_html += f"""
         <details {"open" if tc.status != "PASS" else ""}>
           <summary>{_badge(tc.status)} {tc.name}
             &nbsp;<small style="color:#888">{tc.started_at} → {tc.ended_at}</small>
           </summary>
-          {"<p style='color:red'>" + tc.error_message + "</p>" if tc.error_message else ""}
+          {err_html}
           <h4>Breakpoints</h4>{bp_html}
           <h4>Variables</h4>{var_html}
           <h4>Symbols</h4>{sym_html}
         </details>
         """
+
+    if rendered_count == 0:
+        tcs_html = (
+            "<p style='color:#28a745;font-size:1.05em;padding:10px;"
+            "background:#d4edda;border-radius:4px'>"
+            "✅ All tests passed – no failures or errors to report.</p>"
+        )
+
+    pass_note = (
+        "" if show_pass else
+        "<p style='color:#6c757d;font-size:0.85em'>"
+        "PASS results are omitted from this section.  "
+        "See the summary statistics above for full counts.</p>"
+    )
 
     overall_colour = "#28a745" if report.failed == 0 and report.errored == 0 else "#dc3545"
 
@@ -370,28 +439,44 @@ def _render_html(report: TestCaseReport) -> str:
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>T32 Test Report – {report.name}</title>
   <style>
-    body {{ font-family: sans-serif; margin: 20px; }}
-    table {{ border-collapse: collapse; margin-bottom: 10px; }}
+    * {{ box-sizing: border-box; }}
+    body {{ font-family: Arial, sans-serif; margin: 0; padding: 24px; color: #222; background: #f5f7fa; }}
+    .card {{ background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.10);
+             padding: 20px 28px; margin-bottom: 20px; }}
+    h1 {{ margin: 0 0 4px; font-size: 1.55em; }}
+    h2 {{ margin: 0 0 14px; font-size: 1.0em; color: #555; font-weight: normal; }}
+    h4 {{ margin: 10px 0 4px; font-size: 0.95em; }}
+    table {{ border-collapse: collapse; margin-bottom: 8px; width: 100%; }}
     th {{ background: #e9ecef; }}
-    td, th {{ padding: 4px 8px; text-align: left; }}
+    td, th {{ padding: 4px 8px; text-align: left; border: 1px solid #dee2e6; }}
     details {{ border: 1px solid #dee2e6; border-radius: 4px;
-               margin-bottom: 8px; padding: 8px; }}
-    summary {{ cursor: pointer; font-size: 1.05em; }}
+               margin-bottom: 8px; padding: 8px 12px; }}
+    summary {{ cursor: pointer; font-size: 1.0em; user-select: none; }}
+    summary:hover {{ color: #0056b3; }}
+    .footer {{ text-align: center; color: #aaa; font-size: 0.78em; margin-top: 28px; }}
   </style>
 </head>
 <body>
-  <h1>T32 Test Report</h1>
-  <h2 style="color:{overall_colour}">{report.name}</h2>
-  <p>
-    Generated: {_now()}<br>
-    Total: <strong>{report.total}</strong> &nbsp;
-    Pass: <strong style="color:#28a745">{report.passed}</strong> &nbsp;
-    Fail: <strong style="color:#dc3545">{report.failed}</strong> &nbsp;
-    Error: <strong style="color:#fd7e14">{report.errored}</strong>
-  </p>
-  {tcs_html}
+  <div class="card">
+    <h1>🔬 T32 Test Report</h1>
+    <h2 style="color:{overall_colour};font-weight:bold">{report.name}</h2>
+    <p>
+      Generated: {_now()}<br>
+      Total: <strong>{report.total}</strong> &nbsp;
+      Pass: <strong style="color:#28a745">{report.passed}</strong> &nbsp;
+      Fail: <strong style="color:#dc3545">{report.failed}</strong> &nbsp;
+      Error: <strong style="color:#fd7e14">{report.errored}</strong>
+    </p>
+  </div>
+  <div class="card">
+    <h2>Test Case Details</h2>
+    {pass_note}
+    {tcs_html}
+  </div>
+  <div class="footer">GM VIP Automation Framework &middot; {_now()}</div>
 </body>
 </html>
 """
