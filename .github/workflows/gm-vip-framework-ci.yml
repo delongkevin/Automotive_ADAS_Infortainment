@@ -1,0 +1,139 @@
+# =============================================================================
+# GM VIP Automation Framework – Python CI
+# =============================================================================
+#
+# Triggered on every push and pull request that touches the Python framework
+# or this workflow file itself.
+#
+# What runs here (no bench hardware required):
+#   1. Syntax & Lint  – py_compile + flake8
+#        Catches Python syntax errors and undefined-name / import errors
+#        across every .py file in GM_VIP_Automation_Framework/.
+#        Only fatal error codes are enforced (E9xx, F821-F823) so that
+#        stylistic warnings do not block the pipeline.
+#
+#   2. Unit Tests     – pytest
+#        Runs the full GM_VIP_Automation_Framework/tests/ suite.
+#        All Trace32 API calls are mocked; no Lauterbach hardware or
+#        lauterbach.trace32.rcl library installation is required.
+#        Includes the 72-test sanity suite (test_sanity.py) that mirrors
+#        the executed entries in Sanity_report.html.
+#
+# Bench-only stages (connecting to real Trace32 hardware) require a
+# self-hosted runner with a physical ECU and are out of scope here.
+# =============================================================================
+
+name: GM VIP Framework Python CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'fix/**'
+      - 'copilot/**'
+    paths:
+      - 'GM_VIP_Automation_Framework/**'
+      - 'setup.py'
+      - '.github/workflows/gm-vip-framework-ci.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'GM_VIP_Automation_Framework/**'
+      - 'setup.py'
+      - '.github/workflows/gm-vip-framework-ci.yml'
+
+# Restrict default token permissions to read-only for the whole workflow.
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1 – Python Syntax & Lint
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Python Syntax & Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install flake8
+        run: pip install --upgrade pip flake8
+
+      - name: Syntax-check all framework Python files (py_compile)
+        # py_compile catches pure syntax errors without needing to install
+        # the lauterbach.trace32.rcl library or any other runtime dependency.
+        run: |
+          echo "Running py_compile on all GM_VIP_Automation_Framework .py files..."
+          find GM_VIP_Automation_Framework -name "*.py" -print0 \
+            | xargs -0 python -m py_compile
+          echo "All files passed syntax check."
+
+      - name: Lint – fatal errors only (flake8 E9xx / F8xx)
+        # Enforces only error classes that indicate broken code:
+        #   E9xx – syntax errors caught at tokenise / parse time
+        #   F821 – undefined name
+        #   F822 – undefined name in __all__
+        #   F823 – local variable referenced before assignment
+        # Style / convention warnings (E1xx–E7xx, W) are intentionally
+        # excluded so the pipeline is not noisy for formatting differences.
+        run: |
+          python -m flake8 GM_VIP_Automation_Framework/ \
+            --count \
+            --select=E9,F821,F822,F823 \
+            --show-source \
+            --statistics
+          echo "Lint passed."
+
+  # ---------------------------------------------------------------------------
+  # Job 2 – Unit Tests (pytest)
+  # ---------------------------------------------------------------------------
+  test:
+    name: Unit Tests (pytest)
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pytest
+        run: pip install --upgrade pip pytest
+
+      - name: Run GM VIP Framework unit tests
+        # conftest.py stubs lauterbach.trace32.rcl so no hardware is needed.
+        # test_sanity.py adds its own sys.path bootstrap so it can also be
+        # run directly from IDLE or any working directory.
+        run: |
+          python -m pytest GM_VIP_Automation_Framework/tests/ \
+            --tb=short \
+            -q
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## GM VIP Framework – Python CI" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Stage  | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|--------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Syntax & Lint | ${{ needs.lint.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Unit Tests    | ${{ job.status }} |" >> "$GITHUB_STEP_SUMMARY"

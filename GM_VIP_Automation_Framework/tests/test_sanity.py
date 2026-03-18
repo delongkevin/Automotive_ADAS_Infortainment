@@ -21,6 +21,27 @@ Test groups (matching the report):
     5. LockStep          –  1 executed test  (pass)
     6. SP_Device_Support –  7 executed tests (all pass)
 
+Running this file
+-----------------
+From pytest (recommended – run from any directory)::
+
+    pytest GM_VIP_Automation_Framework/tests/test_sanity.py
+
+From IDLE or the terminal (no pytest needed)::
+
+    python path/to/GM_VIP_Automation_Framework/tests/test_sanity.py
+
+    # Or with verbose output:
+    python path/to/GM_VIP_Automation_Framework/tests/test_sanity.py -v
+
+The file is self-contained: it locates the repo root via ``__file__`` and
+inserts it onto ``sys.path`` automatically, so no ``PYTHONPATH`` environment
+variable or ``pip install`` is required.
+
+Alternatively, install the framework as an editable package once::
+
+    pip install -e path/to/repo   # then run from anywhere
+
 Argument-order conventions (matching the framework API):
     _bp.set_breakpoint("addr", conn)
     _bp.check_halted_at("addr", connection=conn)
@@ -35,10 +56,23 @@ Argument-order conventions (matching the framework API):
     _var.check_variable("sym", expected, conn)
 """
 
+import os
 import re
 import sys
 import unittest
 from unittest.mock import MagicMock
+
+# ---------------------------------------------------------------------------
+# Path bootstrap – makes the file runnable from IDLE or any working directory.
+#
+# Layout:  <repo_root>/GM_VIP_Automation_Framework/tests/test_sanity.py
+# We need <repo_root> on sys.path so that
+#   "import GM_VIP_Automation_Framework"  resolves correctly.
+# ---------------------------------------------------------------------------
+_HERE = os.path.dirname(os.path.abspath(__file__))          # .../tests/
+_REPO_ROOT = os.path.abspath(os.path.join(_HERE, "..", ".."))  # <repo_root>
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 
 # ---------------------------------------------------------------------------
 # Stub out lauterbach.trace32.rcl before any framework import
