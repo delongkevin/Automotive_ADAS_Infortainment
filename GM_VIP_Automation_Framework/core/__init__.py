@@ -53,6 +53,9 @@ from .cmm import (
     run_cmm_script,
     check_cmm_script_result,
 )
+from .can_bus import CANBusClient, CANBusError, CANFrame
+from .canoe import CANoeClient, CANoeError
+from .power_supply import BKPrecision1687B, PowerSupplyError
 
 __all__ = [
     # connection
@@ -105,4 +108,14 @@ __all__ = [
     "run_cmm_command",
     "run_cmm_script",
     "check_cmm_script_result",
+    # CAN bus (direct python-can interface)
+    "CANBusClient",
+    "CANBusError",
+    "CANFrame",
+    # Vector CANoe COM interface
+    "CANoeClient",
+    "CANoeError",
+    # BK Precision 1687B power supply
+    "BKPrecision1687B",
+    "PowerSupplyError",
 ]

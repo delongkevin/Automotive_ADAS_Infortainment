@@ -9,6 +9,9 @@ GM_VIP_Automation/Test Reports/*.html
 STLA_SWTest/Test Reports/simulation/
 STLA_SWTest/Test Reports/*.html
 
+# GM_VIP_Automation_Framework auto-generated HTML reports
+GM_VIP_Automation_Framework/Test_Report/
+
 # Local e-mail configuration – never commit real credentials
 OEM/GM_VIP_Automation/.env
 GM_VIP_Automation/.env

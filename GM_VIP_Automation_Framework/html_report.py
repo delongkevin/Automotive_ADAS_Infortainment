@@ -214,7 +214,7 @@ def render_html(
     overall_label  = "✅ OVERALL: PASS" if overall_ok else "❌ OVERALL: FAIL"
 
     # --- Detail section (FAIL + ERROR only) --------------------------------
-    non_pass = [(n, s, d) for n, s, d in results if s not in ("PASS",)]
+    non_pass = [(n, s, d) for n, s, d in results if s != "PASS"]
     if non_pass:
         detail_blocks: List[str] = []
         for name, status, detail in non_pass:

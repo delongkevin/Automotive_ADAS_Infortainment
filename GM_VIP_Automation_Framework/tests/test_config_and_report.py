@@ -282,11 +282,12 @@ class TestTestCaseReport(unittest.TestCase):
             r.save_html(tmp)  # show_pass=False (default)
             content = Path(tmp).read_text(encoding="utf-8")
             self.assertIn("<!DOCTYPE html>", content)
-            # Summary stats must still contain "PASS" count.
+            # Summary stats must still contain "PASS" count text.
             self.assertIn("PASS", content)
-            # TC1 must NOT appear in the detail section (omitted for PASS).
-            # The detail block would contain the name in a <summary> element.
-            self.assertNotIn("<summary", content.split("Test Case Details")[-1].split("Full")[0] if "Full" in content else content)
+            # The all-passed banner should be shown (no failure detail blocks).
+            self.assertIn("All tests passed", content)
+            # TC1 should not appear inside a <details> block (PASS entries are omitted).
+            self.assertNotIn("<details", content)
         finally:
             os.unlink(tmp)
 
