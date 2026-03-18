@@ -160,12 +160,14 @@ class T32Connection:
         exe_path: Optional[str] = None,
         config_path: Optional[str] = None,
         port: Optional[int] = None,
+        packlen: Optional[int] = None,
         protocol: Optional[str] = None,
         cmm_entry_script: Optional[str] = None,
     ) -> None:
         self._exe_path = exe_path or settings.t32_exe_path
         self._config_path = config_path or settings.t32_config_path
         self._port = port or settings.rcl_port
+        self._packlen = packlen if packlen is not None else settings.rcl_packlen
         self._protocol = protocol or settings.rcl_protocol
         self._cmm_entry_script = cmm_entry_script if cmm_entry_script is not None else settings.cmm_entry_script
 
@@ -237,6 +239,7 @@ class T32Connection:
     def connect(
         self,
         port: Optional[int] = None,
+        packlen: Optional[int] = None,
         protocol: Optional[str] = None,
         timeout_s: Optional[float] = None,
         max_wait_s: Optional[float] = None,
@@ -251,6 +254,8 @@ class T32Connection:
         ----------
         port:
             Override the port number for this call.
+        packlen:
+            Override the RCL packet length for this call.
         protocol:
             Override the protocol (``"UDP"`` or ``"TCP"``) for this call.
         timeout_s:
@@ -264,12 +269,13 @@ class T32Connection:
             If Trace32 does not accept the connection within *max_wait_s*.
         """
         p = port or self._port
+        pk = packlen if packlen is not None else self._packlen
         proto = protocol or self._protocol
         tmo = timeout_s or settings.rcl_timeout_s
         wait = max_wait_s or settings.connect_max_wait_s
 
         logger.info(
-            "Connecting to T32 on %s port %d (max_wait=%.1fs)…", proto, p, wait
+            "Connecting to T32 on %s port %d packlen %d (max_wait=%.1fs)…", proto, p, pk, wait
         )
 
         deadline = time.monotonic() + wait
@@ -278,7 +284,7 @@ class T32Connection:
         while time.monotonic() < deadline:
             try:
                 import lauterbach.trace32.rcl as pyrcl  # lazy import
-                self.debugger = pyrcl.connect(port=p, protocol=proto, timeout=tmo)
+                self.debugger = pyrcl.connect(port=p, packlen=pk, protocol=proto, timeout=tmo)
                 self._connected = True
                 logger.info("Connected to Trace32 on port %d.", p)
                 return
@@ -294,6 +300,7 @@ class T32Connection:
     def try_connect(
         self,
         port: Optional[int] = None,
+        packlen: Optional[int] = None,
         protocol: Optional[str] = None,
         timeout_s: Optional[float] = None,
     ) -> bool:
@@ -313,6 +320,8 @@ class T32Connection:
         ----------
         port:
             Override the port number for this call.
+        packlen:
+            Override the RCL packet length for this call.
         protocol:
             Override the protocol (``"UDP"`` or ``"TCP"``) for this call.
         timeout_s:
@@ -325,15 +334,17 @@ class T32Connection:
             ``False`` otherwise.
         """
         p = port or self._port
+        pk = packlen if packlen is not None else self._packlen
         proto = protocol or self._protocol
         tmo = timeout_s or settings.rcl_timeout_s
 
         logger.debug(
-            "Probing for running T32 on %s port %d (timeout=%.1fs)…", proto, p, tmo
+            "Probing for running T32 on %s port %d packlen %d (timeout=%.1fs)…",
+            proto, p, pk, tmo,
         )
         try:
             import lauterbach.trace32.rcl as pyrcl  # lazy import
-            self.debugger = pyrcl.connect(port=p, protocol=proto, timeout=tmo)
+            self.debugger = pyrcl.connect(port=p, packlen=pk, protocol=proto, timeout=tmo)
             self._connected = True
             logger.info("Connected to already-running Trace32 on port %d.", p)
             return True
@@ -434,6 +445,7 @@ def connect(
     exe_path: Optional[str] = None,
     config_path: Optional[str] = None,
     port: Optional[int] = None,
+    packlen: Optional[int] = None,
     protocol: Optional[str] = None,
     auto_launch: bool = False,
     cmm_entry_script: Optional[str] = None,
@@ -450,6 +462,8 @@ def connect(
         Path to the T32 config file (used when *auto_launch* is ``True``).
     port:
         RCL port number.
+    packlen:
+        RCL packet length in bytes (default: :attr:`~T32Settings.rcl_packlen`).
     protocol:
         RCL protocol (``"UDP"`` or ``"TCP"``).
     auto_launch:
@@ -474,6 +488,7 @@ def connect(
         exe_path=exe_path,
         config_path=config_path,
         port=port,
+        packlen=packlen,
         protocol=protocol,
         cmm_entry_script=cmm_entry_script,
     )
