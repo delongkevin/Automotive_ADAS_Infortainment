@@ -331,19 +331,31 @@ def run_from_json(
     )
 
     if resilient_connect:
-        # Try to connect to a running instance first.
-        if not conn.try_connect():
-            if auto_launch:
-                conn.launch()
-            else:
-                from .utils.exceptions import T32ConnectionError
-                raise T32ConnectionError(
-                    f"No running Trace32 found on port {settings.rcl_port}. "
-                    "Start Trace32 manually (your *.cmm script can open the API "
-                    "port), or set auto_launch=True to have the framework launch "
-                    "Trace32 automatically."
-                )
+        # Default behaviour: probe the port first.  If Trace32 is already
+        # running we reuse it and skip the launch entirely.
+        if conn.try_connect():
+            print(
+                f"[GM_VIP] Trace32 detected on port {settings.rcl_port} "
+                "– connecting to existing instance."
+            )
+        elif auto_launch:
+            print(
+                f"[GM_VIP] Trace32 not found on port {settings.rcl_port} "
+                "– launching automatically …"
+            )
+            conn.launch()
+        else:
+            from .utils.exceptions import T32ConnectionError
+            raise T32ConnectionError(
+                f"No running Trace32 found on port {settings.rcl_port}. "
+                "Start Trace32 manually (your *.cmm script can open the API "
+                "port), or pass auto_launch=True / use --auto-launch to have "
+                "the framework launch Trace32 automatically."
+            )
     elif auto_launch:
+        print(
+            f"[GM_VIP] Launching Trace32 on port {settings.rcl_port} …"
+        )
         conn.launch()
 
     with conn:

@@ -687,5 +687,203 @@ class TestRunAllDiscovered(unittest.TestCase):
             self.assertEqual(results["beta"].total, 1)
 
 
+# ---------------------------------------------------------------------------
+# main._ensure_t32_running
+# ---------------------------------------------------------------------------
+
+class TestEnsureT32Running(unittest.TestCase):
+    """Tests for main._ensure_t32_running (mocked T32Connection)."""
+
+    def _mock_conn_cls(self, try_connect_returns: bool):
+        """Return a mock T32Connection class whose try_connect returns a fixed value."""
+        conn = MagicMock()
+        conn.try_connect.return_value = try_connect_returns
+        conn.disconnect.return_value = None
+        cls = MagicMock(return_value=conn)
+        return cls, conn
+
+    def test_already_running_returns_immediately(self):
+        """When T32 is already open, _ensure_t32_running should detect and return."""
+        import sys as _sys
+        # Ensure main module can be imported (repo root on path).
+        framework_dir = Path(__file__).parent.parent
+        repo_root = framework_dir.parent
+        if str(repo_root) not in _sys.path:
+            _sys.path.insert(0, str(repo_root))
+        import importlib
+        main_mod = importlib.import_module("GM_VIP_Automation_Framework.main")
+
+        mock_cls, mock_conn = self._mock_conn_cls(try_connect_returns=True)
+        with patch(
+            "GM_VIP_Automation_Framework.core.connection.T32Connection", mock_cls,
+        ):
+            # Should not raise.
+            main_mod._ensure_t32_running(auto_launch=False)
+        mock_conn.disconnect.assert_called_once()
+        mock_conn.launch.assert_not_called()
+
+    def test_not_running_no_auto_launch_raises(self):
+        """When T32 is not open and auto_launch=False, must raise T32ConnectionError."""
+        import importlib
+        main_mod = importlib.import_module("GM_VIP_Automation_Framework.main")
+        from GM_VIP_Automation_Framework.utils.exceptions import T32ConnectionError
+
+        mock_cls, mock_conn = self._mock_conn_cls(try_connect_returns=False)
+        with patch(
+            "GM_VIP_Automation_Framework.core.connection.T32Connection", mock_cls,
+        ):
+            with self.assertRaises(T32ConnectionError):
+                main_mod._ensure_t32_running(auto_launch=False)
+        mock_conn.launch.assert_not_called()
+
+    def test_not_running_auto_launch_launches_and_waits(self):
+        """When auto_launch=True and T32 is not open, must launch then poll."""
+        import importlib
+        main_mod = importlib.import_module("GM_VIP_Automation_Framework.main")
+        from GM_VIP_Automation_Framework.config import settings
+
+        # First call (initial probe) → False; second call (post-launch poll) → True.
+        conn = MagicMock()
+        conn.try_connect.side_effect = [False, True]
+        conn.disconnect.return_value = None
+        mock_cls = MagicMock(return_value=conn)
+
+        with (
+            patch("GM_VIP_Automation_Framework.core.connection.T32Connection", mock_cls),
+            patch("GM_VIP_Automation_Framework.main._time.monotonic",
+                  side_effect=[0.0, 0.5, settings.connect_max_wait_s + 1]),
+            patch("GM_VIP_Automation_Framework.main._time.sleep"),
+        ):
+            main_mod._ensure_t32_running(auto_launch=True)
+
+        conn.launch.assert_called_once()
+        conn.disconnect.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# main argument wiring: --mode and --auto-launch
+# ---------------------------------------------------------------------------
+
+class TestMainArgWiring(unittest.TestCase):
+    """Smoke tests that verify argparse wiring in main.main()."""
+
+    def _import_main(self):
+        import importlib
+        return importlib.import_module("GM_VIP_Automation_Framework.main")
+
+    def test_mode_default_is_mock(self):
+        main_mod = self._import_main()
+        parser = main_mod._build_parser()
+        args = parser.parse_args(["--suite", "test_sanity"])
+        self.assertEqual(args.mode, "mock")
+
+    def test_mode_live_parsed(self):
+        main_mod = self._import_main()
+        parser = main_mod._build_parser()
+        args = parser.parse_args(["--suite", "test_sanity", "--mode", "live"])
+        self.assertEqual(args.mode, "live")
+
+    def test_auto_launch_default_false(self):
+        main_mod = self._import_main()
+        parser = main_mod._build_parser()
+        args = parser.parse_args(["--json", "sanity"])
+        self.assertFalse(args.auto_launch)
+
+    def test_auto_launch_flag_sets_true(self):
+        main_mod = self._import_main()
+        parser = main_mod._build_parser()
+        args = parser.parse_args(["--json", "sanity", "--auto-launch"])
+        self.assertTrue(args.auto_launch)
+
+    def test_cmm_script_default_none(self):
+        main_mod = self._import_main()
+        parser = main_mod._build_parser()
+        args = parser.parse_args(["--json", "sanity"])
+        self.assertIsNone(args.cmm_script)
+
+    def test_cmm_script_parsed(self):
+        main_mod = self._import_main()
+        parser = main_mod._build_parser()
+        args = parser.parse_args(["--json", "sanity", "--cmm", r"C:\my\script.cmm"])
+        self.assertEqual(args.cmm_script, r"C:\my\script.cmm")
+
+    def test_main_list_exits_cleanly(self):
+        main_mod = self._import_main()
+        # Should not raise.
+        main_mod.main(["--list"])
+
+    def test_main_no_args_exits_cleanly(self):
+        main_mod = self._import_main()
+        main_mod.main([])
+
+    def test_main_suite_mock_runs_sanity(self):
+        """--suite test_sanity --mode mock must complete all 72 tests."""
+        main_mod = self._import_main()
+        result = main_mod._run_python_suite(
+            Path(__file__).parent / "test_sanity.py",
+            mode="mock",
+        )
+        self.assertEqual(result.testsRun, 72)
+        self.assertEqual(len(result.failures) + len(result.errors), 0)
+
+    def test_runner_resilient_connect_prints_status(self):
+        """run_from_json with resilient_connect=True should print detection status."""
+        import io
+        from GM_VIP_Automation_Framework import runner as r
+
+        tcs = [{"name": "TC1", "enabled": True, "reset_before": False,
+                "breakpoints": [], "variables_write": {},
+                "variables_check": {}, "symbols_inspect": []}]
+        path = tempfile.NamedTemporaryFile(
+            "w", suffix=".json", delete=False
+        )
+        json.dump({"test_suite": "S", "test_cases": tcs}, path)
+        path.close()
+
+        conn = MagicMock()
+        conn.is_connected.return_value = True
+        conn.__enter__ = lambda s: s
+        conn.__exit__ = MagicMock(return_value=False)
+        conn.try_connect.return_value = True  # T32 is "already running"
+
+        def _fnc(expr):
+            if "STATE.RUN" in expr:
+                return "FALSE()"
+            if "SYMBOL.EXIST" in expr:
+                return "TRUE()"
+            if "ADDRESS.OFFSET" in expr:
+                return "0x80001234"
+            if "VAR.VALUE" in expr:
+                return "42"
+            return "0"
+
+        conn.fnc.side_effect = _fnc
+        conn.cmd.return_value = None
+
+        captured = io.StringIO()
+        with tempfile.TemporaryDirectory() as tmp:
+            report_json = os.path.join(tmp, "rw.json")
+            report_html = os.path.join(tmp, "rw.html")
+            try:
+                with (
+                    patch("GM_VIP_Automation_Framework.runner.t32.T32Connection",
+                          return_value=conn),
+                    patch("GM_VIP_Automation_Framework.runner.settings.load_from_json"),
+                    patch("sys.stdout", captured),
+                ):
+                    r.run_from_json(
+                        path.name,
+                        config_json_path="",
+                        resilient_connect=True,
+                        report_json=report_json,
+                        report_html=report_html,
+                    )
+            finally:
+                os.unlink(path.name)
+
+        output = captured.getvalue()
+        self.assertIn("detected", output.lower())
+
+
 if __name__ == "__main__":
     unittest.main()
