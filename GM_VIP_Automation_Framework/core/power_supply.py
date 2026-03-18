@@ -37,9 +37,9 @@ Key commands
 +------------------+--------------------------------------------+
 | ``ENDS``         | Return to local (front-panel) control      |
 +------------------+--------------------------------------------+
-| ``SOUT0``        | Disable output (output OFF)                |
+| ``SOUT0``        | Enable output (output ON)                  |
 +------------------+--------------------------------------------+
-| ``SOUT1``        | Enable output (output ON)                  |
+| ``SOUT1``        | Disable output (output OFF)                |
 +------------------+--------------------------------------------+
 | ``VOLT<V>``      | Set voltage  (e.g. ``VOLT12.00``)          |
 +------------------+--------------------------------------------+
@@ -126,6 +126,9 @@ class BKPrecision1687B:
     port:
         Serial port name.  On the test bench the supply is on **``"COM4"``**
         (Windows).  Use ``"/dev/ttyUSB0"`` style names on Linux.
+        Pass ``None`` together with ``auto_detect=True`` to let the driver
+        scan available ports for the Silicon Labs CP210x USB-to-UART adapter
+        (the chip used by this supply family).
     baudrate:
         Must match the supply's front-panel setting (default 9600).
     timeout_s:
@@ -133,10 +136,23 @@ class BKPrecision1687B:
     mock:
         When ``True``, skip all serial I/O and log operations instead.
         Useful for unit tests and CI environments that lack the hardware.
+    auto_detect:
+        When ``True``, :meth:`connect` will call :meth:`detect_port` to
+        find the first available CP210x-based serial port automatically,
+        overriding the *port* argument.
+    on_settle_s:
+        Seconds to wait after :meth:`output_on` for the ECU to fully power
+        up before T32 attempts to connect.  Mirrors the 1-second pause in
+        the reference ``Power_Supply_Control.py`` script.  Ignored in mock
+        mode.
     """
 
     # BK Precision 1687B default serial port on the test bench.
     DEFAULT_PORT = "COM4"
+
+    # USB-CDC description used by the Silicon Labs CP210x adapter (same chip
+    # that the BK Precision 1685B/1687B/1688B uses for its USB interface).
+    _USB_DESCRIPTION = "Silicon Labs CP210x USB to UART Bridge"
 
     # Fixed serial parameters (not configurable on the supply).
     _BAUDRATE    = 9600
@@ -153,12 +169,73 @@ class BKPrecision1687B:
         baudrate: int = _BAUDRATE,
         timeout_s: float = 2.0,
         mock: bool = False,
+        auto_detect: bool = False,
+        on_settle_s: float = 1.0,
     ) -> None:
-        self._port      = port
-        self._baudrate  = baudrate
-        self._timeout_s = timeout_s
-        self._mock      = mock
+        self._port       = port
+        self._baudrate   = baudrate
+        self._timeout_s  = timeout_s
+        self._mock       = mock
+        self._auto_detect = auto_detect
+        self._on_settle_s = on_settle_s
         self._ser: Optional[object] = None
+
+    # ------------------------------------------------------------------
+    # Port auto-detection
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def detect_port(cls, description: str = _USB_DESCRIPTION) -> Optional[str]:
+        """Scan available serial ports for the BK Precision USB adapter.
+
+        Mirrors the ``connectSerial()`` function in the reference
+        ``Power_Supply_Control.py`` script: iterates COM ports and returns
+        the first one whose description contains *description*.
+
+        Parameters
+        ----------
+        description:
+            Substring to match against each port's description.  Defaults
+            to ``"Silicon Labs CP210x USB to UART Bridge"``, which is the
+            USB-CDC chip used by the BK Precision 1685B/1687B/1688B family.
+
+        Returns
+        -------
+        str or None
+            The port device name (e.g. ``"COM4"`` or ``"/dev/ttyUSB0"``)
+            when found, or ``None`` when no matching port is detected.
+
+        Examples
+        --------
+        >>> port = BKPrecision1687B.detect_port()
+        >>> if port:
+        ...     print(f"Power supply found at {port}")
+        """
+        if not _SERIAL_AVAILABLE:
+            logger.warning(
+                "detect_port() requires pyserial.  "
+                "Install with:  pip install pyserial"
+            )
+            return None
+
+        try:
+            import serial.tools.list_ports as _list_ports
+            for port_info in _list_ports.comports():
+                if port_info.description and description in port_info.description:
+                    logger.info(
+                        "Found power supply at %s (%s).",
+                        port_info.device, port_info.description,
+                    )
+                    return port_info.device
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Port scan failed: %s", exc)
+
+        logger.warning(
+            "No port found matching description %r. "
+            "Check USB connection and driver installation.",
+            description,
+        )
+        return None
 
     # ------------------------------------------------------------------
     # Context manager
@@ -183,10 +260,14 @@ class BKPrecision1687B:
     def connect(self) -> None:
         """Open the serial port and enter remote-control mode.
 
+        When *auto_detect* is ``True`` (set in :meth:`__init__`), the method
+        first calls :meth:`detect_port` to locate the supply automatically.
+
         Raises
         ------
         PowerSupplyError
-            When ``pyserial`` is not installed, or the port cannot be opened.
+            When ``pyserial`` is not installed, the port cannot be opened,
+            or auto-detection fails to find a matching port.
         """
         if self._mock:
             logger.info("[MOCK] BKPrecision1687B.connect() – port=%s.", self._port)
@@ -196,6 +277,16 @@ class BKPrecision1687B:
             raise PowerSupplyError(
                 "pyserial is not installed.  Run:  pip install pyserial  then retry."
             )
+
+        if self._auto_detect:
+            found = self.detect_port()
+            if found is None:
+                raise PowerSupplyError(
+                    "Auto-detect failed: no Silicon Labs CP210x USB-to-UART adapter "
+                    "found.  Connect the BK Precision supply via USB and ensure the "
+                    "CP210x driver is installed, or specify the port explicitly."
+                )
+            self._port = found
 
         logger.info(
             "Opening serial port %s at %d baud for BK Precision 1687B.",
@@ -244,27 +335,45 @@ class BKPrecision1687B:
     # Output control
     # ------------------------------------------------------------------
 
-    def output_on(self) -> None:
-        """Enable the supply output (SOUT1).
+    def output_on(self, settle_s: Optional[float] = None) -> None:
+        """Enable the supply output (SOUT0).
+
+        After enabling the output the method waits *settle_s* seconds (default:
+        the ``on_settle_s`` value set in :meth:`__init__`, which defaults to
+        ``1.0 s``) so that the ECU has fully powered up before Trace32 attempts
+        to connect or reset the target.  This mirrors the ``time.sleep(1)``
+        used in the reference ``Power_Supply_Control.py`` script.
+
+        Set *settle_s* to ``0.0`` when calling from :meth:`power_cycle` or
+        :meth:`safe_startup` where the caller manages its own settle timing.
+
+        Parameters
+        ----------
+        settle_s:
+            Override the per-instance ``on_settle_s`` for this call only.
+            ``None`` (default) uses the value configured at construction time.
 
         Raises
         ------
         PowerSupplyError
             If the command is rejected by the supply.
         """
-        logger.info("PSU output ON.")
-        self._cmd("SOUT1")
+        delay = self._on_settle_s if settle_s is None else settle_s
+        logger.info("PSU output ON (SOUT0); settle=%.1f s.", delay)
+        self._cmd("SOUT0")   # SOUT0 = output ON  (SOUT1 = output OFF)
+        if not self._mock and delay > 0:
+            time.sleep(delay)
 
     def output_off(self) -> None:
-        """Disable the supply output (SOUT0).
+        """Disable the supply output (SOUT1).
 
         Raises
         ------
         PowerSupplyError
             If the command is rejected by the supply.
         """
-        logger.info("PSU output OFF.")
-        self._cmd("SOUT0")
+        logger.info("PSU output OFF (SOUT1).")
+        self._cmd("SOUT1")   # SOUT1 = output OFF  (SOUT0 = output ON)
 
     # ------------------------------------------------------------------
     # Setpoint control
@@ -409,7 +518,7 @@ class BKPrecision1687B:
         if amps is not None:
             self.set_current(amps)
 
-        self.output_on()
+        self.output_on(settle_s=0.0)
         logger.info("PSU output re-enabled; waiting %.1f s for ECU to settle.", on_settle_s)
         time.sleep(on_settle_s)
 
@@ -446,7 +555,7 @@ class BKPrecision1687B:
         )
         self.set_current(amps)
         self.set_voltage(0.0)
-        self.output_on()
+        self.output_on(settle_s=0.0)
 
         step_v = volts / ramp_steps
         for step in range(1, ramp_steps + 1):
