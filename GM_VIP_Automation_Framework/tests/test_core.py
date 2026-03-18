@@ -19,15 +19,33 @@ sys.modules.setdefault("lauterbach.trace32.rcl._rc", MagicMock())
 sys.modules.setdefault("lauterbach.trace32.rcl._rc._error", MagicMock())
 
 
-def _make_conn(running: bool = False):
-    """Return a mock T32Connection whose fnc/cmd behave sensibly."""
+def _make_conn(running: bool = False, reset: bool = False, down: bool = False):
+    """Return a mock T32Connection whose fnc/cmd behave sensibly.
+
+    Parameters
+    ----------
+    running : bool
+        When True, STATE.RUN() returns TRUE.
+    reset : bool
+        When True, STATE.RESET() returns TRUE (and running is implicitly False).
+    down : bool
+        When True, STATE.DOWN() returns TRUE (and running/reset are implicitly False).
+    """
     conn = MagicMock()
     conn.is_connected.return_value = True
 
     def _fnc(expr):
+        if "STATE.DOWN" in expr:
+            return "TRUE()" if down else "FALSE()"
+        if "STATE.RESET" in expr:
+            return "TRUE()" if reset else "FALSE()"
         if "STATE.RUN" in expr:
-            return "TRUE()" if running else "FALSE()"
+            return "TRUE()" if (running and not reset and not down) else "FALSE()"
         if "STATE.NAME" in expr:
+            if down:
+                return "down"
+            if reset:
+                return "reset"
             return "running" if running else "stopped"
         # PC comparison expressions (check_halted_at): "(P:R(PC)==<sym>)"
         if "P:R(PC)" in expr and "==" in expr:
@@ -157,9 +175,8 @@ class TestConnection(unittest.TestCase):
         from GM_VIP_Automation_Framework.core.connection import T32Connection
         conn = T32Connection()
         mock_debugger = MagicMock()
-        with patch.object(
-            sys.modules["lauterbach.trace32.rcl"], "connect", return_value=mock_debugger
-        ):
+        # Patch the seam method so no real RCL connection is attempted.
+        with patch.object(conn, "_pyrcl_connect", return_value=mock_debugger):
             result = conn.try_connect()
         self.assertTrue(result)
         self.assertTrue(conn.is_connected())
@@ -168,10 +185,10 @@ class TestConnection(unittest.TestCase):
         """try_connect() should return False without raising when the connection is refused."""
         from GM_VIP_Automation_Framework.core.connection import T32Connection
         conn = T32Connection()
-        with patch.object(
-            sys.modules["lauterbach.trace32.rcl"], "connect",
-            side_effect=OSError("connection refused"),
-        ):
+        # Patch the seam method (_pyrcl_connect) so no real TCP connection is
+        # attempted.  This is reliable even when the lauterbach library is
+        # installed and a T32 is listening on port 20000 in the test environment.
+        with patch.object(conn, "_pyrcl_connect", side_effect=OSError("connection refused")):
             result = conn.try_connect()
         self.assertFalse(result)
         self.assertFalse(conn.is_connected())
@@ -195,6 +212,32 @@ class TestDebugger(unittest.TestCase):
         conn = _make_conn(running=False)
         self.assertFalse(self.dbg.is_running(conn))
 
+    # ------------------------------------------------------------------
+    # is_reset() – new function
+    # ------------------------------------------------------------------
+
+    def test_is_reset_true_when_state_reset(self):
+        """is_reset() must return True when STATE.RESET() returns TRUE."""
+        conn = _make_conn(running=False)
+        conn.fnc.side_effect = lambda expr: "TRUE()" if "STATE.RESET" in expr else "FALSE()"
+        self.assertTrue(self.dbg.is_reset(conn))
+
+    def test_is_reset_false_when_running(self):
+        """is_reset() must return False when STATE.RESET() returns FALSE."""
+        conn = _make_conn(running=True)
+        conn.fnc.side_effect = lambda expr: "FALSE()"
+        self.assertFalse(self.dbg.is_reset(conn))
+
+    def test_is_reset_false_on_query_error(self):
+        """is_reset() must return False (not raise) when fnc() raises."""
+        conn = _make_conn(running=False)
+        conn.fnc.side_effect = RuntimeError("comm error")
+        self.assertFalse(self.dbg.is_reset(conn))
+
+    # ------------------------------------------------------------------
+    # go() – reset-state detection
+    # ------------------------------------------------------------------
+
     def test_go_no_op_when_running(self):
         conn = _make_conn(running=True)
         self.dbg.go(conn)
@@ -214,6 +257,36 @@ class TestDebugger(unittest.TestCase):
         conn.fnc.side_effect = _fnc
         self.dbg.go(conn)
         conn.cmd.assert_any_call("GO")
+
+    def test_go_waits_before_go_when_in_reset(self):
+        """go() must sleep intermediate_halt_go_delay_s when ECU is in RESET."""
+        import GM_VIP_Automation_Framework.core.debugger as _dbg_mod
+        from GM_VIP_Automation_Framework import config
+
+        conn = _make_conn(running=False)
+        # First call: STATE.RUN → False, STATE.RESET → True.
+        # Subsequent STATE.RUN calls → True so wait_for_running succeeds.
+        run_calls = [0]
+        def _fnc(expr):
+            if "STATE.RESET" in expr:
+                return "TRUE()"
+            if "STATE.RUN" in expr:
+                run_calls[0] += 1
+                return "TRUE()" if run_calls[0] > 1 else "FALSE()"
+            return "FALSE()"
+        conn.fnc.side_effect = _fnc
+
+        saved_delay = config.settings.intermediate_halt_go_delay_s
+        config.settings.intermediate_halt_go_delay_s = 0.0  # no real sleep in test
+        try:
+            with patch("GM_VIP_Automation_Framework.core.debugger.time") as mock_time:
+                mock_time.sleep.return_value = None
+                self.dbg.go(conn)
+            # sleep must have been called with 0.0 (the reset delay)
+            sleep_args = [c[0][0] for c in mock_time.sleep.call_args_list]
+            self.assertIn(0.0, sleep_args)
+        finally:
+            config.settings.intermediate_halt_go_delay_s = saved_delay
 
     def test_break_execution(self):
         conn = _make_conn(running=False)
@@ -267,6 +340,93 @@ class TestDebugger(unittest.TestCase):
                 dbg.go()
         finally:
             dbg.default_connection = old
+
+    # ------------------------------------------------------------------
+    # is_down() – new function
+    # ------------------------------------------------------------------
+
+    def test_is_down_true_when_state_down(self):
+        """is_down() must return True when STATE.DOWN() returns TRUE."""
+        conn = _make_conn(down=True)
+        self.assertTrue(self.dbg.is_down(conn))
+
+    def test_is_down_false_when_running(self):
+        """is_down() must return False when STATE.DOWN() returns FALSE."""
+        conn = _make_conn(running=True)
+        self.assertFalse(self.dbg.is_down(conn))
+
+    def test_is_down_false_on_query_error(self):
+        """is_down() must return False (not raise) when fnc() raises."""
+        conn = _make_conn()
+        conn.fnc.side_effect = RuntimeError("comm error")
+        self.assertFalse(self.dbg.is_down(conn))
+
+    # ------------------------------------------------------------------
+    # get_ecu_state() – full state model
+    # ------------------------------------------------------------------
+
+    def test_get_ecu_state_running(self):
+        """get_ecu_state() → RUNNING when STATE.RUN() is TRUE."""
+        from GM_VIP_Automation_Framework.core.debugger import ECUState
+        conn = _make_conn(running=True)
+        self.assertEqual(self.dbg.get_ecu_state(conn), ECUState.RUNNING)
+
+    def test_get_ecu_state_halted(self):
+        """get_ecu_state() → HALTED when ECU is stopped at a breakpoint."""
+        from GM_VIP_Automation_Framework.core.debugger import ECUState
+        conn = _make_conn(running=False)   # not running, not reset, not down
+        self.assertEqual(self.dbg.get_ecu_state(conn), ECUState.HALTED)
+
+    def test_get_ecu_state_reset(self):
+        """get_ecu_state() → RESET when STATE.RESET() is TRUE."""
+        from GM_VIP_Automation_Framework.core.debugger import ECUState
+        conn = _make_conn(reset=True)
+        self.assertEqual(self.dbg.get_ecu_state(conn), ECUState.RESET)
+
+    def test_get_ecu_state_down(self):
+        """get_ecu_state() → DOWN when STATE.DOWN() is TRUE (highest priority)."""
+        from GM_VIP_Automation_Framework.core.debugger import ECUState
+        conn = _make_conn(down=True)
+        self.assertEqual(self.dbg.get_ecu_state(conn), ECUState.DOWN)
+
+    def test_get_ecu_state_down_priority_over_reset(self):
+        """DOWN takes priority over RESET when both flags are set."""
+        from GM_VIP_Automation_Framework.core.debugger import ECUState
+        conn = _make_conn(down=True, reset=True)
+        self.assertEqual(self.dbg.get_ecu_state(conn), ECUState.DOWN)
+
+    def test_get_ecu_state_unknown_on_error(self):
+        """get_ecu_state() → UNKNOWN when all fnc() calls raise."""
+        from GM_VIP_Automation_Framework.core.debugger import ECUState
+        conn = _make_conn()
+        conn.fnc.side_effect = RuntimeError("comm error")
+        self.assertEqual(self.dbg.get_ecu_state(conn), ECUState.UNKNOWN)
+
+    # ------------------------------------------------------------------
+    # go() – DOWN state raises T32ConnectionError
+    # ------------------------------------------------------------------
+
+    def test_go_raises_when_target_down(self):
+        """go() must raise T32ConnectionError when ECU is powered down."""
+        from GM_VIP_Automation_Framework.utils.exceptions import T32ConnectionError
+        conn = _make_conn(down=True)
+        with self.assertRaises(T32ConnectionError):
+            self.dbg.go(conn)
+
+    # ------------------------------------------------------------------
+    # go_safe() – DOWN state returns False immediately
+    # ------------------------------------------------------------------
+
+    def test_go_safe_returns_false_when_target_down(self):
+        """go_safe() must return False immediately when ECU is powered down."""
+        conn = _make_conn(down=True)
+        result = self.dbg.go_safe(connection=conn, max_retries=3)
+        self.assertFalse(result)
+        # GO command must NOT have been issued.
+        go_calls = [str(c) for c in conn.cmd.call_args_list]
+        self.assertFalse(any("GO" in c for c in go_calls))
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -479,6 +639,101 @@ class TestBreakpoints(unittest.TestCase):
         conn = _make_conn(running=False)
         bp.set_breakpoint_read("myVar", connection=conn)
         conn.cmd.assert_any_call("VAR.BREAK.SET myVar /R")
+
+    # ------------------------------------------------------------------
+    # check_halted_at() – ECU state-aware retry (DOWN / RESET / HALTED)
+    # ------------------------------------------------------------------
+
+    def test_check_halted_at_raises_when_down(self):
+        """check_halted_at() must raise T32BreakpointError when ECU is powered down."""
+        from GM_VIP_Automation_Framework.core import breakpoints as bp
+        from GM_VIP_Automation_Framework.utils.exceptions import T32BreakpointError
+        from GM_VIP_Automation_Framework.config import settings
+
+        orig_max   = settings.intermediate_halt_max_gos
+        orig_delay = settings.intermediate_halt_go_delay_s
+        orig_run   = settings.run_timeout_s
+        try:
+            settings.intermediate_halt_max_gos   = 1
+            settings.intermediate_halt_go_delay_s = 0.0
+            settings.run_timeout_s               = 0.05
+
+            # ECU is "halted" (wait_for_halt returns True) but PC doesn't match,
+            # and STATE.DOWN() = TRUE on the follow-up state query.
+            conn = _make_conn(down=True)
+            # wait_for_halt needs STATE.RUN → FALSE so it returns immediately.
+            # _make_conn(down=True) already returns FALSE for STATE.RUN.
+            # PC comparison must return FALSE so the wrong-address branch fires.
+            original_fnc = conn.fnc.side_effect
+            def _fnc(expr):
+                if "P:R(PC)" in expr and "==" in expr:
+                    return "FALSE()"   # wrong address – trigger the retry branch
+                return original_fnc(expr)
+            conn.fnc.side_effect = _fnc
+
+            with self.assertRaises(T32BreakpointError) as ctx:
+                bp.check_halted_at("myFunc", timeout_s=0.2, connection=conn)
+            self.assertIn("DOWN", str(ctx.exception))
+        finally:
+            settings.intermediate_halt_max_gos   = orig_max
+            settings.intermediate_halt_go_delay_s = orig_delay
+            settings.run_timeout_s               = orig_run
+
+    def test_check_halted_at_logs_reset_state_in_retry(self):
+        """check_halted_at() issues GO and retries when ECU is in RESET state."""
+        from GM_VIP_Automation_Framework.core import breakpoints as bp
+        from GM_VIP_Automation_Framework.config import settings
+
+        orig_max   = settings.intermediate_halt_max_gos
+        orig_delay = settings.intermediate_halt_go_delay_s
+        orig_run   = settings.run_timeout_s
+        try:
+            settings.intermediate_halt_max_gos   = 1
+            settings.intermediate_halt_go_delay_s = 0.0
+            settings.run_timeout_s               = 0.2
+
+            # State machine:
+            #   STATE.RUN() call #1  → FALSE  (wait_for_halt sees ECU halted)
+            #   STATE.RUN() call #2  → TRUE   (wait_for_running after GO reset)
+            #   STATE.RUN() call #3  → TRUE   (second poll in wait_for_halt still running)
+            #   STATE.RUN() call #4+ → FALSE  (ECU halted again at correct PC)
+            run_calls = [0]
+            reset_given = [False]  # give STATE.RESET=TRUE exactly once
+
+            def _fnc(expr):
+                if "STATE.DOWN" in expr:
+                    return "FALSE()"
+                if "STATE.RESET" in expr:
+                    if not reset_given[0]:
+                        reset_given[0] = True   # fire RESET only on first get_ecu_state()
+                        return "TRUE()"
+                    return "FALSE()"
+                if "STATE.RUN" in expr:
+                    run_calls[0] += 1
+                    # Halted on call 1, running on calls 2-3, halted again on call 4+
+                    return "TRUE()" if 2 <= run_calls[0] <= 3 else "FALSE()"
+                if "P:R(PC)" in expr and "==" in expr:
+                    # Wrong address until ECU has halted a second time (call 4)
+                    return "TRUE()" if run_calls[0] >= 4 else "FALSE()"
+                if "R(PC)" in expr:
+                    return "0xA0000000"
+                return "0"
+
+            conn = MagicMock()
+            conn.is_connected.return_value = True
+            conn.fnc.side_effect = _fnc
+            conn.cmd.return_value = None
+
+            result = bp.check_halted_at("myFunc", timeout_s=0.5, connection=conn)
+            self.assertTrue(result)
+            # GO must have been issued at least once (for the reset-state retry).
+            conn.cmd.assert_any_call("GO")
+        finally:
+            settings.intermediate_halt_max_gos   = orig_max
+            settings.intermediate_halt_go_delay_s = orig_delay
+            settings.run_timeout_s               = orig_run
+
+
 
 
 # ---------------------------------------------------------------------------

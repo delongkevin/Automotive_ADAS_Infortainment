@@ -282,7 +282,7 @@ class BKPrecision1687B:
             found = self.detect_port()
             if found is None:
                 raise PowerSupplyError(
-                    "Auto-detect failed: no Silicon Labs CP210x USB-to-UART adapter "
+                    f"Auto-detect failed: no '{self._USB_DESCRIPTION}' adapter "
                     "found.  Connect the BK Precision supply via USB and ensure the "
                     "CP210x driver is installed, or specify the port explicitly."
                 )

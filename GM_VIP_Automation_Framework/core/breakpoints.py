@@ -34,7 +34,11 @@ from ..utils.exceptions import (
 )
 from ..utils.logger import get_logger
 from .debugger import (
+    ECUState,
     _conn,
+    get_ecu_state,
+    get_pp_register,
+    is_reset,
     is_running,
     wait_for_halt,
     wait_for_running,
@@ -336,25 +340,48 @@ def check_halted_at(
             logger.info("Breakpoint check PASS: halted at '%s'.", address)
             return True
 
-        # ECU halted at the wrong address – could be an intermediate halt
-        # (e.g. startup initialization code before the test function).
+        # ECU halted at the wrong address – query the full state so we can
+        # give a precise log message and choose the right recovery action.
         if go_attempt < max_intermediate:
-            try:
-                current_pc = conn.fnc("R(PC)").strip()
-            except Exception:  # noqa: BLE001
-                current_pc = "unknown"
-            logger.warning(
-                "Breakpoint check: NOT at '%s' (PC=%s) – intermediate halt. "
-                "Issuing GO to continue (retry %d/%d, delay=%.2fs).",
-                address, current_pc, go_attempt + 1, max_intermediate, go_delay,
-            )
+            state = get_ecu_state(conn)
+            current_pc = get_pp_register(conn) or "unknown"
+
+            if state == ECUState.DOWN:
+                raise T32BreakpointError(
+                    f"ECU powered down or disconnected (STATE.DOWN) while "
+                    f"waiting for breakpoint at '{address}'. "
+                    "Check power supply and debug-probe connection."
+                )
+
+            if state == ECUState.RESET:
+                logger.warning(
+                    "Breakpoint check: ECU in RESET state (PC=%s) – waiting "
+                    "%.2fs for reset to complete, then re-issuing GO "
+                    "(retry %d/%d).",
+                    current_pc, go_delay, go_attempt + 1, max_intermediate,
+                )
+            elif state == ECUState.HALTED:
+                logger.warning(
+                    "Breakpoint check: NOT at '%s' (PC=%s, state=halted) – "
+                    "intermediate halt. Issuing GO to continue "
+                    "(retry %d/%d, delay=%.2fs).",
+                    address, current_pc, go_attempt + 1, max_intermediate, go_delay,
+                )
+            else:
+                # RUNNING or UNKNOWN: log and try GO anyway.
+                logger.warning(
+                    "Breakpoint check: unexpected state %s (PC=%s) – "
+                    "re-issuing GO (retry %d/%d).",
+                    state.value, current_pc, go_attempt + 1, max_intermediate,
+                )
+
             if go_delay > 0:
                 time.sleep(go_delay)
             try:
                 conn.cmd("GO")
             except Exception as exc:  # noqa: BLE001
                 raise T32BreakpointError(
-                    f"GO failed during intermediate-halt retry at PC={current_pc}: {exc}"
+                    f"GO failed during {state.value} retry at PC={current_pc}: {exc}"
                 ) from exc
             # Give the ECU time to leave the halted state before polling again.
             wait_for_running(connection=conn)
@@ -424,22 +451,45 @@ def check_halted_at_core(
             return True
 
         if go_attempt < max_intermediate:
-            try:
-                current_pc = conn.fnc("R(PC)").strip()
-            except Exception:  # noqa: BLE001
-                current_pc = "unknown"
-            logger.warning(
-                "Breakpoint check: NOT at '%s' core %s (PC=%s) – intermediate halt. "
-                "Issuing GO to continue (retry %d/%d, delay=%.2fs).",
-                address, core, current_pc, go_attempt + 1, max_intermediate, go_delay,
-            )
+            state = get_ecu_state(conn)
+            current_pc = get_pp_register(conn) or "unknown"
+
+            if state == ECUState.DOWN:
+                raise T32BreakpointError(
+                    f"ECU powered down or disconnected (STATE.DOWN) while "
+                    f"waiting for breakpoint at '{address}' on core {core}. "
+                    "Check power supply and debug-probe connection."
+                )
+
+            if state == ECUState.RESET:
+                logger.warning(
+                    "Breakpoint check: ECU in RESET state (PC=%s, core %s) – "
+                    "waiting %.2fs for reset, then re-issuing GO "
+                    "(retry %d/%d).",
+                    current_pc, core, go_delay, go_attempt + 1, max_intermediate,
+                )
+            elif state == ECUState.HALTED:
+                logger.warning(
+                    "Breakpoint check: NOT at '%s' core %s (PC=%s, state=halted) – "
+                    "intermediate halt. Issuing GO to continue "
+                    "(retry %d/%d, delay=%.2fs).",
+                    address, core, current_pc, go_attempt + 1, max_intermediate, go_delay,
+                )
+            else:
+                logger.warning(
+                    "Breakpoint check: unexpected state %s core %s (PC=%s) – "
+                    "re-issuing GO (retry %d/%d).",
+                    state.value, core, current_pc, go_attempt + 1, max_intermediate,
+                )
+
             if go_delay > 0:
                 time.sleep(go_delay)
             try:
                 conn.cmd("GO")
             except Exception as exc:  # noqa: BLE001
                 raise T32BreakpointError(
-                    f"GO failed during intermediate-halt retry at PC={current_pc}: {exc}"
+                    f"GO failed during {state.value} retry at PC={current_pc} "
+                    f"core {core}: {exc}"
                 ) from exc
             wait_for_running(connection=conn)
         else:

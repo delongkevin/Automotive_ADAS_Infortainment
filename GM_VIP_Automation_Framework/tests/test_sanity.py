@@ -82,7 +82,7 @@ Argument-order conventions (matching the framework API):
     _bp.set_breakpoint("addr", conn)
     _bp.check_halted_at("addr", connection=conn)
     _dbg.go(conn)
-    _dbg.go_safe(connection=conn)
+    self._go_safe_verified(conn)              # go_safe + state verify
     _dbg.reset_target(conn)
     _dbg.go_up(conn)
     _dbg.step_over(conn)
@@ -92,11 +92,14 @@ Argument-order conventions (matching the framework API):
     _var.check_variable("sym", expected, conn)
 """
 
+import logging
 import os
 import re
 import sys
 import unittest
 from unittest.mock import MagicMock
+
+_log = logging.getLogger("gm_vip_t32.test_sanity")
 
 # ---------------------------------------------------------------------------
 # Path bootstrap – makes the file runnable from IDLE or any working directory.
@@ -410,6 +413,75 @@ class _SanityBase(unittest.TestCase):
             setattr(config.settings, k, v)
 
     @staticmethod
+    def _ensure_ecu_running(conn) -> None:
+        """Confirm the ECU is running after GO; re-issue GO with state-aware recovery.
+
+        Called immediately after ``go_safe()`` (via :meth:`_go_safe_verified`)
+        to guarantee the ECU has actually entered the running state before a
+        CAN stimulus is sent or ``check_halted_at()`` begins polling.
+
+        Uses :func:`~core.debugger.get_ecu_state` to query all four Trace32
+        state flags in one call and take the appropriate action:
+
+        * ``RUNNING``  – no-op; ECU is already executing.
+        * ``HALTED``   – stopped at breakpoint/BREAK; re-issues GO.
+        * ``RESET``    – T32 holding ECU in reset; ``go()`` waits
+                         ``intermediate_halt_go_delay_s`` (~800 ms) then GO.
+        * ``DOWN``     – target powered off or probe disconnected;
+                         raises :class:`~utils.exceptions.T32ConnectionError`.
+        * ``UNKNOWN``  – comm error; attempts GO and raises on timeout.
+
+        Not needed after a plain ``go()`` call because ``go()`` already raises
+        :class:`~utils.exceptions.T32TimeoutError` on timeout.  Only needed
+        after ``go_safe()``, which returns a bool instead of raising.
+        """
+        from GM_VIP_Automation_Framework.core.debugger import ECUState
+        from GM_VIP_Automation_Framework.utils.exceptions import T32ConnectionError
+
+        state = _dbg.get_ecu_state(conn)
+
+        if state == ECUState.RUNNING:
+            return  # already executing – nothing to do
+
+        if state == ECUState.DOWN:
+            raise T32ConnectionError(
+                "[sanity] ECU is powered down or disconnected (STATE.DOWN). "
+                "Verify the power supply is ON and the debug probe is connected "
+                "before running tests."
+            )
+
+        if state == ECUState.RESET:
+            _log.warning(
+                "[sanity] ECU in RESET after go_safe() (STATE.RESET) – "
+                "go() will wait reset-settle then re-issue GO."
+            )
+        elif state == ECUState.HALTED:
+            _log.warning(
+                "[sanity] ECU halted (stopped at breakpoint) after go_safe() – "
+                "re-issuing GO to resume execution."
+            )
+        else:
+            _log.warning(
+                "[sanity] ECU state UNKNOWN after go_safe() – attempting GO."
+            )
+
+        _dbg.go(conn)   # handles RESET wait internally; raises T32TimeoutError on failure
+
+    @staticmethod
+    def _go_safe_verified(conn) -> None:
+        """``go_safe()`` followed by an immediate state-verification step.
+
+        Replaces bare ``_dbg.go_safe(connection=conn)`` calls throughout the
+        sanity helpers.  After ``go_safe()`` confirms the ECU is (or was)
+        running, :meth:`_ensure_ecu_running` re-checks the live state and
+        re-issues GO with a reset-wait if the ECU ended up halted due to a
+        hard reset.  This guarantees the ECU is confirmed running before any
+        CAN stimulus is sent or ``check_halted_at()`` begins polling.
+        """
+        _dbg.go_safe(connection=conn)
+        _SanityBase._ensure_ecu_running(conn)
+
+    @staticmethod
     def _sim_ecu_output(symbol: str, value, conn) -> None:
         """Pre-seed and verify an ECU-computed output variable (mock mode only).
 
@@ -519,7 +591,7 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         # Live: send CAN init stimulus so ECU reaches TestCan_Init breakpoint.
         self._send_can_stimulus(can_id=0x401)
         _bp.check_halted_at("TestCan_Init", connection=conn)
@@ -584,7 +656,7 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.delete_all_breakpoints(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         self._send_can_stimulus(can_id=0x401)          # trigger TestCan_Init
         _bp.check_halted_at("TestCan_Init", connection=conn)
 
@@ -602,7 +674,7 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.delete_all_breakpoints(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         self._send_can_stimulus(can_id=0x401)          # trigger TestCan_Init
         _bp.check_halted_at("TestCan_Init", connection=conn)
         _bp.set_breakpoint("SetCNDD_e_CanTrcvOpMode", conn)
@@ -622,7 +694,7 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.delete_all_breakpoints(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         self._send_can_stimulus(can_id=0x401)          # trigger TestCan_Init
         _bp.check_halted_at("TestCan_Init", connection=conn)
         _bp.set_breakpoint(setup_bp, conn)
@@ -641,7 +713,7 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.delete_all_breakpoints(conn)
         _bp.set_breakpoint("TestCanTrcv_Init", conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         self._send_can_stimulus(can_id=0x401)          # trigger TestCanTrcv_Init
         _bp.check_halted_at("TestCanTrcv_Init", connection=conn)
         _bp.set_breakpoint("TestCan_Init", conn)
@@ -711,7 +783,7 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.delete_all_breakpoints(conn)
         _dbg.reset_target(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         _bp.check_halted_at("TestCan_Init", connection=conn)
         self._set_can_rx_msg_vars(conn, 0x456, 2047, 0, 1, 2, 1)
         self._can_rx_finalize(conn, 1110, 1)
@@ -1011,7 +1083,7 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.delete_all_breakpoints(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         _bp.check_halted_at("TestCan_Init", connection=conn)
         _var.set_variable("CanControllerMode", 0, conn)
         _var.check_variable("CanControllerMode", 0, conn)
@@ -1029,7 +1101,7 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.delete_all_breakpoints(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         _bp.check_halted_at("TestCan_Init", connection=conn)
         _var.set_variable("CanControllerMode", 1, conn)
         _var.check_variable("CanControllerMode", 1, conn)
@@ -1255,7 +1327,7 @@ class TestSanityGroup1CAN(_SanityBase):
         _bp.delete_all_breakpoints(conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         _bp.check_halted_at("TestCan_Init", connection=conn)
         _bp.set_breakpoint("SetCANR_e_CanIfCntrlrBusOff", conn)
         _dbg.go(conn)
@@ -1273,7 +1345,7 @@ class TestSanityGroup2Battery(_SanityBase):
         """Common T32 sequence: delete BPs → reset → go_safe."""
         _bp.delete_all_breakpoints(conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
 
     # ------------------------------------------------------------------
     # TC 2.1 – GetHWIO_b_BatConnectionStatus returns 1 when disconnected
@@ -1318,7 +1390,7 @@ class TestSanityGroup3Wakeup(_SanityBase):
         _bp.delete_all_breakpoints(conn)
         _dbg.reset_target(conn)
         _bp.set_breakpoint("TestCanTrcv_Init", conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         _bp.check_halted_at("TestCanTrcv_Init", connection=conn)
         _bp.set_breakpoint("TestCan_Init", conn)
         _dbg.go(conn)
@@ -1362,7 +1434,7 @@ class TestSanityGroup3Wakeup(_SanityBase):
         conn = _make_conn()
         _bp.delete_all_breakpoints(conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         bp_wakeup = r"Test_GetHWIO_e_WakeupSigSt\9"
         _bp.set_breakpoint(bp_wakeup, conn)
         _bp.check_halted_at(bp_wakeup, connection=conn)
@@ -1450,7 +1522,7 @@ class TestSanityGroup4ConfigReg(_SanityBase):
         """Common preamble: delete BPs → reset → go_safe → set BP at line."""
         _bp.delete_all_breakpoints(conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         _bp.set_breakpoint(bp_line, conn)
         _bp.check_halted_at(bp_line, connection=conn)
 
@@ -1537,7 +1609,7 @@ class TestSanityGroup5LockStep(_SanityBase):
         # TS0: delete BPs, reset, go_safe
         _bp.delete_all_breakpoints(conn)
         _dbg.reset_target(conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
 
         # TS0 cont.: set BP at test entry, verify halted there
         _bp.set_breakpoint("Test_GetHWIO_b_LockstepStN", conn)
@@ -1580,7 +1652,7 @@ class TestSanityGroup6SPDeviceSupport(_SanityBase):
         _bp.delete_all_breakpoints(conn)
         _dbg.reset_target(conn)
         _bp.set_breakpoint(r"cybersec_features_test\2", conn)
-        _dbg.go_safe(connection=conn)
+        self._go_safe_verified(conn)
         _bp.check_halted_at(r"cybersec_features_test\2", connection=conn)
         _var.set_variable("CysecFeatureNum", feature_num, conn)
         _var.check_variable("CysecFeatureNum", feature_num, conn)
