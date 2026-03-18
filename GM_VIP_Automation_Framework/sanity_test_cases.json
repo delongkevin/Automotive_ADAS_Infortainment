@@ -1,0 +1,533 @@
+{
+  "_comment":  "GM VIP Automation Framework – Sanity Test Case Definitions.",
+  "_comment2": "This file follows the *_test_cases.json naming convention so that",
+  "_comment3": "runner.discover_test_case_files() picks it up automatically.",
+  "_comment4": "Edit ONLY this file to update sanity test steps – no Python changes needed.",
+  "_comment5": "Add a new *_test_cases.json (e.g. stress_test_cases.json) for a new suite.",
+
+  "test_suite": "GM_VIP_Sanity",
+
+  "test_cases": [
+
+    {
+      "_comment": "════════════════════════════════════════════════════",
+      "_comment2": "GROUP 1 – CAN Bus Initialisation & Message Handling",
+      "_comment3": "════════════════════════════════════════════════════"
+    },
+
+    {
+      "name": "TC1_01_CanRxInit_MinMsgLen_CANA_CAN2",
+      "capl_reference": "SWQT_CanDriver.can::testcase TC1_01_CanRxInit_MinMsgLen_CANA_CAN2",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "TestCan_Init",
+        "MngCNDD_CanRxInit",
+        "SetCNDD_e_CanControllerMode",
+        "SetCANR_h_CanIfRxIndication"
+      ],
+
+      "variables_write": {
+        "VaCANR_CanRxMsgs[0].CanId":           { "value": "0x401",  "description": "CAN arbitration ID for CANA CAN2" },
+        "VaCANR_CanRxMsgs[0].CanFilterMask":   { "value": "0x7FF",  "description": "Standard 11-bit filter mask" },
+        "VaCANR_CanRxMsgs[0].CanRxMessageIdx": { "value": "0",      "description": "Rx message array index" },
+        "VaCANR_CanRxMsgs[0].CanMessageLen":   { "value": "1",      "description": "Minimum payload length (1 byte)" },
+        "VaCANR_CanRxMsgs[0].CanIdType":       { "value": "2",      "description": "Standard frame type (2 = standard)" },
+        "VaCANR_CanRxMsgs[0].CanControllerId": { "value": "0",      "description": "Controller 0 = CANA CAN2" }
+      },
+
+      "variables_check": {
+        "CanrxmsgIdx":      { "expected": "0",      "description": "Rx message index set by ECU" },
+        "CanpdumsgId":      { "expected": "1025",   "description": "PDU message ID (0x401 decimal)" },
+        "Canpdudatalength": { "expected": "1",      "description": "PDU data length matches min length" }
+      },
+
+      "symbols_inspect": [
+        "TestCan_Init",
+        "MngCNDD_CanRxInit",
+        "VaCANR_CanRxMsgs"
+      ]
+    },
+
+    {
+      "name": "TC1_02_CanRxInit_CANB_CAN8",
+      "capl_reference": "SWQT_CanDriver.can::testcase TC1_02_CanRxInit_CANB_CAN8",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "TestCan_Init",
+        "MngCNDD_CanRxInit",
+        "SetCNDD_e_CanControllerMode",
+        "SetCANR_h_CanIfRxIndication"
+      ],
+
+      "variables_write": {
+        "VaCANR_CanRxMsgs[0].CanId":           { "value": "0x456",  "description": "CAN arbitration ID for CANB CAN8" },
+        "VaCANR_CanRxMsgs[0].CanFilterMask":   { "value": "2047",   "description": "Standard 11-bit filter mask (decimal)" },
+        "VaCANR_CanRxMsgs[0].CanRxMessageIdx": { "value": "0",      "description": "Rx message array index" },
+        "VaCANR_CanRxMsgs[0].CanMessageLen":   { "value": "1",      "description": "Minimum payload length" },
+        "VaCANR_CanRxMsgs[0].CanIdType":       { "value": "2",      "description": "Standard frame type" },
+        "VaCANR_CanRxMsgs[0].CanControllerId": { "value": "1",      "description": "Controller 1 = CANB CAN8" }
+      },
+
+      "variables_check": {
+        "CanrxmsgIdx":      { "expected": "0",    "description": "Rx message index" },
+        "CanpdumsgId":      { "expected": "1110", "description": "PDU message ID (0x456 decimal)" },
+        "Canpdudatalength": { "expected": "1",    "description": "PDU data length" }
+      },
+
+      "symbols_inspect": [
+        "TestCan_Init",
+        "MngCNDD_CanRxInit"
+      ]
+    },
+
+    {
+      "name": "TC1_11_CanWrt_TX_MaxMsgLen_CANA_CAN2",
+      "capl_reference": "SWQT_CanDriver.can::testcase TC1_11_CanWrt_TX_MaxMsgLen_CANA_CAN2",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "TestCan_Init"
+      ],
+
+      "variables_write": {
+        "VsPdu[16].e_e_CAN_ID":    { "value": "0x40000101", "description": "CAN ID for CANA CAN2 PDU 16" },
+        "VsPdu[16].e_Cnt_Length":  { "value": "64",         "description": "Maximum CAN-FD payload length" },
+        "VsPdu[16].e_e_PDU_ID":    { "value": "1",          "description": "PDU identifier 1" }
+      },
+
+      "variables_check": {
+        "VsPdu[16].e_e_CAN_ID":   { "expected": "0x40000101", "description": "CAN ID written correctly" },
+        "VsPdu[16].e_Cnt_Length": { "expected": "64",         "description": "Max length configured" }
+      },
+
+      "symbols_inspect": [
+        "TestCan_Init",
+        "CntrlCNDD_h_CanWrt",
+        "VsPdu"
+      ]
+    },
+
+    {
+      "name": "TC1_13_CanWrt_TX_Success_CANA_CAN2",
+      "capl_reference": "SWQT_CanDriver.can::testcase TC1_13_CanWrt_TX_Success_CANA_CAN2",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "TestCan_Init",
+        "SetCANR_e_CanIfTxConfirmation"
+      ],
+
+      "variables_write": {
+        "VsPdu[16].e_e_CAN_ID":   { "value": "0x40000101", "description": "CANA CAN2 standard frame ID" },
+        "VsPdu[16].e_Cnt_Length": { "value": "8",          "description": "Standard 8-byte payload" },
+        "VsPdu[16].e_e_PDU_ID":   { "value": "1",          "description": "PDU ID 1" }
+      },
+
+      "variables_check": {
+        "VsPdu[16].e_e_CAN_ID": { "expected": "0x40000101", "description": "TX CAN ID confirmed" }
+      },
+
+      "symbols_inspect": [
+        "SetCANR_e_CanIfTxConfirmation",
+        "CntrlCNDD_h_CanWrt"
+      ]
+    },
+
+    {
+      "name": "TC1_38_CanTrcvOpMode_Normal_CANA",
+      "capl_reference": "SWQT_CanDriver.can::testcase TC1_38_CanTrcvOpMode_Normal_CANA",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "TestCan_Init",
+        "SetCNDD_e_CanTrcvOpMode",
+        "MngCNDD_CanTrcvSetOpMode"
+      ],
+
+      "variables_write": {
+        "CanTrcvOpMode": { "value": "1", "description": "Normal transceiver operating mode" }
+      },
+
+      "variables_check": {
+        "CanTrcvOpMode": { "expected": "1", "description": "Transceiver mode = Normal (1)" }
+      },
+
+      "symbols_inspect": [
+        "SetCNDD_e_CanTrcvOpMode",
+        "MngCNDD_CanTrcvSetOpMode"
+      ]
+    },
+
+    {
+      "_comment": "════════════════════════════════════",
+      "_comment2": "GROUP 2 – Battery Status",
+      "_comment3": "════════════════════════════════════"
+    },
+
+    {
+      "name": "TC2_01_Battery_Disconnected_Status_Returns_1",
+      "capl_reference": "SWQT_Battery.can::testcase TC2_01_Battery_Disconnected_Status_Returns_1",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "TeBAT_en_BatChrgSts"
+      ],
+
+      "variables_write": {
+        "VaBAT_BatChrgSts": { "value": "1", "description": "Simulate battery disconnected (status=1)" }
+      },
+
+      "variables_check": {
+        "VaBAT_BatChrgSts": { "expected": "1", "description": "Battery disconnected status = 1" }
+      },
+
+      "symbols_inspect": [
+        "TeBAT_en_BatChrgSts",
+        "VaBAT_BatChrgSts"
+      ]
+    },
+
+    {
+      "name": "TC2_02_Battery_Disconnect_Status_Retained",
+      "capl_reference": "SWQT_Battery.can::testcase TC2_02_Battery_Disconnect_Status_Retained",
+      "enabled": true,
+      "reset_before": false,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "TeBAT_en_BatChrgSts"
+      ],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "VaBAT_BatChrgSts": { "expected": null, "description": "Status retained from previous test – log only" }
+      },
+
+      "symbols_inspect": [
+        "VaBAT_BatChrgSts"
+      ]
+    },
+
+    {
+      "_comment": "═══════════════════════════════════════════",
+      "_comment2": "GROUP 3 – Wakeup Events & Bus Monitoring",
+      "_comment3": "═══════════════════════════════════════════"
+    },
+
+    {
+      "name": "TC3_01_LastWakeupEvent_Zero_After_Reset",
+      "capl_reference": "SWQT_Wakeup.can::testcase TC3_01_LastWakeupEvent_Zero_After_Reset",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "VaWKUP_LastWakeupEvent": { "expected": null, "description": "Log last wakeup event after reset" }
+      },
+
+      "symbols_inspect": [
+        "VaWKUP_LastWakeupEvent"
+      ]
+    },
+
+    {
+      "name": "TC3_02_Wakeup_CANBusA_LLSI",
+      "capl_reference": "SWQT_Wakeup.can::testcase TC3_02_Wakeup_CANBusA_LLSI",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "VaWKUP_WakeupCANBus"
+      ],
+
+      "variables_write": {
+        "VaWKUP_WakeupSourcePresent": { "value": "1", "description": "Wakeup source active" }
+      },
+
+      "variables_check": {
+        "VaWKUP_WakeupCANBus": { "expected": null, "description": "CAN bus A wakeup – log value" }
+      },
+
+      "symbols_inspect": [
+        "VaWKUP_WakeupCANBus",
+        "VaWKUP_WakeupSourcePresent"
+      ]
+    },
+
+    {
+      "name": "TC3_03_Wakeup_CANBusA_EventDetected",
+      "capl_reference": "SWQT_Wakeup.can::testcase TC3_03_Wakeup_CANBusA_EventDetected",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "VaWKUP_WakeupCANBus"
+      ],
+
+      "variables_write": {
+        "VaWKUP_WakeupSourcePresent": { "value": "1", "description": "Wakeup source present" }
+      },
+
+      "variables_check": {
+        "VaWKUP_WakeupSourcePresent": { "expected": "1", "description": "Wakeup event detected on CAN bus A" }
+      },
+
+      "symbols_inspect": [
+        "VaWKUP_WakeupCANBus"
+      ]
+    },
+
+    {
+      "name": "TC3_04_Wakeup_CANBusA_ErrorFrameCount",
+      "capl_reference": "SWQT_Wakeup.can::testcase TC3_04_Wakeup_CANBusA_ErrorFrameCount",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "VaWKUP_ErrFrameCount"
+      ],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "VaWKUP_ErrFrameCount": { "expected": null, "description": "CAN bus A error frame count – log only" }
+      },
+
+      "symbols_inspect": [
+        "VaWKUP_ErrFrameCount"
+      ]
+    },
+
+    {
+      "_comment": "═══════════════════════════════════════════════════",
+      "_comment2": "GROUP 4 – Configuration Register Validation",
+      "_comment3": "═══════════════════════════════════════════════════"
+    },
+
+    {
+      "name": "TC4_01_FailedRegisterId_Default_PowerUp",
+      "capl_reference": "SWQT_ConfigReg.can::testcase TC4_01_FailedRegisterId_Default_PowerUp",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "VaCFGR_FailedRegId": { "expected": null, "description": "Failed register ID at power-up – log only" }
+      },
+
+      "symbols_inspect": [
+        "VaCFGR_FailedRegId"
+      ]
+    },
+
+    {
+      "name": "TC4_02_FailedBitId_Default_PowerUp",
+      "capl_reference": "SWQT_ConfigReg.can::testcase TC4_02_FailedBitId_Default_PowerUp",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "VaCFGR_FailedBitId": { "expected": null, "description": "Failed bit ID at power-up – log only" }
+      },
+
+      "symbols_inspect": [
+        "VaCFGR_FailedBitId"
+      ]
+    },
+
+    {
+      "name": "TC4_04_ConfigRegTestStatus_Returns1_WhenPass",
+      "capl_reference": "SWQT_ConfigReg.can::testcase TC4_04_ConfigRegTestStatus_Returns1_WhenPass",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": true,
+
+      "breakpoints": [],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "VaCFGR_ConfigRegTestSts": { "expected": "1", "description": "Config register test status = 1 (pass)" }
+      },
+
+      "symbols_inspect": [
+        "VaCFGR_ConfigRegTestSts",
+        "VaCFGR_FailedRegId",
+        "VaCFGR_FailedBitId",
+        "VaCFGR_FailedRegRecovSts"
+      ]
+    },
+
+    {
+      "name": "TC4_05_FailedRegId_Zero_When_No_Failures",
+      "capl_reference": "SWQT_ConfigReg.can::testcase TC4_05_FailedRegId_Zero_When_No_Failures",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": true,
+
+      "breakpoints": [],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "VaCFGR_FailedRegId": { "expected": "0", "description": "No failed register (0 = no failure)" }
+      },
+
+      "symbols_inspect": [
+        "VaCFGR_FailedRegId"
+      ]
+    },
+
+    {
+      "_comment": "════════════════════════════════════════",
+      "_comment2": "GROUP 5 – CPU LockStep Validation",
+      "_comment3": "════════════════════════════════════════"
+    },
+
+    {
+      "name": "TC5_01_LockStep_NoLockStepStatus_Core6",
+      "capl_reference": "SWQT_LockStep.can::testcase TC5_01_LockStep_NoLockStepStatus_Core6",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": true,
+
+      "breakpoints": [],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "VaFLT_NoLockStepStatus": { "expected": null, "description": "LockStep status for Core 6 – log only" }
+      },
+
+      "symbols_inspect": [
+        "VaFLT_NoLockStepStatus"
+      ]
+    },
+
+    {
+      "_comment": "═══════════════════════════════════════════════",
+      "_comment2": "GROUP 6 – SP / Security Module Device Support",
+      "_comment3": "═══════════════════════════════════════════════"
+    },
+
+    {
+      "name": "TC6_01_CSM_RandomNumberGenerate",
+      "capl_reference": "SWQT_SPDevice.can::testcase TC6_01_CSM_RandomNumberGenerate",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "CsmRandomNumberGenerate"
+      ],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "CsmRandomNumberGenerate": { "expected": null, "description": "CSM random number generate result – log only" }
+      },
+
+      "symbols_inspect": [
+        "CsmRandomNumberGenerate"
+      ]
+    },
+
+    {
+      "name": "TC6_02_CSM_RandomSeedFinish",
+      "capl_reference": "SWQT_SPDevice.can::testcase TC6_02_CSM_RandomSeedFinish",
+      "enabled": true,
+      "reset_before": false,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "CsmRandomSeedFinish"
+      ],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "CsmRandomSeedFinish": { "expected": null, "description": "CSM random seed finish result – log only" }
+      },
+
+      "symbols_inspect": [
+        "CsmRandomSeedFinish"
+      ]
+    },
+
+    {
+      "name": "TC6_03_CSM_SymmetricKeyWrappingFinish",
+      "capl_reference": "SWQT_SPDevice.can::testcase TC6_03_CSM_SymmetricKeyWrappingFinish",
+      "enabled": true,
+      "reset_before": false,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "CsmSymmetricKeyWrappingFinish"
+      ],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "CsmSymmetricKeyWrappingFinish": { "expected": null, "description": "Key wrapping finish – log only" }
+      },
+
+      "symbols_inspect": [
+        "CsmSymmetricKeyWrappingFinish"
+      ]
+    },
+
+    {
+      "name": "TC6_07_CSM_MacVerifyFinish",
+      "capl_reference": "SWQT_SPDevice.can::testcase TC6_07_CSM_MacVerifyFinish",
+      "enabled": true,
+      "reset_before": true,
+      "go_before_check": false,
+
+      "breakpoints": [
+        "CsmMacVerifyFinish"
+      ],
+
+      "variables_write": {},
+
+      "variables_check": {
+        "CsmMacVerifyFinish": { "expected": null, "description": "CSM MAC verify finish result – log only" }
+      },
+
+      "symbols_inspect": [
+        "CsmMacVerifyFinish"
+      ]
+    }
+
+  ]
+}

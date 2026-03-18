@@ -573,5 +573,119 @@ class TestRunFromJson(unittest.TestCase):
             os.unlink(path)
 
 
+# ---------------------------------------------------------------------------
+# runner.discover_test_case_files
+# ---------------------------------------------------------------------------
+
+class TestDiscoverTestCaseFiles(unittest.TestCase):
+    """Tests for runner.discover_test_case_files (pure filesystem, no Trace32)."""
+
+    def test_finds_wildcard_json_files(self):
+        from GM_VIP_Automation_Framework.runner import discover_test_case_files
+        with tempfile.TemporaryDirectory() as tmp:
+            # Create three *_test_cases.json files and one unrelated file.
+            Path(tmp, "sanity_test_cases.json").write_text("{}")
+            Path(tmp, "stress_test_cases.json").write_text("{}")
+            Path(tmp, "powercycle_test_cases.json").write_text("{}")
+            Path(tmp, "config.json").write_text("{}")          # should NOT match
+            Path(tmp, "test_cases_old.json").write_text("{}")  # should NOT match
+
+            found = discover_test_case_files(tmp)
+            names = [f.name for f in found]
+            self.assertIn("sanity_test_cases.json", names)
+            self.assertIn("stress_test_cases.json", names)
+            self.assertIn("powercycle_test_cases.json", names)
+            self.assertNotIn("config.json", names)
+            self.assertNotIn("test_cases_old.json", names)
+
+    def test_returns_sorted_list(self):
+        from GM_VIP_Automation_Framework.runner import discover_test_case_files
+        with tempfile.TemporaryDirectory() as tmp:
+            Path(tmp, "z_test_cases.json").write_text("{}")
+            Path(tmp, "a_test_cases.json").write_text("{}")
+            found = discover_test_case_files(tmp)
+            names = [f.name for f in found]
+            self.assertEqual(names, sorted(names))
+
+    def test_empty_directory_returns_empty_list(self):
+        from GM_VIP_Automation_Framework.runner import discover_test_case_files
+        with tempfile.TemporaryDirectory() as tmp:
+            found = discover_test_case_files(tmp)
+            self.assertEqual(found, [])
+
+    def test_sanity_json_is_discovered_in_framework_dir(self):
+        """The shipped sanity_test_cases.json must be discoverable."""
+        from GM_VIP_Automation_Framework.runner import discover_test_case_files
+        framework_dir = Path(__file__).parent.parent
+        found = discover_test_case_files(str(framework_dir))
+        names = [f.name for f in found]
+        self.assertIn("sanity_test_cases.json", names)
+
+
+# ---------------------------------------------------------------------------
+# runner.run_all_discovered
+# ---------------------------------------------------------------------------
+
+class TestRunAllDiscovered(unittest.TestCase):
+    """Tests for runner.run_all_discovered (mocked Trace32)."""
+
+    def _mock_conn(self):
+        conn = MagicMock()
+        conn.is_connected.return_value = True
+        conn.__enter__ = lambda s: s
+        conn.__exit__ = MagicMock(return_value=False)
+
+        def _fnc(expr):
+            if "STATE.RUN" in expr:
+                return "FALSE()"
+            if "SYMBOL.EXIST" in expr:
+                return "TRUE()"
+            if "ADDRESS.OFFSET" in expr:
+                return "0x80001234"
+            if "VAR.VALUE" in expr:
+                return "42"
+            if "P:R(PC)" in expr and "==" in expr:
+                return "TRUE()"
+            return "0"
+
+        conn.fnc.side_effect = _fnc
+        conn.cmd.return_value = None
+        return conn
+
+    def test_no_json_files_raises(self):
+        from GM_VIP_Automation_Framework.runner import run_all_discovered
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(FileNotFoundError):
+                run_all_discovered(tmp)
+
+    def test_runs_all_found_suites(self):
+        from GM_VIP_Automation_Framework import runner as r
+        with tempfile.TemporaryDirectory() as tmp:
+            # Create two minimal *_test_cases.json files.
+            for label in ("alpha", "beta"):
+                Path(tmp, f"{label}_test_cases.json").write_text(json.dumps({
+                    "test_suite": label.capitalize(),
+                    "test_cases": [
+                        {"name": f"TC_{label}_1", "enabled": True,
+                         "reset_before": False, "breakpoints": [],
+                         "variables_write": {}, "variables_check": {},
+                         "symbols_inspect": []},
+                    ],
+                }))
+            mock_conn = self._mock_conn()
+            with (
+                patch("GM_VIP_Automation_Framework.runner.t32.T32Connection",
+                      return_value=mock_conn),
+                patch("GM_VIP_Automation_Framework.runner.settings.load_from_json"),
+                patch("GM_VIP_Automation_Framework.report.TestCaseReport.save_json"),
+                patch("GM_VIP_Automation_Framework.report.TestCaseReport.save_html"),
+            ):
+                results = r.run_all_discovered(tmp, config_json_path="")
+            self.assertIn("alpha", results)
+            self.assertIn("beta", results)
+            self.assertEqual(results["alpha"].total, 1)
+            self.assertEqual(results["beta"].total, 1)
+
+
 if __name__ == "__main__":
     unittest.main()
