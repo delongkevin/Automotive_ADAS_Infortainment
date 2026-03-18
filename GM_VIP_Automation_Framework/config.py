@@ -115,6 +115,14 @@ class T32Settings:
         default_factory=lambda: float(os.environ.get("T32_RCL_TIMEOUT_S", "1.0"))
     )
 
+    #: RCL packet length in bytes.  1024 is the standard value for most
+    #: Trace32 ARM/Aurix configurations.  Larger values can improve throughput
+    #: on fast networks; must match the value configured in the T32 config file.
+    #: env: T32_RCL_PACKLEN
+    rcl_packlen: int = field(
+        default_factory=lambda: int(os.environ.get("T32_RCL_PACKLEN", "1024"))
+    )
+
     #: Maximum seconds to wait for T32 to accept a connection after launch.
     #: env: T32_CONNECT_MAX_WAIT_S
     connect_max_wait_s: float = field(
