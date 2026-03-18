@@ -276,7 +276,8 @@ def go_safe(
             )
         else:
             logger.info(
-                "GO_SAFE: ECU stopped at PC=%s (non-reset address) – treating as success.",
+                "GO_SAFE: ECU stopped at PC=%s (non-reset address) – "
+                "returning; check_halted_at() will retry GO if not at target.",
                 pp,
             )
             return True

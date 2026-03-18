@@ -37,6 +37,7 @@ from .debugger import (
     _conn,
     is_running,
     wait_for_halt,
+    wait_for_running,
 )
 
 logger = get_logger("breakpoints")
@@ -281,6 +282,14 @@ def check_halted_at(
     Mirrors CAPL ``E_DBGR_BreakpointCheckForHalt``.  Waits for the ECU to
     halt and then evaluates whether ``P:R(PC) == address``.
 
+    On real hardware, startup / initialization code may cause the ECU to halt
+    at an intermediate address (e.g. the application entry point) *before*
+    reaching the target breakpoint.  When this happens the function
+    automatically issues GO again and retries, up to
+    :attr:`~config.T32Settings.intermediate_halt_max_gos` times, with a
+    :attr:`~config.T32Settings.intermediate_halt_go_delay_s` delay before
+    each retry.  Set ``intermediate_halt_max_gos = 0`` to disable.
+
     Parameters
     ----------
     address:
@@ -301,30 +310,57 @@ def check_halted_at(
     T32BreakpointNotReachedError
         When the ECU did not halt within *timeout_s*.
     T32BreakpointError
-        When the ECU halted but at a different address.
+        When the ECU halted but at a different address (and all retries
+        have been exhausted).
     """
     conn = _resolve_conn(connection)
     tmo = timeout_s if timeout_s is not None else settings.halt_timeout_s
+    max_intermediate = settings.intermediate_halt_max_gos
+    go_delay = settings.intermediate_halt_go_delay_s
 
-    halted = wait_for_halt(timeout_s=tmo, connection=conn)
-    if not halted:
-        raise T32BreakpointNotReachedError(address, int(tmo * 1000))
+    for go_attempt in range(max_intermediate + 1):
+        halted = wait_for_halt(timeout_s=tmo, connection=conn)
+        if not halted:
+            raise T32BreakpointNotReachedError(address, int(tmo * 1000))
 
-    # Evaluate EVAL (P:R(PC)==<address>)
-    try:
-        result = conn.fnc(f"(P:R(PC)=={address})")
-        matched = str(result).strip().upper() in ("TRUE()", "TRUE", "1")
-    except Exception as exc:  # noqa: BLE001
-        raise T32BreakpointError(
-            f"PC comparison for '{address}' failed: {exc}"
-        ) from exc
+        # Evaluate EVAL (P:R(PC)==<address>)
+        try:
+            result = conn.fnc(f"(P:R(PC)=={address})")
+            matched = str(result).strip().upper() in ("TRUE()", "TRUE", "1")
+        except Exception as exc:  # noqa: BLE001
+            raise T32BreakpointError(
+                f"PC comparison for '{address}' failed: {exc}"
+            ) from exc
 
-    if matched:
-        logger.info("Breakpoint check PASS: halted at '%s'.", address)
-    else:
-        logger.error("Breakpoint check FAIL: NOT halted at '%s'.", address)
-        raise T32BreakpointError(f"ECU halted but NOT at '{address}'.")
-    return matched
+        if matched:
+            logger.info("Breakpoint check PASS: halted at '%s'.", address)
+            return True
+
+        # ECU halted at the wrong address – could be an intermediate halt
+        # (e.g. startup initialization code before the test function).
+        if go_attempt < max_intermediate:
+            try:
+                current_pc = conn.fnc("R(PC)").strip()
+            except Exception:  # noqa: BLE001
+                current_pc = "unknown"
+            logger.warning(
+                "Breakpoint check: NOT at '%s' (PC=%s) – intermediate halt. "
+                "Issuing GO to continue (retry %d/%d, delay=%.2fs).",
+                address, current_pc, go_attempt + 1, max_intermediate, go_delay,
+            )
+            if go_delay > 0:
+                time.sleep(go_delay)
+            try:
+                conn.cmd("GO")
+            except Exception as exc:  # noqa: BLE001
+                raise T32BreakpointError(
+                    f"GO failed during intermediate-halt retry at PC={current_pc}: {exc}"
+                ) from exc
+            # Give the ECU time to leave the halted state before polling again.
+            wait_for_running(connection=conn)
+        else:
+            logger.error("Breakpoint check FAIL: NOT halted at '%s'.", address)
+            raise T32BreakpointError(f"ECU halted but NOT at '{address}'.")
 
 
 def check_halted_at_core(
@@ -335,7 +371,9 @@ def check_halted_at_core(
 ) -> bool:
     """Assert the ECU halted at *address* on *core*.
 
-    Mirrors CAPL ``E_DBGR_BreakpointCheckForHaltCore``.
+    Mirrors CAPL ``E_DBGR_BreakpointCheckForHaltCore``.  Like
+    :func:`check_halted_at`, issues GO and retries on intermediate halts up to
+    :attr:`~config.T32Settings.intermediate_halt_max_gos` times.
 
     Parameters
     ----------
@@ -358,32 +396,56 @@ def check_halted_at_core(
     T32BreakpointNotReachedError
         If the halt did not occur within *timeout_s*.
     T32BreakpointError
-        If the ECU halted but at the wrong address or wrong core.
+        If the ECU halted but at the wrong address or wrong core (and all
+        intermediate-halt retries are exhausted).
     """
     conn = _resolve_conn(connection)
     tmo = timeout_s if timeout_s is not None else settings.halt_timeout_s
+    max_intermediate = settings.intermediate_halt_max_gos
+    go_delay = settings.intermediate_halt_go_delay_s
 
-    halted = wait_for_halt(timeout_s=tmo, connection=conn)
-    if not halted:
-        raise T32BreakpointNotReachedError(address, int(tmo * 1000))
+    for go_attempt in range(max_intermediate + 1):
+        halted = wait_for_halt(timeout_s=tmo, connection=conn)
+        if not halted:
+            raise T32BreakpointNotReachedError(address, int(tmo * 1000))
 
-    try:
-        result = conn.fnc(f"(P:R(PC)=={address}&&CORE()=={core})")
-        matched = str(result).strip().upper() in ("TRUE()", "TRUE", "1")
-    except Exception as exc:  # noqa: BLE001
-        raise T32BreakpointError(
-            f"PC+core comparison for '{address}' core {core} failed: {exc}"
-        ) from exc
+        try:
+            result = conn.fnc(f"(P:R(PC)=={address}&&CORE()=={core})")
+            matched = str(result).strip().upper() in ("TRUE()", "TRUE", "1")
+        except Exception as exc:  # noqa: BLE001
+            raise T32BreakpointError(
+                f"PC+core comparison for '{address}' core {core} failed: {exc}"
+            ) from exc
 
-    if matched:
-        logger.info(
-            "Breakpoint check PASS: halted at '%s' on core %s.", address, core
-        )
-    else:
-        logger.error(
-            "Breakpoint check FAIL: NOT halted at '%s' on core %s.", address, core
-        )
-        raise T32BreakpointError(
-            f"ECU halted but NOT at '{address}' on core {core}."
-        )
-    return matched
+        if matched:
+            logger.info(
+                "Breakpoint check PASS: halted at '%s' on core %s.", address, core
+            )
+            return True
+
+        if go_attempt < max_intermediate:
+            try:
+                current_pc = conn.fnc("R(PC)").strip()
+            except Exception:  # noqa: BLE001
+                current_pc = "unknown"
+            logger.warning(
+                "Breakpoint check: NOT at '%s' core %s (PC=%s) – intermediate halt. "
+                "Issuing GO to continue (retry %d/%d, delay=%.2fs).",
+                address, core, current_pc, go_attempt + 1, max_intermediate, go_delay,
+            )
+            if go_delay > 0:
+                time.sleep(go_delay)
+            try:
+                conn.cmd("GO")
+            except Exception as exc:  # noqa: BLE001
+                raise T32BreakpointError(
+                    f"GO failed during intermediate-halt retry at PC={current_pc}: {exc}"
+                ) from exc
+            wait_for_running(connection=conn)
+        else:
+            logger.error(
+                "Breakpoint check FAIL: NOT halted at '%s' on core %s.", address, core
+            )
+            raise T32BreakpointError(
+                f"ECU halted but NOT at '{address}' on core {core}."
+            )

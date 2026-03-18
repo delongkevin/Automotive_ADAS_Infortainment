@@ -171,6 +171,29 @@ class T32Settings:
     )
 
     # ------------------------------------------------------------------
+    # Intermediate-halt retry (real hardware with multi-phase startup)
+    # ------------------------------------------------------------------
+
+    #: Maximum number of additional GO commands issued by :func:`check_halted_at`
+    #: when the ECU halts at an unexpected address before reaching the target
+    #: breakpoint.  This happens on Aurix / ARM hardware where startup
+    #: initialization code executes (and may halt) between the reset and the
+    #: first test function.  Set to ``0`` to disable the retry logic entirely.
+    #: env: T32_INTERMEDIATE_HALT_MAX_GOS
+    intermediate_halt_max_gos: int = field(
+        default_factory=lambda: int(os.environ.get("T32_INTERMEDIATE_HALT_MAX_GOS", "3"))
+    )
+
+    #: Delay in seconds before each retry GO command issued during an
+    #: intermediate-halt retry.  Matches the ~800 ms settle time observed on
+    #: Aurix TC4 hardware after reset before the startup code yields control
+    #: to the test application.
+    #: env: T32_INTERMEDIATE_HALT_GO_DELAY_S
+    intermediate_halt_go_delay_s: float = field(
+        default_factory=lambda: float(os.environ.get("T32_INTERMEDIATE_HALT_GO_DELAY_S", "0.8"))
+    )
+
+    # ------------------------------------------------------------------
     # Breakpoint set retry logic  (mirrors CAPL cc_nT32_BP* constants)
     # ------------------------------------------------------------------
 

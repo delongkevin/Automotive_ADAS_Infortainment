@@ -346,6 +346,128 @@ class TestBreakpoints(unittest.TestCase):
         with self.assertRaises(T32BreakpointNotReachedError):
             bp.check_halted_at("myFunc", timeout_s=0.05, connection=conn)
 
+    def test_check_halted_at_intermediate_halt_retry(self):
+        """check_halted_at() issues GO and retries when ECU halts at wrong address.
+
+        Models the real-hardware scenario (Aurix/ARM) where startup code causes
+        an intermediate halt before the test breakpoint is reached.
+        intermediate_halt_max_gos=1, delay=0 → one retry, no sleep.
+        """
+        from GM_VIP_Automation_Framework.core import breakpoints as bp
+        from GM_VIP_Automation_Framework.config import settings
+
+        orig_max = settings.intermediate_halt_max_gos
+        orig_delay = settings.intermediate_halt_go_delay_s
+        orig_run_tmo = settings.run_timeout_s
+        try:
+            settings.intermediate_halt_max_gos = 1
+            settings.intermediate_halt_go_delay_s = 0.0
+            # After the retry GO, wait_for_running() needs to succeed quickly.
+            settings.run_timeout_s = 0.1
+
+            pc_checks = [0]
+            run_polls = [0]
+
+            def _fnc(expr):
+                if "STATE.RUN" in expr:
+                    run_polls[0] += 1
+                    # Running only on the poll immediately after retry GO.
+                    return "TRUE()" if run_polls[0] == 1 else "FALSE()"
+                if "P:R(PC)" in expr and "==" in expr:
+                    pc_checks[0] += 1
+                    # First check: wrong address (intermediate halt).
+                    # Second check: target address reached.
+                    return "TRUE()" if pc_checks[0] > 1 else "FALSE()"
+                if "R(PC)" in expr:
+                    return "0xA0000000"  # intermediate halt address
+                return "0"
+
+            conn = MagicMock()
+            conn.is_connected.return_value = True
+            conn.fnc.side_effect = _fnc
+            conn.cmd.return_value = None
+
+            result = bp.check_halted_at("myFunc", timeout_s=0.5, connection=conn)
+            self.assertTrue(result)
+            # GO must have been issued during the intermediate-halt retry.
+            conn.cmd.assert_any_call("GO")
+            # PC comparison was called twice (wrong once, correct once).
+            self.assertEqual(pc_checks[0], 2)
+        finally:
+            settings.intermediate_halt_max_gos = orig_max
+            settings.intermediate_halt_go_delay_s = orig_delay
+            settings.run_timeout_s = orig_run_tmo
+
+    def test_check_halted_at_intermediate_halt_exhausted_raises(self):
+        """check_halted_at() raises T32BreakpointError after exhausting retries."""
+        from GM_VIP_Automation_Framework.core import breakpoints as bp
+        from GM_VIP_Automation_Framework.utils.exceptions import T32BreakpointError
+        from GM_VIP_Automation_Framework.config import settings
+
+        orig_max = settings.intermediate_halt_max_gos
+        orig_delay = settings.intermediate_halt_go_delay_s
+        orig_run_tmo = settings.run_timeout_s
+        try:
+            settings.intermediate_halt_max_gos = 1
+            settings.intermediate_halt_go_delay_s = 0.0
+            settings.run_timeout_s = 0.05
+
+            def _fnc(expr):
+                if "STATE.RUN" in expr:
+                    return "FALSE()"
+                if "P:R(PC)" in expr and "==" in expr:
+                    return "FALSE()"  # always wrong address
+                if "R(PC)" in expr:
+                    return "0xA0000000"
+                return "0"
+
+            conn = MagicMock()
+            conn.is_connected.return_value = True
+            conn.fnc.side_effect = _fnc
+            conn.cmd.return_value = None
+
+            with self.assertRaises(T32BreakpointError):
+                bp.check_halted_at("myFunc", timeout_s=0.2, connection=conn)
+        finally:
+            settings.intermediate_halt_max_gos = orig_max
+            settings.intermediate_halt_go_delay_s = orig_delay
+            settings.run_timeout_s = orig_run_tmo
+
+    def test_check_halted_at_max_gos_zero_disables_retry(self):
+        """Setting intermediate_halt_max_gos=0 disables intermediate-halt retry."""
+        from GM_VIP_Automation_Framework.core import breakpoints as bp
+        from GM_VIP_Automation_Framework.utils.exceptions import T32BreakpointError
+        from GM_VIP_Automation_Framework.config import settings
+
+        orig_max = settings.intermediate_halt_max_gos
+        orig_delay = settings.intermediate_halt_go_delay_s
+        try:
+            settings.intermediate_halt_max_gos = 0
+            settings.intermediate_halt_go_delay_s = 0.0
+
+            def _fnc(expr):
+                if "STATE.RUN" in expr:
+                    return "FALSE()"
+                if "P:R(PC)" in expr and "==" in expr:
+                    return "FALSE()"  # wrong address, no retry allowed
+                if "R(PC)" in expr:
+                    return "0xA0000000"
+                return "0"
+
+            conn = MagicMock()
+            conn.is_connected.return_value = True
+            conn.fnc.side_effect = _fnc
+            conn.cmd.return_value = None
+
+            with self.assertRaises(T32BreakpointError):
+                bp.check_halted_at("myFunc", timeout_s=0.2, connection=conn)
+            # GO should NOT have been issued (retries disabled).
+            go_calls = [c for c in conn.cmd.call_args_list if "GO" in str(c)]
+            self.assertEqual(go_calls, [])
+        finally:
+            settings.intermediate_halt_max_gos = orig_max
+            settings.intermediate_halt_go_delay_s = orig_delay
+
     def test_set_breakpoint_write(self):
         from GM_VIP_Automation_Framework.core import breakpoints as bp
         conn = _make_conn(running=False)

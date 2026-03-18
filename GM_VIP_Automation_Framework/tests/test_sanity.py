@@ -291,6 +291,8 @@ class _SanityBase(unittest.TestCase):
             "halt_timeout_s": config.settings.halt_timeout_s,
             "bp_retry_interval_s": config.settings.bp_retry_interval_s,
             "symbol_reload_wait_s": config.settings.symbol_reload_wait_s,
+            "intermediate_halt_max_gos": config.settings.intermediate_halt_max_gos,
+            "intermediate_halt_go_delay_s": config.settings.intermediate_halt_go_delay_s,
         }
         if not USE_LIVE_T32:
             # Zero delays for fast mock execution.
@@ -301,6 +303,12 @@ class _SanityBase(unittest.TestCase):
             config.settings.halt_timeout_s = 0.2
             config.settings.bp_retry_interval_s = 0.0
             config.settings.symbol_reload_wait_s = 0.0
+            # Disable intermediate-halt retries in mock mode: the mock's PC
+            # check always returns TRUE so retries would never trigger anyway,
+            # but setting this to 0 makes the intent explicit and avoids any
+            # unexpected GO commands being sent to the mock connection.
+            config.settings.intermediate_halt_max_gos = 0
+            config.settings.intermediate_halt_go_delay_s = 0.0
 
     def tearDown(self):
         from GM_VIP_Automation_Framework import config
