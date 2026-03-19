@@ -486,6 +486,8 @@ def go(connection=None) -> None:
 
     logger.info("GO: resuming ECU execution (state was %s).", state.value)
     _print("GO: issuing GO command …")
+    # Capture PC before GO so we can tell later whether the ECU actually ran.
+    pc_before = get_pp_register(conn) or ""
     conn.cmd("GO")
 
     # Brief pause before polling so the CPU bus has time to leave the halted
@@ -497,25 +499,36 @@ def go(connection=None) -> None:
     # Wait until the ECU is confirmed running before returning.
     reached = wait_for_running(timeout_s=settings.run_timeout_s, connection=conn)
     if not reached:
-        # The ECU may have run and immediately halted at a breakpoint — this
-        # is not a failure.  Check the full state: if HALTED the ECU did
-        # execute (it just hit a BP faster than our poll window), so we return
-        # normally.  Only DOWN / UNKNOWN / still-RESET after the wait window
-        # are treated as real failures.
+        # The ECU may have run and immediately halted at a breakpoint faster
+        # than our poll window.  Distinguish this from "never ran at all" by
+        # comparing the PC before and after GO:
+        #   • PC changed  → ECU ran and hit a new breakpoint → success.
+        #   • PC unchanged → ECU never left its halted state → real timeout.
         post_state = get_ecu_state(conn)
         if post_state == ECUState.HALTED:
             current_pc = get_pp_register(conn) or "unknown"
+            if current_pc != pc_before:
+                _print(
+                    f"GO: ECU halted at new PC={current_pc} (was {pc_before}) "
+                    "– hit breakpoint within go_settle_s window; this is normal."
+                )
+                logger.warning(
+                    "GO: ECU did not show running state but PC moved from %s to %s. "
+                    "It ran and hit a breakpoint within the go_settle_s window (%.2fs). "
+                    "Treating as success.",
+                    pc_before, current_pc, settings.go_settle_s,
+                )
+                return
+            # PC unchanged: ECU never ran.  Fall through to the timeout error.
             _print(
-                f"GO: ECU halted immediately at PC={current_pc} "
-                "(hit breakpoint within go_settle_s window – this is normal)."
+                f"GO: ECU halted at same PC={current_pc} (PC unchanged) – "
+                "ECU did not execute. Raising T32TimeoutError."
             )
-            logger.warning(
-                "GO: ECU did not show running state but is now HALTED at PC=%s. "
-                "It ran and hit a breakpoint within the go_settle_s window (%.2fs). "
-                "Treating as success.",
-                current_pc, settings.go_settle_s,
+            logger.error(
+                "GO: PC unchanged after GO (PC=%s). ECU did not execute. "
+                "Raising T32TimeoutError.",
+                current_pc,
             )
-            return
         _print(
             f"GO: ECU did not enter running state within {settings.run_timeout_s}s "
             f"(post-GO state = {post_state.value})."
