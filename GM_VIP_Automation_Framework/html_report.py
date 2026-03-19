@@ -152,6 +152,34 @@ _TAG_LABELS = {
 
 
 # ---------------------------------------------------------------------------
+# Magna Electronics logo (inline SVG – no external dependency)
+#
+# Recreated from the Magna International brand mark:
+#   • Two black chevron peaks forming the "M" silhouette
+#   • Red circle at the apex of the left peak
+#   • "MAGNA" wordmark in Magna grey (#9b9b9b)
+# ---------------------------------------------------------------------------
+
+_MAGNA_LOGO_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 52"'
+    ' height="44" style="vertical-align:middle;display:inline-block;margin-right:10px"'
+    ' aria-label="Magna Electronics">'
+    # ── Left chevron peak ───────────────────────────────────────────────────
+    '<polygon points="2,50 15,3 28,50" fill="#1a1a1a"/>'
+    # ── Right chevron peak ──────────────────────────────────────────────────
+    '<polygon points="20,50 33,3 47,50" fill="#1a1a1a"/>'
+    # ── Red dot at apex of left peak ────────────────────────────────────────
+    '<circle cx="15" cy="3" r="5.5" fill="#cc1212"/>'
+    # ── "MAGNA" wordmark ────────────────────────────────────────────────────
+    '<text x="57" y="42"'
+    ' font-family="\'Arial Black\',\'Helvetica Neue\',Arial,sans-serif"'
+    ' font-weight="900" font-size="42" letter-spacing="1" fill="#9b9b9b">'
+    'MAGNA</text>'
+    '</svg>'
+)
+
+
+# ---------------------------------------------------------------------------
 # HTML renderer
 # ---------------------------------------------------------------------------
 
@@ -257,12 +285,14 @@ def render_html(
             f'</tr>\n'
         )
 
+    _logo = _MAGNA_LOGO_SVG   # bring into local scope for f-string interpolation
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>T32 Test Report – {suite_name}</title>
+  <title>Magna T32 Test Report – {suite_name}</title>
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
@@ -322,7 +352,7 @@ def render_html(
 <body>
   <!-- ═══ Header card ═══ -->
   <div class="card">
-    <h1>🔬 T32 Test Report</h1>
+    <h1>{_logo} T32 Test Report</h1>
     <h2>{suite_name} &nbsp;<span style="color:#aaa;font-size:0.9em">Mode: {mode}</span></h2>
 
     <div class="kpi-row">
@@ -393,7 +423,7 @@ def render_html(
   </div>
 
   <div class="footer">
-    GM VIP Automation Framework &middot; {suite_name} &middot; {generated_at}
+    Magna Electronics &middot; GM VIP Automation Framework &middot; {suite_name} &middot; {generated_at}
   </div>
 </body>
 </html>"""

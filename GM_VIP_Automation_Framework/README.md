@@ -15,6 +15,8 @@ script execution) but:
 - Exposes a clean, documented public API with typed signatures.
 - **Auto-discovers** all modules, functions, and variables from a live T32
   session and generates runnable test-case suites with zero manual editing.
+- **Magna Electronics branded** HTML reports with the Magna logo embedded as a
+  self-contained SVG (no external URL required).
 
 ---
 
@@ -500,8 +502,39 @@ library is completely mocked via `unittest.mock`.
 | `test_config_and_report.py` | Config I/O, `TestCaseReport`, HTML rendering |
 | `test_hardware.py` | CAN bus, CANoe, power supply (mock mode) |
 | `test_sanity.py` | Full end-to-end sanity suite (mock mode; toggle `USE_LIVE_T32=True` for real hardware) |
-| `test_symbol_discovery.py` | `SymbolInventory`, `DiscoveredSymbol`, parser, classification heuristics, `discover_*` helpers |
+| `test_symbol_discovery.py` | `SymbolInventory`, `DiscoveredSymbol`, parser, heuristics (mock); live mode connects to T32, discovers symbols, and writes `test_symbol_discovery_test_cases.json` |
 | `test_generator.py` | JSON generation, Python script generation, file writing, runner schema compatibility, `ModuleStatusReport` |
+
+### Live symbol discovery and JSON generation
+
+Running `test_symbol_discovery.py` in **live mode** connects to a real Trace32
+session, discovers every loaded module / function / variable, and writes two
+artefacts you can edit and re-run:
+
+```bash
+# Discover all symbols – writes test_symbol_discovery_test_cases.json
+python main.py --suite test_symbol_discovery --mode live
+
+# Narrow to a specific module
+python main.py --suite test_symbol_discovery --mode live --module main.c
+
+# Narrow to global variables only
+python main.py --suite test_symbol_discovery --mode live --pattern "g_*"
+
+# Also verify a specific function is reachable by breakpoint
+python main.py --suite test_symbol_discovery --mode live --breakpoint myFunc
+
+# One-shot: just generate artefacts without running unit tests
+python main.py --discover --mode live
+python main.py --discover --mode live --module main.c --output-dir ./generated
+```
+
+After running in live mode two files appear (editable before re-running):
+
+| File | Purpose |
+|------|---------|
+| `test_symbol_discovery_test_cases.json` | Run with `python main.py --json test_symbol_discovery` |
+| `test_symbol_discovery_session_script.py` | Standalone script: connect → verify symbols → set BPs → read vars → save report |
 
 ---
 
@@ -515,3 +548,4 @@ library is completely mocked via `unittest.mock`.
 6. **Structured logging** – all operations log at `DEBUG`/`INFO` level with a consistent format; coloured console output when connected to a TTY.
 7. **CMM-first / resilient connect** – `run_from_json` (and the `connect()` factory with `resilient_connect=True`) probes for a running Trace32 instance before deciding whether to launch one.  When Trace32 is already running (your `*.cmm` script opened the port), no `exe_path` or `config.t32` path is required.  The launch paths in `config.json` serve only as a fallback when `auto_launch=True`.
 8. **Auto-discovery** – `discover_symbols` queries `SYMBOL.LIST` from the live session, classifies every symbol using section-kind columns and name heuristics, and returns a typed `SymbolInventory`.  `generate_from_live_session` then turns that inventory into a full test suite without any manual editing.
+9. **Magna Electronics branded reports** – every HTML report carries the Magna logo as an inline SVG (self-contained, no external URL), with "Magna Electronics" in the page title and footer.

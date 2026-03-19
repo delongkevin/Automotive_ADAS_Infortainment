@@ -1,22 +1,216 @@
 """
 Tests for GM_VIP_Automation_Framework.core.symbol_discovery
 ============================================================
-All Trace32 API calls are mocked – no hardware required.
+Runs in two modes controlled by the ``USE_LIVE_T32`` flag:
+
+  USE_LIVE_T32 = False  (default)
+      All 43 tests run with fully mocked Trace32 connections.  No hardware,
+      no ``lauterbach.trace32.rcl`` install required.
+
+  USE_LIVE_T32 = True
+      Connects to a real running Trace32 instance, discovers all symbols,
+      and generates two artefacts in the framework directory:
+
+        • ``test_symbol_discovery_test_cases.json``  – runnable with
+          ``python main.py --json test_symbol_discovery``
+        • ``test_symbol_discovery_session_script.py`` – standalone script
+
+      Additional live-mode tests verify that the inventory is populated and
+      the JSON file was written correctly.
+
+──────────────────────────────────────────────────────────────────────────────
+HOW TO RUN
+──────────────────────────────────────────────────────────────────────────────
+
+Mock mode (default – no hardware needed)
+-----------------------------------------
+  python tests/test_symbol_discovery.py
+  python main.py --suite test_symbol_discovery
+
+Live mode (Trace32 required)
+------------------------------
+  Pre-requisites:
+    1. pip install lauterbach.trace32.rcl
+    2. Open Trace32 with your ELF loaded (RCL port open).
+    3. Confirm config.t32:  RCL=NETASSIST  PACKLEN=1024  PORT=20000
+
+  Run via main.py (recommended):
+    python main.py --suite test_symbol_discovery --mode live
+    python main.py --suite test_symbol_discovery --mode live --module "\\\\src\\\\main.c\\\\*"
+    python main.py --suite test_symbol_discovery --mode live --pattern "g_*"
+
+  Or directly:
+    python tests/test_symbol_discovery.py live
+    python tests/test_symbol_discovery.py live --module "\\\\src\\\\main.c\\\\*"
+    python tests/test_symbol_discovery.py live --pattern "g_*"
+
+  After running in live mode two files appear in the framework directory:
+    test_symbol_discovery_test_cases.json   ← edit to match your symbols, then run
+    test_symbol_discovery_session_script.py ← standalone Trace32 exercise script
+
+──────────────────────────────────────────────────────────────────────────────
+FILTERING (live mode)
+──────────────────────────────────────────────────────────────────────────────
+
+  --module MODULE_GLOB   Filter symbols to those whose module path contains
+                         MODULE_GLOB.  Example: --module "main.c"
+  --pattern SYM_GLOB     Trace32 SYMBOL.LIST wildcard.  Default is "*" (all).
+                         Example: --pattern "g_*" for global variables only.
+  --breakpoint SYMBOL    Set a one-shot breakpoint on SYMBOL after discovery
+                         to confirm the function is reachable.
+
+  These flags can also be supplied as environment variables:
+    T32_DISC_MODULE   T32_DISC_PATTERN   T32_DISC_BREAKPOINT
 """
 
+import os
 import sys
+import time
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
 # ---------------------------------------------------------------------------
-# Stub out lauterbach.trace32.rcl (mirrors test_core.py setup)
+# Path bootstrap (runnable from any working directory)
 # ---------------------------------------------------------------------------
-_pyrcl_mock = MagicMock()
-sys.modules.setdefault("lauterbach", MagicMock())
-sys.modules.setdefault("lauterbach.trace32", MagicMock())
-sys.modules.setdefault("lauterbach.trace32.rcl", _pyrcl_mock)
-sys.modules.setdefault("lauterbach.trace32.rcl._rc", MagicMock())
-sys.modules.setdefault("lauterbach.trace32.rcl._rc._error", MagicMock())
+_HERE      = os.path.dirname(os.path.abspath(__file__))          # .../tests/
+_REPO_ROOT = os.path.abspath(os.path.join(_HERE, "..", ".."))    # <repo_root>
+_FW_DIR    = os.path.abspath(os.path.join(_HERE, ".."))          # GM_VIP_Automation_Framework/
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+
+def _print(msg: str) -> None:
+    ts = time.strftime("%H:%M:%S")
+    print(f"[DSC {ts}] {msg}", file=sys.stderr, flush=True)
+
+
+# ============================================================================
+# CONNECTION MODE
+# ============================================================================
+USE_LIVE_T32     = False   # ← flip or pass "live" on the command line
+T32_LIVE_PORT    = 20000
+T32_LIVE_PACKLEN = 1024
+
+# Symbol discovery filters (override via argv or env vars)
+DISCOVER_PATTERN    = os.environ.get("T32_DISC_PATTERN",    "*")
+DISCOVER_MODULE     = os.environ.get("T32_DISC_MODULE",     "")
+DISCOVER_BREAKPOINT = os.environ.get("T32_DISC_BREAKPOINT", "")
+
+# ---------------------------------------------------------------------------
+# Parse extra argv flags before unittest sees them:
+#   live  (or True / 1 / yes)         → activate live mode
+#   --pattern=X / --pattern X         → symbol glob
+#   --module=X  / --module  X         → module filter
+#   --breakpoint=X / --breakpoint X   → one-shot BP symbol
+# ---------------------------------------------------------------------------
+_LIVE_FLAGS = {"true", "1", "live", "yes"}
+_consumed: list = []
+_argv_remaining: list = []
+_i = 1
+while _i < len(sys.argv):
+    _arg = sys.argv[_i]
+    if _arg.lower() in _LIVE_FLAGS:
+        USE_LIVE_T32 = True
+        _consumed.append(_arg)
+        _i += 1
+    elif _arg.startswith("--pattern="):
+        DISCOVER_PATTERN = _arg.split("=", 1)[1]
+        _consumed.append(_arg)
+        _i += 1
+    elif _arg == "--pattern" and _i + 1 < len(sys.argv):
+        DISCOVER_PATTERN = sys.argv[_i + 1]
+        _consumed += [_arg, sys.argv[_i + 1]]
+        _i += 2
+    elif _arg.startswith("--module="):
+        DISCOVER_MODULE = _arg.split("=", 1)[1]
+        _consumed.append(_arg)
+        _i += 1
+    elif _arg == "--module" and _i + 1 < len(sys.argv):
+        DISCOVER_MODULE = sys.argv[_i + 1]
+        _consumed += [_arg, sys.argv[_i + 1]]
+        _i += 2
+    elif _arg.startswith("--breakpoint="):
+        DISCOVER_BREAKPOINT = _arg.split("=", 1)[1]
+        _consumed.append(_arg)
+        _i += 1
+    elif _arg == "--breakpoint" and _i + 1 < len(sys.argv):
+        DISCOVER_BREAKPOINT = sys.argv[_i + 1]
+        _consumed += [_arg, sys.argv[_i + 1]]
+        _i += 2
+    else:
+        _argv_remaining.append(_arg)
+        _i += 1
+sys.argv = [sys.argv[0]] + _argv_remaining   # let unittest see only its own args
+
+# ============================================================================
+# Mode-specific setup
+# ============================================================================
+if not USE_LIVE_T32:
+    # MOCK MODE – stub lauterbach so no real library is needed.
+    _pyrcl_mock = MagicMock()
+    sys.modules.setdefault("lauterbach", MagicMock())
+    sys.modules.setdefault("lauterbach.trace32", MagicMock())
+    sys.modules.setdefault("lauterbach.trace32.rcl", _pyrcl_mock)
+    sys.modules.setdefault("lauterbach.trace32.rcl._rc", MagicMock())
+    sys.modules.setdefault("lauterbach.trace32.rcl._rc._error", MagicMock())
+
+_LIVE_CONN     = None   # real connection; set below in live mode
+_LIVE_INVENTORY = None  # discovered SymbolInventory; set below in live mode
+_LIVE_JSON_PATH = None  # path to the generated JSON; set below in live mode
+
+if USE_LIVE_T32:
+    from GM_VIP_Automation_Framework.core.connection import T32Connection as _T32Conn
+    from GM_VIP_Automation_Framework.generator import generate_from_inventory
+
+    _print(f"LIVE mode – connecting to Trace32 on port {T32_LIVE_PORT} …")
+    _LIVE_CONN = _T32Conn(port=T32_LIVE_PORT, packlen=T32_LIVE_PACKLEN)
+    _LIVE_CONN.connect()
+    _print(f"Connected.  Discovering symbols (pattern={DISCOVER_PATTERN!r}) …")
+
+    from GM_VIP_Automation_Framework.core.symbol_discovery import discover_symbols
+    _LIVE_INVENTORY = discover_symbols(
+        pattern=DISCOVER_PATTERN,
+        connection=_LIVE_CONN,
+        resolve_addresses=True,
+    )
+    _print(_LIVE_INVENTORY.summary())
+
+    # Optionally filter by module
+    if DISCOVER_MODULE:
+        _print(f"Applying module filter: {DISCOVER_MODULE!r}")
+        from GM_VIP_Automation_Framework.core.symbol_discovery import (
+            DiscoveredSymbol, SymbolInventory,
+        )
+        _filtered = [
+            s for s in _LIVE_INVENTORY
+            if DISCOVER_MODULE.lower() in s.module.lower()
+        ]
+        _LIVE_INVENTORY = SymbolInventory(_filtered)
+        _print(f"Filtered inventory: {_LIVE_INVENTORY.summary()}")
+
+    # One-shot breakpoint verification (--breakpoint argument)
+    if DISCOVER_BREAKPOINT:
+        from GM_VIP_Automation_Framework.core import breakpoints as _bp_mod
+        _print(f"Setting one-shot breakpoint on '{DISCOVER_BREAKPOINT}' …")
+        try:
+            _bp_mod.set_breakpoint(DISCOVER_BREAKPOINT, _LIVE_CONN)
+            _print(f"Breakpoint set on '{DISCOVER_BREAKPOINT}'.")
+        except Exception as _e:
+            _print(f"WARNING: Could not set breakpoint on '{DISCOVER_BREAKPOINT}': {_e}")
+
+    # Write test-case JSON and session script to the framework directory
+    _GEN_RESULT = generate_from_inventory(
+        _LIVE_INVENTORY,
+        output_dir=_FW_DIR,
+        suite_name="test_symbol_discovery",
+        port=T32_LIVE_PORT,
+    )
+    _LIVE_JSON_PATH = _GEN_RESULT["json_path"]
+    _LIVE_SCRIPT_PATH = _GEN_RESULT["script_path"]
+    _print(f"Generated JSON  → {_LIVE_JSON_PATH}")
+    _print(f"Generated script→ {_LIVE_SCRIPT_PATH}")
+    _print("Run tests from JSON: python main.py --json test_symbol_discovery")
 
 
 # ---------------------------------------------------------------------------
@@ -395,6 +589,108 @@ class TestPublicExports(unittest.TestCase):
         from GM_VIP_Automation_Framework import core
         self.assertTrue(hasattr(core, "discover_symbols"))
         self.assertTrue(hasattr(core, "SymbolInventory"))
+
+
+# ---------------------------------------------------------------------------
+# Live-mode tests  (only executed when USE_LIVE_T32 = True)
+# ---------------------------------------------------------------------------
+
+if USE_LIVE_T32:
+
+    class TestLiveDiscovery(unittest.TestCase):
+        """Exercises real Trace32 discovery; requires USE_LIVE_T32 = True."""
+
+        @classmethod
+        def setUpClass(cls):
+            # These are populated by the module-level setup above.
+            cls.conn      = _LIVE_CONN
+            cls.inventory = _LIVE_INVENTORY
+            cls.json_path = Path(_LIVE_JSON_PATH) if _LIVE_JSON_PATH else None
+
+        def test_connection_is_active(self):
+            """T32Connection.is_connected() must return True after module setup."""
+            self.assertTrue(self.conn.is_connected(),
+                            "Trace32 connection dropped before tests started.")
+
+        def test_inventory_not_empty(self):
+            """At least one symbol must be discovered from the live session."""
+            self.assertGreater(
+                len(self.inventory), 0,
+                "No symbols discovered. "
+                "Check that the ELF is loaded in Trace32 and "
+                f"the pattern {DISCOVER_PATTERN!r} matches your symbols.",
+            )
+
+        def test_functions_discovered(self):
+            """At least one FUNCTION-kind symbol must be present."""
+            from GM_VIP_Automation_Framework.core.symbol_discovery import SymbolKind
+            funcs = [s for s in self.inventory if s.kind == SymbolKind.FUNCTION]
+            self.assertGreater(
+                len(funcs), 0,
+                f"No functions found among {len(self.inventory)} discovered symbol(s). "
+                "Verify ELF load and code-section symbols are visible.",
+            )
+
+        def test_modules_extracted(self):
+            """Module list is populated (or empty for stripped binaries — both are valid)."""
+            mods = self.inventory.modules
+            self.assertIsInstance(mods, list, "modules must return a list")
+            _print(f"Modules found ({len(mods)}): {mods}")
+
+        def test_json_file_written(self):
+            """The generated JSON must exist and parse correctly."""
+            import json as _json
+            self.assertIsNotNone(self.json_path,
+                                 "JSON path not recorded (generator may have failed).")
+            self.assertTrue(
+                self.json_path.exists(),
+                f"Expected generated JSON at {self.json_path} but file not found.",
+            )
+            with open(self.json_path, encoding="utf-8") as fh:
+                data = _json.load(fh)
+            self.assertIn("test_suite", data,
+                          "Generated JSON is missing 'test_suite' key.")
+            self.assertIn("test_cases", data,
+                          "Generated JSON is missing 'test_cases' key.")
+            _print(f"JSON contains {len(data['test_cases'])} test case(s).")
+
+        def test_json_matches_inventory(self):
+            """Number of generated breakpoint TCs must equal discovered functions."""
+            import json as _json
+            if not (self.json_path and self.json_path.exists()):
+                self.skipTest("JSON file not available.")
+            with open(self.json_path, encoding="utf-8") as fh:
+                data = _json.load(fh)
+            bp_tcs = [tc for tc in data["test_cases"]
+                      if tc.get("breakpoints")]
+            n_funcs = len(self.inventory.functions)
+            _print(f"Functions in inventory: {n_funcs}, "
+                   f"breakpoint TCs in JSON: {len(bp_tcs)}")
+            # One TC per discovered function; must not exceed the function count.
+            self.assertEqual(
+                len(bp_tcs), n_funcs,
+                f"Expected exactly {n_funcs} breakpoint TC(s) — one per function — "
+                f"but found {len(bp_tcs)} in the generated JSON.",
+            )
+
+        def test_session_summary_printable(self):
+            """summary() must return a non-empty string."""
+            s = self.inventory.summary()
+            self.assertIsInstance(s, str)
+            self.assertGreater(len(s), 0)
+            _print(s)
+
+        def test_symbol_breakpoint_arg(self):
+            """If --breakpoint was supplied, the symbol must exist in the inventory."""
+            if not DISCOVER_BREAKPOINT:
+                self.skipTest("No --breakpoint argument supplied.")
+            names = [s.name for s in self.inventory] + \
+                    [s.short_name for s in self.inventory]
+            self.assertIn(
+                DISCOVER_BREAKPOINT, names,
+                f"--breakpoint symbol '{DISCOVER_BREAKPOINT}' not found in inventory. "
+                "Ensure the symbol name matches exactly (case-sensitive).",
+            )
 
 
 if __name__ == "__main__":
