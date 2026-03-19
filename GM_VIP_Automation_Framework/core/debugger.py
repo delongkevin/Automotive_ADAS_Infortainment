@@ -11,16 +11,51 @@ not supplied the module-level :data:`default_connection` is used.  This
 pattern allows test scripts to set a global connection once and call module
 functions without threading it through every call.
 
+ECU State model
+---------------
+Trace32 exposes several PRACTICE boolean functions that together describe the
+full target execution state.  :func:`get_ecu_state` queries all of them and
+returns a typed :class:`ECUState` value that the framework uses to drive
+control-flow decisions:
+
++-------------------+---------------------------+--------------------------------------------------+
+| ECUState          | T32 expression            | What it means                                    |
++===================+===========================+==================================================+
+| ``DOWN``          | SYStem.Mode() == "DOWN"   | Target powered off or debug probe disconnected.  |
+|                   |                           | No commands will reach the ECU.                  |
+|                   |                           | (Note: STATE.DOWN is a PRACTICE *command* —      |
+|                   |                           | using STATE.DOWN() as a function produces the    |
+|                   |                           | Trace32 message "don't use commands as           |
+|                   |                           | functions".  Use SYStem.Mode() instead.)         |
++-------------------+---------------------------+--------------------------------------------------+
+| ``RESET``         | STATE.RESET()             | T32 is holding the ECU in hardware reset.        |
+|                   |                           | Wait ~800 ms (intermediate_halt_go_delay_s)      |
+|                   |                           | before issuing GO.                               |
++-------------------+---------------------------+--------------------------------------------------+
+| ``RUNNING``       | STATE.RUN()               | ECU is executing code.  Send stimulus or wait    |
+|                   |                           | for a breakpoint halt.                           |
++-------------------+---------------------------+--------------------------------------------------+
+| ``HALTED``        | all FALSE                 | ECU stopped at breakpoint or BREAK command.      |
+|                   |                           | Safe to read/write variables and inspect the PC. |
++-------------------+---------------------------+--------------------------------------------------+
+| ``UNKNOWN``       | (error)                   | Unable to determine state (comm error, T32 not   |
+|                   |                           | connected).                                      |
++-------------------+---------------------------+--------------------------------------------------+
+
 Public API
 ----------
+- :class:`ECUState` – enum of all Trace32 target execution states.
+- :func:`get_ecu_state` – query T32 and return a typed :class:`ECUState`.
+- :func:`is_running` – ``True`` when ECU is in running state.
+- :func:`is_reset` – ``True`` when ECU is held in hardware reset.
+- :func:`is_down` – ``True`` when target is powered off / disconnected.
 - :func:`go` – resume ECU execution (mirrors ``A_DBGR_Go``).
-- :func:`go_safe` – resume with soft-reset detection and retry.
+- :func:`go_safe` – resume with soft-reset / DOWN detection and retry.
 - :func:`break_execution` – halt ECU execution (mirrors ``A_DBGR_Break``).
 - :func:`reset_target` – reset ECU without reloading symbols (mirrors ``A_DBGR_R``).
 - :func:`reset_and_go` – reset ECU and resume execution (mirrors ``A_DBGR_RnGo``).
 - :func:`go_up` – step out of function (mirrors ``A_DBGR_GoUp``).
 - :func:`step_over` – single-step over one source line (mirrors ``A_DBGR_StepOver``).
-- :func:`is_running` – return ``True`` when ECU is in running state.
 - :func:`wait_for_halt` – block until ECU halts or timeout.
 - :func:`wait_for_running` – block until ECU is running or timeout.
 """
@@ -28,6 +63,7 @@ Public API
 from __future__ import annotations
 
 import time
+from enum import Enum
 from typing import Optional
 
 from ..config import settings
@@ -61,8 +97,92 @@ def _conn(connection):
 
 
 # ---------------------------------------------------------------------------
+# ECU State model
+# ---------------------------------------------------------------------------
+
+class ECUState(Enum):
+    """All possible Trace32 target execution states.
+
+    Use :func:`get_ecu_state` to query the live state.  The enum values are
+    plain strings so they produce readable log output without extra
+    formatting.
+
+    Priority when multiple T32 flags are set simultaneously:
+    ``DOWN`` > ``RESET`` > ``RUNNING`` > ``HALTED`` > ``UNKNOWN``.
+    """
+
+    RUNNING = "running"
+    """ECU is executing code (``STATE.RUN()`` is TRUE).
+    Send CAN/power stimulus or wait for a breakpoint halt."""
+
+    HALTED  = "halted"
+    """ECU is stopped at a breakpoint or after a BREAK command.
+    Variables and registers are safe to read/write.
+    Issue GO to resume execution."""
+
+    RESET   = "reset"
+    """T32 is actively holding the ECU in hardware reset (``STATE.RESET()``
+    is TRUE).  Wait ``intermediate_halt_go_delay_s`` (~800 ms) before
+    issuing GO so the reset line has time to de-assert."""
+
+    DOWN    = "down"
+    """Target is powered off or the debug probe is disconnected.
+
+    Detected via ``SYStem.Mode()`` returning ``"DOWN"``.
+
+    .. note::
+        ``STATE.DOWN`` is a PRACTICE **command** (not a function).  Using it
+        as ``STATE.DOWN()`` in an expression produces the Trace32 status-window
+        warning *"STATE.DOWN exists – don't use commands as functions"*.
+        Always use ``SYStem.Mode()`` for connection-state queries.
+    """
+
+    UNKNOWN = "unknown"
+    """State cannot be determined (T32 communication error or not connected).
+    Check the RCL port and retry."""
+
+
+# ---------------------------------------------------------------------------
 # State query helpers
 # ---------------------------------------------------------------------------
+
+def _is_true(raw: str) -> bool:
+    """Return ``True`` when a Trace32 PRACTICE boolean expression evaluates TRUE.
+
+    Trace32 returns boolean results as the string ``"TRUE()"`` (with
+    parentheses) or occasionally as ``"TRUE"`` or ``"1"``.  This helper
+    normalises all three forms so callers do not need to repeat the
+    comparison logic.
+    """
+    return raw.strip().upper() in ("TRUE()", "TRUE", "1")
+
+
+def is_reset(connection=None) -> bool:
+    """Return ``True`` when the ECU is being held in hardware reset by T32.
+
+    Uses the PRACTICE expression ``STATE.RESET()`` which returns ``TRUE()``
+    when Trace32 is actively holding the target CPU in reset (via the reset
+    line).  In this state ``STATE.RUN()`` is ``FALSE`` and a plain ``GO``
+    command has no effect until the reset line is released.
+
+    After ``SYStem.RESetTarget`` T32 may hold the CPU in reset for ~800 ms
+    while it rebuilds its internal state tables.  Callers should wait at
+    least :attr:`~config.T32Settings.intermediate_halt_go_delay_s` (0.8 s
+    by default) before issuing GO when ``is_reset()`` returns ``True``.
+
+    Parameters
+    ----------
+    connection:
+        Optional :class:`~connection.T32Connection` override.
+    """
+    conn = _conn(connection)
+    try:
+        result = conn.fnc("STATE.RESET()")
+        return _is_true(result)
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("is_reset() query failed: %s", exc)
+        return False
+
 
 def is_running(connection=None) -> bool:
     """Return ``True`` when the ECU is currently in the *running* state.
@@ -79,10 +199,123 @@ def is_running(connection=None) -> bool:
     conn = _conn(connection)
     try:
         result = conn.fnc("STATE.RUN()")
-        return result.strip().upper() in ("TRUE()", "TRUE", "1")
+        return _is_true(result)
     except Exception as exc:  # noqa: BLE001
         logger.debug("is_running() query failed: %s", exc)
         return False
+
+
+def is_down(connection=None) -> bool:
+    """Return ``True`` when the target is powered off or the probe is disconnected.
+
+    Uses the PRACTICE **function** ``SYStem.Mode()`` which returns the current
+    debug-connection mode as a string.  When the string is ``"DOWN"`` the target
+    is not reachable and no ECU commands are possible.
+
+    .. warning::
+        ``STATE.DOWN`` is a PRACTICE **command**, not a function.  Evaluating
+        ``STATE.DOWN()`` in an expression (via ``conn.fnc()``) causes the Trace32
+        status-window message::
+
+            STATE.DOWN exists – don't use commands as functions – Press F1 for more details.
+
+        Use ``SYStem.Mode()`` instead, which is a proper function and returns the
+        connection state as a readable string (``"DOWN"``, ``"UP"``, ``"ATTACH"``,
+        ``"STANDBY"``, …).
+
+    Parameters
+    ----------
+    connection:
+        Optional :class:`~connection.T32Connection` override.
+    """
+    conn = _conn(connection)
+    try:
+        # SYStem.Mode() returns the debug-connection mode as a string.
+        # Strip surrounding quotes that Trace32 sometimes includes.
+        mode = conn.fnc("SYStem.Mode()").strip().strip('"').strip("'").upper()
+        return mode == "DOWN"
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("is_down() query failed: %s", exc)
+        return False
+
+
+def get_ecu_state(connection=None) -> "ECUState":
+    """Query all Trace32 state expressions and return a typed :class:`ECUState`.
+
+    This is the single authoritative state query for the framework.  It
+    evaluates the T32 PRACTICE state functions in priority order and
+    maps them to the appropriate :class:`ECUState` value:
+
+    1. ``SYStem.Mode()=="DOWN"``  → :attr:`ECUState.DOWN`   – target not reachable
+    2. ``STATE.RESET()``          → :attr:`ECUState.RESET`  – held in hardware reset
+    3. ``STATE.RUN()``            → :attr:`ECUState.RUNNING` – actively executing
+    4. all FALSE                  → :attr:`ECUState.HALTED`  – stopped at breakpoint
+    5. error                      → :attr:`ECUState.UNKNOWN` – comm / query failure
+
+    .. note::
+        ``STATE.DOWN`` is a PRACTICE **command**, not a function.  Using it as
+        ``STATE.DOWN()`` in an expression triggers the Trace32 status-window
+        message *"STATE.DOWN exists – don't use commands as functions"*.
+        The correct function for connection-state queries is ``SYStem.Mode()``,
+        which returns a string (``"DOWN"``, ``"UP"``, ``"ATTACH"``, etc.).
+
+    Use this function wherever the control-flow decision depends on the full
+    target state (e.g. before issuing GO, after reset, after a breakpoint
+    halt).
+
+    Parameters
+    ----------
+    connection:
+        Optional :class:`~connection.T32Connection` override.
+
+    Returns
+    -------
+    ECUState
+        One of the five typed state values described above.
+
+    Examples
+    --------
+    ::
+
+        state = get_ecu_state(conn)
+        if state == ECUState.DOWN:
+            raise RuntimeError("ECU is powered off – check PSU")
+        if state == ECUState.RESET:
+            time.sleep(0.8)          # wait for reset line to clear
+            go(conn)
+        elif state == ECUState.HALTED:
+            v, i = psu.measure()     # safe to read variables now
+            check_halted_at("myFunc", connection=conn)
+    """
+    conn = _conn(connection)
+    try:
+        # Query each flag directly so that any T32 communication error
+        # propagates to the outer except clause and returns UNKNOWN.
+
+        def _q(expr: str) -> bool:
+            return _is_true(conn.fnc(expr))
+
+        # DOWN: SYStem.Mode() is the correct PRACTICE *function* for the
+        # debug-connection state.  STATE.DOWN is a PRACTICE *command* and
+        # cannot be used as STATE.DOWN() in an expression – doing so produces
+        # the Trace32 status-window message:
+        #   "STATE.DOWN exists – don't use commands as functions"
+        mode = conn.fnc("SYStem.Mode()").strip().strip('"').strip("'").upper()
+        if mode == "DOWN":
+            logger.debug("get_ecu_state() → DOWN (SYStem.Mode()=DOWN)")
+            return ECUState.DOWN
+
+        if _q("STATE.RESET()"):
+            logger.debug("get_ecu_state() → RESET")
+            return ECUState.RESET
+        if _q("STATE.RUN()"):
+            logger.debug("get_ecu_state() → RUNNING")
+            return ECUState.RUNNING
+        logger.debug("get_ecu_state() → HALTED (stopped at breakpoint)")
+        return ECUState.HALTED
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("get_ecu_state() failed: %s – returning UNKNOWN.", exc)
+        return ECUState.UNKNOWN
 
 
 def get_state(connection=None) -> str:
@@ -186,6 +419,14 @@ def go(connection=None) -> None:
 
     If the ECU is already running the call is a no-op.
 
+    Hard-reset handling
+    ~~~~~~~~~~~~~~~~~~~
+    If T32 is holding the ECU in reset (``STATE.RESET()`` is ``TRUE``),
+    this function waits :attr:`~config.T32Settings.intermediate_halt_go_delay_s`
+    (0.8 s by default) for the reset line to clear before issuing the ``GO``
+    command.  Without this wait, ``GO`` is silently ignored and the ECU
+    never starts executing, causing :func:`wait_for_running` to time out.
+
     Parameters
     ----------
     connection:
@@ -205,7 +446,27 @@ def go(connection=None) -> None:
         logger.debug("GO: ECU already running.")
         return
 
-    logger.info("GO: resuming ECU execution.")
+    # Query full state once so we can give a precise response.
+    state = get_ecu_state(conn)
+
+    if state == ECUState.DOWN:
+        raise T32ConnectionError(
+            "GO: ECU is powered down or disconnected (STATE.DOWN). "
+            "Verify the power supply is on and the debug probe is connected "
+            "before issuing GO."
+        )
+
+    if state == ECUState.RESET:
+        # T32 is holding the ECU in reset.  Wait for the reset line to clear
+        # (~800 ms on Aurix TC4) before issuing GO, otherwise GO is ignored.
+        logger.warning(
+            "GO: ECU is in RESET state – waiting %.2fs for reset line to "
+            "clear before issuing GO (intermediate_halt_go_delay_s).",
+            settings.intermediate_halt_go_delay_s,
+        )
+        time.sleep(settings.intermediate_halt_go_delay_s)
+
+    logger.info("GO: resuming ECU execution (state was %s).", state.value)
     conn.cmd("GO")
 
     # Brief pause before polling so the CPU bus has time to leave the halted
@@ -258,6 +519,26 @@ def go_safe(
     logger.info("GO_SAFE: resuming ECU execution (max_retries=%d).", max_retries)
 
     for attempt in range(1, max_retries + 1):
+        # Query full state before issuing GO so we can react appropriately.
+        state = get_ecu_state(conn)
+
+        if state == ECUState.DOWN:
+            logger.error(
+                "GO_SAFE: ECU is powered down or disconnected (STATE.DOWN) "
+                "on attempt %d/%d – aborting.", attempt, max_retries,
+            )
+            return False
+
+        if state == ECUState.RESET:
+            # T32 is holding the ECU in reset.  Wait for the reset line to
+            # clear before issuing GO, otherwise GO is silently ignored.
+            logger.warning(
+                "GO_SAFE: ECU in RESET state (attempt %d/%d). "
+                "Waiting %.2fs for reset to complete before GO.",
+                attempt, max_retries, settings.intermediate_halt_go_delay_s,
+            )
+            time.sleep(settings.intermediate_halt_go_delay_s)
+
         conn.cmd("GO")
         time.sleep(0.2)  # allow ECU to hit soft-reset if it will
 

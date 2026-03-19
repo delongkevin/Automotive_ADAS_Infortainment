@@ -236,6 +236,26 @@ class T32Connection:
     # RCL connection
     # ------------------------------------------------------------------
 
+    def _pyrcl_connect(
+        self,
+        port: int,
+        packlen: int,
+        protocol: str,
+        timeout: float,
+    ) -> object:
+        """Invoke ``pyrcl.connect`` – extracted as a method for test-time patching.
+
+        This wrapper exists solely so tests can do::
+
+            with patch.object(conn, "_pyrcl_connect", side_effect=OSError(...)):
+                result = conn.try_connect()
+
+        without requiring a real (or mock) Lauterbach library import, and
+        without being affected by any cached lauterbach state in sys.modules.
+        """
+        import lauterbach.trace32.rcl as pyrcl  # lazy import
+        return pyrcl.connect(port=port, packlen=packlen, protocol=protocol, timeout=timeout)
+
     def connect(
         self,
         port: Optional[int] = None,
@@ -283,8 +303,7 @@ class T32Connection:
 
         while time.monotonic() < deadline:
             try:
-                import lauterbach.trace32.rcl as pyrcl  # lazy import
-                self.debugger = pyrcl.connect(port=p, packlen=pk, protocol=proto, timeout=tmo)
+                self.debugger = self._pyrcl_connect(p, pk, proto, tmo)
                 self._connected = True
                 logger.info("Connected to Trace32 on port %d.", p)
                 return
@@ -343,8 +362,7 @@ class T32Connection:
             proto, p, pk, tmo,
         )
         try:
-            import lauterbach.trace32.rcl as pyrcl  # lazy import
-            self.debugger = pyrcl.connect(port=p, packlen=pk, protocol=proto, timeout=tmo)
+            self.debugger = self._pyrcl_connect(p, pk, proto, tmo)
             self._connected = True
             logger.info("Connected to already-running Trace32 on port %d.", p)
             return True

@@ -117,7 +117,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install pytest
-        run: pip install --upgrade pip pytest
+        run: pip install --upgrade pip pytest pyserial
 
       - name: Run GM VIP Framework unit tests
         # conftest.py stubs lauterbach.trace32.rcl so no hardware is needed.

@@ -1,60 +1,70 @@
 """
 GM VIP Automation Framework – JSON-driven Test Runner
 ======================================================
-Loads two JSON files and executes an entire test suite against Trace32
-without any changes to Python source code:
+Loads one or more ``*_test_cases.json`` files and executes an entire test
+suite against Trace32 without any changes to Python source code.
 
+File naming convention
+----------------------
+All test-case JSON files follow the pattern ``*_test_cases.json``, where
+``*`` is a free-form label (e.g. ``sanity``, ``stress``, ``powercycle``).
+The runner auto-discovers every matching file in a directory so that adding
+a new suite requires nothing more than dropping a new JSON file::
+
+    sanity_test_cases.json     ← default sanity suite
+    stress_test_cases.json     ← add this file to include stress tests
+    powercycle_test_cases.json ← add this file for power-cycle tests
+
+Configuration file
+------------------
 - **config.json** – Trace32 paths, ports, and timing settings.
-- **test_cases.json** – test case definitions: breakpoints, variable
-  writes, variable checks with expected values, symbol inspections, and
-  CAPL references.
 
 Typical workflow
 ----------------
 1. (Optional) Edit ``config.json`` to set ``rcl_port`` and, only if you
    need the framework to launch Trace32, ``t32_exe_path`` / ``t32_config_path``.
-2. Edit ``test_cases.json`` to describe your CAPL test cases (one JSON
-   object per test case).
+2. Edit (or add) ``*_test_cases.json`` to describe your test cases.
 3. Start Trace32 manually (run your ``*.cmm`` startup script so that the
    API port is already open).
-4. Run the tests::
+4. Run all discovered suites at once::
 
-       python -c "
+       python main.py --json all
+
+   Or run a single suite by name (without the ``_test_cases.json`` suffix)::
+
+       python main.py --json sanity
+
+   Or invoke the runner directly from Python::
+
        from GM_VIP_Automation_Framework import runner
-       runner.run_from_json('test_cases.json')
-       "
+       runner.run_from_json('sanity_test_cases.json')
 
-   The framework will detect the running Trace32 instance automatically
-   (``resilient_connect=True`` by default).  ``exe_path`` in
+   The framework detects the running Trace32 instance automatically
+   (``resilient_connect=True`` by default).  ``t32_exe_path`` in
    ``config.json`` is **not required** when Trace32 is already running.
 
    To supply a CMM startup script (launched via ``-s`` when Trace32 is
    not yet running)::
 
        runner.run_from_json(
-           'test_cases.json',
+           'sanity_test_cases.json',
            cmm_entry_script=r'C:\\workspace\\tc4d9xe_debug.cmm',
            auto_launch=True,
        )
 
-Test-case JSON keys
--------------------
+Test-case JSON schema
+---------------------
 Each entry in the ``test_cases`` list supports:
 
 - ``name`` (str, required) – unique test case identifier.
 - ``enabled`` (bool, default ``true``) – skip when ``false``.
 - ``reset_before`` (bool, default ``false``) – issue ``SYStem.RESetTarget``
-  and wait for halt before running the test.  A configurable
-  ``post_reset_settle_s`` delay is then applied (see ``config.json``)
-  to let T32 rebuild its internal state before proceeding.
+  and wait for halt before running the test.
 - ``go_before_check`` (bool, default ``false``) – after writing
   ``variables_write`` and setting any ``breakpoints``, issue ``GO`` and
-  wait for the ECU to halt *before* reading ``variables_check``.  Use
-  this when variables only reach their expected values after the ECU has
-  executed some initialisation code.
+  wait for the ECU to halt *before* reading ``variables_check``.
 - ``breakpoints`` (list[str]) – symbols at which to set execution
-  breakpoints.  The runner does ``GO``, waits for each breakpoint to be
-  hit, then reads variables.
+  breakpoints.
 - ``variables_write`` (dict) – variables to write before the GO step.
 - ``variables_check`` (dict) – variables to read (and optionally assert)
   after the ECU halts.
@@ -63,9 +73,13 @@ Each entry in the ``test_cases`` list supports:
 
 Public API
 ----------
-- :func:`run_from_json` – load both JSON files and execute the suite.
-- :func:`load_test_cases` – parse a ``test_cases.json`` into a list of
-  :class:`TestCaseDef` dicts (useful for inspection / custom runners).
+- :func:`run_from_json` – load a single JSON file and execute the suite.
+- :func:`load_test_cases` – parse a ``*_test_cases.json`` into a list of
+  dicts (useful for inspection / custom runners).
+- :func:`discover_test_case_files` – find all ``*_test_cases.json`` files
+  in a directory.
+- :func:`run_all_discovered` – discover and run every ``*_test_cases.json``
+  in a directory, returning a mapping of suite name → report.
 """
 
 from __future__ import annotations
@@ -78,7 +92,12 @@ import GM_VIP_Automation_Framework as t32
 from .config import settings
 from .report import TestCaseReport
 
-__all__ = ["run_from_json", "load_test_cases"]
+__all__ = [
+    "run_from_json",
+    "load_test_cases",
+    "discover_test_case_files",
+    "run_all_discovered",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -118,6 +137,101 @@ def load_test_cases(path: str) -> List[Dict[str, Any]]:
     if "test_cases" not in raw:
         raise ValueError(f"'{path}' must contain a top-level 'test_cases' list.")
     return raw["test_cases"]
+
+
+# ---------------------------------------------------------------------------
+# Discovery helpers
+# ---------------------------------------------------------------------------
+
+def discover_test_case_files(directory: str = ".") -> List[Path]:
+    """Find all ``*_test_cases.json`` files in *directory*.
+
+    The naming convention ``*_test_cases.json`` allows any number of test
+    suites to coexist in the same folder.  Adding a new suite requires only
+    dropping a new JSON file – no Python changes are needed::
+
+        sanity_test_cases.json
+        stress_test_cases.json
+        powercycle_test_cases.json
+
+    Parameters
+    ----------
+    directory:
+        Directory to search.  Defaults to the current working directory.
+
+    Returns
+    -------
+    list[Path]
+        Sorted list of discovered ``*_test_cases.json`` paths.
+    """
+    base = Path(directory)
+    return sorted(base.glob("*_test_cases.json"))
+
+
+def run_all_discovered(
+    directory: str = ".",
+    config_json_path: Optional[str] = None,
+    auto_launch: bool = False,
+    cmm_entry_script: Optional[str] = None,
+    resilient_connect: bool = True,
+) -> Dict[str, TestCaseReport]:
+    """Discover and run every ``*_test_cases.json`` in *directory*.
+
+    This is the simplest way to execute all available test suites without
+    specifying individual file names.  Reports are saved automatically next
+    to each JSON file (``<name>_report.json`` and ``<name>_report.html``).
+
+    Parameters
+    ----------
+    directory:
+        Directory to scan for ``*_test_cases.json`` files.
+    config_json_path:
+        Path to ``config.json``.  When *None* the function looks for a
+        ``config.json`` in *directory*.
+    auto_launch:
+        Launch Trace32 automatically if not already running.
+    cmm_entry_script:
+        Optional CMM startup script path.
+    resilient_connect:
+        Try connecting to a running Trace32 instance before launching.
+
+    Returns
+    -------
+    dict[str, TestCaseReport]
+        Mapping of suite label (file stem without ``_test_cases`` suffix) to
+        its completed :class:`~report.TestCaseReport`.
+
+    Raises
+    ------
+    FileNotFoundError
+        When no ``*_test_cases.json`` files are found in *directory*.
+    """
+    files = discover_test_case_files(directory)
+    if not files:
+        raise FileNotFoundError(
+            f"No '*_test_cases.json' files found in '{directory}'. "
+            "Create a JSON file following the naming convention "
+            "(e.g. 'sanity_test_cases.json') to define a test suite."
+        )
+
+    results: Dict[str, TestCaseReport] = {}
+    for json_path in files:
+        # Derive a short suite label: "sanity_test_cases" → "sanity"
+        label = json_path.stem
+        if label.endswith("_test_cases"):
+            label = label[: -len("_test_cases")]
+        print(f"\n[GM_VIP] Running suite '{label}' from {json_path.name} …")
+        report = run_from_json(
+            test_cases_path=str(json_path),
+            config_json_path=config_json_path,
+            auto_launch=auto_launch,
+            cmm_entry_script=cmm_entry_script,
+            resilient_connect=resilient_connect,
+        )
+        results[label] = report
+        print(f"[GM_VIP] Suite '{label}' done: {report.summary()}")
+
+    return results
 
 
 # ---------------------------------------------------------------------------
@@ -217,19 +331,31 @@ def run_from_json(
     )
 
     if resilient_connect:
-        # Try to connect to a running instance first.
-        if not conn.try_connect():
-            if auto_launch:
-                conn.launch()
-            else:
-                from .utils.exceptions import T32ConnectionError
-                raise T32ConnectionError(
-                    f"No running Trace32 found on port {settings.rcl_port}. "
-                    "Start Trace32 manually (your *.cmm script can open the API "
-                    "port), or set auto_launch=True to have the framework launch "
-                    "Trace32 automatically."
-                )
+        # Default behaviour: probe the port first.  If Trace32 is already
+        # running we reuse it and skip the launch entirely.
+        if conn.try_connect():
+            print(
+                f"[GM_VIP] Trace32 detected on port {settings.rcl_port} "
+                "– connecting to existing instance."
+            )
+        elif auto_launch:
+            print(
+                f"[GM_VIP] Trace32 not found on port {settings.rcl_port} "
+                "– launching automatically …"
+            )
+            conn.launch()
+        else:
+            from .utils.exceptions import T32ConnectionError
+            raise T32ConnectionError(
+                f"No running Trace32 found on port {settings.rcl_port}. "
+                "Start Trace32 manually (your *.cmm script can open the API "
+                "port), or pass auto_launch=True / use --auto-launch to have "
+                "the framework launch Trace32 automatically."
+            )
     elif auto_launch:
+        print(
+            f"[GM_VIP] Launching Trace32 on port {settings.rcl_port} …"
+        )
         conn.launch()
 
     with conn:
