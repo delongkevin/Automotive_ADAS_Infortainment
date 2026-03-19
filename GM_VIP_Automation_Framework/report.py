@@ -45,7 +45,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
 
-__all__ = ["TestCaseReport", "TestCaseResult"]
+__all__ = ["TestCaseReport", "TestCaseResult", "ModuleStatusReport"]
+
+# Suffix appended to variable names recorded via record_variable() for writes.
+_WRITE_SUFFIX = " (write)"
 
 
 # ---------------------------------------------------------------------------
@@ -477,6 +480,339 @@ def _render_html(report: TestCaseReport, show_pass: bool = False) -> str:
     {tcs_html}
   </div>
   <div class="footer">GM VIP Automation Framework &middot; {_now()}</div>
+</body>
+</html>
+"""
+
+
+# ---------------------------------------------------------------------------
+# Module status report
+# ---------------------------------------------------------------------------
+
+@dataclass
+class _ModuleSymbolRow:
+    """One row in a :class:`ModuleStatusReport` symbol table."""
+    symbol:    str
+    kind:      str   # "FUNCTION" / "VARIABLE" / "UNKNOWN"
+    exists:    bool
+    address:   str   = ""
+    bp_status: str   = ""   # "HIT" / "MISS" / "" (not tested)
+    value:     str   = ""   # last read value (variables only)
+    notes:     str   = ""
+
+
+class ModuleStatusReport:
+    """Professional status report across all discovered modules, symbols, and
+    functions from a live Trace32 session.
+
+    Usage
+    -----
+    ::
+
+        from GM_VIP_Automation_Framework.report import ModuleStatusReport
+        from GM_VIP_Automation_Framework.core.symbol_discovery import discover_symbols
+
+        inventory = discover_symbols(connection=conn)
+        msr = ModuleStatusReport.from_inventory(inventory)
+
+        # Optionally merge run-time results from a TestCaseReport.
+        msr.merge_test_case_report(tc_report)
+
+        msr.save_html("module_status.html")
+        print(msr.summary())
+    """
+
+    def __init__(self, suite_name: str = "Module Status") -> None:
+        self.suite_name = suite_name
+        self.generated_at: str = _now()
+        # module → list of rows
+        self._rows: Dict[str, List[_ModuleSymbolRow]] = {}
+        self._meta: Dict[str, str] = {}
+
+    # ------------------------------------------------------------------
+    # Factory
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def from_inventory(
+        cls,
+        inventory,
+        suite_name: str = "Module Status",
+    ) -> "ModuleStatusReport":
+        """Create a :class:`ModuleStatusReport` from a
+        :class:`~core.symbol_discovery.SymbolInventory`.
+
+        Parameters
+        ----------
+        inventory:
+            Pre-built symbol inventory.
+        suite_name:
+            Label used in report headers.
+        """
+        msr = cls(suite_name=suite_name)
+        msr._meta = {
+            "session_timestamp": inventory.session_timestamp,
+            "total_symbols":  str(len(inventory)),
+            "total_modules":  str(len(inventory.modules)),
+            "total_functions": str(len(inventory.functions)),
+            "total_variables": str(len(inventory.variables)),
+        }
+        for sym in inventory.symbols:
+            module = sym.module or "_global_"
+            row = _ModuleSymbolRow(
+                symbol  = sym.name,
+                kind    = sym.kind.value,
+                exists  = sym.exists,
+                address = sym.address,
+            )
+            msr._rows.setdefault(module, []).append(row)
+        return msr
+
+    # ------------------------------------------------------------------
+    # Merging run-time results
+    # ------------------------------------------------------------------
+
+    def merge_test_case_report(self, tc_report: "TestCaseReport") -> None:
+        """Overlay breakpoint-hit and variable-value data from *tc_report*.
+
+        Call after :meth:`from_inventory` to enrich the module status table
+        with run-time evidence gathered by :func:`~runner.run_from_json`.
+        """
+        # Build flat lookup: symbol → row
+        sym_map: Dict[str, _ModuleSymbolRow] = {}
+        for rows in self._rows.values():
+            for row in rows:
+                sym_map[row.symbol] = row
+
+        for tc in tc_report.results:
+            for sym, hit in tc.breakpoints.items():
+                if sym in sym_map:
+                    sym_map[sym].bp_status = "HIT" if hit else "MISS"
+            for sym, val in tc.variables.items():
+                clean = sym.replace(_WRITE_SUFFIX, "").strip()
+                if clean in sym_map:
+                    sym_map[clean].value = str(val)
+
+    # ------------------------------------------------------------------
+    # Summary
+    # ------------------------------------------------------------------
+
+    def summary(self) -> str:
+        """One-line text summary."""
+        total_syms = sum(len(rows) for rows in self._rows.values())
+        total_mods = len(self._rows)
+        bp_hit  = sum(
+            1 for rows in self._rows.values()
+            for r in rows if r.bp_status == "HIT"
+        )
+        bp_miss = sum(
+            1 for rows in self._rows.values()
+            for r in rows if r.bp_status == "MISS"
+        )
+        return (
+            f"{self.suite_name}: {total_mods} module(s), "
+            f"{total_syms} symbol(s), "
+            f"{bp_hit} breakpoint(s) HIT, {bp_miss} MISS"
+        )
+
+    # ------------------------------------------------------------------
+    # Serialisation
+    # ------------------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serialisable dict."""
+        return {
+            "suite_name":   self.suite_name,
+            "generated_at": self.generated_at,
+            "meta":         self._meta,
+            "modules": {
+                mod: [
+                    {
+                        "symbol":    r.symbol,
+                        "kind":      r.kind,
+                        "exists":    r.exists,
+                        "address":   r.address,
+                        "bp_status": r.bp_status,
+                        "value":     r.value,
+                        "notes":     r.notes,
+                    }
+                    for r in rows
+                ]
+                for mod, rows in sorted(self._rows.items())
+            },
+        }
+
+    def save_json(self, path: str) -> None:
+        """Write the report as a JSON file."""
+        Path(path).write_text(
+            json.dumps(self.to_dict(), indent=2) + "\n", encoding="utf-8"
+        )
+
+    def save_html(self, path: str) -> None:
+        """Write the report as a self-contained HTML file."""
+        Path(path).write_text(_render_module_status_html(self), encoding="utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Module status HTML renderer
+# ---------------------------------------------------------------------------
+
+def _render_module_status_html(msr: ModuleStatusReport) -> str:
+    """Render *msr* as a professional, self-contained HTML status page."""
+
+    def _badge(text: str, colour: str) -> str:
+        return (
+            f'<span style="background:{colour};color:#fff;padding:1px 7px;'
+            f'border-radius:4px;font-size:0.85em;font-weight:bold">{text}</span>'
+        )
+
+    def _exists_badge(exists: bool) -> str:
+        return _badge("✔ EXISTS", "#28a745") if exists else _badge("✘ MISSING", "#dc3545")
+
+    def _kind_badge(kind: str) -> str:
+        colours = {
+            "FUNCTION": "#0056b3",
+            "VARIABLE": "#6f42c1",
+            "MODULE":   "#17a2b8",
+        }
+        return _badge(kind, colours.get(kind, "#6c757d"))
+
+    def _bp_badge(status: str) -> str:
+        if status == "HIT":
+            return _badge("● HIT",  "#28a745")
+        if status == "MISS":
+            return _badge("○ MISS", "#dc3545")
+        return "<em style='color:#aaa'>not tested</em>"
+
+    # Compute totals
+    total_modules = len(msr._rows)
+    total_symbols = sum(len(v) for v in msr._rows.values())
+    total_exist   = sum(1 for rows in msr._rows.values() for r in rows if r.exists)
+    total_miss    = total_symbols - total_exist
+    total_hit     = sum(1 for rows in msr._rows.values() for r in rows if r.bp_status == "HIT")
+    total_miss_bp = sum(1 for rows in msr._rows.values() for r in rows if r.bp_status == "MISS")
+
+    # Build meta row
+    meta_rows = ""
+    for k, v in msr._meta.items():
+        meta_rows += f"<tr><td><strong>{k.replace('_',' ').title()}</strong></td><td>{v}</td></tr>"
+
+    # Build per-module sections
+    modules_html = ""
+    for mod, rows in sorted(msr._rows.items()):
+        funcs = sum(1 for r in rows if r.kind == "FUNCTION")
+        varis = sum(1 for r in rows if r.kind == "VARIABLE")
+        hits  = sum(1 for r in rows if r.bp_status == "HIT")
+
+        rows_html = ""
+        for r in sorted(rows, key=lambda x: (x.kind, x.symbol)):
+            rows_html += (
+                f"<tr>"
+                f"<td><code>{r.symbol}</code></td>"
+                f"<td>{_kind_badge(r.kind)}</td>"
+                f"<td>{_exists_badge(r.exists)}</td>"
+                f"<td><code>{r.address or '—'}</code></td>"
+                f"<td>{_bp_badge(r.bp_status)}</td>"
+                f"<td><code>{r.value or '—'}</code></td>"
+                f"<td>{r.notes or ''}</td>"
+                f"</tr>"
+            )
+
+        modules_html += f"""
+        <details open>
+          <summary>
+            <strong>{mod}</strong>
+            &nbsp;
+            <small style="color:#555">
+              {len(rows)} symbol(s) &nbsp;|&nbsp;
+              {funcs} function(s) &nbsp;|&nbsp;
+              {varis} variable(s) &nbsp;|&nbsp;
+              {hits} BP hit(s)
+            </small>
+          </summary>
+          <table>
+            <tr>
+              <th>Symbol</th><th>Kind</th><th>Exists</th>
+              <th>Address</th><th>Breakpoint</th><th>Value</th><th>Notes</th>
+            </tr>
+            {rows_html}
+          </table>
+        </details>
+        """
+
+    overall_colour = (
+        "#28a745" if total_miss == 0 and total_miss_bp == 0
+        else "#dc3545"
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Module Status Report – {msr.suite_name}</title>
+  <style>
+    * {{ box-sizing: border-box; }}
+    body {{ font-family: Arial, sans-serif; margin: 0; padding: 24px; color: #222; background: #f5f7fa; }}
+    .card {{ background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.10);
+             padding: 20px 28px; margin-bottom: 20px; }}
+    h1 {{ margin: 0 0 6px; font-size: 1.6em; }}
+    h2 {{ margin: 0 0 14px; font-size: 1.05em; color: #555; font-weight: normal; }}
+    h3 {{ margin: 6px 0 10px; font-size: 1.1em; }}
+    table {{ border-collapse: collapse; width: 100%; margin-bottom: 8px; }}
+    th {{ background: #e9ecef; }}
+    td, th {{ padding: 5px 10px; text-align: left; border: 1px solid #dee2e6; font-size: 0.9em; }}
+    code {{ background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 0.88em; }}
+    details {{ border: 1px solid #dee2e6; border-radius: 6px;
+               margin-bottom: 10px; padding: 10px 14px; }}
+    summary {{ cursor: pointer; font-size: 1.0em; user-select: none; padding: 2px 0; }}
+    summary:hover {{ color: #0056b3; }}
+    .stat-grid {{ display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 0; }}
+    .stat {{ background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px;
+             padding: 10px 16px; min-width: 110px; text-align: center; }}
+    .stat .num {{ font-size: 1.8em; font-weight: bold; }}
+    .stat .lbl {{ font-size: 0.78em; color: #555; margin-top: 2px; }}
+    .footer {{ text-align: center; color: #aaa; font-size: 0.78em; margin-top: 28px; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📊 Module Status Report</h1>
+    <h2 style="color:{overall_colour};font-weight:bold">{msr.suite_name}</h2>
+    <p>Generated: {msr.generated_at}</p>
+    <div class="stat-grid">
+      <div class="stat"><div class="num">{total_modules}</div><div class="lbl">Modules</div></div>
+      <div class="stat"><div class="num">{total_symbols}</div><div class="lbl">Symbols</div></div>
+      <div class="stat" style="border-color:#28a745">
+        <div class="num" style="color:#28a745">{total_exist}</div>
+        <div class="lbl">Symbols Found</div>
+      </div>
+      <div class="stat" style="border-color:#dc3545">
+        <div class="num" style="color:#dc3545">{total_miss}</div>
+        <div class="lbl">Symbols Missing</div>
+      </div>
+      <div class="stat" style="border-color:#28a745">
+        <div class="num" style="color:#28a745">{total_hit}</div>
+        <div class="lbl">BP Hit</div>
+      </div>
+      <div class="stat" style="border-color:#dc3545">
+        <div class="num" style="color:#dc3545">{total_miss_bp}</div>
+        <div class="lbl">BP Miss</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Session Metadata</h3>
+    <table><tbody>{meta_rows}</tbody></table>
+  </div>
+
+  <div class="card">
+    <h3>Module Details</h3>
+    {modules_html}
+  </div>
+
+  <div class="footer">GM VIP Automation Framework – Module Status Report &middot; {msr.generated_at}</div>
 </body>
 </html>
 """

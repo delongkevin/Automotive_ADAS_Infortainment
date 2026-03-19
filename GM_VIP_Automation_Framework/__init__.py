@@ -19,6 +19,8 @@ Quick start
         read_variable, set_variable,
         read_register, check_register,
         reload_symbols, symbol_exists,
+        # Auto-discovery & generation
+        discover_symbols, generate_from_live_session,
     )
 
     # Connect (T32 already running)
@@ -32,11 +34,17 @@ Quick start
         check_halted_at("myFunc")
         val = read_variable("myModule.myVar")
         print("myVar =", val)
+
+        # Auto-discover all symbols and generate test cases
+        inventory = discover_symbols(connection=conn)
+        print(inventory.summary())
+        generate_from_live_session(output_dir="./generated", connection=conn)
 """
 
 from .config import settings, T32Settings
-from .report import TestCaseReport, TestCaseResult
+from .report import TestCaseReport, TestCaseResult, ModuleStatusReport
 from . import runner
+from .generator import generate_from_live_session, generate_from_inventory
 from .utils import (
     T32FrameworkError,
     T32ConnectionError,
@@ -99,13 +107,21 @@ from .core import (
     get_symbol_address,
     list_symbols,
     search_symbol,
+    # symbol discovery
+    SymbolKind,
+    DiscoveredSymbol,
+    SymbolInventory,
+    discover_symbols,
+    discover_modules,
+    discover_functions,
+    discover_variables,
     # cmm
     run_cmm_command,
     run_cmm_script,
     check_cmm_script_result,
 )
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 __all__ = [
     "__version__",
@@ -115,8 +131,12 @@ __all__ = [
     # report
     "TestCaseReport",
     "TestCaseResult",
+    "ModuleStatusReport",
     # runner
     "runner",
+    # generator
+    "generate_from_live_session",
+    "generate_from_inventory",
     # exceptions
     "T32FrameworkError",
     "T32ConnectionError",
@@ -178,6 +198,14 @@ __all__ = [
     "get_symbol_address",
     "list_symbols",
     "search_symbol",
+    # symbol discovery
+    "SymbolKind",
+    "DiscoveredSymbol",
+    "SymbolInventory",
+    "discover_symbols",
+    "discover_modules",
+    "discover_functions",
+    "discover_variables",
     # cmm
     "run_cmm_command",
     "run_cmm_script",
