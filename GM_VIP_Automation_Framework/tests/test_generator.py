@@ -5,6 +5,7 @@ All Trace32 API calls are mocked – no hardware required.
 """
 
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -298,6 +299,16 @@ def _make_live_conn():
         if c.startswith("SYMBOL.LIST.SAVE"):
             tmp_path = c.split(None, 1)[1].strip()
             Path(tmp_path).write_text(_SAMPLE_AREA, encoding="utf-8")
+        elif c.upper().startswith("DO ") and c.lower().endswith(".cmm"):
+            # Strategy 2: PRACTICE DO-script – find output path in CMM and write data.
+            cmm_path = c[3:].strip()
+            try:
+                cmm_text = Path(cmm_path).read_text(encoding="utf-8")
+                m = re.search(r'OPEN #1 "([^"]+)"', cmm_text)
+                if m:
+                    Path(m.group(1)).write_text(_SAMPLE_AREA, encoding="utf-8")
+            except Exception:
+                pass
         elif c.startswith("AREA.SAVE"):
             tmp_path = c.split(None, 1)[1].strip()
             Path(tmp_path).write_text(_SAMPLE_AREA, encoding="utf-8")

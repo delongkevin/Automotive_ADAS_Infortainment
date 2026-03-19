@@ -244,17 +244,34 @@ def _make_conn(area_text: str = _SAMPLE_SYMBOL_LIST):
     conn = MagicMock()
     conn.is_connected.return_value = True
 
-    # Both SYMBOL.LIST.SAVE (primary strategy) and AREA.SAVE (fallback) write
-    # a temp file; simulate both by writing text ourselves.
-    _saved_tmp = {}
+    # Track the last temp txt path created so the DO-script strategy can find it.
+    _saved_tmp: dict = {}
 
     def _cmd(c):
         if c.startswith("SYMBOL.LIST.SAVE"):
+            # Strategy 1: direct file save
             tmp_path = c.split(None, 1)[1].strip()
             import pathlib
             pathlib.Path(tmp_path).write_text(area_text, encoding="utf-8")
             _saved_tmp["path"] = tmp_path
+        elif c.upper().startswith("DO ") and c.lower().endswith(".cmm"):
+            # Strategy 2: PRACTICE DO-script.  Read the generated CMM to find
+            # the output file path (OPEN #1 "path" /Create line), then write
+            # the expected symbol text to that path so the strategy succeeds.
+            import pathlib
+            import re as _re
+            cmm_path = c[3:].strip()
+            try:
+                cmm_text = pathlib.Path(cmm_path).read_text(encoding="utf-8")
+                m = _re.search(r'OPEN #1 "([^"]+)"', cmm_text)
+                if m:
+                    out_path = m.group(1)
+                    pathlib.Path(out_path).write_text(area_text, encoding="utf-8")
+                    _saved_tmp["path"] = out_path
+            except Exception:
+                pass
         elif c.startswith("AREA.SAVE"):
+            # Strategy 3 (last-resort AREA approach)
             tmp_path = c.split(None, 1)[1].strip()
             import pathlib
             pathlib.Path(tmp_path).write_text(area_text, encoding="utf-8")
@@ -563,13 +580,13 @@ class TestDiscoverSymbols(unittest.TestCase):
         varis = discover_variables(connection=conn)
         self.assertTrue(all(v.kind == SymbolKind.VARIABLE for v in varis))
 
-    def test_cmd_symbol_list_save_or_area_clear_issued(self):
+    def test_cmd_symbol_list_save_or_do_script_issued(self):
         """Verify that at least one capture strategy is attempted.
 
-        The primary strategy issues ``SYMBOL.LIST.SAVE``; the fallback uses
-        ``AREA`` + ``AREA.CLEAR``.  In mock mode the primary strategy succeeds,
-        so only ``SYMBOL.LIST.SAVE`` is expected.  Either command proves that
-        the discovery pipeline ran.
+        Strategy 1 issues ``SYMBOL.LIST.SAVE``.
+        Strategy 2 issues a ``DO *.cmm`` script.
+        Strategy 3 (last resort) issues ``AREA.CLEAR``.
+        In mock mode Strategy 1 succeeds, so ``SYMBOL.LIST.SAVE`` is expected.
         """
         from GM_VIP_Automation_Framework.core.symbol_discovery import discover_symbols
         conn = _make_conn()
@@ -577,8 +594,9 @@ class TestDiscoverSymbols(unittest.TestCase):
         cmd_calls = [str(c) for c in conn.cmd.call_args_list]
         self.assertTrue(
             any("SYMBOL.LIST.SAVE" in c for c in cmd_calls)
+            or any(".cmm" in c.lower() for c in cmd_calls)
             or any("AREA.CLEAR" in c for c in cmd_calls),
-            "Expected SYMBOL.LIST.SAVE (primary) or AREA.CLEAR (fallback) to be called.",
+            "Expected SYMBOL.LIST.SAVE, DO *.cmm, or AREA.CLEAR to be called.",
         )
 
     def test_cmd_symbol_list_issued(self):
@@ -587,6 +605,50 @@ class TestDiscoverSymbols(unittest.TestCase):
         discover_symbols(connection=conn, resolve_addresses=False)
         cmd_calls = [str(c) for c in conn.cmd.call_args_list]
         self.assertTrue(any("SYMBOL.LIST" in c for c in cmd_calls))
+
+    def test_do_script_strategy_used_when_symbol_list_save_unavailable(self):
+        """Strategy 2 (PRACTICE DO script) is used when SYMBOL.LIST.SAVE raises."""
+        from GM_VIP_Automation_Framework.core.symbol_discovery import discover_symbols
+        import pathlib
+        import re as _re
+
+        # Build a mock that rejects SYMBOL.LIST.SAVE but handles DO *.cmm
+        conn = MagicMock()
+        conn.is_connected.return_value = True
+
+        def _cmd(c):
+            if c.startswith("SYMBOL.LIST.SAVE"):
+                raise RuntimeError("unknown command")
+            if c.upper().startswith("DO ") and c.lower().endswith(".cmm"):
+                cmm_path = c[3:].strip()
+                try:
+                    cmm_text = pathlib.Path(cmm_path).read_text(encoding="utf-8")
+                    m = _re.search(r'OPEN #1 "([^"]+)"', cmm_text)
+                    if m:
+                        out_path = m.group(1)
+                        pathlib.Path(out_path).write_text(
+                            _SAMPLE_SYMBOL_LIST, encoding="utf-8"
+                        )
+                except Exception:
+                    pass
+
+        def _fnc(expr):
+            if "SYMBOL.EXIST" in expr:
+                return "FALSE()" if "missing" in expr.lower() else "TRUE()"
+            if "ADDRESS.OFFSET" in expr:
+                return "0x80001234"
+            return "0"
+
+        conn.cmd.side_effect = _cmd
+        conn.fnc.side_effect = _fnc
+
+        inventory = discover_symbols(connection=conn, resolve_addresses=False)
+        self.assertGreater(len(inventory), 0, "DO-script strategy should discover symbols.")
+        cmd_calls = [str(c) for c in conn.cmd.call_args_list]
+        self.assertTrue(
+            any(".cmm" in c.lower() for c in cmd_calls),
+            "Expected a DO *.cmm call when SYMBOL.LIST.SAVE is unavailable.",
+        )
 
 
 # ---------------------------------------------------------------------------
