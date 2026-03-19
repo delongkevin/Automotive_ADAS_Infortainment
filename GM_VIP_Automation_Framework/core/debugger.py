@@ -541,95 +541,136 @@ def go(connection=None) -> None:
     # Wait until the ECU is confirmed running before returning.
     reached = wait_for_running(timeout_s=settings.run_timeout_s, connection=conn)
     if not reached:
-        # The ECU may have run and immediately halted at a breakpoint faster
-        # than our poll window.  Distinguish between three cases by comparing
-        # the PC before and after GO:
+        # ECU did not confirm RUNNING within the poll window.  Determine cause:
         #
-        #   1. PC changed           → ECU ran and hit a new breakpoint → success.
-        #   2. PC unchanged at 0xA0000000 (reset vector) → hard reset event
-        #      (e.g. CO:6 "hard reset detected") → retry GO up to
-        #      intermediate_halt_max_gos times.
-        #   3. PC unchanged elsewhere → ECU never left halted state → real timeout.
+        #   A. PC changed           → ECU ran and hit a new breakpoint faster
+        #                             than the poll could catch → success.
+        #   B. PC at/near reset vector, or ECU still in STATE.RESET
+        #                           → CO:6 hard reset fired mid-execution.
+        #                             Re-issue GO up to intermediate_halt_max_gos
+        #                             times so the ECU can escape the reset cycle.
+        #   C. PC unchanged elsewhere → ECU never executed → real timeout.
+
         post_state = get_ecu_state(conn)
+
+        # If ECU entered STATE.RESET (reset line still asserted after GO),
+        # wait for it to clear before reading a reliable PC value.
+        if post_state == ECUState.RESET:
+            _print(
+                f"GO: ECU in RESET after {settings.run_timeout_s:.1f}s run timeout "
+                f"(CO:6 or hard reset mid-execution) – waiting "
+                f"{settings.intermediate_halt_go_delay_s:.2f}s for reset to clear …"
+            )
+            logger.warning(
+                "GO: ECU in RESET state after %.1fs run timeout. "
+                "Waiting %.2fs for reset line to clear (intermediate_halt_go_delay_s).",
+                settings.run_timeout_s, settings.intermediate_halt_go_delay_s,
+            )
+            time.sleep(settings.intermediate_halt_go_delay_s)
+            post_state = get_ecu_state(conn)
+            _print(f"GO: post-RESET-wait state = {post_state.value}")
+
+        # Read the current PC (only reliable when ECU is HALTED).
         if post_state == ECUState.HALTED:
-            current_pc = get_pp_register(conn) or "unknown"
-            if current_pc != pc_before:
+            current_pc = get_pp_register(conn) or ""
+        else:
+            current_pc = ""  # RESET / DOWN / UNKNOWN → PC not reliable; treat as reset vector
+
+        # Case A: PC moved → ECU ran and hit a new breakpoint → success.
+        if post_state == ECUState.HALTED and current_pc and current_pc != pc_before:
+            _print(
+                f"GO: ECU halted at new PC={current_pc} (was {pc_before}) "
+                "– hit breakpoint within go_settle_s window; this is normal."
+            )
+            logger.warning(
+                "GO: ECU did not show running state but PC moved from %s to %s. "
+                "It ran and hit a breakpoint within the go_settle_s window (%.2fs). "
+                "Treating as success.",
+                pc_before, current_pc, settings.go_settle_s,
+            )
+            return
+
+        # Case B: PC at/near reset vector, unreadable, or ECU still in RESET
+        # → CO:6 hard reset detected.  Re-issue GO up to max_gos times.
+        # When current_pc is empty (ECU in RESET / PC unreadable), we fall back
+        # to pc_before for the reset-vector check; in the CO:6 scenario pc_before
+        # is the reset vector (0xA0000000) so the check correctly triggers retries.
+        _pc_for_check = current_pc if current_pc else pc_before
+        _is_hard_reset = (
+            post_state == ECUState.RESET          # still actively resetting
+            or not current_pc                      # PC unreadable (RESET/DOWN)
+            or _pc_is_reset_vector(_pc_for_check)  # halted at reset vector
+        )
+        if _is_hard_reset:
+            _display_pc = current_pc or pc_before
+            for reset_retry in range(1, settings.intermediate_halt_max_gos + 1):
                 _print(
-                    f"GO: ECU halted at new PC={current_pc} (was {pc_before}) "
-                    "– hit breakpoint within go_settle_s window; this is normal."
+                    f"GO: hard reset detected (PC={_display_pc}), "
+                    f"retry {reset_retry}/{settings.intermediate_halt_max_gos} – "
+                    f"waiting {settings.intermediate_halt_go_delay_s:.2f}s then re-issuing GO …"
                 )
                 logger.warning(
-                    "GO: ECU did not show running state but PC moved from %s to %s. "
-                    "It ran and hit a breakpoint within the go_settle_s window (%.2fs). "
-                    "Treating as success.",
-                    pc_before, current_pc, settings.go_settle_s,
+                    "GO: hard reset detected (PC=%s) on attempt %d/%d. "
+                    "Waiting %.2fs then re-issuing GO.",
+                    _display_pc, reset_retry, settings.intermediate_halt_max_gos,
+                    settings.intermediate_halt_go_delay_s,
                 )
-                return
-
-            # PC unchanged: check whether we're at the reset vector.
-            if _pc_is_reset_vector(current_pc):
-                # Hard reset detected (e.g. CO:6 "hard reset detected" warning).
-                # Re-issue GO up to intermediate_halt_max_gos times and wait for
-                # the ECU to stabilise out of the reset cycle.
-                for reset_retry in range(1, settings.intermediate_halt_max_gos + 1):
+                time.sleep(settings.intermediate_halt_go_delay_s)
+                conn.cmd("GO")
+                if settings.go_settle_s > 0:
+                    time.sleep(settings.go_settle_s)
+                reached = wait_for_running(
+                    timeout_s=settings.run_timeout_s, connection=conn
+                )
+                if reached:
                     _print(
-                        f"GO: hard reset detected (PC={current_pc} = reset vector), "
-                        f"retry {reset_retry}/{settings.intermediate_halt_max_gos} – "
-                        f"waiting {settings.intermediate_halt_go_delay_s:.2f}s then re-issuing GO …"
+                        f"GO: ECU running after {reset_retry} hard-reset retry(ies)."
                     )
-                    logger.warning(
-                        "GO: hard reset detected (PC=%s) on attempt %d/%d. "
-                        "Waiting %.2fs then re-issuing GO.",
-                        current_pc, reset_retry, settings.intermediate_halt_max_gos,
-                        settings.intermediate_halt_go_delay_s,
+                    logger.info(
+                        "GO: ECU running after %d hard-reset retry(ies).", reset_retry
                     )
-                    time.sleep(settings.intermediate_halt_go_delay_s)
-                    conn.cmd("GO")
-                    if settings.go_settle_s > 0:
-                        time.sleep(settings.go_settle_s)
-                    reached = wait_for_running(
-                        timeout_s=settings.run_timeout_s, connection=conn
+                    return
+                # ECU didn't confirm running: check state + PC.
+                retry_state = get_ecu_state(conn)
+                if retry_state == ECUState.RESET:
+                    # ECU still in active RESET — PC unreadable; log as
+                    # "(RESET – PC unreadable)" and continue to next retry.
+                    _display_pc = "(RESET – PC unreadable)"
+                    continue
+                retry_pc = get_pp_register(conn) if retry_state == ECUState.HALTED else ""
+                if retry_pc and retry_pc != pc_before:
+                    _print(
+                        f"GO: ECU halted at new PC={retry_pc} after hard-reset "
+                        f"retry {reset_retry} – treating as success."
                     )
-                    if reached:
-                        _print(
-                            f"GO: ECU running after {reset_retry} hard-reset retry(ies)."
-                        )
-                        logger.info(
-                            "GO: ECU running after %d hard-reset retry(ies).", reset_retry
-                        )
-                        return
-                    # Not running yet: check if PC moved to a new address.
-                    retry_pc = get_pp_register(conn) or "unknown"
-                    if retry_pc != pc_before:
-                        _print(
-                            f"GO: ECU halted at new PC={retry_pc} after hard-reset "
-                            f"retry {reset_retry} – treating as success."
-                        )
-                        logger.info(
-                            "GO: ECU halted at new PC=%s after hard-reset retry %d – success.",
-                            retry_pc, reset_retry,
-                        )
-                        return
-                    current_pc = retry_pc  # update for next iteration's log message
-                _print(
-                    f"GO: ECU still at reset vector after "
-                    f"{settings.intermediate_halt_max_gos} hard-reset retries."
-                )
-                logger.error(
-                    "GO: ECU stuck at reset vector after %d hard-reset retries.",
-                    settings.intermediate_halt_max_gos,
-                )
-            else:
-                # PC unchanged, not at reset vector: ECU never ran at all.
-                _print(
-                    f"GO: ECU halted at same PC={current_pc} (PC unchanged) – "
-                    "ECU did not execute. Raising T32TimeoutError."
-                )
-                logger.error(
-                    "GO: PC unchanged after GO (PC=%s). ECU did not execute. "
-                    "Raising T32TimeoutError.",
-                    current_pc,
-                )
+                    logger.info(
+                        "GO: ECU halted at new PC=%s after hard-reset retry %d – success.",
+                        retry_pc, reset_retry,
+                    )
+                    return
+                _display_pc = retry_pc or pc_before
+
+            _print(
+                f"GO: ECU stuck at reset vector after "
+                f"{settings.intermediate_halt_max_gos} hard-reset retries."
+            )
+            logger.error(
+                "GO: ECU stuck at reset vector after %d hard-reset retries.",
+                settings.intermediate_halt_max_gos,
+            )
+
+        else:
+            # Case C: PC unchanged and NOT at reset vector → ECU never ran.
+            _print(
+                f"GO: ECU halted at same PC={current_pc} (PC unchanged) – "
+                "ECU did not execute. Raising T32TimeoutError."
+            )
+            logger.error(
+                "GO: PC unchanged after GO (PC=%s). ECU did not execute. "
+                "Raising T32TimeoutError.",
+                current_pc,
+            )
+
         _print(
             f"GO: ECU did not enter running state within {settings.run_timeout_s}s "
             f"(post-GO state = {post_state.value})."

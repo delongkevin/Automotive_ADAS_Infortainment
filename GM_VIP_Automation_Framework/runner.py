@@ -92,7 +92,7 @@ from typing import Any, Dict, List, Optional
 
 import GM_VIP_Automation_Framework as t32
 from .config import settings
-from .core.debugger import ECUState, get_ecu_state
+from .core.debugger import ECUState, break_execution, get_ecu_state
 from .report import TestCaseReport
 from .utils.exceptions import T32TimeoutError
 
@@ -473,6 +473,20 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
 
         # -- Set breakpoints ------------------------------------------------
         if breakpoints:
+            # Ensure ECU is halted before BREAK.SET.  BREAK.SET is silently
+            # unreliable (or rejected outright) on Aurix when the CPU is
+            # executing code.  Issue an explicit BREAK if necessary.
+            _bp_pre_state = get_ecu_state(conn)
+            if _bp_pre_state == ECUState.RUNNING:
+                _print(f"{name}: ECU running before BREAK.SET – issuing BREAK …")
+                break_execution(conn)
+            elif _bp_pre_state == ECUState.RESET:
+                _print(
+                    f"{name}: ECU in RESET before BREAK.SET – waiting "
+                    f"{settings.intermediate_halt_go_delay_s:.2f}s …"
+                )
+                time.sleep(settings.intermediate_halt_go_delay_s)
+
             for sym in breakpoints:
                 _print(f"{name}: BREAK.SET '{sym}'")
                 t32.set_breakpoint(sym, connection=conn)

@@ -1523,18 +1523,26 @@ class TestSanityGroup3Wakeup(_SanityBase):
 
         from GM_VIP_Automation_Framework.utils.exceptions import T32BreakpointNotReachedError
 
-        conn = _make_conn_slow_halt(halt_after_polls=8)
-
-        _bp.delete_all_breakpoints(conn)
-        _bp.set_breakpoint("TestCanTrcv_Init", conn)
-
-        # First attempt: tight timeout (mirrors the 3-second window that
-        # expired in the original run) → T32BreakpointNotReachedError.
+        # This test verifies check_halted_at()'s timeout/retry behaviour.
+        # We do NOT call set_breakpoint() here because set_breakpoint() now
+        # issues BREAK when the ECU is running (correct hardware behaviour),
+        # which would drain the poll counter before check_halted_at() runs.
+        #
+        # Two fresh connections are used so each check_halted_at() call
+        # starts with a clean poll counter.
+        #
+        # First attempt: timeout_s=0.0 causes poll_until() to exit before
+        # the first poll (deadline is already past) → T32BreakpointNotReachedError.
+        # halt_after_polls=100 keeps the ECU in "running" state well beyond
+        # the zero-second deadline, but the value doesn't matter since no polls
+        # are made with timeout=0.
+        conn1 = _make_conn_slow_halt(halt_after_polls=100)  # ECU "running"
         with self.assertRaises(T32BreakpointNotReachedError):
-            _bp.check_halted_at("TestCanTrcv_Init", timeout_s=0.02, connection=conn)
+            _bp.check_halted_at("TestCanTrcv_Init", timeout_s=0.0, connection=conn1)
 
-        # Second attempt: extended wait budget – ECU eventually halts → pass.
-        result = _bp.check_halted_at("TestCanTrcv_Init", timeout_s=1.0, connection=conn)
+        # Second attempt: halt_after_polls=1 → halts on first poll → pass.
+        conn2 = _make_conn_slow_halt(halt_after_polls=1)
+        result = _bp.check_halted_at("TestCanTrcv_Init", timeout_s=1.0, connection=conn2)
         self.assertTrue(result, "ECU should halt at TestCanTrcv_Init on retry")
 
 

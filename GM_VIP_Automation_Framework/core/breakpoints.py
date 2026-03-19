@@ -37,6 +37,7 @@ from ..utils.logger import get_logger
 from .debugger import (
     ECUState,
     _conn,
+    break_execution,
     get_ecu_state,
     get_pp_register,
     is_reset,
@@ -112,6 +113,30 @@ def set_breakpoint(
 
     # Clamp reload threshold so at least one retry occurs after SYMBOL.RELOAD.
     effective_reload_at = min(reload_at, retries - 1) if retries > 1 else retries
+
+    # BREAK.SET requires the ECU to be halted on Aurix / ARM targets.
+    # If the ECU is running, issue BREAK first.  If it is in RESET, wait for
+    # the reset line to clear (otherwise BREAK.SET may be silently ignored).
+    _bp_state = get_ecu_state(conn)
+    if _bp_state == ECUState.RUNNING:
+        _print(f"BREAK.SET '{address}': ECU running – issuing BREAK to halt first …")
+        logger.warning(
+            "BREAK.SET '%s': ECU is RUNNING – issuing BREAK to halt before setting "
+            "breakpoint (Aurix BREAK.SET requires the CPU to be stopped).",
+            address,
+        )
+        break_execution(conn)
+    elif _bp_state == ECUState.RESET:
+        _print(
+            f"BREAK.SET '{address}': ECU in RESET – waiting "
+            f"{settings.intermediate_halt_go_delay_s:.2f}s for reset to clear …"
+        )
+        logger.warning(
+            "BREAK.SET '%s': ECU in RESET – waiting %.2fs for reset to clear "
+            "before issuing BREAK.SET.",
+            address, settings.intermediate_halt_go_delay_s,
+        )
+        time.sleep(settings.intermediate_halt_go_delay_s)
 
     logger.info("BREAK.SET '%s' (max_retries=%d).", address, retries)
 
