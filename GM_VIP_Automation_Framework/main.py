@@ -22,9 +22,19 @@ Run all Python test suites::
     python main.py --suite all
     python main.py --suite all --mode live
 
+Run a Python test suite **from any directory** by passing its path directly::
+
+    python main.py --suite /path/to/my_custom_test.py
+    python main.py --suite ../other_project/test_ecu.py --mode live
+
 Run the sanity JSON test cases (always live – connects to running Trace32)::
 
     python main.py --json sanity
+
+Run a JSON test-case file **from any directory** by passing its path directly::
+
+    python main.py --json /path/to/stress_test_cases.json
+    python main.py --json ../tests/powercycle_test_cases.json --auto-launch
 
 If Trace32 is **not** already running, launch it automatically::
 
@@ -34,6 +44,12 @@ If Trace32 is **not** already running, launch it automatically::
 Run every ``*_test_cases.json`` file discovered automatically::
 
     python main.py --json all
+
+Scan a **different directory** for suites and JSON files::
+
+    python main.py --dir /path/to/custom_tests --suite all
+    python main.py --dir /path/to/custom_tests --json all
+    python main.py --dir /path/to/custom_tests --list
 
 Mode
 ----
@@ -74,10 +90,12 @@ Adding a new suite
 Python suite
     Add ``tests/my_new_test.py`` (standard unittest file).
     It is picked up automatically by ``--suite all``.
+    Or pass its path directly: ``python main.py --suite /path/to/my_new_test.py``.
 
 JSON suite (no Python edits required)
     Add ``my_new_test_cases.json`` to the framework directory.
     It is picked up automatically by ``--json all``.
+    Or pass its path directly: ``python main.py --json /path/to/my_new_test_cases.json``.
 """
 
 from __future__ import annotations
@@ -106,15 +124,33 @@ if str(_REPO_ROOT) not in sys.path:
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _discover_python_suites() -> List[Path]:
-    """Return sorted list of ``test_*.py`` files in the tests/ directory."""
-    return sorted(_TESTS_DIR.glob("test_*.py"))
+def _discover_python_suites(directory: Optional[Path] = None) -> List[Path]:
+    """Return sorted list of ``test_*.py`` files.
+
+    Parameters
+    ----------
+    directory:
+        Directory to scan.  Defaults to ``GM_VIP_Automation_Framework/tests/``
+        when *None*.  Pass any :class:`~pathlib.Path` to scan a different
+        location (e.g. a project-level tests folder or an external directory).
+    """
+    search = directory if directory is not None else _TESTS_DIR
+    return sorted(search.glob("test_*.py"))
 
 
-def _discover_json_files() -> List[Path]:
-    """Return sorted list of ``*_test_cases.json`` files in the framework dir."""
+def _discover_json_files(directory: Optional[Path] = None) -> List[Path]:
+    """Return sorted list of ``*_test_cases.json`` files.
+
+    Parameters
+    ----------
+    directory:
+        Directory to scan.  Defaults to ``GM_VIP_Automation_Framework/``
+        when *None*.  Pass any :class:`~pathlib.Path` to scan a different
+        location.
+    """
     from GM_VIP_Automation_Framework.runner import discover_test_case_files
-    return discover_test_case_files(str(_FRAMEWORK_DIR))
+    search = directory if directory is not None else _FRAMEWORK_DIR
+    return discover_test_case_files(str(search))
 
 
 def _suite_label(path: Path) -> str:
@@ -131,6 +167,61 @@ def _suite_label(path: Path) -> str:
     return stem
 
 
+def _resolve_suite_path(
+    name_or_path: str,
+    directory: Optional[Path] = None,
+) -> Optional[Path]:
+    """Resolve a ``--suite`` argument to a concrete file path.
+
+    Accepts either:
+
+    - A **direct file path** (absolute or relative) pointing to any
+      ``*.py`` file, e.g. ``/path/to/test_ecu.py`` or
+      ``../other/test_foo.py``.  The file must exist.
+    - A **label** (file stem without ``.py``), e.g. ``test_sanity``, looked
+      up inside *directory* (defaults to ``tests/``).
+
+    Returns *None* when no matching file is found.
+    """
+    # Try as a direct path first.
+    p = Path(name_or_path)
+    if p.is_file():
+        return p.resolve()
+
+    # Fall back to label-based discovery.
+    suites = _discover_python_suites(directory)
+    matches = [s for s in suites if _suite_label(s) == name_or_path]
+    return matches[0] if matches else None
+
+
+def _resolve_json_path(
+    label_or_path: str,
+    directory: Optional[Path] = None,
+) -> Optional[Path]:
+    """Resolve a ``--json`` argument to a concrete file path.
+
+    Accepts either:
+
+    - A **direct file path** (absolute or relative) pointing to any
+      ``*_test_cases.json`` file, e.g.
+      ``/path/to/stress_test_cases.json``.  The file must exist.
+    - A **label** (everything before ``_test_cases``), e.g. ``sanity``
+      for ``sanity_test_cases.json``, looked up inside *directory*
+      (defaults to the framework root).
+
+    Returns *None* when no matching file is found.
+    """
+    # Try as a direct path first.
+    p = Path(label_or_path)
+    if p.is_file():
+        return p.resolve()
+
+    # Fall back to label-based discovery.
+    json_files = _discover_json_files(directory)
+    matches = [f for f in json_files if _suite_label(f) == label_or_path]
+    return matches[0] if matches else None
+
+
 def _load_module(path: Path):
     """Dynamically load a Python module from *path*."""
     spec = importlib.util.spec_from_file_location(path.stem, path)
@@ -139,14 +230,25 @@ def _load_module(path: Path):
     return mod
 
 
-def _print_list() -> None:
-    """Print all discovered Python suites and JSON test case files."""
-    py_suites  = _discover_python_suites()
-    json_files = _discover_json_files()
+def _print_list(directory: Optional[Path] = None) -> None:
+    """Print all discovered Python suites and JSON test case files.
+
+    Parameters
+    ----------
+    directory:
+        Directory to scan for test files.  When *None* the defaults apply
+        (``tests/`` for Python suites, framework root for JSON files).
+        Pass a path to inspect a custom location.
+    """
+    py_suites  = _discover_python_suites(directory)
+    json_files = _discover_json_files(directory)
+
+    scan_label = str(directory) if directory else "(default locations)"
 
     print("\n╔══════════════════════════════════════════════════════════════╗")
     print(  "║          GM VIP Automation Framework – Available Suites      ║")
     print(  "╚══════════════════════════════════════════════════════════════╝\n")
+    print(f"  Scanning: {scan_label}\n")
 
     print("  Python test suites  (--suite <name> [--mode mock|live])")
     print("  ─────────────────────────────────────────────────────────────")

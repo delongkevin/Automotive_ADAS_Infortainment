@@ -16,10 +16,6 @@ script execution) but:
 - **Auto-discovers** all modules, functions, and variables from a live T32
   session and generates runnable test-case suites with zero manual editing.
 
-> **Version 1.3.0** – adds live symbol auto-discovery (`core/symbol_discovery.py`),
-> JSON test-case generator (`generator.py`), and the `ModuleStatusReport` HTML
-> dashboard (`report.py`).
-
 ---
 
 ## Directory Structure
@@ -30,7 +26,7 @@ GM_VIP_Automation_Framework/
 ├── config.py              # Centralised T32Settings dataclass + singleton
 ├── config.json            # Editable configuration template
 ├── test_cases.json        # Editable test-cases template
-├── generator.py           # Live-session test-case generator (NEW v1.3)
+├── generator.py           # Live-session test-case generator
 ├── report.py              # TestCaseReport + ModuleStatusReport (HTML/JSON)
 ├── runner.py              # JSON-driven test runner (run_from_json, run_all_discovered)
 ├── html_report.py         # Pytest plugin: HTML report after each test session
@@ -45,7 +41,7 @@ GM_VIP_Automation_Framework/
 │   ├── variables.py         # read_variable(), set_variable(), check_variable_until(), …
 │   ├── registers.py         # read_register(), set_register(), check_register_bit(), …
 │   ├── symbols.py           # reload_symbols(), symbol_exists(), get_symbol_address(), …
-│   ├── symbol_discovery.py  # discover_symbols(), SymbolInventory, DiscoveredSymbol (NEW v1.3)
+│   ├── symbol_discovery.py  # discover_symbols(), SymbolInventory, DiscoveredSymbol
 │   └── cmm.py               # run_cmm_command(), run_cmm_script(), check_cmm_script_result()
 │
 ├── templates/
@@ -67,8 +63,8 @@ GM_VIP_Automation_Framework/
     ├── test_config_and_report.py  # Tests for config I/O and report generation
     ├── test_hardware.py           # Tests for CAN bus, CANoe, power supply (mock mode)
     ├── test_sanity.py             # Full end-to-end sanity suite (mock + live T32 toggle)
-    ├── test_symbol_discovery.py   # Tests for symbol auto-discovery (NEW v1.3)
-    └── test_generator.py          # Tests for test-case generator (NEW v1.3)
+    ├── test_symbol_discovery.py   # Tests for symbol auto-discovery
+    └── test_generator.py          # Tests for test-case generator
 ```
 
 ---
@@ -143,7 +139,7 @@ with t32.T32Connection(port=20000) as conn:
     t32.go()
 ```
 
-### 3 – Auto-discover symbols and generate test cases *(v1.3)*
+### 3 – Auto-discover symbols and generate test cases
 
 Connect to a running Trace32 session, query every module / function /
 variable from the loaded ELF, and write a ready-to-run test suite in one
@@ -188,7 +184,7 @@ for var in inventory.variables:
 generate_from_inventory(inventory, output_dir="./generated", suite_name="myModule")
 ```
 
-### 4 – Generate a module status HTML dashboard *(v1.3)*
+### 4 – Generate a module status HTML dashboard
 
 After running a test suite you can produce a professional HTML status page
 that shows every module, symbol, breakpoint result, and variable value in a
@@ -373,7 +369,7 @@ with T32Connection() as conn:
 | `list_symbols(pattern, connection) → list[str]`  | Return all symbols matching a wildcard pattern            |
 | `search_symbol(name_fragment, connection)`       | Search for symbols containing a sub-string               |
 
-### Symbol Auto-Discovery (`core.symbol_discovery`) *(v1.3)*
+### Symbol Auto-Discovery (`core.symbol_discovery`)
 
 Queries the active Trace32 session via `SYMBOL.LIST` and classifies every
 symbol in the loaded ELF.  Classification uses the T32 section-kind column
@@ -397,7 +393,7 @@ fallback for stripped binaries.
 | `discover_functions(module_pattern, connection) → list[DiscoveredSymbol]` | Return function symbols only (sorted by module + name) |
 | `discover_variables(module_pattern, connection) → list[DiscoveredSymbol]` | Return variable symbols only (sorted by module + name) |
 
-### Test-Case Generator (`generator`) *(v1.3)*
+### Test-Case Generator (`generator`)
 
 Converts a `SymbolInventory` (or a live session) into ready-to-run
 artefacts with a single call.
@@ -442,7 +438,7 @@ artefacts with a single call.
 | `save_json(path)` / `save_html(path)` | Serialise the report |
 | `summary() → str` | One-line text summary |
 
-#### `ModuleStatusReport` *(v1.3)*
+#### `ModuleStatusReport`
 
 Professional HTML status dashboard aggregated from a `SymbolInventory` and
 enriched with run-time evidence from a `TestCaseReport`.
@@ -497,17 +493,15 @@ python -m unittest discover GM_VIP_Automation_Framework/tests/
 All tests run **without a physical Trace32 connection** – the `lauterbach.trace32.rcl`
 library is completely mocked via `unittest.mock`.
 
-The test suite currently covers **357 test cases** across:
-
-| File | Test Cases | Scope |
-|------|-----------|-------|
-| `test_utils.py` | 12 | Exceptions, logger, retry utilities |
-| `test_core.py` | 80 | All core modules – connection, debugger, breakpoints, variables, registers, symbols, CMM, runner |
-| `test_config_and_report.py` | 54 | Config I/O, `TestCaseReport`, HTML rendering |
-| `test_hardware.py` | 12 | CAN bus, CANoe, power supply (mock mode) |
-| `test_sanity.py` | 76 | Full end-to-end sanity suite (mock mode; toggle `USE_LIVE_T32=True` for real hardware) |
-| `test_symbol_discovery.py` | 43 | `SymbolInventory`, `DiscoveredSymbol`, parser, classification heuristics, `discover_*` helpers |
-| `test_generator.py` | 45 | JSON generation, Python script generation (AST-valid check), file writing, runner schema compatibility, `ModuleStatusReport` |
+| File | Scope |
+|------|-------|
+| `test_utils.py` | Exceptions, logger, retry utilities |
+| `test_core.py` | All core modules – connection, debugger, breakpoints, variables, registers, symbols, CMM, runner |
+| `test_config_and_report.py` | Config I/O, `TestCaseReport`, HTML rendering |
+| `test_hardware.py` | CAN bus, CANoe, power supply (mock mode) |
+| `test_sanity.py` | Full end-to-end sanity suite (mock mode; toggle `USE_LIVE_T32=True` for real hardware) |
+| `test_symbol_discovery.py` | `SymbolInventory`, `DiscoveredSymbol`, parser, classification heuristics, `discover_*` helpers |
+| `test_generator.py` | JSON generation, Python script generation, file writing, runner schema compatibility, `ModuleStatusReport` |
 
 ---
 
@@ -521,14 +515,3 @@ The test suite currently covers **357 test cases** across:
 6. **Structured logging** – all operations log at `DEBUG`/`INFO` level with a consistent format; coloured console output when connected to a TTY.
 7. **CMM-first / resilient connect** – `run_from_json` (and the `connect()` factory with `resilient_connect=True`) probes for a running Trace32 instance before deciding whether to launch one.  When Trace32 is already running (your `*.cmm` script opened the port), no `exe_path` or `config.t32` path is required.  The launch paths in `config.json` serve only as a fallback when `auto_launch=True`.
 8. **Auto-discovery** – `discover_symbols` queries `SYMBOL.LIST` from the live session, classifies every symbol using section-kind columns and name heuristics, and returns a typed `SymbolInventory`.  `generate_from_live_session` then turns that inventory into a full test suite without any manual editing.
-
----
-
-## Changelog
-
-| Version | Highlights |
-|---------|-----------|
-| **1.3.0** | Live symbol auto-discovery (`core/symbol_discovery.py`), test-case generator (`generator.py`), `ModuleStatusReport` HTML dashboard, 88 new unit tests |
-| **1.2.0** | `go_safe()`, `check_halted_at_core()`, `run_all_discovered()`, HTML reports, `intermediate_halt_max_gos` |
-| **1.1.0** | `T32Connection` packlen, `post_reset_settle_s` / `go_settle_s` synchronisation, resilient connect |
-| **1.0.0** | Initial release – connection, debugger, breakpoints, variables, registers, symbols, CMM, JSON runner |
