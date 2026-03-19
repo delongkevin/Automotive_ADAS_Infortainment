@@ -262,47 +262,76 @@ def _classify_kind(name: str, kind_col: str) -> SymbolKind:
 
 
 def _fetch_symbol_list(pattern: str, conn) -> str:
-    """Run ``SYMBOL.LIST <pattern>`` and return the raw AREA text.
+    """Run ``SYMBOL.LIST <pattern>`` and return the raw text.
 
-    Uses the AREA-buffer-then-save approach from :func:`symbols.list_symbols`.
-    Returns an empty string when T32 is not available or the command fails.
+    Tries two strategies in order:
+
+    1. **SYMBOL.LIST.SAVE** – direct file export (preferred).  T32 populates
+       its symbol-list window and writes the content straight to the temp
+       file.  No AREA involvement; works reliably across modern Trace32
+       firmware.  An empty result is returned immediately (no polling) so
+       callers can distinguish "no ELF loaded" from a timing issue.
+
+    2. **AREA-buffer fallback** – for older T32 firmware versions where
+       ``SYMBOL.LIST.SAVE`` is unavailable.  Opens the PRACTICE AREA,
+       clears it, runs ``SYMBOL.LIST``, then polls ``AREA.SAVE`` until
+       content appears or the ``cmm_timeout_s`` deadline is reached.
+
+    Returns an empty string when T32 is not available or both strategies
+    fail.
     """
+    tmp: Optional[Path] = None
     try:
-        conn.cmd("AREA")
-        conn.cmd("AREA.CLEAR")
-        conn.cmd(f"SYMBOL.LIST {pattern}")
-
         with tempfile.NamedTemporaryFile(
             suffix=".txt", delete=False, mode="w", encoding="utf-8"
         ) as tf:
             tmp = Path(tf.name)
 
-        # Poll until AREA.SAVE succeeds.  In practice, Trace32 executes
-        # SYMBOL.LIST synchronously so the AREA is populated before the
-        # PRACTICE API returns.  We retry only to tolerate transient RCL
-        # hiccups; a single successful save is sufficient even when the
-        # symbol list is empty.
+        # ------------------------------------------------------------------
+        # Strategy 1: SYMBOL.LIST.SAVE – direct file export.
+        # SYMBOL.LIST opens its own GUI window in Trace32; AREA.SAVE cannot
+        # capture that output.  SYMBOL.LIST.SAVE writes the window content
+        # directly to a file, bypassing the AREA entirely.
+        # ------------------------------------------------------------------
+        try:
+            conn.cmd(f"SYMBOL.LIST {pattern}")
+            conn.cmd(f"SYMBOL.LIST.SAVE {tmp}")
+            text = tmp.read_text(encoding="utf-8", errors="replace") if tmp.exists() else ""
+            logger.debug("_fetch_symbol_list: SYMBOL.LIST.SAVE strategy succeeded.")
+            return text  # empty string = no symbols (ELF not loaded); non-empty = found
+        except Exception as exc:  # noqa: BLE001
+            logger.debug(
+                "SYMBOL.LIST.SAVE unavailable (%s); falling back to AREA approach.", exc
+            )
+
+        # ------------------------------------------------------------------
+        # Strategy 2: AREA-buffer approach (fallback for older T32 firmware).
+        # Some Trace32 versions output SYMBOL.LIST text to the PRACTICE AREA
+        # buffer rather than (or in addition to) the dedicated list window.
+        # Poll AREA.SAVE until the file has content or the deadline expires.
+        # ------------------------------------------------------------------
+        conn.cmd("AREA")
+        conn.cmd("AREA.CLEAR")
+        conn.cmd(f"SYMBOL.LIST {pattern}")
+
         deadline = time.monotonic() + settings.cmm_timeout_s
-        saved = False
         while time.monotonic() < deadline:
-            time.sleep(0.1)
+            time.sleep(0.2)
             try:
                 conn.cmd(f"AREA.SAVE {tmp}")
-                saved = True   # command succeeded → content (or empty) is final
-                break
             except Exception:  # noqa: BLE001
                 continue
-
-        if not saved:
-            logger.warning("AREA.SAVE did not succeed within %.0fs.", settings.cmm_timeout_s)
+            if tmp.exists() and tmp.stat().st_size > 0:
+                break
 
         text = tmp.read_text(encoding="utf-8", errors="replace") if tmp.exists() else ""
-        if tmp.exists():
-            tmp.unlink(missing_ok=True)
         return text
     except Exception as exc:  # noqa: BLE001
         logger.warning("_fetch_symbol_list('%s') failed: %s", pattern, exc)
         return ""
+    finally:
+        if tmp is not None and tmp.exists():
+            tmp.unlink(missing_ok=True)
 
 
 def _parse_symbol_list(raw: str) -> List[DiscoveredSymbol]:

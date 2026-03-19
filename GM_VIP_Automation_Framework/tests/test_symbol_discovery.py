@@ -244,11 +244,17 @@ def _make_conn(area_text: str = _SAMPLE_SYMBOL_LIST):
     conn = MagicMock()
     conn.is_connected.return_value = True
 
-    # AREA.SAVE writes a temp file; we simulate by writing text ourselves.
+    # Both SYMBOL.LIST.SAVE (primary strategy) and AREA.SAVE (fallback) write
+    # a temp file; simulate both by writing text ourselves.
     _saved_tmp = {}
 
     def _cmd(c):
-        if c.startswith("AREA.SAVE"):
+        if c.startswith("SYMBOL.LIST.SAVE"):
+            tmp_path = c.split(None, 1)[1].strip()
+            import pathlib
+            pathlib.Path(tmp_path).write_text(area_text, encoding="utf-8")
+            _saved_tmp["path"] = tmp_path
+        elif c.startswith("AREA.SAVE"):
             tmp_path = c.split(None, 1)[1].strip()
             import pathlib
             pathlib.Path(tmp_path).write_text(area_text, encoding="utf-8")
@@ -557,12 +563,23 @@ class TestDiscoverSymbols(unittest.TestCase):
         varis = discover_variables(connection=conn)
         self.assertTrue(all(v.kind == SymbolKind.VARIABLE for v in varis))
 
-    def test_cmd_area_clear_issued(self):
+    def test_cmd_symbol_list_save_or_area_clear_issued(self):
+        """Verify that at least one capture strategy is attempted.
+
+        The primary strategy issues ``SYMBOL.LIST.SAVE``; the fallback uses
+        ``AREA`` + ``AREA.CLEAR``.  In mock mode the primary strategy succeeds,
+        so only ``SYMBOL.LIST.SAVE`` is expected.  Either command proves that
+        the discovery pipeline ran.
+        """
         from GM_VIP_Automation_Framework.core.symbol_discovery import discover_symbols
         conn = _make_conn()
         discover_symbols(connection=conn, resolve_addresses=False)
         cmd_calls = [str(c) for c in conn.cmd.call_args_list]
-        self.assertTrue(any("AREA.CLEAR" in c for c in cmd_calls))
+        self.assertTrue(
+            any("SYMBOL.LIST.SAVE" in c for c in cmd_calls)
+            or any("AREA.CLEAR" in c for c in cmd_calls),
+            "Expected SYMBOL.LIST.SAVE (primary) or AREA.CLEAR (fallback) to be called.",
+        )
 
     def test_cmd_symbol_list_issued(self):
         from GM_VIP_Automation_Framework.core.symbol_discovery import discover_symbols

@@ -295,7 +295,10 @@ def _make_live_conn():
     conn.is_connected.return_value = True
 
     def _cmd(c):
-        if c.startswith("AREA.SAVE"):
+        if c.startswith("SYMBOL.LIST.SAVE"):
+            tmp_path = c.split(None, 1)[1].strip()
+            Path(tmp_path).write_text(_SAMPLE_AREA, encoding="utf-8")
+        elif c.startswith("AREA.SAVE"):
             tmp_path = c.split(None, 1)[1].strip()
             Path(tmp_path).write_text(_SAMPLE_AREA, encoding="utf-8")
 
