@@ -154,26 +154,31 @@ _TAG_LABELS = {
 # ---------------------------------------------------------------------------
 # Magna Electronics logo (inline SVG – no external dependency)
 #
-# Recreated from the Magna International brand mark:
-#   • Two black chevron peaks forming the "M" silhouette
-#   • Red circle at the apex of the left peak
+# Magna International brand mark — accurately traced from the official logo:
+#   • Left piece  – small black triangle (far-left)
+#   • Centre piece – tall black parallelogram; red circle floats above it
+#   • Right piece  – tall black parallelogram (same height as centre)
+#   • Two diagonal white gaps separate the three pieces
+#   • Red circle sits ABOVE the mark with visible space beneath it
 #   • "MAGNA" wordmark in Magna grey (#9b9b9b)
 # ---------------------------------------------------------------------------
 
 _MAGNA_LOGO_SVG = (
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 52"'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 265 56"'
     ' height="44" style="vertical-align:middle;display:inline-block;margin-right:10px"'
     ' aria-label="Magna Electronics">'
-    # ── Left chevron peak ───────────────────────────────────────────────────
-    '<polygon points="2,50 15,3 28,50" fill="#1a1a1a"/>'
-    # ── Right chevron peak ──────────────────────────────────────────────────
-    '<polygon points="20,50 33,3 47,50" fill="#1a1a1a"/>'
-    # ── Red dot at apex of left peak ────────────────────────────────────────
-    '<circle cx="15" cy="3" r="5.5" fill="#cc1212"/>'
-    # ── "MAGNA" wordmark ────────────────────────────────────────────────────
-    '<text x="57" y="42"'
+    # ── Piece 1: small left triangle ────────────────────────────────────────
+    '<polygon points="1,54 11,22 16,54" fill="#1a1a1a"/>'
+    # ── Piece 2: centre parallelogram (red circle floats above this) ─────────
+    '<polygon points="21,54 17,22 39,22 44,54" fill="#1a1a1a"/>'
+    # ── Piece 3: right parallelogram ─────────────────────────────────────────
+    '<polygon points="49,54 45,22 66,22 69,54" fill="#1a1a1a"/>'
+    # ── Red circle centred above the mark (NOT at the apex) ──────────────────
+    '<circle cx="30" cy="10" r="8" fill="#e8230a"/>'
+    # ── "MAGNA" wordmark ─────────────────────────────────────────────────────
+    '<text x="82" y="47"'
     ' font-family="\'Arial Black\',\'Helvetica Neue\',Arial,sans-serif"'
-    ' font-weight="900" font-size="42" letter-spacing="1" fill="#9b9b9b">'
+    ' font-weight="900" font-size="44" letter-spacing="1" fill="#9b9b9b">'
     'MAGNA</text>'
     '</svg>'
 )

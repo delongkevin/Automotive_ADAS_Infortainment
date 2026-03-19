@@ -199,10 +199,12 @@ if USE_LIVE_T32:
         except Exception as _e:
             _print(f"WARNING: Could not set breakpoint on '{DISCOVER_BREAKPOINT}': {_e}")
 
-    # Write test-case JSON and session script to the framework directory
+    # Write test-case JSON and session script to TestScripts/ in the CWD
+    # so the files always appear next to wherever the script was launched.
+    _OUT_DIR = Path.cwd() / "TestScripts"
     _GEN_RESULT = generate_from_inventory(
         _LIVE_INVENTORY,
-        output_dir=_FW_DIR,
+        output_dir=str(_OUT_DIR),
         suite_name="test_symbol_discovery",
         port=T32_LIVE_PORT,
     )
@@ -210,7 +212,8 @@ if USE_LIVE_T32:
     _LIVE_SCRIPT_PATH = _GEN_RESULT["script_path"]
     _print(f"Generated JSON  → {_LIVE_JSON_PATH}")
     _print(f"Generated script→ {_LIVE_SCRIPT_PATH}")
-    _print("Run tests from JSON: python main.py --json test_symbol_discovery")
+    _print(f"Run tests from JSON:  python main.py --json {_LIVE_JSON_PATH}")
+    _print(f"Run standalone script: python {_LIVE_SCRIPT_PATH}")
 
 
 # ---------------------------------------------------------------------------

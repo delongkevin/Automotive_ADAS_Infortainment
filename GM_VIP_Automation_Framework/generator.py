@@ -416,8 +416,8 @@ def generate_session_script(
 
 def generate_from_inventory(
     inventory: SymbolInventory,
-    output_dir: str = ".",
-    suite_name: str = "AutoDiscovered",
+    output_dir: Optional[str] = None,
+    suite_name: str = "test_symbol_discovery",
     port: int = 20000,
     include_functions: bool = True,
     include_variables: bool = True,
@@ -431,7 +431,10 @@ def generate_from_inventory(
     inventory:
         Pre-built :class:`~core.symbol_discovery.SymbolInventory`.
     output_dir:
-        Directory where artefacts are written.
+        Directory where artefacts are written.  Defaults to a ``TestScripts``
+        sub-directory inside the **current working directory** so the files
+        are always easy to find next to wherever the script was launched.
+        Pass an explicit path to override.
     suite_name:
         Suite label (used for file names and report headers).
     port:
@@ -450,7 +453,10 @@ def generate_from_inventory(
     dict
         ``{"json_path": str, "script_path": str}`` with the written paths.
     """
-    out = Path(output_dir)
+    if output_dir is None:
+        out = Path.cwd() / "TestScripts"
+    else:
+        out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
     safe = _safe_tc_name(suite_name)
@@ -480,8 +486,8 @@ def generate_from_inventory(
 
 
 def generate_from_live_session(
-    output_dir: str = ".",
-    suite_name: str = "AutoDiscovered",
+    output_dir: Optional[str] = None,
+    suite_name: str = "test_symbol_discovery",
     pattern: str = "*",
     connection=None,
     port: int = 20000,
@@ -502,7 +508,10 @@ def generate_from_live_session(
     Parameters
     ----------
     output_dir:
-        Directory where artefacts are written.
+        Directory where artefacts are written.  Defaults to a ``TestScripts``
+        sub-directory inside the **current working directory** so the files
+        are always easy to find next to wherever the script was launched.
+        Pass an explicit path to override.
     suite_name:
         Suite label.
     pattern:
@@ -540,7 +549,7 @@ def generate_from_live_session(
 
     paths = generate_from_inventory(
         inventory,
-        output_dir=output_dir,
+        output_dir=output_dir,   # None → TestScripts/ in CWD
         suite_name=suite_name,
         port=port,
         include_functions=include_functions,

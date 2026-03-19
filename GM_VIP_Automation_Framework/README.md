@@ -509,10 +509,12 @@ library is completely mocked via `unittest.mock`.
 
 Running `test_symbol_discovery.py` in **live mode** connects to a real Trace32
 session, discovers every loaded module / function / variable, and writes two
-artefacts you can edit and re-run:
+artefacts into a **`TestScripts/`** sub-directory in the folder where you invoke
+the command (your current working directory).  The files are always easy to find
+and can be edited before re-running.
 
 ```bash
-# Discover all symbols – writes test_symbol_discovery_test_cases.json
+# Discover all symbols – writes TestScripts/test_symbol_discovery_test_cases.json
 python main.py --suite test_symbol_discovery --mode live
 
 # Narrow to a specific module
@@ -526,15 +528,21 @@ python main.py --suite test_symbol_discovery --mode live --breakpoint myFunc
 
 # One-shot: just generate artefacts without running unit tests
 python main.py --discover --mode live
-python main.py --discover --mode live --module main.c --output-dir ./generated
+
+# Write to an explicit directory instead of TestScripts/
+python main.py --discover --mode live --output-dir C:\MyTests
 ```
 
-After running in live mode two files appear (editable before re-running):
+After running, two editable files appear in `TestScripts/` (relative to your CWD):
 
 | File | Purpose |
 |------|---------|
-| `test_symbol_discovery_test_cases.json` | Run with `python main.py --json test_symbol_discovery` |
+| `test_symbol_discovery_test_cases.json` | Run with `python main.py --json <full path shown in terminal>` |
 | `test_symbol_discovery_session_script.py` | Standalone script: connect → verify symbols → set BPs → read vars → save report |
+
+> **Tip**: `--json` also searches `TestScripts/` automatically, so you can run
+> `python main.py --json test_symbol_discovery` from the same directory and the
+> framework will find the generated JSON without you needing to type the full path.
 
 ---
 
@@ -547,5 +555,5 @@ After running in live mode two files appear (editable before re-running):
 5. **Testable without hardware** – no global state that prevents mocking; every function accepts an explicit `connection` parameter.
 6. **Structured logging** – all operations log at `DEBUG`/`INFO` level with a consistent format; coloured console output when connected to a TTY.
 7. **CMM-first / resilient connect** – `run_from_json` (and the `connect()` factory with `resilient_connect=True`) probes for a running Trace32 instance before deciding whether to launch one.  When Trace32 is already running (your `*.cmm` script opened the port), no `exe_path` or `config.t32` path is required.  The launch paths in `config.json` serve only as a fallback when `auto_launch=True`.
-8. **Auto-discovery** – `discover_symbols` queries `SYMBOL.LIST` from the live session, classifies every symbol using section-kind columns and name heuristics, and returns a typed `SymbolInventory`.  `generate_from_live_session` then turns that inventory into a full test suite without any manual editing.
+8. **Auto-discovery** – `discover_symbols` queries `SYMBOL.LIST` from the live session, classifies every symbol using section-kind columns and name heuristics, and returns a typed `SymbolInventory`.  `generate_from_live_session` then turns that inventory into a full test suite without any manual editing.  Generated artefacts always land in a `TestScripts/` sub-directory of the **current working directory** so they are easy to find, never buried in a temp folder.
 9. **Magna Electronics branded reports** – every HTML report carries the Magna logo as an inline SVG (self-contained, no external URL), with "Magna Electronics" in the page title and footer.

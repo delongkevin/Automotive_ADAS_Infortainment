@@ -144,7 +144,7 @@ import os
 import sys
 import time as _time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 import unittest
 
 # ---------------------------------------------------------------------------
@@ -186,10 +186,28 @@ def _discover_json_files(directory: Optional[Path] = None) -> List[Path]:
         Directory to scan.  Defaults to ``GM_VIP_Automation_Framework/``
         when *None*.  Pass any :class:`~pathlib.Path` to scan a different
         location.
+
+    Scanning order (duplicates removed, paths de-duplicated):
+        1. *directory* (or ``_FRAMEWORK_DIR`` when *None*)
+        2. ``TestScripts/`` under *directory*
+        3. ``TestScripts/`` under the current working directory
     """
     from GM_VIP_Automation_Framework.runner import discover_test_case_files
-    search = directory if directory is not None else _FRAMEWORK_DIR
-    return discover_test_case_files(str(search))
+    base = directory if directory is not None else _FRAMEWORK_DIR
+
+    seen: Set[Path] = set()
+    results: List[Path] = []
+    for search_dir in [
+        base,
+        base / "TestScripts",
+        Path.cwd() / "TestScripts",
+    ]:
+        if search_dir.is_dir():
+            for p in discover_test_case_files(str(search_dir)):
+                if p not in seen:
+                    seen.add(p)
+                    results.append(p)
+    return sorted(results)
 
 
 def _suite_label(path: Path) -> str:
@@ -606,9 +624,9 @@ def _run_discover(
     Parameters
     ----------
     output_dir:
-        Directory where artefacts are written.  Defaults to the framework
-        directory so the generated JSON is picked up automatically by
-        ``--json test_symbol_discovery``.
+        Directory where artefacts are written.  Defaults to a ``TestScripts``
+        sub-directory inside the **current working directory** so the files
+        are always easy to find next to wherever the script was launched.
     suite_name:
         Suite label used in file names and report titles.
     pattern:
@@ -638,7 +656,7 @@ def _run_discover(
     from GM_VIP_Automation_Framework.config import settings
 
     if output_dir is None:
-        output_dir = _FRAMEWORK_DIR
+        output_dir = Path.cwd() / "TestScripts"
 
     _ensure_t32_running(auto_launch=auto_launch, cmm_script=cmm_script)
 
@@ -691,8 +709,8 @@ def _run_discover(
     print(f"[GM_VIP] ───────────────────────────────────────────────────────")
     print(f"[GM_VIP] Next steps:")
     print(f"[GM_VIP]   1. Edit {Path(result['json_path']).name} to match your symbols")
-    print(f"[GM_VIP]   2. Run:  python main.py --json {suite_name}")
-    print(f"[GM_VIP]      or:   python {Path(result['script_path']).name}")
+    print(f"[GM_VIP]   2a. Run via main.py: python main.py --json {result['json_path']}")
+    print(f"[GM_VIP]   2b. Run standalone: python {result['script_path']}")
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -788,8 +806,10 @@ def _build_parser() -> argparse.ArgumentParser:
         dest="output_dir",
         help=(
             "Directory where --discover writes its artefacts.  "
-            "Defaults to the framework directory so the generated JSON is "
-            "picked up automatically by --json test_symbol_discovery."
+            "Defaults to a 'TestScripts' sub-directory inside the current "
+            "working directory (where you invoke python from), so the files "
+            "are always easy to find.  "
+            "Pass an explicit path to override."
         ),
     )
     parser.add_argument(
