@@ -26,7 +26,7 @@ Report hierarchy
 ----------------
 The generated HTML is written to::
 
-    <repo_root>/GM_VIP_Automation_Framework/Test_Report/<YYYYMMDD_HHMM>/sanity_report.html
+    <repo_root>/GM_VIP_Automation_Framework/Test_Report/<YYYYMMDD_HHMM>/<suite_name>_report.html
 
 where ``<stamp>`` is a shortened date-time string (e.g. ``20260318_1748``).
 
@@ -262,7 +262,7 @@ def render_html(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>T32 Sanity Report – {suite_name}</title>
+  <title>T32 Test Report – {suite_name}</title>
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
@@ -322,7 +322,7 @@ def render_html(
 <body>
   <!-- ═══ Header card ═══ -->
   <div class="card">
-    <h1>🔬 T32 Sanity Test Report</h1>
+    <h1>🔬 T32 Test Report</h1>
     <h2>{suite_name} &nbsp;<span style="color:#aaa;font-size:0.9em">Mode: {mode}</span></h2>
 
     <div class="kpi-row">
@@ -393,7 +393,7 @@ def render_html(
   </div>
 
   <div class="footer">
-    GM VIP Automation Framework &middot; T32 Sanity Suite &middot; {generated_at}
+    GM VIP Automation Framework &middot; {suite_name} &middot; {generated_at}
   </div>
 </body>
 </html>"""
@@ -498,7 +498,8 @@ class SanityHtmlRunner(unittest.TextTestRunner):
     def _save_report(self, result: _HtmlTestResult) -> None:
         generated_at = datetime.datetime.now().isoformat(timespec="seconds")
         out_dir = self._report_dir if self._report_dir is not None else make_report_dir()
-        report_path = out_dir / "sanity_report.html"
+        safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in self._suite_name)
+        report_path = out_dir / f"{safe}_report.html"
 
         entries = getattr(result, "_entries", [])
         html = render_html(
