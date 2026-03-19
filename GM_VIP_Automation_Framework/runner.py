@@ -85,12 +85,16 @@ Public API
 from __future__ import annotations
 
 import json
+import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import GM_VIP_Automation_Framework as t32
 from .config import settings
+from .core.debugger import ECUState, get_ecu_state
 from .report import TestCaseReport
+from .utils.exceptions import T32TimeoutError
 
 __all__ = [
     "run_from_json",
@@ -98,6 +102,12 @@ __all__ = [
     "discover_test_case_files",
     "run_all_discovered",
 ]
+
+
+def _print(msg: str) -> None:
+    """Write a timestamped diagnostic line to stderr (always visible)."""
+    ts = time.strftime("%H:%M:%S")
+    print(f"[RUN {ts}] {msg}", file=sys.stderr, flush=True)
 
 
 # ---------------------------------------------------------------------------
@@ -414,6 +424,8 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
     # you want to check reach their expected values.
     go_before_check: bool = tc_def.get("go_before_check", False)
 
+    _print(f"─── START {name} ───")
+    t_start = time.monotonic()
     report.begin_test_case(name)
     # Store CAPL reference as a special variable entry for traceability.
     if capl_ref:
@@ -422,7 +434,21 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
     try:
         # -- Optional reset -------------------------------------------------
         if reset_before:
-            t32.reset_target(connection=conn)
+            _print(f"{name}: reset_before=true – issuing SYStem.RESetTarget …")
+            ok = t32.reset_target(connection=conn)
+            if not ok:
+                _print(f"{name}: WARNING – reset did not confirm halt; continuing …")
+            # After reset, query the ECU state so we can report it clearly.
+            post_reset_state = get_ecu_state(conn)
+            _print(f"{name}: post-reset state = {post_reset_state.value}")
+            if post_reset_state == ECUState.RESET:
+                # ECU is still in RESET – wait one more interval before continuing.
+                _print(
+                    f"{name}: ECU still in RESET after reset_target() – "
+                    f"waiting {settings.intermediate_halt_go_delay_s:.2f}s …"
+                )
+                time.sleep(settings.intermediate_halt_go_delay_s)
+
         t32.delete_all_breakpoints(connection=conn)
 
         # -- Inspect symbols ------------------------------------------------
@@ -434,18 +460,21 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
                     addr = t32.get_symbol_address(sym, connection=conn)
                 except Exception:  # noqa: BLE001
                     addr = "N/A"
+            _print(f"{name}: symbol '{sym}' exists={exists} addr={addr or 'N/A'}")
             report.record_symbol(sym, exists=exists, address=addr)
 
         # -- Write pre-condition variables ----------------------------------
         for sym, spec in variables_write.items():
             # Accept both {"value": "1", ...} dict and plain string "1".
             val = spec["value"] if isinstance(spec, dict) else str(spec)
+            _print(f"{name}: VAR.SET {sym} = {val}")
             t32.set_variable(sym, val, connection=conn)
             report.record_variable(f"{sym} (write)", val)
 
         # -- Set breakpoints ------------------------------------------------
         if breakpoints:
             for sym in breakpoints:
+                _print(f"{name}: BREAK.SET '{sym}'")
                 t32.set_breakpoint(sym, connection=conn)
 
         # -- GO + wait-for-halt (either via breakpoint or go_before_check) --
@@ -453,10 +482,13 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
         # Case B: go_before_check=True, no breakpoints → GO + wait for any
         #         halt (e.g. ECU finishes init and reaches a natural break).
         if breakpoints:
+            _print(f"{name}: GO – waiting for {len(breakpoints)} breakpoint(s) …")
             t32.go(connection=conn)
 
             for sym in breakpoints:
+                _print(f"{name}: check_halted_at '{sym}' …")
                 t32.check_halted_at(sym, connection=conn)
+                _print(f"{name}: halted at '{sym}' ✓")
                 report.record_breakpoint(sym, hit=True)
 
         elif go_before_check:
@@ -465,15 +497,20 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
             # completes an init sequence, or a watchdog fires).  This is
             # useful when variable values are only valid after the ECU has
             # executed some initialisation code.
+            _print(f"{name}: go_before_check=true – GO (no breakpoints set) …")
             t32.go(connection=conn)
             halted = t32.wait_for_halt(connection=conn)
             if not halted:
-                from .utils.exceptions import T32TimeoutError
+                _print(
+                    f"{name}: ECU did not halt within {settings.halt_timeout_s:.1f}s "
+                    "after GO (go_before_check) – FAIL."
+                )
                 raise T32TimeoutError(
                     f"ECU did not halt within {settings.halt_timeout_s}s "
                     "after GO (go_before_check=true). "
                     "Ensure the ECU has a breakpoint or naturally halts."
                 )
+            _print(f"{name}: ECU halted after go_before_check GO ✓")
 
         # -- Read / validate variables --------------------------------------
         for sym, spec in variables_check.items():
@@ -484,6 +521,10 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
                 expected = spec  # None or a string value
 
             value = t32.read_variable(sym, connection=conn)
+            _print(
+                f"{name}: VAR.VALUE {sym} = {value}"
+                + (f" (expected: {expected})" if expected is not None else " (log only)")
+            )
             report.record_variable(sym, value)
 
             if expected is not None:
@@ -491,9 +532,13 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
 
         # -- Clean up -------------------------------------------------------
         t32.delete_all_breakpoints(connection=conn)
+        elapsed = time.monotonic() - t_start
+        _print(f"─── PASS {name} ({elapsed:.2f}s) ───")
         report.pass_test_case()
 
     except Exception as exc:  # noqa: BLE001
+        elapsed = time.monotonic() - t_start
+        _print(f"─── FAIL {name} ({elapsed:.2f}s): {exc} ───")
         try:
             t32.delete_all_breakpoints(connection=conn)
         except Exception:  # noqa: BLE001

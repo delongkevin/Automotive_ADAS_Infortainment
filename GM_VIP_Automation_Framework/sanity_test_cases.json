@@ -4,6 +4,10 @@
   "_comment3": "runner.discover_test_case_files() picks it up automatically.",
   "_comment4": "Edit ONLY this file to update sanity test steps – no Python changes needed.",
   "_comment5": "Add a new *_test_cases.json (e.g. stress_test_cases.json) for a new suite.",
+  "_timing_note": "TIMING: core/debugger.py reset_target() calls SYStem.RESetTarget then waits post_reset_settle_s (default 1.0s) before proceeding. If tests time out on real hardware, increase halt_timeout_s and post_reset_settle_s in config.json.",
+  "_variable_write_note": "VARIABLE WRITE SEQUENCING: 'variables_write' entries are written BEFORE the first GO. On real hardware, ECU startup code may overwrite these values before the first breakpoint is reached. If this occurs, set variables_write entries at the first breakpoint instead (see test_sanity.py for the reference Python implementation that writes variables AFTER halting at the first breakpoint).",
+  "_go_note": "GO BEHAVIOUR: After reset_before, the runner issues GO. If the ECU hits the first breakpoint within go_settle_s (default 0.3s), the framework correctly recognises this as success (not a timeout). Each subsequent breakpoint in the list advances the ECU with an intermediate GO + wait-for-halt cycle.",
+  "_reset_note": "RESET/HALTED STATE: ECU transitions through RESET state (STATE.RESET()=TRUE) for ~800ms after SYStem.RESetTarget on AURIX TC4. core/debugger.py detects this and waits intermediate_halt_go_delay_s (default 0.8s) before issuing GO. Increase this in config.json if the ECU still shows Reset Detected after the wait.",
 
   "test_suite": "GM_VIP_Sanity",
 

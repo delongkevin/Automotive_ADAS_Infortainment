@@ -21,6 +21,7 @@ Public API
 
 from __future__ import annotations
 
+import sys
 import time
 from typing import Optional
 
@@ -45,6 +46,12 @@ from .debugger import (
 )
 
 logger = get_logger("breakpoints")
+
+
+def _print(msg: str) -> None:
+    """Write a timestamped diagnostic line to stderr (always visible)."""
+    ts = time.strftime("%H:%M:%S")
+    print(f"[BP  {ts}] {msg}", file=sys.stderr, flush=True)
 
 # Shared default_connection reference – callers may set this directly.
 default_connection = None  # type: Optional[object]
@@ -322,9 +329,12 @@ def check_halted_at(
     max_intermediate = settings.intermediate_halt_max_gos
     go_delay = settings.intermediate_halt_go_delay_s
 
+    _print(f"check_halted_at '{address}' (timeout={tmo:.1f}s, max_gos={max_intermediate})")
+
     for go_attempt in range(max_intermediate + 1):
         halted = wait_for_halt(timeout_s=tmo, connection=conn)
         if not halted:
+            _print(f"check_halted_at '{address}': ECU did not halt within {tmo:.1f}s – FAIL.")
             raise T32BreakpointNotReachedError(address, int(tmo * 1000))
 
         # Evaluate EVAL (P:R(PC)==<address>)
@@ -337,6 +347,7 @@ def check_halted_at(
             ) from exc
 
         if matched:
+            _print(f"check_halted_at '{address}': PASS ✓")
             logger.info("Breakpoint check PASS: halted at '%s'.", address)
             return True
 
@@ -354,6 +365,11 @@ def check_halted_at(
                 )
 
             if state == ECUState.RESET:
+                _print(
+                    f"check_halted_at '{address}': ECU in RESET at PC={current_pc} – "
+                    f"waiting {go_delay:.2f}s then re-issuing GO "
+                    f"(retry {go_attempt + 1}/{max_intermediate})."
+                )
                 logger.warning(
                     "Breakpoint check: ECU in RESET state (PC=%s) – waiting "
                     "%.2fs for reset to complete, then re-issuing GO "
@@ -361,6 +377,11 @@ def check_halted_at(
                     current_pc, go_delay, go_attempt + 1, max_intermediate,
                 )
             elif state == ECUState.HALTED:
+                _print(
+                    f"check_halted_at '{address}': intermediate halt at PC={current_pc} – "
+                    f"issuing GO (retry {go_attempt + 1}/{max_intermediate}, "
+                    f"delay={go_delay:.2f}s)."
+                )
                 logger.warning(
                     "Breakpoint check: NOT at '%s' (PC=%s, state=halted) – "
                     "intermediate halt. Issuing GO to continue "
@@ -368,7 +389,11 @@ def check_halted_at(
                     address, current_pc, go_attempt + 1, max_intermediate, go_delay,
                 )
             else:
-                # RUNNING or UNKNOWN: log and try GO anyway.
+                _print(
+                    f"check_halted_at '{address}': unexpected state={state.value} "
+                    f"at PC={current_pc} – re-issuing GO "
+                    f"(retry {go_attempt + 1}/{max_intermediate})."
+                )
                 logger.warning(
                     "Breakpoint check: unexpected state %s (PC=%s) – "
                     "re-issuing GO (retry %d/%d).",
@@ -386,6 +411,11 @@ def check_halted_at(
             # Give the ECU time to leave the halted state before polling again.
             wait_for_running(connection=conn)
         else:
+            current_pc = get_pp_register(conn) or "unknown"
+            _print(
+                f"check_halted_at '{address}': FAIL – halted at PC={current_pc}, "
+                f"not at '{address}'."
+            )
             logger.error("Breakpoint check FAIL: NOT halted at '%s'.", address)
             raise T32BreakpointError(f"ECU halted but NOT at '{address}'.")
 

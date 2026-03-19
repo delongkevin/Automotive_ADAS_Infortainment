@@ -96,10 +96,23 @@ import logging
 import os
 import re
 import sys
+import time
 import unittest
 from unittest.mock import MagicMock
 
 _log = logging.getLogger("gm_vip_t32.test_sanity")
+
+
+def _print(msg: str) -> None:
+    """Write a timestamped diagnostic line to stderr (always visible).
+
+    Uses ``[TST HH:MM:SS]`` prefix so test-sanity messages are easy to
+    distinguish from debugger (``[T32]``) and breakpoint (``[BP ]``) output
+    in mixed logs.
+    """
+    ts = time.strftime("%H:%M:%S")
+    print(f"[TST {ts}] {msg}", file=sys.stderr, flush=True)
+
 
 # ---------------------------------------------------------------------------
 # Path bootstrap – makes the file runnable from IDLE or any working directory.
@@ -391,6 +404,9 @@ class _SanityBase(unittest.TestCase):
             "intermediate_halt_max_gos": config.settings.intermediate_halt_max_gos,
             "intermediate_halt_go_delay_s": config.settings.intermediate_halt_go_delay_s,
         }
+        self._t_start = time.monotonic()
+        mode = "LIVE" if USE_LIVE_T32 else "MOCK"
+        _print(f"━━━ START {self.id()} [{mode}] ━━━")
         if not USE_LIVE_T32:
             # Zero delays for fast mock execution.
             config.settings.go_settle_s = 0.0
@@ -411,6 +427,8 @@ class _SanityBase(unittest.TestCase):
         from GM_VIP_Automation_Framework import config
         for k, v in self._saved.items():
             setattr(config.settings, k, v)
+        elapsed = time.monotonic() - self._t_start
+        _print(f"━━━ done {self.id()} ({elapsed:.2f}s) ━━━")
 
     @staticmethod
     def _ensure_ecu_running(conn) -> None:
@@ -439,6 +457,7 @@ class _SanityBase(unittest.TestCase):
         from GM_VIP_Automation_Framework.utils.exceptions import T32ConnectionError
 
         state = _dbg.get_ecu_state(conn)
+        _print(f"_ensure_ecu_running: state = {state.value}")
 
         if state == ECUState.RUNNING:
             return  # already executing – nothing to do
@@ -451,16 +470,22 @@ class _SanityBase(unittest.TestCase):
             )
 
         if state == ECUState.RESET:
+            _print(
+                "_ensure_ecu_running: ECU in RESET – go() will wait reset-settle "
+                "then re-issue GO."
+            )
             _log.warning(
                 "[sanity] ECU in RESET after go_safe() (STATE.RESET) – "
                 "go() will wait reset-settle then re-issue GO."
             )
         elif state == ECUState.HALTED:
+            _print("_ensure_ecu_running: ECU halted after go_safe() – re-issuing GO.")
             _log.warning(
                 "[sanity] ECU halted (stopped at breakpoint) after go_safe() – "
                 "re-issuing GO to resume execution."
             )
         else:
+            _print(f"_ensure_ecu_running: ECU state UNKNOWN ({state.value}) – attempting GO.")
             _log.warning(
                 "[sanity] ECU state UNKNOWN after go_safe() – attempting GO."
             )
@@ -478,8 +503,10 @@ class _SanityBase(unittest.TestCase):
         hard reset.  This guarantees the ECU is confirmed running before any
         CAN stimulus is sent or ``check_halted_at()`` begins polling.
         """
+        _print("_go_safe_verified: calling go_safe() …")
         _dbg.go_safe(connection=conn)
         _SanityBase._ensure_ecu_running(conn)
+        _print("_go_safe_verified: ECU confirmed running.")
 
     @staticmethod
     def _sim_ecu_output(symbol: str, value, conn) -> None:
