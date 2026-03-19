@@ -93,7 +93,7 @@ from typing import Any, Dict, List, Optional
 import GM_VIP_Automation_Framework as t32
 from .config import settings
 from .core.debugger import ECUState, break_execution, get_ecu_state
-from .report import TestCaseReport
+from .report import TestCaseReport, _WRITE_SUFFIX
 from .utils.exceptions import T32TimeoutError
 
 __all__ = [
@@ -469,7 +469,7 @@ def _run_one(tc_def: dict, conn: t32.T32Connection, report: TestCaseReport) -> N
             val = spec["value"] if isinstance(spec, dict) else str(spec)
             _print(f"{name}: VAR.SET {sym} = {val}")
             t32.set_variable(sym, val, connection=conn)
-            report.record_variable(f"{sym} (write)", val)
+            report.record_variable(f"{sym}{_WRITE_SUFFIX}", val)
 
         # -- Set breakpoints ------------------------------------------------
         if breakpoints:

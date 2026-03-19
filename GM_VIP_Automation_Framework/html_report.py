@@ -26,7 +26,7 @@ Report hierarchy
 ----------------
 The generated HTML is written to::
 
-    <repo_root>/GM_VIP_Automation_Framework/Test_Report/<YYYYMMDD_HHMM>/sanity_report.html
+    <repo_root>/GM_VIP_Automation_Framework/Test_Report/<YYYYMMDD_HHMM>/<suite_name>_report.html
 
 where ``<stamp>`` is a shortened date-time string (e.g. ``20260318_1748``).
 
@@ -152,6 +152,39 @@ _TAG_LABELS = {
 
 
 # ---------------------------------------------------------------------------
+# Magna Electronics logo (inline SVG – no external dependency)
+#
+# Magna International brand mark — accurately traced from the official logo:
+#   • Left piece  – small black triangle (far-left)
+#   • Centre piece – tall black parallelogram; red circle floats above it
+#   • Right piece  – tall black parallelogram (same height as centre)
+#   • Two diagonal white gaps separate the three pieces
+#   • Red circle sits ABOVE the mark with visible space beneath it
+#   • "MAGNA" wordmark in Magna grey (#9b9b9b)
+# ---------------------------------------------------------------------------
+
+_MAGNA_LOGO_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 265 56"'
+    ' height="44" style="vertical-align:middle;display:inline-block;margin-right:10px"'
+    ' aria-label="Magna Electronics">'
+    # ── Piece 1: small left triangle ────────────────────────────────────────
+    '<polygon points="1,54 11,22 16,54" fill="#1a1a1a"/>'
+    # ── Piece 2: centre parallelogram (red circle floats above this) ─────────
+    '<polygon points="21,54 17,22 39,22 44,54" fill="#1a1a1a"/>'
+    # ── Piece 3: right parallelogram ─────────────────────────────────────────
+    '<polygon points="49,54 45,22 66,22 69,54" fill="#1a1a1a"/>'
+    # ── Red circle centred above the mark (NOT at the apex) ──────────────────
+    '<circle cx="30" cy="10" r="8" fill="#e8230a"/>'
+    # ── "MAGNA" wordmark ─────────────────────────────────────────────────────
+    '<text x="82" y="47"'
+    ' font-family="\'Arial Black\',\'Helvetica Neue\',Arial,sans-serif"'
+    ' font-weight="900" font-size="44" letter-spacing="1" fill="#9b9b9b">'
+    'MAGNA</text>'
+    '</svg>'
+)
+
+
+# ---------------------------------------------------------------------------
 # HTML renderer
 # ---------------------------------------------------------------------------
 
@@ -257,12 +290,14 @@ def render_html(
             f'</tr>\n'
         )
 
+    _logo = _MAGNA_LOGO_SVG   # bring into local scope for f-string interpolation
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>T32 Sanity Report – {suite_name}</title>
+  <title>Magna T32 Test Report – {suite_name}</title>
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
@@ -322,7 +357,7 @@ def render_html(
 <body>
   <!-- ═══ Header card ═══ -->
   <div class="card">
-    <h1>🔬 T32 Sanity Test Report</h1>
+    <h1>{_logo} T32 Test Report</h1>
     <h2>{suite_name} &nbsp;<span style="color:#aaa;font-size:0.9em">Mode: {mode}</span></h2>
 
     <div class="kpi-row">
@@ -393,7 +428,7 @@ def render_html(
   </div>
 
   <div class="footer">
-    GM VIP Automation Framework &middot; T32 Sanity Suite &middot; {generated_at}
+    Magna Electronics &middot; GM VIP Automation Framework &middot; {suite_name} &middot; {generated_at}
   </div>
 </body>
 </html>"""
@@ -498,7 +533,8 @@ class SanityHtmlRunner(unittest.TextTestRunner):
     def _save_report(self, result: _HtmlTestResult) -> None:
         generated_at = datetime.datetime.now().isoformat(timespec="seconds")
         out_dir = self._report_dir if self._report_dir is not None else make_report_dir()
-        report_path = out_dir / "sanity_report.html"
+        safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in self._suite_name)
+        report_path = out_dir / f"{safe}_report.html"
 
         entries = getattr(result, "_entries", [])
         html = render_html(

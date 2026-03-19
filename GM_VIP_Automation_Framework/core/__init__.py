@@ -48,6 +48,15 @@ from .symbols import (
     list_symbols,
     search_symbol,
 )
+from .symbol_discovery import (
+    SymbolKind,
+    DiscoveredSymbol,
+    SymbolInventory,
+    discover_symbols,
+    discover_modules,
+    discover_functions,
+    discover_variables,
+)
 from .cmm import (
     run_cmm_command,
     run_cmm_script,
@@ -104,6 +113,14 @@ __all__ = [
     "get_symbol_address",
     "list_symbols",
     "search_symbol",
+    # symbol discovery
+    "SymbolKind",
+    "DiscoveredSymbol",
+    "SymbolInventory",
+    "discover_symbols",
+    "discover_modules",
+    "discover_functions",
+    "discover_variables",
     # cmm
     "run_cmm_command",
     "run_cmm_script",
