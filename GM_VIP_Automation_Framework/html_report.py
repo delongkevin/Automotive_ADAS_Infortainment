@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import datetime
 import sys
+import time
 import traceback
 import unittest
 from pathlib import Path
@@ -178,7 +179,7 @@ def _diagnostic_banners(tags: List[str]) -> str:
 
 def render_html(
     suite_name: str,
-    results: List[Tuple[str, str, str]],
+    results: List[Tuple[str, str, str, float]],
     generated_at: str,
     mode: str = "MOCK",
 ) -> str:
@@ -189,10 +190,12 @@ def render_html(
     suite_name:
         Human-readable suite name shown in the report header.
     results:
-        List of ``(test_name, status, detail)`` tuples.  *detail* is a
-        traceback / error string for FAIL/ERROR entries; empty for PASS.
-        **PASS entries are included only in the summary table**, not in the
-        detail section, to keep the report focused on actionable failures.
+        List of ``(test_name, status, detail, duration_s)`` tuples.
+        *detail* is a traceback / error string for FAIL/ERROR entries;
+        empty for PASS.  *duration_s* is the wall-clock seconds the test
+        took.  **PASS entries are included only in the summary table**, not
+        in the detail section, to keep the report focused on actionable
+        failures.
     generated_at:
         ISO-8601 timestamp string.
     mode:
@@ -204,26 +207,29 @@ def render_html(
         A complete, self-contained HTML document.
     """
     total   = len(results)
-    passed  = sum(1 for _, s, _ in results if s == "PASS")
-    failed  = sum(1 for _, s, _ in results if s == "FAIL")
-    skipped = sum(1 for _, s, _ in results if s == "SKIP")
-    errored = sum(1 for _, s, _ in results if s == "ERROR")
+    passed  = sum(1 for _, s, _, _ in results if s == "PASS")
+    failed  = sum(1 for _, s, _, _ in results if s == "FAIL")
+    skipped = sum(1 for _, s, _, _ in results if s == "SKIP")
+    errored = sum(1 for _, s, _, _ in results if s == "ERROR")
+    total_dur = sum(d for _, _, _, d in results)
 
     overall_ok = failed == 0 and errored == 0
     overall_colour = _STATUS_COLOUR["PASS"] if overall_ok else _STATUS_COLOUR["FAIL"]
     overall_label  = "✅ OVERALL: PASS" if overall_ok else "❌ OVERALL: FAIL"
 
     # --- Detail section (FAIL + ERROR only) --------------------------------
-    non_pass = [(n, s, d) for n, s, d in results if s != "PASS"]
+    non_pass = [(n, s, d, dur) for n, s, d, dur in results if s != "PASS"]
     if non_pass:
         detail_blocks: List[str] = []
-        for name, status, detail in non_pass:
+        for name, status, detail, dur in non_pass:
             tags = _classify_detail(detail)
             banners = _diagnostic_banners(tags)
             safe_detail = (detail or "(no detail)").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             detail_blocks.append(f"""
         <details open>
-          <summary style="padding:4px 0">{_badge(status)} <strong>{name}</strong></summary>
+          <summary style="padding:4px 0">{_badge(status)} <strong>{name}</strong>
+            <span style="color:#888;font-size:0.82em;margin-left:10px">⏱ {dur:.2f}s</span>
+          </summary>
           <div style="margin-top:8px">
             {banners}
             <pre style="background:#f8f9fa;padding:12px;border-radius:4px;
@@ -240,11 +246,15 @@ def render_html(
 
     # --- Summary table (all results) ----------------------------------------
     summary_rows = ""
-    for name, status, _ in results:
+    for name, status, _, dur in results:
         colour = _STATUS_COLOUR.get(status, "#6c757d")
+        dur_str = f"{dur:.2f}s"
         summary_rows += (
-            f'<tr><td style="font-family:monospace;font-size:0.82em">{name}</td>'
-            f'<td><span style="color:{colour};font-weight:bold">{status}</span></td></tr>\n'
+            f'<tr>'
+            f'<td style="font-family:monospace;font-size:0.82em">{name}</td>'
+            f'<td><span style="color:{colour};font-weight:bold">{status}</span></td>'
+            f'<td style="color:#888;font-size:0.82em;text-align:right">{dur_str}</td>'
+            f'</tr>\n'
         )
 
     return f"""<!DOCTYPE html>
@@ -336,10 +346,19 @@ def render_html(
         <div class="kpi-num" style="color:#6c757d">{skipped}</div>
         <div class="kpi-lbl">Skip</div>
       </div>
+      <div class="kpi">
+        <div class="kpi-num" style="color:#555">{total_dur:.1f}s</div>
+        <div class="kpi-lbl">Total Time</div>
+      </div>
     </div>
 
     <p class="overall">{overall_label}</p>
     <p class="meta">Generated: {generated_at}</p>
+    <p class="meta">
+      Timing note: per-test duration includes all T32 communication overhead
+      (resets, GO settle, breakpoint polling).  In LIVE mode these values
+      reflect actual hardware latency; in MOCK mode they are near zero.
+    </p>
   </div>
 
   <!-- ═══ Failure / Error detail card ═══ -->
@@ -349,6 +368,11 @@ def render_html(
       PASS results are intentionally omitted from this section to keep the
       report focused on actionable issues.  See the <em>Full Summary</em>
       table below for a complete list of all test outcomes.
+      <br>
+      <strong>Timing guidance:</strong>
+      If a test fails with a timeout or &ldquo;ECU did not halt&rdquo; error,
+      first check <code>halt_timeout_s</code> / <code>post_reset_settle_s</code>
+      in <code>config.json</code> before modifying test logic.
     </p>
     {details_html}
   </div>
@@ -357,7 +381,13 @@ def render_html(
   <div class="card">
     <h3>Full Test Summary</h3>
     <table>
-      <thead><tr><th>Test Case</th><th>Status</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Test Case</th>
+          <th>Status</th>
+          <th style="text-align:right">Duration</th>
+        </tr>
+      </thead>
       <tbody>{summary_rows}</tbody>
     </table>
   </div>
@@ -375,44 +405,52 @@ def render_html(
 
 class _HtmlTestResult(unittest.TextTestResult):
     """Extends :class:`unittest.TextTestResult` to accumulate
-    ``(name, status, detail)`` tuples for subsequent HTML rendering.
+    ``(name, status, detail, duration_s)`` tuples for subsequent HTML rendering.
     """
 
     def __init__(self, stream, descriptions, verbosity):
         super().__init__(stream, descriptions, verbosity)
-        self._entries: List[Tuple[str, str, str]] = []
+        self._entries: List[Tuple[str, str, str, float]] = []
+        self._t_start: float = 0.0
 
     @staticmethod
     def _short_name(test) -> str:
         return str(test)
 
+    def startTest(self, test):
+        super().startTest(test)
+        self._t_start = time.monotonic()
+
+    def _elapsed(self) -> float:
+        return time.monotonic() - self._t_start
+
     def addSuccess(self, test):
         super().addSuccess(test)
-        self._entries.append((self._short_name(test), "PASS", ""))
+        self._entries.append((self._short_name(test), "PASS", "", self._elapsed()))
 
     def addFailure(self, test, err):
         super().addFailure(test, err)
         detail = "".join(traceback.format_exception(*err))
-        self._entries.append((self._short_name(test), "FAIL", detail))
+        self._entries.append((self._short_name(test), "FAIL", detail, self._elapsed()))
 
     def addError(self, test, err):
         super().addError(test, err)
         detail = "".join(traceback.format_exception(*err))
-        self._entries.append((self._short_name(test), "ERROR", detail))
+        self._entries.append((self._short_name(test), "ERROR", detail, self._elapsed()))
 
     def addSkip(self, test, reason):
         super().addSkip(test, reason)
-        self._entries.append((self._short_name(test), "SKIP", reason))
+        self._entries.append((self._short_name(test), "SKIP", reason, self._elapsed()))
 
     def addExpectedFailure(self, test, err):
         super().addExpectedFailure(test, err)
         detail = "".join(traceback.format_exception(*err))
-        self._entries.append((self._short_name(test), "PASS", detail))
+        self._entries.append((self._short_name(test), "PASS", detail, self._elapsed()))
 
     def addUnexpectedSuccess(self, test):
         super().addUnexpectedSuccess(test)
         self._entries.append((self._short_name(test), "ERROR",
-                               "Test passed unexpectedly (marked xfail)."))
+                               "Test passed unexpectedly (marked xfail).", self._elapsed()))
 
 
 # ---------------------------------------------------------------------------

@@ -960,6 +960,93 @@ class TestSynchronization(unittest.TestCase):
 
         self.assertIn("running state", str(ctx.exception).lower())
 
+    def test_go_retries_on_hard_reset_at_reset_vector(self):
+        """go() must retry GO when a hard reset leaves the ECU at the reset vector.
+
+        Scenario: CO:6 hard reset fires right after GO.  The ECU halts back at
+        the Aurix reset vector (0xA0000000) with an unchanged PC.  go() should
+        recognise this as a hard-reset event, wait intermediate_halt_go_delay_s,
+        re-issue GO, and succeed when the ECU finally runs.
+
+        Real hardware returns R(PC) as a *decimal* string ("2684354560") which
+        equals 0xA0000000.  The test uses that format to exercise the decimal-
+        path in _pc_is_reset_vector().
+        """
+        from GM_VIP_Automation_Framework import config
+        from GM_VIP_Automation_Framework.core import debugger as dbg
+
+        config.settings.run_timeout_s = 0.05
+        config.settings.go_settle_s = 0.0
+        config.settings.intermediate_halt_go_delay_s = 0.0   # no real sleep in test
+        config.settings.intermediate_halt_max_gos = 3
+
+        # R(PC) returns the reset vector as a decimal string (matching real HW).
+        RESET_VEC_DEC = "2684354560"   # == 0xA0000000
+
+        # State machine: first GO attempt stays at reset vector;
+        # second GO attempt (retry 1) transitions the ECU to running.
+        go_cmd_count = [0]
+        run_fnc_count = [0]
+
+        def _fnc(expr):
+            if "SYStem.Mode" in expr:
+                return "UP"
+            if "STATE.RESET" in expr:
+                return "FALSE()"
+            if "STATE.RUN" in expr:
+                run_fnc_count[0] += 1
+                # Running only after the retry GO (go_cmd_count == 2).
+                return "TRUE()" if go_cmd_count[0] >= 2 else "FALSE()"
+            if "R(PC)" in expr:
+                return RESET_VEC_DEC
+            return "FALSE()"
+
+        conn = _make_conn(running=False)
+        conn.fnc.side_effect = _fnc
+
+        def _cmd(c):
+            if c == "GO":
+                go_cmd_count[0] += 1
+            # Return None (mock default) — do not call the original mock to avoid recursion
+        conn.cmd.side_effect = _cmd
+
+        dbg.go(conn)  # must not raise
+
+        # GO should have been issued at least twice (initial + 1 retry).
+        self.assertGreaterEqual(go_cmd_count[0], 2)
+
+    def test_go_raises_after_exhausting_hard_reset_retries(self):
+        """go() should raise T32TimeoutError when hard-reset retries are exhausted."""
+        from GM_VIP_Automation_Framework import config
+        from GM_VIP_Automation_Framework.core import debugger as dbg
+        from GM_VIP_Automation_Framework.utils.exceptions import T32TimeoutError
+
+        config.settings.run_timeout_s = 0.05
+        config.settings.go_settle_s = 0.0
+        config.settings.intermediate_halt_go_delay_s = 0.0
+        config.settings.intermediate_halt_max_gos = 2   # allow 2 retries before exhaustion
+
+        RESET_VEC_DEC = "2684354560"   # == 0xA0000000
+
+        def _fnc(expr):
+            if "SYStem.Mode" in expr:
+                return "UP"
+            if "STATE.RESET" in expr:
+                return "FALSE()"
+            if "STATE.RUN" in expr:
+                return "FALSE()"   # ECU never runs: stuck in reset loop
+            if "R(PC)" in expr:
+                return RESET_VEC_DEC
+            return "FALSE()"
+
+        conn = _make_conn(running=False)
+        conn.fnc.side_effect = _fnc
+
+        with self.assertRaises(T32TimeoutError) as ctx:
+            dbg.go(conn)
+
+        self.assertIn("running state", str(ctx.exception).lower())
+
     def test_go_succeeds_when_ecu_starts_running(self):
         """go() should complete without error when ECU enters running state."""
         from GM_VIP_Automation_Framework import config

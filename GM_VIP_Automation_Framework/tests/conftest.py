@@ -36,6 +36,7 @@ _make_lauterbach_stubs()
 # ---------------------------------------------------------------------------
 
 import datetime  # noqa: E402
+import time  # noqa: E402
 from pathlib import Path  # noqa: E402
 from typing import List, Tuple  # noqa: E402
 
@@ -49,22 +50,28 @@ class _HtmlReportPlugin:
     """Collects per-test results and writes a single HTML report at session end."""
 
     def __init__(self):
-        self._results: List[Tuple[str, str, str]] = []
+        self._results: List[Tuple[str, str, str, float]] = []
+        self._t_start: float = 0.0
+
+    def pytest_runtest_logstart(self, nodeid, location):
+        """Record the wall-clock start time of each test."""
+        self._t_start = time.monotonic()
 
     def pytest_runtest_logreport(self, report):
         """Called after each test setup, call, and teardown phase."""
         if report.when != "call":
             # Only capture the 'call' phase result.
             return
+        duration = time.monotonic() - self._t_start
         name = report.nodeid
         if report.passed:
-            self._results.append((name, "PASS", ""))
+            self._results.append((name, "PASS", "", duration))
         elif report.failed:
             detail = str(report.longrepr) if report.longrepr else ""
-            self._results.append((name, "FAIL", detail))
+            self._results.append((name, "FAIL", detail, duration))
         elif report.skipped:
             reason = str(report.longrepr) if report.longrepr else ""
-            self._results.append((name, "SKIP", reason))
+            self._results.append((name, "SKIP", reason, duration))
 
     def pytest_sessionfinish(self, session, exitstatus):
         """Generate the HTML report at the end of the session."""

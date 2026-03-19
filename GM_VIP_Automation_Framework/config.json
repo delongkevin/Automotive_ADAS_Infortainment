@@ -39,6 +39,9 @@
   "bp_symbol_reload_at": 5,
   "symbol_reload_wait_s": 5.0,
 
+  "_comment5": "intermediate_halt_max_gos: max GO retries when ECU halts at wrong address (intermediate halt) or at the reset vector (CO:6 hard-reset). Increase on targets that fire CO:6 frequently.",
+  "intermediate_halt_max_gos": 10,
+
   "cmm_timeout_s": 60.0,
   "temp_dir": ""
 }

@@ -46,6 +46,10 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
+# Default for intermediate halt / hard-reset retry count.  Shared between the
+# dataclass default and config.json so both are updated in one place.
+_DEFAULT_INTERMEDIATE_HALT_MAX_GOS: int = 10
+
 
 @dataclass
 class T32Settings:
@@ -178,10 +182,16 @@ class T32Settings:
     #: when the ECU halts at an unexpected address before reaching the target
     #: breakpoint.  This happens on Aurix / ARM hardware where startup
     #: initialization code executes (and may halt) between the reset and the
-    #: first test function.  Set to ``0`` to disable the retry logic entirely.
+    #: first test function.  Also used by :func:`go` for CO:6 hard-reset retries.
+    #: Set to ``0`` to disable the retry logic entirely.
     #: env: T32_INTERMEDIATE_HALT_MAX_GOS
     intermediate_halt_max_gos: int = field(
-        default_factory=lambda: int(os.environ.get("T32_INTERMEDIATE_HALT_MAX_GOS", "3"))
+        default_factory=lambda: int(
+            os.environ.get(
+                "T32_INTERMEDIATE_HALT_MAX_GOS",
+                str(_DEFAULT_INTERMEDIATE_HALT_MAX_GOS),
+            )
+        )
     )
 
     #: Delay in seconds before each retry GO command issued during an
