@@ -24,20 +24,9 @@ variables
   }
 
 
-
 testcase To_Verify_CSM_Random_Number_Generate()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -66,8 +55,7 @@ testcase To_Verify_CSM_Random_Number_Generate()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -90,37 +78,31 @@ testcase To_Verify_CSM_Random_Number_Generate()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_RandomGenerate( CsmConf_CsmJob_CsmJob_PseudoRandomNumberGenerate, App_RngResult, App_RngResultLen ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_RandomGenerate( CsmConf_CsmJob_CsmJob_PseudoRandomNumberGenerate, App_RngResult, App_RngResultLen )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_RandomGenerate\\12");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_RandomGenerate\\12");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
   
  
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
 testcase To_Verify_CSM_Random_Seed_Finish()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -150,8 +132,7 @@ testcase To_Verify_CSM_Random_Seed_Finish()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -174,23 +155,25 @@ testcase To_Verify_CSM_Random_Seed_Finish()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_RandomSeedFinish( CsmConf_CsmJob_CsmJob_RandomSeedGenerate ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_RandomSeedFinish( CsmConf_CsmJob_CsmJob_RandomSeedGenerate )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_RandomGenerate\\7");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_RandomGenerate\\7");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
   
  
- 
-  
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -201,12 +184,6 @@ testcase To_Verify_CSM_Random_Seed_Update()
   /***************************************************************************************************************/ 
   
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -236,8 +213,7 @@ testcase To_Verify_CSM_Random_Seed_Update()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -260,40 +236,31 @@ testcase To_Verify_CSM_Random_Seed_Update()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_RandomSeedUpdate( CsmConf_CsmJob_CsmJob_RandomSeedGenerate, DummySeedData, 1 ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_RandomSeedUpdate( CsmConf_CsmJob_CsmJob_RandomSeedGenerate, DummySeedData, 1 )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_RandomGenerate\\6");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_RandomGenerate\\6");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
   
  
- 
-  
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
 
 
 testcase To_Verify_CSM_Random_Seed_Start()
 {
-   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-  long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
+   long var;
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -324,8 +291,7 @@ testcase To_Verify_CSM_Random_Seed_Start()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
    waitForNotRunning(20000);
@@ -348,40 +314,31 @@ testcase To_Verify_CSM_Random_Seed_Start()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_RandomSeedStart( CsmConf_CsmJob_CsmJob_RandomSeedGenerate ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_RandomSeedStart( CsmConf_CsmJob_CsmJob_RandomSeedGenerate )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_RandomGenerate\\5");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_RandomGenerate\\5");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
   
  
- 
-  
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
 
 
 testcase To_Verify_CSM_Symmetric_Key_Wrapping_Finish()
 {
-   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-  long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
+   long var;
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -411,8 +368,7 @@ testcase To_Verify_CSM_Symmetric_Key_Wrapping_Finish()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
    waitForNotRunning(20000);
@@ -435,36 +391,31 @@ testcase To_Verify_CSM_Symmetric_Key_Wrapping_Finish()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymKeyWrapSymFinish( 0 ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymKeyWrapSymFinish( 0 )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_SymKeyWrapSym\\25");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_SymKeyWrapSym\\25");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
 testcase  To_Verify_CSM_Symmetric_Key_Wrapping_Update()
 {
-   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-  long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
+   long var;
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -496,7 +447,7 @@ testcase  To_Verify_CSM_Symmetric_Key_Wrapping_Update()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("cybersec_features_test\\2");
   
@@ -516,7 +467,7 @@ testcase  To_Verify_CSM_Symmetric_Key_Wrapping_Update()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymKeyWrapSymUpdate( 0, App_WrapKeyOutputBuffer, &App_WrapKeyBufferLen ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymKeyWrapSymUpdate( 0, App_WrapKeyOutputBuffer, &App_WrapKeyBufferLen )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_BreakpointSet_AbortOnFail("App_SymKeyWrapSym\\24");
   A_DBGR_Go();
@@ -524,12 +475,17 @@ testcase  To_Verify_CSM_Symmetric_Key_Wrapping_Update()
   E_DBGR_BreakpointCheckForHalt("App_SymKeyWrapSym\\24");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -540,12 +496,6 @@ testcase  To_Verify_CSM_Symmetric_Key_Wrapping_Start()
   /***************************************************************************************************************/ 
   
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -575,8 +525,7 @@ testcase  To_Verify_CSM_Symmetric_Key_Wrapping_Start()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -599,36 +548,31 @@ testcase  To_Verify_CSM_Symmetric_Key_Wrapping_Start()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymKeyWrapSymStart( 0, &key, &Wrapkey ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymKeyWrapSymStart( 0, &key, &Wrapkey )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_SymKeyWrapSym\\23");
   A_DBGR_Go();
   waitForNotRunning(25000);
   E_DBGR_BreakpointCheckForHalt("App_SymKeyWrapSym\\23");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal); 
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
 testcase  To_Verify_CSM_Symmetric_Key_Extract_Start()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -658,8 +602,7 @@ testcase  To_Verify_CSM_Symmetric_Key_Extract_Start()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -682,36 +625,31 @@ testcase  To_Verify_CSM_Symmetric_Key_Extract_Start()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymKeyExtractStart( 0 ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymKeyExtractStart( 0 )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMCmacGenerate\\13");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_GMCmacGenerate\\13");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal); 
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
 testcase  To_Verify_CSM_Symmetric_Key_Extract_Update()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -740,8 +678,7 @@ testcase  To_Verify_CSM_Symmetric_Key_Extract_Update()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -764,36 +701,31 @@ testcase  To_Verify_CSM_Symmetric_Key_Extract_Update()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymKeyExtractUpdate( 0, App_KeyInputData3, 16 ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymKeyExtractUpdate( 0, App_KeyInputData3, 16 )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMCmacGenerate\\14");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_GMCmacGenerate\\14");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal); 
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
 testcase  To_Verify_CSM_Symmetric_Key_Extract_Finish()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -823,8 +755,7 @@ testcase  To_Verify_CSM_Symmetric_Key_Extract_Finish()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -847,39 +778,31 @@ testcase  To_Verify_CSM_Symmetric_Key_Extract_Finish()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymKeyExtractFinish( 0, &key ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymKeyExtractFinish( 0, &key )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMCmacGenerate\\15");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_GMCmacGenerate\\15");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
   
  
-  
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
 
 
 testcase  To_Verify_Security_Peripheral_Error_LLS_NoError()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -908,8 +831,7 @@ testcase  To_Verify_Security_Peripheral_Error_LLS_NoError()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -932,41 +854,31 @@ testcase  To_Verify_Security_Peripheral_Error_LLS_NoError()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SECURITY_PERIPHERAL_ERRORS = GetHWIO_e_SecPeriphErrs() of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SECURITY_PERIPHERAL_ERRORS = GetHWIO_e_SecPeriphErrs()"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMCmacGenerate\\16");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_GMCmacGenerate\\16");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var SECURITY_PERIPHERAL_ERRORS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var SECURITY_PERIPHERAL_ERRORS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("SECURITY_PERIPHERAL_ERRORS",0, Equal);  
   
    
-  
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
 
 
 testcase To_Verify_CSM_MAC_Verify_Update()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -975,7 +887,6 @@ testcase To_Verify_CSM_MAC_Verify_Update()
   snprintf( chTestTitle, elCount(chTestTitle), "To_Verify_CSM_MAC_Verify_Update" );
   snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_Verify_CSM_MAC_Verify_Update");
   TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_37285158", chTestDescription );
-
 
 
   /***************************************************************************************************************/    
@@ -991,7 +902,6 @@ testcase To_Verify_CSM_MAC_Verify_Update()
   TestStepAddActionExpected( chActionText, chExpectedText );
 
 
-
   A_DBGR_BreakpointDeleteAll();
    A_DBGR_R();
    /********************************************************************************************************************************************************************************************************************************************/    
@@ -999,7 +909,7 @@ testcase To_Verify_CSM_MAC_Verify_Update()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -1023,40 +933,31 @@ testcase To_Verify_CSM_MAC_Verify_Update()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_MacVerifyUpdate( CsmConf_CsmJob_CsmJob_MacVerify_She_Key_003, App_au8CmacData_1, APP_CMAC_DATA_SIZE_1 ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_MacVerifyUpdate( CsmConf_CsmJob_CsmJob_MacVerify_She_Key_003, App_au8CmacData_1, APP_CMAC_DATA_SIZE_1 )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMCmacVerify\\27");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_GMCmacVerify\\27");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
    
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
 
 
 testcase   To_Verify_CSM_MAC_Verify_Finish()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1065,7 +966,6 @@ testcase   To_Verify_CSM_MAC_Verify_Finish()
   snprintf( chTestTitle, elCount(chTestTitle), "To_Verify_CSM_MAC_Verify_Finish" );
   snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_Verify_CSM_MAC_Verify_Finish");
   TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_37285161", chTestDescription );
-
 
 
   /***************************************************************************************************************/    
@@ -1081,7 +981,6 @@ testcase   To_Verify_CSM_MAC_Verify_Finish()
   TestStepAddActionExpected( chActionText, chExpectedText );
 
 
-
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
    /********************************************************************************************************************************************************************************************************************************************/    
@@ -1089,8 +988,7 @@ testcase   To_Verify_CSM_MAC_Verify_Finish()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -1113,42 +1011,31 @@ testcase   To_Verify_CSM_MAC_Verify_Finish()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_MacVerifyFinish( CsmConf_CsmJob_CsmJob_MacVerify_She_Key_003, App_au8CmacTag_4, 128, &App_CmacVerifyResult ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_MacVerifyFinish( CsmConf_CsmJob_CsmJob_MacVerify_She_Key_003, App_au8CmacTag_4, 128, &App_CmacVerifyResult )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMCmacVerify\\28");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_GMCmacVerify\\28");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
    
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
-
 
 
 testcase   To_Verify_CSM_MAC_Verify_Start()
 {
-   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-  long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-
-
+   long var;
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1157,7 +1044,6 @@ testcase   To_Verify_CSM_MAC_Verify_Start()
   snprintf( chTestTitle, elCount(chTestTitle), "To_Verify_CSM_MAC_Verify_Finish" );
   snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_Verify_CSM_MAC_Verify_Finish");
   TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_37285161", chTestDescription );
-
 
 
   /***************************************************************************************************************/    
@@ -1178,8 +1064,7 @@ testcase   To_Verify_CSM_MAC_Verify_Start()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go_Safe();
   waitForNotRunning(20000);
@@ -1202,40 +1087,31 @@ testcase   To_Verify_CSM_MAC_Verify_Start()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_MacVerifyStart( CsmConf_CsmJob_CsmJob_MacVerify_She_Key_003, &key ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_MacVerifyStart( CsmConf_CsmJob_CsmJob_MacVerify_She_Key_003, &key )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMCmacVerify\\26");
   A_DBGR_Go();
   waitForNotRunning(20000);
   E_DBGR_BreakpointCheckForHalt("App_GMCmacVerify\\26");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
    
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
-  
 testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Update()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1244,7 +1120,6 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Update()
   snprintf( chTestTitle, elCount(chTestTitle), "To_Verify_CSM_Symmetric_Block_Decrypt_Update" );
   snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_Verify_CSM_Symmetric_Block_Decrypt_Update");
   TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_37285161", chTestDescription );
-
 
 
   /***************************************************************************************************************/    
@@ -1265,8 +1140,7 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Update()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
- //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
   testWaitForTimeout(10000);
@@ -1289,37 +1163,30 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Update()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymBlkDecryptUpdate( CsmConf_CsmJob_CsmJob_DecryptECB_She_Key_004, App_au8Aes128EcbCiphertext_2, APP_AES128_ECB_CIPHER_TEXT_SIZE_2, App_au8Aes128EcbResult, &App_u32Aes128EcbResultSize ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymBlkDecryptUpdate( CsmConf_CsmJob_CsmJob_DecryptECB_She_Key_004, App_au8Aes128EcbCiphertext_2, APP_AES128_ECB_CIPHER_TEXT_SIZE_2, App_au8Aes128EcbResult, &App_u32Aes128EcbResultSize )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\32");
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\32");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
  
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
 testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Start()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1328,7 +1195,6 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Start()
   snprintf( chTestTitle, elCount(chTestTitle), "To_Verify_CSM_Symmetric_Block_Decrypt_Start" );
   snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_Verify_CSM_Symmetric_Block_Decrypt_Start");
   TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_37285161", chTestDescription );
-
 
 
   /***************************************************************************************************************/    
@@ -1344,7 +1210,6 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Start()
   TestStepAddActionExpected( chActionText, chExpectedText );
 
 
-
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
    /********************************************************************************************************************************************************************************************************************************************/    
@@ -1352,8 +1217,7 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Start()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
   testWaitForTimeout(10000);
@@ -1378,19 +1242,24 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Start()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymBlkDecryptStart( CsmConf_CsmJob_CsmJob_DecryptECB_She_Key_004, &key ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymBlkDecryptStart( CsmConf_CsmJob_CsmJob_DecryptECB_She_Key_004, &key )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\31");
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\31");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);  
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -1403,21 +1272,12 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Finish()
   long var;
   
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
   snprintf( chTestTitle, elCount(chTestTitle), "To_Verify_CSM_Symmetric_Block_Decrypt_Finish" );
   snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_Verify_CSM_Symmetric_Block_Decrypt_Finish");
   TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_37285161", chTestDescription );
-
 
 
   /***************************************************************************************************************/    
@@ -1433,7 +1293,6 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Finish()
   TestStepAddActionExpected( chActionText, chExpectedText );
 
 
-
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
    /********************************************************************************************************************************************************************************************************************************************/    
@@ -1441,8 +1300,7 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Finish()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
   testWaitForTimeout(10000);
@@ -1465,22 +1323,26 @@ testcase   To_Verify_CSM_Symmetric_Block_Decrypt_Finish()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymBlkDecryptFinish( CsmConf_CsmJob_CsmJob_DecryptECB_She_Key_004 ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymBlkDecryptFinish( CsmConf_CsmJob_CsmJob_DecryptECB_She_Key_004 )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\33");
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\33");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);   
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
   
-
 
 testcase   To_Verify_CSM_Symmetric_Encrypt_Update()
 {
@@ -1491,21 +1353,12 @@ testcase   To_Verify_CSM_Symmetric_Encrypt_Update()
   long var;
   
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
   snprintf( chTestTitle, elCount(chTestTitle), "To_Verify_CSM_Symmetric_Encrypt_Update" );
   snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_Verify_CSM_Symmetric_Encrypt_Update");
   TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_37285161", chTestDescription );
-
 
 
   /***************************************************************************************************************/    
@@ -1521,7 +1374,6 @@ testcase   To_Verify_CSM_Symmetric_Encrypt_Update()
   TestStepAddActionExpected( chActionText, chExpectedText );
 
 
-
   A_DBGR_BreakpointDeleteAll();
  A_DBGR_R();
    /********************************************************************************************************************************************************************************************************************************************/    
@@ -1529,8 +1381,7 @@ testcase   To_Verify_CSM_Symmetric_Encrypt_Update()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
   testWaitForTimeout(10000);
@@ -1553,37 +1404,30 @@ testcase   To_Verify_CSM_Symmetric_Encrypt_Update()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymEncryptUpdate( CsmConf_CsmJob_CsmJob_EncryptCBC_She_Key_004, App_au8Aes128CbcPlaintext_1, APP_AES128_CBC_PLAIN_TEXT_SIZE_1, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymEncryptUpdate( CsmConf_CsmJob_CsmJob_EncryptCBC_She_Key_004, App_au8Aes128CbcPlaintext_1, APP_AES128_CBC_PLAIN_TEXT_SIZE_1, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_SymKeyWrapSym\\24");
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_SymKeyWrapSym\\24");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);    
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
 testcase   To_Verify_CSM_Symmetric_Decrypt_Update()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1592,7 +1436,6 @@ testcase   To_Verify_CSM_Symmetric_Decrypt_Update()
   snprintf( chTestTitle, elCount(chTestTitle), "To_Verify_CSM_Symmetric_Decrypt_Update" );
   snprintf( chTestDescription, elCount(chTestDescription), "Purpose:To_Verify_CSM_Symmetric_Decrypt_Update");
   TestCaseAddInfo( chTestTitle, "TC_L30SW_IT_37285161", chTestDescription );
-
 
 
   /***************************************************************************************************************/    
@@ -1608,7 +1451,6 @@ testcase   To_Verify_CSM_Symmetric_Decrypt_Update()
   TestStepAddActionExpected( chActionText, chExpectedText );
 
 
-
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
    /********************************************************************************************************************************************************************************************************************************************/    
@@ -1616,8 +1458,7 @@ testcase   To_Verify_CSM_Symmetric_Decrypt_Update()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
   testWaitForTimeout(10000);
@@ -1640,37 +1481,30 @@ testcase   To_Verify_CSM_Symmetric_Decrypt_Update()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymDecryptUpdate( CsmConf_CsmJob_CsmJob_DecryptCBC_She_Key_004, App_au8Aes128CbcCiphertext_1, APP_AES128_CBC_CIPHER_TEXT_SIZE_1, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymDecryptUpdate( CsmConf_CsmJob_CsmJob_DecryptCBC_She_Key_004, App_au8Aes128CbcCiphertext_1, APP_AES128_CBC_CIPHER_TEXT_SIZE_1, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\80");
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\80");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal);     
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
 
 
 testcase To_Verify_CSM_Symmetric_Decrypt_Finish()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1699,8 +1533,7 @@ testcase To_Verify_CSM_Symmetric_Decrypt_Finish()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
   testWaitForTimeout(10000);
@@ -1723,36 +1556,30 @@ testcase To_Verify_CSM_Symmetric_Decrypt_Finish()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymDecryptFinish( CsmConf_CsmJob_CsmJob_DecryptCBC_She_Key_004, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymDecryptFinish( CsmConf_CsmJob_CsmJob_DecryptCBC_She_Key_004, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\81");
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\81");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal); 
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
 testcase To_Verify_CSM_Symmetric_Decrypt_Start()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1782,8 +1609,7 @@ testcase To_Verify_CSM_Symmetric_Decrypt_Start()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
   testWaitForTimeout(10000);
@@ -1806,36 +1632,30 @@ testcase To_Verify_CSM_Symmetric_Decrypt_Start()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymDecryptStart( CsmConf_CsmJob_CsmJob_DecryptCBC_She_Key_004, &key, &initvector, initvectorlen ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymDecryptStart( CsmConf_CsmJob_CsmJob_DecryptCBC_She_Key_004, &key, &initvector, initvectorlen )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_GMAes128Decrypt\\79");
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_GMAes128Decrypt\\79");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal); 
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
 testcase To_Verify_CSM_Symmetric_Encrypt_Finish()
 {
-   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-  long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
+   long var;
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1865,8 +1685,7 @@ testcase To_Verify_CSM_Symmetric_Encrypt_Finish()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
   testWaitForTimeout(10000);
@@ -1889,36 +1708,30 @@ testcase To_Verify_CSM_Symmetric_Encrypt_Finish()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymEncryptFinish( CsmConf_CsmJob_CsmJob_EncryptCBC_She_Key_004, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymEncryptFinish( CsmConf_CsmJob_CsmJob_EncryptCBC_She_Key_004, App_au8Aes128CbcResult, &App_u32Aes128CbcResultSize )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_SymKeyWrapSym\\25");
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_SymKeyWrapSym\\25");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal); 
   
-}
 
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
+}
 
 
 testcase To_Verify_CSM_Symmetric_Encrypt_Start()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long var;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1947,8 +1760,7 @@ testcase To_Verify_CSM_Symmetric_Encrypt_Start()
   /*********************************************************************************************************************************************************************************************************************************************/
    snprintf( chActionText, elCount(chActionText), "set breakpoint at line cybersec_features_test( void ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function cybersec_features_test( void )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("cybersec_features_test\\2");
   A_DBGR_Go();
   testWaitForTimeout(10000);
@@ -1971,20 +1783,24 @@ testcase To_Verify_CSM_Symmetric_Encrypt_Start()
   
   snprintf( chActionText, elCount(chActionText), "set breakpoint at line SetHWIO_h_CSM_SymEncryptStart( CsmConf_CsmJob_CsmJob_EncryptCBC_She_Key_004, &key, &initvector, initvectorlen ) of the file test_spds_hwio.c"); 
   snprintf( chExpectedText, elCount(chExpectedText), "set breakpoint at line SetHWIO_h_CSM_SymEncryptStart( CsmConf_CsmJob_CsmJob_EncryptCBC_She_Key_004, &key, &initvector, initvectorlen )"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("App_SymKeyWrapSym\\23");
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("App_SymKeyWrapSym\\23");
   
   
-  
   snprintf( chActionText, elCount(chActionText), "verify var CSM_STATUS should be set"); 
   snprintf( chExpectedText, elCount(chExpectedText), "var CSM_STATUS should be set"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_VariableSet("CSM_STATUS", "0");
   E_DBGR_VariableCheck("CSM_STATUS",0, Equal); 
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 

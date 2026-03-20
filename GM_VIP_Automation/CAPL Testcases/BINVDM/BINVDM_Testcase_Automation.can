@@ -28,17 +28,7 @@ variables
 
 testcase Testcase_Verify_BINVDM_Initial_Read_Status()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long taskvalue;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -72,7 +62,6 @@ testcase Testcase_Verify_BINVDM_Initial_Read_Status()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )GetHWIO_e_BatNonVltlReadSt(); inside BYTE TestBinvdm_ReadGetStatus( void ) in test_binvdm_hwio.c and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_ReadGetStatus\\3");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_ReadGetStatus\\3");
@@ -94,10 +83,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_Block
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -119,9 +104,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_Block
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -129,7 +111,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_Block
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
@@ -151,7 +132,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_Block
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at return( ( BYTE )Readstatus ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\14");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\14");
@@ -170,7 +150,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_Block
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\32");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\32");
@@ -184,7 +163,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_Block
   snprintf( chActionText, elCount(chActionText), " complete state "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\124");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\124");
@@ -197,19 +175,11 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_Block
     // Test Step 7:check  Readstatus = BINVDM_READ_IDLE
   /*******************************************************************************************************************************************************/
   
-//  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )GetHWIO_e_BatNonVltlReadSt(); inside BYTE TestBinvdm_ReadGetStatus( void ) in test_binvdm_hwio.c and run the application"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  //A_DBGR_R();
-//  A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
-//  A_DBGR_Go();
-//  E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
   
   
-//  snprintf( chActionText, elCount(chActionText), "Verify TstReadstatus value in trace32 watch window"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Readstatus = BINVDM_READ_IDLE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  E_DBGR_VariableCheck("Readstatus",0,Equal);  
+TestStepAddActionExpected( chActionText, chExpectedText );
  
 }
 
@@ -221,10 +191,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_NON_B
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -246,9 +212,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_NON_B
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -256,7 +219,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_NON_B
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
@@ -275,20 +237,11 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_NON_B
     // Test Step 4: Set a breakpoint at "if( BINVDM_BLOCKING_MODE == binvdmSchmode )
   /*******************************************************************************************************************************************************/
   
-//  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at return( ( BYTE )Readstatus ); and run the application"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  //A_DBGR_R();
-//  A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\14");  
-//  A_DBGR_Go();
-//  E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\14");
   
   
-//  snprintf( chActionText, elCount(chActionText), "Set binvdmSchmode = 0 in trace32 watch window"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "binvdmSchmode = 0"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_DBGR_VariableSet("binvdmSchmode", "0"); 
-//  E_DBGR_VariableCheck("binvdmSchmode",0,Equal);
+TestStepAddActionExpected( chActionText, chExpectedText );
    /*******************************************************************************************************************************************************/    
     // Test Step 5: Set a breakpoint at "ret = MemAcc_Read( Address_Instance, ( Targetaddr - BINVDM_DFLASH_PHY_START_ADDR ), binvdmramaddr,\
 
@@ -297,7 +250,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_NON_B
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\54");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\54");
@@ -311,7 +263,6 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_NON_B
   snprintf( chActionText, elCount(chActionText), " complete state "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\124");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\124");
@@ -324,19 +275,11 @@ testcase Testcase_Verify_Default_Read_Status_Until_Operation_Completion_in_NON_B
     // Test Step 7:check  Readstatus = BINVDM_READ_IDLE
   /*******************************************************************************************************************************************************/
   
-//  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )GetHWIO_e_BatNonVltlReadSt(); inside BYTE TestBinvdm_ReadGetStatus( void ) in test_binvdm_hwio.c and run the application"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  //A_DBGR_R();
-//  A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
-//  A_DBGR_Go();
-//  E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
   
   
-//  snprintf( chActionText, elCount(chActionText), "Verify TstReadstatus value in trace32 watch window"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Readstatus = BINVDM_READ_IDLE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  E_DBGR_VariableCheck("Readstatus",0,Equal);  
+TestStepAddActionExpected( chActionText, chExpectedText );
  
 }
 
@@ -347,10 +290,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_Blocking_Mode()
                                                 // Variable Definition
   /***************************************************************************************************************/ 
   long taskvalue;
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -373,9 +312,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -383,7 +319,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
@@ -405,7 +340,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at return( ( BYTE )Readstatus ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\14");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\14");
@@ -424,7 +358,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\32");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\32");
@@ -438,7 +371,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " complete state "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\124");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\124");
@@ -451,19 +383,11 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_Blocking_Mode()
     // Test Step 7:check  Readstatus = BINVDM_READ_IDLE
   /*******************************************************************************************************************************************************/
   
-//  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )GetHWIO_e_BatNonVltlReadSt(); inside BYTE TestBinvdm_ReadGetStatus( void ) in test_binvdm_hwio.c and run the application"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  //A_DBGR_R();
-//  A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
-//  A_DBGR_Go();
-//  E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
   
   
-//  snprintf( chActionText, elCount(chActionText), "Verify TstReadstatus value in trace32 watch window"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Readstatus = BINVDM_READ_IDLE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  E_DBGR_VariableCheck("Readstatus",0,Equal);  
+TestStepAddActionExpected( chActionText, chExpectedText );
  
 }
 testcase Testcase_Verify_Successful_Read_Operation_Status_in_NON_Blocking_Mode()
@@ -472,10 +396,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_NON_Blocking_Mode()
                                                 // Variable Definition
   /***************************************************************************************************************/ 
   long taskvalue;
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -498,9 +418,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_NON_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -508,7 +425,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
@@ -530,13 +446,10 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at return( ( BYTE )Readstatus ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\54");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\54");
   
-  
-   
   
    /*******************************************************************************************************************************************************/    
     // Test Step 6: check Readstatus = BINVDM_READ_COMPLETE
@@ -546,7 +459,6 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " complete state "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\124");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\124");
@@ -559,19 +471,11 @@ testcase Testcase_Verify_Successful_Read_Operation_Status_in_NON_Blocking_Mode()
     // Test Step 7:check  Readstatus = BINVDM_READ_IDLE
   /*******************************************************************************************************************************************************/
   
-//  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )GetHWIO_e_BatNonVltlReadSt(); inside BYTE TestBinvdm_ReadGetStatus( void ) in test_binvdm_hwio.c and run the application"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  //A_DBGR_R();
-//  A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
-//  A_DBGR_Go();
-//  E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
   
   
-//  snprintf( chActionText, elCount(chActionText), "Verify TstReadstatus value in trace32 watch window"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Readstatus = BINVDM_READ_IDLE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  E_DBGR_VariableCheck("Readstatus",0,Equal);  
+TestStepAddActionExpected( chActionText, chExpectedText );
  
 }
 
@@ -581,10 +485,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_Blocking_Mode()
                                                 // Variable Definition
   /***************************************************************************************************************/ 
   long taskvalue;
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -607,9 +507,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -617,7 +514,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
@@ -639,7 +535,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at return( ( BYTE )Readstatus ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\14");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\14");
@@ -656,11 +551,9 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_Blocking_Mode()
   /*******************************************************************************************************************************************************/
 
   
-  
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\32");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\32");
@@ -685,7 +578,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_Blocking_Mode()
   E_DBGR_VariableCheck("binvdmreadcancel",1,Equal);
   
   
-  
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
@@ -702,7 +594,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " BINVDM_ERASE_CANCELED state "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\124");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\124");
@@ -716,19 +607,11 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_Blocking_Mode()
     // Test Step 7:check  Readstatus = BINVDM_READ_IDLE
   /*******************************************************************************************************************************************************/
   
-//  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )GetHWIO_e_BatNonVltlReadSt(); inside BYTE TestBinvdm_ReadGetStatus( void ) in test_binvdm_hwio.c and run the application"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  //A_DBGR_R();
-//  A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
-//  A_DBGR_Go();
-//  E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
   
   
-//  snprintf( chActionText, elCount(chActionText), "Verify TstReadstatus value in trace32 watch window"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Readstatus = BINVDM_READ_IDLE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  E_DBGR_VariableCheck("Readstatus",0,Equal);  
+TestStepAddActionExpected( chActionText, chExpectedText );
  
 }
 testcase Testcase_Verify_Canceled_Read_Operation_Status_in_NONBlocking_Mode()
@@ -737,10 +620,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_NONBlocking_Mode()
                                                 // Variable Definition
   /***************************************************************************************************************/ 
   long taskvalue;
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -763,9 +642,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_NONBlocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -773,7 +649,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_NONBlocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
@@ -797,7 +672,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_NONBlocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\54");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\54");
@@ -831,7 +705,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_NONBlocking_Mode()
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_ReadCancel\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_ReadCancel\\5");
- //A_DBGR_BreakpointDeleteAll();
 
    /*******************************************************************************************************************************************************/    
     // Test Step 6: check Readstatus = BINVDM_ERASE_CANCELED
@@ -841,7 +714,6 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_NONBlocking_Mode()
   snprintf( chActionText, elCount(chActionText), " BINVDM_ERASE_CANCELED state "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\124");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\124");
@@ -855,19 +727,11 @@ testcase Testcase_Verify_Canceled_Read_Operation_Status_in_NONBlocking_Mode()
     // Test Step 7:check  Readstatus = BINVDM_READ_IDLE
   /*******************************************************************************************************************************************************/
   
-//  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )GetHWIO_e_BatNonVltlReadSt(); inside BYTE TestBinvdm_ReadGetStatus( void ) in test_binvdm_hwio.c and run the application"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  //A_DBGR_R();
-//  A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
-//  A_DBGR_Go();
-//  E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
   
   
-//  snprintf( chActionText, elCount(chActionText), "Verify TstReadstatus value in trace32 watch window"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Readstatus = BINVDM_READ_IDLE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  E_DBGR_VariableCheck("Readstatus",0,Equal);  
+TestStepAddActionExpected( chActionText, chExpectedText );
  
 }
 
@@ -877,10 +741,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_Bl
                                                 // Variable Definition
   /***************************************************************************************************************/ 
   long taskvalue;
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -903,9 +763,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_Bl
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -913,7 +770,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_Bl
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
@@ -935,7 +791,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_Bl
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at return( ( BYTE )Readstatus ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\14");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\14");
@@ -954,7 +809,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_Bl
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\32");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\32");
@@ -968,7 +822,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_Bl
   snprintf( chActionText, elCount(chActionText), " complete state "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\124");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\124");
@@ -987,10 +840,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_NO
                                                 // Variable Definition
   /***************************************************************************************************************/ 
   long taskvalue;
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -1013,9 +862,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_NO
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -1023,7 +869,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_NO
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
@@ -1047,7 +892,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_NO
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\54");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\54");
@@ -1061,7 +905,6 @@ testcase Testcase_Verify_Read_Request_Operation_for_Erased_Memory_Location_in_NO
   snprintf( chActionText, elCount(chActionText), " complete state "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\124");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\124");
@@ -1079,10 +922,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_Blocking_Mode()
                                                 // Variable Definition
   /***************************************************************************************************************/ 
   long taskvalue;
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -1105,9 +944,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -1115,7 +951,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_blockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_blockingRead\\5");
@@ -1137,7 +972,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at return( ( BYTE )Readstatus ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\14");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\14");
@@ -1156,7 +990,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\17");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\17");
@@ -1170,7 +1003,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " complete state "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\42");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\42");
@@ -1186,7 +1018,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )GetHWIO_e_BatNonVltlReadSt(); inside BYTE TestBinvdm_ReadGetStatus( void ) in test_binvdm_hwio.c and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
@@ -1207,10 +1038,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_NON_Blocking_Mode
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1232,9 +1059,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_NON_Blocking_Mode
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -1242,7 +1066,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_NON_Blocking_Mode
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_blockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_blockingRead\\5");
@@ -1264,7 +1087,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_NON_Blocking_Mode
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at return( ( BYTE )Readstatus ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\14");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\14");
@@ -1283,7 +1105,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_NON_Blocking_Mode
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\17");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\17");
@@ -1297,7 +1118,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_NON_Blocking_Mode
   snprintf( chActionText, elCount(chActionText), " complete state "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("ReadHWIO_h_BatNonVltl\\42");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("ReadHWIO_h_BatNonVltl\\42");
@@ -1313,7 +1133,6 @@ testcase Testcase_Verify_Memory_Error_during_Read_Operation_in_NON_Blocking_Mode
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )GetHWIO_e_BatNonVltlReadSt(); inside BYTE TestBinvdm_ReadGetStatus( void ) in test_binvdm_hwio.c and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingRead\\5");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingRead\\5");
@@ -1333,10 +1152,6 @@ testcase Testcase_Verify_BINVDM_Initial_Erase_Status()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1358,9 +1173,6 @@ testcase Testcase_Verify_BINVDM_Initial_Erase_Status()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -1368,13 +1180,11 @@ testcase Testcase_Verify_BINVDM_Initial_Erase_Status()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_EraseGetStatus\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_EraseGetStatus\\4");
  
    
-  
   snprintf( chActionText, elCount(chActionText), "Verify TstErasestatus  value in trace32 watch window"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Erasestatus = BINVDM_ERASE_IDLE"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
@@ -1389,10 +1199,6 @@ testcase Verify_Erased_Segment_Verification_in_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1414,9 +1220,6 @@ testcase Verify_Erased_Segment_Verification_in_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -1424,7 +1227,6 @@ testcase Verify_Erased_Segment_Verification_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -1466,7 +1268,6 @@ testcase Verify_Erased_Segment_Verification_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\46");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\46");
@@ -1490,12 +1291,10 @@ testcase Verify_Erased_Segment_Verification_in_Blocking_Mode()
  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
  
-  
   
   snprintf( chActionText, elCount(chActionText), "Verify Erasestatus  value in trace32 watch window"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Erasestatus = BINVDM_ERASE_IDLE"); 
@@ -1511,10 +1310,6 @@ testcase Verify_Erased_Segment_Verification_in_NON_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1536,9 +1331,6 @@ testcase Verify_Erased_Segment_Verification_in_NON_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -1546,7 +1338,6 @@ testcase Verify_Erased_Segment_Verification_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -1588,7 +1379,6 @@ testcase Verify_Erased_Segment_Verification_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\46");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\46");
@@ -1611,13 +1401,11 @@ testcase Verify_Erased_Segment_Verification_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
  
  
-  
   snprintf( chActionText, elCount(chActionText), "Verify Erasestatus  value in trace32 watch window"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Erasestatus = BINVDM_ERASE_IDLE"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
@@ -1631,10 +1419,6 @@ testcase Verify_Successful_Erase_Operation_Verified_in_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1656,9 +1440,6 @@ testcase Verify_Successful_Erase_Operation_Verified_in_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -1666,7 +1447,6 @@ testcase Verify_Successful_Erase_Operation_Verified_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -1708,7 +1488,6 @@ testcase Verify_Successful_Erase_Operation_Verified_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\46");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\46");
@@ -1731,7 +1510,6 @@ testcase Verify_Successful_Erase_Operation_Verified_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_ReadGetStatus\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_ReadGetStatus\\4");
@@ -1751,10 +1529,6 @@ testcase Verify_Successful_Erase_Operation_Verified_in_NON_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1776,9 +1550,6 @@ testcase Verify_Successful_Erase_Operation_Verified_in_NON_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -1786,7 +1557,6 @@ testcase Verify_Successful_Erase_Operation_Verified_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -1828,7 +1598,6 @@ testcase Verify_Successful_Erase_Operation_Verified_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\46");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\46");
@@ -1851,13 +1620,11 @@ testcase Verify_Successful_Erase_Operation_Verified_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
  
  
-  
   snprintf( chActionText, elCount(chActionText), "Verify Erasestatus  value in trace32 watch window"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Erasestatus = BINVDM_ERASE_IDLE"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
@@ -1872,10 +1639,6 @@ testcase Verify_Memory_Error_during_Erase_Operation_in_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1897,9 +1660,6 @@ testcase Verify_Memory_Error_during_Erase_Operation_in_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -1907,7 +1667,6 @@ testcase Verify_Memory_Error_during_Erase_Operation_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -1922,10 +1681,6 @@ testcase Verify_Memory_Error_during_Erase_Operation_in_NON_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1947,9 +1702,6 @@ testcase Verify_Memory_Error_during_Erase_Operation_in_NON_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -1957,7 +1709,6 @@ testcase Verify_Memory_Error_during_Erase_Operation_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -1972,10 +1723,6 @@ testcase Verify_Error_for_Erase_Operation_in_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1997,9 +1744,6 @@ testcase Verify_Error_for_Erase_Operation_in_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -2007,7 +1751,6 @@ testcase Verify_Error_for_Erase_Operation_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -2049,7 +1792,6 @@ testcase Verify_Error_for_Erase_Operation_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("BinvdmEFlashGetErrorFlag\\32");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("BinvdmEFlashGetErrorFlag\\32");
@@ -2064,7 +1806,6 @@ testcase Verify_Error_for_Erase_Operation_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\48");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\48");
@@ -2084,10 +1825,6 @@ testcase Verify_Error_for_Erase_Operation_in_NON_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2109,9 +1846,6 @@ testcase Verify_Error_for_Erase_Operation_in_NON_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -2119,7 +1853,6 @@ testcase Verify_Error_for_Erase_Operation_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -2161,7 +1894,6 @@ testcase Verify_Error_for_Erase_Operation_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("BinvdmEFlashGetErrorFlag\\32");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("BinvdmEFlashGetErrorFlag\\32");
@@ -2176,7 +1908,6 @@ testcase Verify_Error_for_Erase_Operation_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\48");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\48");
@@ -2196,10 +1927,6 @@ testcase Verify_Failed_Erase_Operation_Status_in_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2221,9 +1948,6 @@ testcase Verify_Failed_Erase_Operation_Status_in_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -2231,7 +1955,6 @@ testcase Verify_Failed_Erase_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -2273,7 +1996,6 @@ testcase Verify_Failed_Erase_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("BinvdmEFlashGetErrorFlag\\32");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("BinvdmEFlashGetErrorFlag\\32");
@@ -2288,7 +2010,6 @@ testcase Verify_Failed_Erase_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\48");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\48");
@@ -2308,10 +2029,6 @@ testcase Verify_Failed_Erase_Operation_Status_in_NON_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2333,9 +2050,6 @@ testcase Verify_Failed_Erase_Operation_Status_in_NON_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -2343,7 +2057,6 @@ testcase Verify_Failed_Erase_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -2385,7 +2098,6 @@ testcase Verify_Failed_Erase_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("BinvdmEFlashGetErrorFlag\\32");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("BinvdmEFlashGetErrorFlag\\32");
@@ -2400,7 +2112,6 @@ testcase Verify_Failed_Erase_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\48");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\48");
@@ -2420,10 +2131,6 @@ testcase Verify_Successful_Erase_Operation_Status_in_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2445,9 +2152,6 @@ testcase Verify_Successful_Erase_Operation_Status_in_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -2455,7 +2159,6 @@ testcase Verify_Successful_Erase_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -2497,7 +2200,6 @@ testcase Verify_Successful_Erase_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\46");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\46");
@@ -2521,12 +2223,10 @@ testcase Verify_Successful_Erase_Operation_Status_in_Blocking_Mode()
  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
  
-  
   
   snprintf( chActionText, elCount(chActionText), "Verify Erasestatus  value in trace32 watch window"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Erasestatus = BINVDM_ERASE_IDLE"); 
@@ -2542,10 +2242,6 @@ testcase Verify_Successful_Erase_Operation_Status_in_NON_Blocking_Mode()
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2567,9 +2263,6 @@ testcase Verify_Successful_Erase_Operation_Status_in_NON_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -2577,7 +2270,6 @@ testcase Verify_Successful_Erase_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -2619,7 +2311,6 @@ testcase Verify_Successful_Erase_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\46");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\46");
@@ -2642,13 +2333,11 @@ testcase Verify_Successful_Erase_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
  
  
-  
   snprintf( chActionText, elCount(chActionText), "Verify Erasestatus  value in trace32 watch window"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Erasestatus = BINVDM_ERASE_IDLE"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
@@ -2662,10 +2351,6 @@ testcase Verify_Canceled_Erase_Operation_Status_in_Blocking_Mode()
                                                 // Variable Definition
   /***************************************************************************************************************/ 
   long taskvalue;
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -2688,9 +2373,6 @@ testcase Verify_Canceled_Erase_Operation_Status_in_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -2698,7 +2380,6 @@ testcase Verify_Canceled_Erase_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -2740,7 +2421,6 @@ testcase Verify_Canceled_Erase_Operation_Status_in_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\46");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\46");
@@ -2764,12 +2444,10 @@ testcase Verify_Canceled_Erase_Operation_Status_in_Blocking_Mode()
  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
  
-  
   
   snprintf( chActionText, elCount(chActionText), "Verify Erasestatus  value in trace32 watch window"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Erasestatus = BINVDM_ERASE_IDLE"); 
@@ -2784,10 +2462,6 @@ testcase Verify_Canceled_Erase_Operation_Status_in_NON_Blocking_Mode()
                                                 // Variable Definition
   /***************************************************************************************************************/ 
   long taskvalue;
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -2810,9 +2484,6 @@ testcase Verify_Canceled_Erase_Operation_Status_in_NON_Blocking_Mode()
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -2820,7 +2491,6 @@ testcase Verify_Canceled_Erase_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -2862,7 +2532,6 @@ testcase Verify_Canceled_Erase_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), " 1 - set run"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("EraseHWIO_h_BatNonVltl\\46");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("EraseHWIO_h_BatNonVltl\\46");
@@ -2885,13 +2554,11 @@ testcase Verify_Canceled_Erase_Operation_Status_in_NON_Blocking_Mode()
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
  
  
-  
   snprintf( chActionText, elCount(chActionText), "Verify Erasestatus  value in trace32 watch window"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Erasestatus = BINVDM_ERASE_IDLE"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
@@ -2907,10 +2574,6 @@ testcase Verify_Default_Erase_Status_Until_Operation_Completion_in_Blocking_Mode
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2932,9 +2595,6 @@ testcase Verify_Default_Erase_Status_Until_Operation_Completion_in_Blocking_Mode
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -2942,7 +2602,6 @@ testcase Verify_Default_Erase_Status_Until_Operation_Completion_in_Blocking_Mode
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -2957,10 +2616,6 @@ testcase Verify_Default_Erase_Status_Until_Operation_Completion_in_NON_Blocking_
   /***************************************************************************************************************/ 
   long taskvalue;
   /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2982,9 +2637,6 @@ testcase Verify_Default_Erase_Status_Until_Operation_Completion_in_NON_Blocking_
   E_DBGR_CheckState(T32_State_Running);
   
   
-  
-    
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 2: Set a breakpoint at "TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread );" and run the application
   /*******************************************************************************************************************************************************/
@@ -2992,7 +2644,6 @@ testcase Verify_Default_Erase_Status_Until_Operation_Completion_in_NON_Blocking_
   snprintf( chActionText, elCount(chActionText), "Set a breakpoint at TstReadstatus = ( Binvdmreadstatus )ReadHWIO_h_BatNonVltl( BLOCKING_MODE, &binvdmaddr, 72U, ( BYTE *)&Nvmdataread ); and run the application"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("TestBinvdm_NonblockingErase\\4");  
   A_DBGR_Go();
   E_DBGR_BreakpointCheckForHalt("TestBinvdm_NonblockingErase\\4");
@@ -3007,10 +2658,6 @@ testcase Testcase_Verify_BINVDM_Initial_Write_Status()
                                                 // Variable Definition
   /***************************************************************************************************************/ 
   long taskvalue;
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/

@@ -71,6 +71,13 @@ export testcase HMI_View_Robustness(int gear, int angle, int ignition)
     Check_Both_Can_Messages();
   }
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export void General_Postcondition()
@@ -91,6 +98,13 @@ export testcase HMI_Robustness_Proxi(char proxi[])
   else{
     testStepPass("","Proxy was written successfully!");
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 void MainTest ()
@@ -206,6 +220,13 @@ export testcase MCU1_0(int iterations)
    
     fileClose(logFile);
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase CPU_load_A72(int iterations)
@@ -228,6 +249,13 @@ export testcase CPU_load_A72(int iterations)
       testStepPass();
     }
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Stack_Usage_MCU2_0(int iterations)
@@ -251,6 +279,13 @@ export testcase Stack_Usage_MCU2_0(int iterations)
       testStepPass();
     }
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Stack_Usage_MCU2_1(int iterations)
@@ -274,6 +309,13 @@ export testcase Stack_Usage_MCU2_1(int iterations)
       testStepPass();
     }
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase CPU_Load_Test_MCU2_0(int iterations)
@@ -297,6 +339,13 @@ export testcase CPU_Load_Test_MCU2_0(int iterations)
       testStepPass();
     }
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase CPU_Load_Test_MCU2_1(int iterations)
@@ -320,6 +369,13 @@ export testcase CPU_Load_Test_MCU2_1(int iterations)
       testStepPass();
     }
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export void Power_Cycle_Immediate_Return(long waitTime)
@@ -691,12 +747,26 @@ export testcase View_Switch_HMI_Test(char gear[], char view[], char resolution[]
     View_Switch(gear, viewNumber, i);
     HMI_test(gear, i, resolution);
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Sanity_HMI_Test()
 {
   CmdIgnSts_HMI_Test();
   Gear_Switch_Test();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Gear_Switch_Test()
@@ -737,6 +807,13 @@ export testcase Gear_Switch_Test()
   Capture_Image(takenImageName, "1200x900");
   
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase CmdIgnSts_HMI_Test()
@@ -763,6 +840,12 @@ export testcase CmdIgnSts_HMI_Test()
   if(response == 1) testStepPass("");
   
 
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export int Check_If_Black_Screen(char imageName[], char resolution[])
@@ -889,6 +972,13 @@ export testcase Power_Cycle_CAN(long iterations)
   }
   
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Power_Cycle_Test(long iterations)
@@ -921,6 +1011,13 @@ export testcase Power_Cycle_Test(long iterations)
       testStepFail("DisplayView2 did not change!");
     }
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Hard_Reset_CAN(long iterations)
@@ -949,6 +1046,13 @@ export testcase Hard_Reset_CAN(long iterations)
   }
   
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Hard_Reset_Test(long iterations)
@@ -976,6 +1080,13 @@ export testcase Hard_Reset_Test(long iterations)
     }
   }
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export void Check_DTC()
@@ -1294,8 +1405,14 @@ export testcase Sleep_Wakeup(long iterations)
   
   testStepPass("", "average FD-CAN2 = %f seconds, average FD-CAN14 = %f seconds, average TTFI = %f seconds", totalTTFFDCAN2 / iterations, totalTTFFDCAN14 / iterations, totalTTFI / iterations);
   General_Postcondition();
-}
 
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
+}
 
 
 export testcase _5_1_Sleep_Wake_Cycle_Test()
@@ -1317,6 +1434,13 @@ export testcase _5_1_Sleep_Wake_Cycle_Test()
     Sleep_Wakeup_New(); //perform sleep wake up conditions and check HMI
     Disable_CAN_Communication();
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase _5_2_Sleep_Wake_Interruption_Test()
@@ -1344,6 +1468,13 @@ export testcase _5_2_Sleep_Wake_Interruption_Test()
   j = j + 5; //add 5 ms to time for each interruption case.
   testStep("","Twait is set to: %d",j);
 
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Sleep_Wakeup_Interrupt(long starttimer, long incrementtimer, long stoptimer)
@@ -1381,6 +1512,13 @@ export testcase Sleep_Wakeup_Interrupt(long starttimer, long incrementtimer, lon
   
   Check_DTC();
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -1402,6 +1540,13 @@ export testcase Sleep_Wakeup_New()
     {
       testStepPass("Successfully captured Image from image grabber!");
     }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase SetCalibrationData()
@@ -1413,6 +1558,13 @@ export testcase SetCalibrationData()
   Set_Extended_Session();
   
   Hard_Reset();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase variantProxy(int variant, char proxi[])
@@ -1452,6 +1604,13 @@ export testcase variantProxy(int variant, char proxi[])
     testStepPass("","FD61 Readout: %s",out);
   
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -1492,6 +1651,13 @@ export testcase variantProxyTest()
     testStepPass("","FD61 Readout: %s",out);
   
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase DV_PV_PowerCycleTest()
@@ -1605,8 +1771,14 @@ export testcase DV_PV_PowerCycleTest()
   //prepare for next cycle
   General_Postcondition();
   
-}
 
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
+}
 
 
 export testcase Power_Cycle_Interrupt_ECU_Shutdown()
@@ -1672,6 +1844,13 @@ export testcase Power_Cycle_Interrupt_ECU_Shutdown()
   else
     testStepPass();
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase TTFI(long iterations)
@@ -1709,7 +1888,6 @@ export testcase TTFI(long iterations)
     testWaitForTimeout(5000);
     
 
-    
     strncpy(fullCommand, batchFileNameWithASpace, 256);
     strncat(fullCommand, "1200x900 checkWhenSwitchAway 1200x900", 256); 
     strncat(fullCommand, "_BlackScreen", 256);
@@ -1825,6 +2003,13 @@ export testcase TTFI(long iterations)
   testStep("", "average FD-CAN2 = %f seconds, average FD-CAN14 = %f seconds, average TTFI = %f seconds", totalTTFFDCAN2 / iterations, totalTTFFDCAN14 / iterations, totalTTFI / validIterations);
   General_Postcondition();
 
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Voltage_Drop(double minVoltage, long cycles, char resolution[])
@@ -1867,6 +2052,13 @@ export testcase Voltage_Drop(double minVoltage, long cycles, char resolution[])
     strncat(imageName, iterInString, 50);
     Capture_Image(imageName, resolution);
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Take_Master_Images(char gear[], char resolution[])
@@ -1923,6 +2115,13 @@ export testcase Take_Master_Images(char gear[], char resolution[])
   testStepPass("", "Done capturing master images for gear %s, please double check the results", gear);
   
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Send_Proxi(char proxi[])
@@ -1937,6 +2136,13 @@ export testcase Send_Proxi(char proxi[])
   testStep("","Set to Default View: Rear View...");
   $CameraDisplaySts2=1;
   testWaitForTimeout(5000);
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 void Test_Pattern_Capture_And_Compare(char camera[], char resolution[])
@@ -2084,6 +2290,13 @@ export testcase Test_Pattern_Test(long set, char resolution[])
   }
   
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Test_Pattern_Test_With_Power_Cycle(long set, char resolution[])
@@ -2102,6 +2315,13 @@ export testcase Test_Pattern_Test_With_Power_Cycle(long set, char resolution[])
   }
   
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase Test_Pattern_Test_With_Hard_Reset(long set, char resolution[])
@@ -2120,6 +2340,13 @@ export testcase Test_Pattern_Test_With_Hard_Reset(long set, char resolution[])
   }
   
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export testcase HMI_Frame_Rate_Test(char resolution[])
@@ -2177,21 +2404,25 @@ export testcase HMI_Frame_Rate_Test(char resolution[])
   }
   
   General_Postcondition();
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 //export void Retry_With_Arguments(char functionName[], char arguments[][])
 //{
-//  int retries;
 //  long response;
 
 //  response = Write_Proxi(arguments[0]);
 //  if (response == 1)
 //  {
-//    testStepPass();
 //  }
 //  else
 //  {
-//    testStepFail();
 //  }
  
 //}
@@ -2564,6 +2795,13 @@ export testcase DTC_Test()
     Clear_DTC();
     Check_DTC();
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 export void Main_Precondition()
@@ -2588,7 +2826,6 @@ export void Main_Precondition()
   $Fwrd_Cam_Guidelines=1;
   $SVC_Guidelines=1;
  // $LwsAngle_SCCM=0;
-  
   
   
 }
@@ -2785,7 +3022,6 @@ export long Write_Proxy()
 //    retries ++;
 //    response = 0;
 //    testStep("", "Wait for 500 ms");
-//    testWaitForTimeout(500);
 //    req.SendRequest();
 //    response = TestWaitForDiagRequestSent(req, 2000);
 //    if(response != 1)
@@ -2833,7 +3069,6 @@ export long Write_Proxy()
 //    strncpy(hexString, "", 500);
 //    for(i = dataStart; i < size; i++)
 //    {
-//      snprintf(buffer, 3, "%02x", primitiveRaw[i]);
 //      strncat(hexString, buffer, 500);
 //      if(i < size-1)
 //        strncat(hexString, " ", 500);
@@ -2842,7 +3077,6 @@ export long Write_Proxy()
 //    if(elCount(hexString) == elCount(correctString) && strncmp(hexString, correctString, elCount(hexString)) == 0)
 //    {
 //      write("", "Diagnostic response matched part numbers");
-//      testStepPass("", "%s matches from release notes!\n %s\n==\n%s ", DID, correctString,hexString);
 //      break;
 //    }
 //    else
@@ -2951,7 +3185,6 @@ export double Power_Supply_Get_Current()
 //    testStep("", "start running power control batch file, retries: %d", retries);
 //    response = testWaitForSyscall( fullCommand, 0, 60000);
 //    retries ++;
-//    testWaitForTimeout(5000);
   
 //  }
   
@@ -2981,7 +3214,6 @@ export double Power_Supply_Get_Current()
 //    else
 //    {
 //      write("File 'PSC.txt' was not opened for read access.");
-//      testStepFail("File 'PSC.txt' was not opened for read access.");
 //    }
     
 //    fileClose(glbHandle);
@@ -2989,7 +3221,6 @@ export double Power_Supply_Get_Current()
 //  else
 //  {
 //    write("failed to finish power supply control, exit code: %d", response);
-//    testStepFail(" ", "failed to finish power supply control, exit code: %d", response);
 //  }
 //  return -1;
 //}
@@ -3021,7 +3252,6 @@ void CaptureMCU_2_0()
 //  {
 //    char buffer[64];
 //    dword glbHandle;
-//    int port = 8;
       
 //    //
 //    // Opens the file in ASCII mode for read access.
@@ -3042,46 +3272,39 @@ void CaptureMCU_2_0()
       
 //      if (port != 999)
 //      {
-//        testStepPass("", "Found power supply at COM%d!", port);
 //        // Check if the port is avaliable
 //        rs232Open(port);
 //        if (1 == rs232Configure(port,9600,8,1,0))
 //        {
 //          write ("Connected COM%d!",port);
-//          testStepPass("", "Connected COM%d!",port);
 //        }
 //        else
 //        {
 //          write ("Failed to connect to COM%d", port);
-//          testStepFail(" ","Failed to connect to COM%d", port);
 //        }
 //        rs232Close(port);
 //      }
 //      else
 //      {
 //        write ("Failed to find power supply port");
-//        testStepFail("Failed to find power supply port");
 //        rs232Close(port);
 //      }
 //    }
 //    else
 //    {
 //      write ("File 'port.txt' was not opened for read access.");
-//      testStepFail("File 'port.txt' was not opened for read access.");
 //      rs232Close(port);
 //    }
 //  }
 //  else
 //  {
 //    write ("Failed to execute Check_Port.bat, exit code: %d", response);
-//    testStepFail(" ","Failed to execute Check_Port.bat, exit code: %d", response);
 //  }
 //}
 
 //export testcase THA_Sanity()
 //{
 //  long response;
-//  int i;
 //  long j;
 //  char temp[50];
 //  char defaultImageName[50];
@@ -3094,11 +3317,9 @@ void CaptureMCU_2_0()
 //  Set_Default_Session();
 //  Set_Extended_Session();
 //  diagSendRequest(req);
-//  testWaitForTimeout(3000);
 //  response = diagGetResponseCode(resp);
 //  if (response == -1)
 //  {
-//    testStepFail("","NRC on enabling USS debug mode for testing!");
 //  }
 //  testStep("","Starting testing THA-Trailer Hitch Assist!");
 //  Write_Proxy();
@@ -3113,13 +3334,11 @@ void CaptureMCU_2_0()
 //  $FDCAN2::EPS::EPS_FD_2::THA_SteeringTouchStat = 1;
 //  $FDCAN2::EPS::EPS_FD_2::THA_SteeringTouchStat = 0;
 //  
-//  testWaitForTimeout(2000);
 //  Capture_Image("THA_View","1200x900");
 //  $TrailerConnectionSts = 0; //Not connected
 //  $TrailerConnectionSts = 1;//Connected
 //  $ITBM_TrlrStat = 1; //Trailer is present, check gridlines (should disappear)
 //  if($DisplayView2 == 0){
-//    testStepFail("","HMI View did not change!");
 //  }
 //  Capture_Image("Trailer_View","1200x900");
 //  
@@ -3149,15 +3368,11 @@ void CaptureMCU_2_0()
 //  testStep("","DisplayView2 != 0 check");
 //  if($DisplayView2 == 0)
 //  {
-//    testStepFail("","View did not update!");
 //  }
 //  else{
-//  testStepPass();
 //  }
 //  
 //}
-
-
 
 
 void SendTop()

@@ -39,17 +39,7 @@ Description:   The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFail
 ***************************************************************************************************/
 testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_0()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long taskvalue;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -86,8 +76,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN");
   
   
-  
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 4: Add coreId Variable in watch window and update value to 0.
   /*******************************************************************************************************************************************************/
@@ -95,12 +83,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add coreId Variable in watch window and update value to 0."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value coreId = 0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
   A_DBGR_VariableSet("coreId", "0");   
   E_DBGR_VariableCheck("coreId", 0, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
 
   
-    
   /******************************************************************************************************************************************************************/    
     // Test Step 5 to 7: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )
   /******************************************************************************************************************************************************************/
@@ -108,11 +94,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN"); 
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -122,12 +106,8 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add cpuId Variable in watch window and check value is 0."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value cpuId = 0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
   E_DBGR_VariableCheck("cpuId", 0, Equal);
   
-  
- 
   
   /******************************************************************************************************************************************************************/    
     // Test Step 9 to 11: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line retval = NO_FAILURE;
@@ -142,7 +122,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\64");   
   
   
-  
   /******************************************************************************************************************************************************************/    
     // Test Step 12 to 14: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;
   /******************************************************************************************************************************************************************/
@@ -150,27 +129,19 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_BreakpointDeleteAll();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN\\69");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\69");    
-  
-  
-  
   
   
    /*******************************************************************************************************************************************************/    
     // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
   /*******************************************************************************************************************************************************/
 
-//  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  E_DBGR_VariableCheck("retval ", NO_FAILURE, Equal);
-  
-  
-  
-  
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
   /**************************************************************************************************************************************************************/    
@@ -180,14 +151,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_BreakpointDeleteAll();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN\\6");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN\\6");  
-  
-  
-  
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -197,15 +163,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is 0."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = 0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
-
 
 
 /***************************************************************************************************
@@ -217,17 +184,7 @@ Description:   The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFail
 ***************************************************************************************************/
 testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_1()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long taskvalue;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -250,12 +207,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_BreakpointDeleteAll();
-// A_DBGR_RnGo(); 
   A_DBGR_R();
   A_DBGR_Go_Safe();
   E_DBGR_CheckState(T32_State_Running);
   
-
 
   /**************************************************************************************************************************************************************/    
     // Test Step 1 to 3: set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepSt( void ) at line retval = GetHWIO_b_LockstepSt();
@@ -264,14 +219,11 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN"); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN");
   
   
-  
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 4: Add coreId Variable in watch window and update value to 0.
   /*******************************************************************************************************************************************************/
@@ -279,11 +231,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add coreId Variable in watch window and update value to 0."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value coreId = 0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
   E_DBGR_VariableCheck_until("coreId", 1, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
 
   
-    
   /******************************************************************************************************************************************************************/    
     // Test Step 5 to 7: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )
   /******************************************************************************************************************************************************************/
@@ -291,11 +241,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN"); 
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -305,12 +253,8 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add cpuId Variable in watch window and check value is 0."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value cpuId = 0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
   E_DBGR_VariableCheck("cpuId", 1, Equal);
   
-  
- 
   
   /******************************************************************************************************************************************************************/    
     // Test Step 9 to 11: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line retval = NO_FAILURE;
@@ -325,7 +269,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\64");   
   
   
-  
   /******************************************************************************************************************************************************************/    
     // Test Step 12 to 14: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;
   /******************************************************************************************************************************************************************/
@@ -333,27 +276,19 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN\\69");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\69");    
   
   
-  
-  
-  
-//   /*******************************************************************************************************************************************************/    
-//    // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
-//  /*******************************************************************************************************************************************************/
+   /*******************************************************************************************************************************************************/    
+    // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
+  /*******************************************************************************************************************************************************/
 
-//  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
-//  E_DBGR_VariableCheck("retval ", 0, Equal);
-  
-  
-  
-  
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);  
   
   
   /**************************************************************************************************************************************************************/    
@@ -363,14 +298,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN\\6");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN\\6");  
-  
-  
-  
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -380,17 +310,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is 0."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = 0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
-
-
-
 
 
 /***************************************************************************************************
@@ -402,17 +331,7 @@ Description:   The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFail
 ***************************************************************************************************/
 testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_2()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long taskvalue;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -435,12 +354,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_BreakpointDeleteAll();
-// A_DBGR_RnGo(); 
   A_DBGR_R();
   A_DBGR_Go_Safe();
   E_DBGR_CheckState(T32_State_Running);
   
-
 
   /**************************************************************************************************************************************************************/    
     // Test Step 1 to 3: set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();
@@ -449,14 +366,11 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN"); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN");
   
   
-  
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 4: Add coreId Variable in watch window and update value to 2.
   /*******************************************************************************************************************************************************/
@@ -464,11 +378,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add coreId Variable in watch window and update value to 2."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value coreId = 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
   E_DBGR_VariableCheck_until("coreId", 2, Equal);
 
   
-    
   /******************************************************************************************************************************************************************/    
     // Test Step 5 to 7: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )
   /******************************************************************************************************************************************************************/
@@ -476,11 +388,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN"); 
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -492,8 +402,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("cpuId", 2, Equal);
   
-  
- 
   
   /******************************************************************************************************************************************************************/    
     // Test Step 9 to 11: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line retval = NO_FAILURE;
@@ -508,7 +416,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\64");   
   
   
-  
   /******************************************************************************************************************************************************************/    
     // Test Step 12 to 14: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;
   /******************************************************************************************************************************************************************/
@@ -516,27 +423,19 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN\\69");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\69");    
-  
-  
-  
   
   
    /*******************************************************************************************************************************************************/    
     // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
   /*******************************************************************************************************************************************************/
 
-//  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );   
-//  E_DBGR_VariableCheck("retval ", 0, Equal);
-  
-  
-  
-  
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);   
   
   
   /**************************************************************************************************************************************************************/    
@@ -546,14 +445,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN\\6");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN\\6");  
-  
-  
-  
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -563,18 +457,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is 0."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = 0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
-
-
-
-
 
 
 /***************************************************************************************************
@@ -586,17 +478,7 @@ Description:   The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFail
 ***************************************************************************************************/
 testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_3()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long taskvalue;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -619,12 +501,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_BreakpointDeleteAll();
-// A_DBGR_RnGo(); 
   A_DBGR_R();
   A_DBGR_Go_Safe();
   E_DBGR_CheckState(T32_State_Running);
   
-
 
   /**************************************************************************************************************************************************************/    
     // Test Step 1 to 3: set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();
@@ -633,14 +513,11 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN"); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN");
   
   
-  
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 4: Add coreId Variable in watch window and update value to 3.
   /*******************************************************************************************************************************************************/
@@ -648,11 +525,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add coreId Variable in watch window and update value to 3."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value coreId = 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
   E_DBGR_VariableCheck_until("coreId", 3, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
 
   
-    
   /******************************************************************************************************************************************************************/    
     // Test Step 5 to 7: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )
   /******************************************************************************************************************************************************************/
@@ -660,11 +535,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN"); 
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -674,12 +547,8 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add cpuId Variable in watch window and check value is 3."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value cpuId = 3"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
   E_DBGR_VariableCheck("cpuId", 3, Equal);
   
-  
- 
   
   /******************************************************************************************************************************************************************/    
     // Test Step 9 to 11: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line retval = NO_FAILURE;
@@ -694,7 +563,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\64");   
   
   
-  
   /******************************************************************************************************************************************************************/    
     // Test Step 12 to 14: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;
   /******************************************************************************************************************************************************************/
@@ -702,27 +570,19 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN\\69");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\69");    
-  
-  
-  
   
   
    /*******************************************************************************************************************************************************/    
     // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
   /*******************************************************************************************************************************************************/
 
-//  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );   
-//  E_DBGR_VariableCheck("retval ", 0, Equal);
-  
-  
-  
-  
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);   
   
   
   /**************************************************************************************************************************************************************/    
@@ -732,14 +592,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN\\6");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN\\6");  
-  
-  
-  
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -749,18 +604,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is 0."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = 0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
-
-
-
-
 
 
 /***************************************************************************************************
@@ -772,17 +625,7 @@ Description:   The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFail
 ***************************************************************************************************/
 testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_4()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long taskvalue;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -819,8 +662,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN");
   
   
-  
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 4: Add coreId Variable in watch window and update value to 4.
   /*******************************************************************************************************************************************************/
@@ -828,11 +669,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add coreId Variable in watch window and update value to 4."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value coreId = 4"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
   E_DBGR_VariableCheck_until("coreId", 4, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
 
   
-    
   /******************************************************************************************************************************************************************/    
     // Test Step 5 to 7: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )
   /******************************************************************************************************************************************************************/
@@ -840,11 +679,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN"); 
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -854,12 +691,8 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add cpuId Variable in watch window and check value is 4."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value cpuId = 4"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
   E_DBGR_VariableCheck("cpuId", 4, Equal);
   
-  
- 
   
   /******************************************************************************************************************************************************************/    
     // Test Step 9 to 11: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line retval = NO_FAILURE;
@@ -874,7 +707,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\64");   
   
   
-  
   /******************************************************************************************************************************************************************/    
     // Test Step 12 to 14: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;
   /******************************************************************************************************************************************************************/
@@ -882,27 +714,19 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN\\69");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\69");    
-  
-  
-  
   
   
    /*******************************************************************************************************************************************************/    
     // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
   /*******************************************************************************************************************************************************/
 
-//  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
-//  E_DBGR_VariableCheck("retval ", 0, Equal);
-  
-  
-  
-  
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);  
   
   
   /**************************************************************************************************************************************************************/    
@@ -912,14 +736,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN\\6");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN\\6");  
-  
-  
-  
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -929,20 +748,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is 0."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = 0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
-
-
-
-
-
-
 
 
 /***************************************************************************************************
@@ -954,17 +769,7 @@ Description:   The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_'NoFail
 ***************************************************************************************************/
 testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for_the_specified_CPU_Core_5()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long taskvalue;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -987,12 +792,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_BreakpointDeleteAll();
-// A_DBGR_RnGo(); 
   A_DBGR_R();
   A_DBGR_Go_Safe();
   E_DBGR_CheckState(T32_State_Running);
   
-
 
   /**************************************************************************************************************************************************************/    
     // Test Step 1 to 3: set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();
@@ -1001,14 +804,11 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN"); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN");
   
   
-  
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 4: Add coreId Variable in watch window and update value to 5.
   /*******************************************************************************************************************************************************/
@@ -1016,11 +816,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add coreId Variable in watch window and update value to 5."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value coreId = 5"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
   E_DBGR_VariableCheck_until("coreId", 5, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
 
   
-    
   /******************************************************************************************************************************************************************/    
     // Test Step 5 to 7: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )
   /******************************************************************************************************************************************************************/
@@ -1028,11 +826,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN"); 
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -1042,12 +838,8 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add cpuId Variable in watch window and check value is 5."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value cpuId = 5"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
   E_DBGR_VariableCheck("cpuId", 5, Equal);
   
-  
- 
   
   /******************************************************************************************************************************************************************/    
     // Test Step 9 to 11: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line retval = NO_FAILURE;
@@ -1062,7 +854,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\64");   
   
   
-  
   /******************************************************************************************************************************************************************/    
     // Test Step 12 to 14: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;
   /******************************************************************************************************************************************************************/
@@ -1070,27 +861,19 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line LockstepStatus[cpuId].lockstepStatus = retval;"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN\\69");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\69");    
-  
-  
-  
   
   
    /*******************************************************************************************************************************************************/    
     // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
   /*******************************************************************************************************************************************************/
 
-//  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );   
-//  E_DBGR_VariableCheck("retval ", 0, Equal);
-  
-  
-  
-  
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);   
   
   
   /**************************************************************************************************************************************************************/    
@@ -1100,14 +883,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN\\6");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN\\6");  
-  
-  
-  
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -1117,15 +895,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is 0."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = 0"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
-
 
 
 /***************************************************************************************************
@@ -1137,17 +916,7 @@ Description:   The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NO_LOCK
 ***************************************************************************************************/
 testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_for_the_specified_CPU_Core_6()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long taskvalue;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1180,8 +949,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN");
 
 
-
-
   /*******************************************************************************************************************************************************/    
     // Test Step 4: Add coreId Variable in watch window and update value to 6.
   /*******************************************************************************************************************************************************/
@@ -1193,7 +960,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   E_DBGR_VariableCheck("coreId", 6, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
 
   
-    
   /******************************************************************************************************************************************************************/    
     // Test Step 5 to 7: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )
   /******************************************************************************************************************************************************************/
@@ -1207,7 +973,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN"); 
   
   
-  
   /*******************************************************************************************************************************************************/    
     // Test Step 8: Add cpuId Variable in watch window and check value is 6.
   /*******************************************************************************************************************************************************/
@@ -1215,12 +980,8 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "Add cpuId Variable in watch window and check value is 6."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value cpuId = 6"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
   E_DBGR_VariableCheck_until("cpuId", 6, Equal);
   
-  
- 
   
   /******************************************************************************************************************************************************************/    
     // Test Step 9 to 11: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line retval = NO_LOCKSTEP;
@@ -1249,12 +1010,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is 2."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("retval ", 2, Equal);
+  E_DBGR_VariableCheck("retval", 2, Equal);
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
 
 
 /***************************************************************************************************
@@ -1266,17 +1031,7 @@ Description:   The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NO_LOCK
 ***************************************************************************************************/
 testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_for_the_specified_CPU_Core_128()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long taskvalue;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1299,12 +1054,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_BreakpointDeleteAll();
-// A_DBGR_RnGo(); 
   A_DBGR_R();
   A_DBGR_Go_Safe();
   E_DBGR_CheckState(T32_State_Running);
   
-
 
   /**************************************************************************************************************************************************************/    
     // Test Step 1 to 3: set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();
@@ -1313,14 +1066,11 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN"); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN");
   
   
-  
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 4: Add coreId Variable in watch window and update value to 128.
   /*******************************************************************************************************************************************************/
@@ -1328,12 +1078,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "Add coreId Variable in watch window and update value to 128."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value coreId = 128"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
   A_DBGR_VariableSet("coreId", "128");   
   E_DBGR_VariableCheck("coreId", 128, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
 
   
-    
   /******************************************************************************************************************************************************************/    
     // Test Step 5 to 7: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )
   /******************************************************************************************************************************************************************/
@@ -1341,11 +1089,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN"); 
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -1355,12 +1101,8 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "Add cpuId Variable in watch window and check value is 128."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value cpuId = 128"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
   E_DBGR_VariableCheck("cpuId", 128, Equal);
   
-  
- 
   
   /******************************************************************************************************************************************************************/    
     // Test Step 9 to 11: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line retval = NO_LOCKSTEP;
@@ -1375,11 +1117,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\73");   
   
   
-   
-  
-  
-  
-  
   /**************************************************************************************************************************************************************/    
     // Test Step 16 to 18: set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)
   /**************************************************************************************************************************************************************/
@@ -1387,14 +1124,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN\\6");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN\\6");  
-  
-  
-  
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -1404,16 +1136,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is 2."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 2, Equal);
+  E_DBGR_VariableCheck("retval", 2, Equal);
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
-
-
 
 
 /***************************************************************************************************
@@ -1425,17 +1157,7 @@ Description:   The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NO_LOCK
 ***************************************************************************************************/
 testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_for_the_specified_CPU_Core_255()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
   long taskvalue;
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
   
   /***************************************************************************************************************/    
                                               // Test Case Info
@@ -1458,12 +1180,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_BreakpointDeleteAll();
-// A_DBGR_RnGo(); 
   A_DBGR_R();
   A_DBGR_Go_Safe();
   E_DBGR_CheckState(T32_State_Running);
   
-
 
   /**************************************************************************************************************************************************************/    
     // Test Step 1 to 3: set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();
@@ -1472,14 +1192,11 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line retval = GetHWIO_b_LockstepSt();"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN"); 
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN");
   
   
-  
-   
   /*******************************************************************************************************************************************************/    
     // Test Step 4: Add coreId Variable in watch window and update value to 6.
   /*******************************************************************************************************************************************************/
@@ -1487,12 +1204,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "Add coreId Variable in watch window and update value to 255."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and updated the value coreId = 255"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
   A_DBGR_VariableSet("coreId", "255");   
   E_DBGR_VariableCheck("coreId", 255, Equal);   //variable is not updating in watch window when we disable task as TRUE, therfore checking 0 value here
 
   
-    
   /******************************************************************************************************************************************************************/    
     // Test Step 5 to 7: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )
   /******************************************************************************************************************************************************************/
@@ -1500,11 +1215,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line BYTE GetHWIO_b_LockstepStN( BYTE cpuId )"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_LockstepStN");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN"); 
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -1514,12 +1227,8 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "Add cpuId Variable in watch window and check value is 255."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value cpuId = 255"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
   E_DBGR_VariableCheck("cpuId", 255, Equal);
   
-  
- 
   
   /******************************************************************************************************************************************************************/    
     // Test Step 9 to 11: set breakpoint in file lockstep_hwio.c in function BYTE GetHWIO_b_LockstepStN( BYTE cpuId ) at line retval = NO_LOCKSTEP;
@@ -1534,11 +1243,6 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\73");   
   
   
-   
-  
-  
-  
-  
   /**************************************************************************************************************************************************************/    
     // Test Step 16 to 18: set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)
   /**************************************************************************************************************************************************************/
@@ -1546,14 +1250,9 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "set breakpoint in file test_lockstep_hwio.c in function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Breakpoint got hit at function void Test_GetHWIO_b_LockstepStN( void ) at line if (retval == 0u)"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  //A_DBGR_R();
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_b_LockstepStN\\6");
   A_DBGR_Go(); 
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_b_LockstepStN\\6");  
-  
-  
-  
-  
   
   
   /*******************************************************************************************************************************************************/    
@@ -1563,20 +1262,15 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is 2."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
- // A_DBGR_BreakpointDeleteAll();
-//  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 2, Equal);
+  E_DBGR_VariableCheck("retval", 2, Equal);
   
   
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
-
-
-
-
-
-
-
-
-
 
 

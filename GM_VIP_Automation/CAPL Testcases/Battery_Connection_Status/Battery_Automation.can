@@ -23,18 +23,6 @@ variables
 testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_0_when_the_battery_is_connected_voltage_is_in_the_normal_range()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -73,8 +61,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_0_when_t
   
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -86,22 +72,17 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_0_when_t
     testStepFail("1","string is not present");
   }
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_the_battery_is_disconnected()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -121,8 +102,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
   
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -134,7 +113,7 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   A_GENERIC_SetTimeout(3000,"waiting for UART log");
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
   /***************************************************************************************************************/
                                               // Test Step 2 Disconnect the Battery and verify battery is disconnected
@@ -153,8 +132,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   strncpy(searchString,"test_battconnstatus_hwio:battConnectionStatus = 1",256);
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -165,23 +142,18 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   {
     testStepFail("1","string is not present");
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditions_unless_cleared_by_the_ClrHWIO_BatConnectionStatus()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -224,8 +196,6 @@ testcase Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditio
   strncpy(searchString,"test_battconnstatus_hwio:Clear Battery Connection Status",256);
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -243,8 +213,6 @@ testcase Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditio
   
   strncpy(searchString,"test_battconnstatus_hwio:battConnectionStatus = 0",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -255,23 +223,18 @@ testcase Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditio
   {
     testStepFail("1","string is not present");
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_the_system_wakes_up_due_to_a_low_voltage_transient()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -288,13 +251,13 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
   A_DBGR_Go_Safe();
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   /***************************************************************************************************************/    
                                               // Test Step 1 Set the power supply voltage to a value less than 3.7V to simulate a voltage level where MCU turns off.
   /***************************************************************************************************************/
@@ -319,8 +282,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   strncpy(searchString,"Power ON wakeup event found in transceiver 0",256);
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -334,8 +295,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   
   strncpy(searchString,"Power ON wakeup event found in transceiver 1",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -353,8 +312,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   
   strncpy(searchString,"test_battconnstatus_hwio:battConnectionStatus = 1",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -365,22 +322,17 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   {
     testStepFail("1","string is not present");
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due_to_wakeup_signal_and_not_due_to_a_battery_disconnect()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -398,12 +350,10 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -412,13 +362,13 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -432,7 +382,7 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -523,13 +473,12 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
- // E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -549,7 +498,7 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_CAN_SendMessage(0x123, CANA_Wakeup, 8, 1);
   A_CAN_SendMessage(0x123, CANA_Wakeup, 8, 1);
   
@@ -558,7 +507,7 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,10000,cc_eCAN_PRESENT,"CAN1");
   
@@ -572,8 +521,6 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -585,23 +532,18 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
     testStepFail("1","string is not present");
   }
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_unless_a_battery_disconnection_event_occurs()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -618,12 +560,10 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -632,13 +572,13 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -652,7 +592,7 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -743,13 +683,12 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
- // E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -769,7 +708,7 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_CAN_SendMessage(0x123, CANA_Wakeup, 8, 1);
   A_CAN_SendMessage(0x123, CANA_Wakeup, 8, 1);
   
@@ -778,7 +717,7 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,10000,cc_eCAN_PRESENT,"CAN1");
   
@@ -792,8 +731,6 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(15000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -830,8 +767,6 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   strncpy(searchString,"test_battconnstatus_hwio:battConnectionStatus = 1",256);
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -842,23 +777,18 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   {
     testStepFail("1","string is not present");
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_Controller_Reset_when_Battery_Voltage_is_between_3_3V_and_4_5V_for_250ms()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -875,11 +805,9 @@ testcase Verify_Controller_Reset_when_Battery_Voltage_is_between_3_3V_and_4_5V_f
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
   
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -904,18 +832,6 @@ testcase Verify_Controller_Reset_when_Battery_Voltage_is_between_3_3V_and_4_5V_f
 testcase Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Battery_Voltage_is_between_3_3V_and_4_5V()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -935,8 +851,6 @@ testcase Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Ba
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
   
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -967,7 +881,7 @@ testcase Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Ba
   A_GENERIC_SetTimeout(3000,"waiting for UART log");
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
   
     /***************************************************************************************************************/    
@@ -976,8 +890,6 @@ testcase Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Ba
   strncpy(searchString,"test_battconnstatus_hwio:battConnectionStatus = 1",256);
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -988,5 +900,12 @@ testcase Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Ba
   {
     testStepFail("1","string is not present");
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 

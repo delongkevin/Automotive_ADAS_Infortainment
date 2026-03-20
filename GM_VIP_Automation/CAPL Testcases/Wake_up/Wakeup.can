@@ -21,8 +21,8 @@ variables
   byte CANA_Wakeup_1[8] =  {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01};
   byte CANA_Wakeup_2[8] =  {0x08,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
   byte CANB_Wakeup[4] =  {0x00,0x00,0x01,0x00};
-  int Stress =0;
-  int i = 0;
+  int Stress;
+  int i;
   long CANID[70] = {0x00000401, 0x00000301, 0x00000201, 0x00000042, 0x0000039E, 0x00000211, 0x00000212, 0x0000039D, 0x0000020D, 0x0000039B, 0x0000003E, 0x000002B3, 0x00000398, 0x000000BA, 0x00000397, 0x00000270, 0x00000585, 0x0000056B, 0x0000052C, 0x000002D7, 0x00000523, 0x00000568, 0x00000522, 0x00000505, 0x00000593, 0x00000594, 0x00000582, 0x000005A4, 0x000000B6, 0x00000584, 0x000003C3, 0x000003C4, 0x000003C2, 0x000002D5, 0x000003A2, 0x000002D6, 0x0000057F, 0x00000590, 0x000005A1, 0x000005F9, 0x000000C0, 0x000002BF, 0x000003AA, 0x000003B1, 0x00000596, 0x000005C9, 0x000003A5, 0x0000003F, 0x000003A6, 0x000005D2, 0x000004F0, 0x00000599, 0x0000006F, 0x000005CA, 0x000005CB, 0x000005BA, 0x0000059B, 0x00000293, 0x000004E1, 0x000004DC, 0x000000AF, 0x000000AE, 0x00000595, 0x000005C4, 0x00000140, 0x000002D8, 0xC0000100, 0x00007000, 0x00000140, 0x00000140 };
   byte dat_64byte[64] = {0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55};
   
@@ -209,18 +209,6 @@ on timer periodic_error_2 {
 testcase Verify_that_the_GetHWIO_e_WakeupSigSt_reports_Last_wakeup_event_is_equal_to_0_if_the_wakeup_events_are_not_detected()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -245,14 +233,10 @@ testcase Verify_that_the_GetHWIO_e_WakeupSigSt_reports_Last_wakeup_event_is_equa
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line return ( uint8 )wakeEvent;
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_GetHWIO_e_WakeupSigSt\\33 "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_GetHWIO_e_WakeupSigSt\\33"); 
   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_WakeupSigSt\\33");
   waitForNotRunning(cc_dwWakeup_BP_PollTimeout);
 
-  snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in Test_GetHWIO_e_WakeupSigSt\\33 "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_WakeupSigSt\\33 function"); 
   
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_WakeupSigSt\\33");
   
@@ -264,22 +248,17 @@ testcase Verify_that_the_GetHWIO_e_WakeupSigSt_reports_Last_wakeup_event_is_equa
   TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("wakeEvent",0,Equal);
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_function_when_the_wakeup_event_detected_is_Battery_wakeup()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -301,27 +280,25 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_fu
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
   /***************************************************************************************************************/    
                                               // Test Step 1  Call the function Test_SetHWIO_PowerDown by setting StartPowerDown to 1 then check transceiver is in the SLEEP mode and PMIC to STANDBY mode
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
  
@@ -363,8 +340,6 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_fu
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for battery disconnect");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -375,22 +350,17 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_fu
   {
     testStepFail("1","string is not present");
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_LLSI_CAN_A_bus_wakeup_scenario_1()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -413,8 +383,6 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
 
-  snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function ");
-  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init");
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");
   A_DBGR_Go_Safe();
   waitForNotRunning(cc_dwWakeup_BP_PollTimeout);
@@ -424,7 +392,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init ");
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -438,7 +406,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -529,13 +497,13 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -553,11 +521,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/    
                                               // Test Step 5  This step involves sending a CAN wakeup frame with ID 0x123 and 8 bytes of data from Canoe.
   /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
-//  //TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_CAN_SendMessage(0x123, CANA_Wakeup_1, 8, 1);
-//  A_CAN_SendMessage(0x123, CANA_Wakeup_1, 8, 1);
+TestStepAddActionExpected( chActionText, chExpectedText );
   setTimer(periodicTimer_CAN2, 1);
   
   /***************************************************************************************************************/    
@@ -565,7 +529,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeExtTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -579,8 +543,6 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -594,23 +556,18 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   
   cancelTimer(periodicTimer_CAN2);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_LLSI_CAN_A_bus_wakeup_scenario_2()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -627,27 +584,25 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -661,7 +616,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -752,13 +707,13 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -776,11 +731,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/    
                                               // Test Step 5  This step involves sending a CAN wakeup frame with ID 0x123 and 8 bytes of data from Canoe.
   /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
-//  //TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_CAN_SendMessage(0x123, CANA_Wakeup_2, 8, 1);
-//  A_CAN_SendMessage(0x123, CANA_Wakeup_2, 8, 1);
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   setTimer(periodicTimer_CAN2, 1);
   
@@ -789,7 +740,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -803,8 +754,6 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -818,23 +767,18 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   
   cancelTimer(periodicTimer_CAN2);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_LLSI_CAN_A_bus_wakeup_scenario_3()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -851,27 +795,25 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -885,7 +827,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -976,13 +918,13 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -1000,11 +942,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/    
                                               // Test Step 5  This step involves sending a CAN wakeup frame with ID 0x123 and 8 bytes of data from Canoe.
   /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
-//  //TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_CAN_SendMessage(0x123, CANA_Wakeup, 8, 1);
-//  A_CAN_SendMessage(0x123, CANA_Wakeup, 8, 1);
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   setTimer(periodicTimer_CAN2, 1);
   
@@ -1014,7 +952,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -1028,8 +966,6 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -1043,24 +979,19 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
 
   cancelTimer(periodicTimer_CAN2);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
 testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_LLSI_function_when_the_wakeup_event_detected_is_CAN_B()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1073,26 +1004,26 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   /***************************************************************************************************************/    
                                               // Test Step 2 Configure the values for the structure TsCNDD_CanTrcvCnfgType for CAN2 Channel.
@@ -1105,7 +1036,7 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -1184,13 +1115,13 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -1208,11 +1139,7 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/    
                                               // Test Step 4  This step involves sending a CAN wakeup frame with ID 0x456 and 4 bytes of data from Canoe.
   /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
-// // TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_CAN_SendMessage(0x456, CANB_Wakeup, 4, 2);
-//  A_CAN_SendMessage(0x456, CANB_Wakeup, 4, 2);
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   
   setTimer(periodicTimer_CAN8,1);
@@ -1221,7 +1148,7 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -1235,8 +1162,6 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -1250,22 +1175,17 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
  
   cancelTimer(periodicTimer_CAN8);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wakeup_event_detected_is_Battery_during_Initialization()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -1287,24 +1207,17 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
 //  /***************************************************************************************************************/    
 //                                              // Test Step   Call the function Test_GetHWIO_e_WakeupSigSt during initialization
 //  /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Configure init_wakeup variable to invoke GetHWIO_e_WakeupSigSt interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify init_wakeup is configured as 1"); 
-//  //TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_DBGR_VariableSet("init_wakeup","1");
-//  E_DBGR_VariableCheck("init_wakeup",1,Equal);
-  
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   
   /***************************************************************************************************************/    
@@ -1312,13 +1225,13 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
  
@@ -1360,8 +1273,6 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogShortTimeout,"waiting for battery disconnect");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -1375,8 +1286,6 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
   
   strncpy(searchString,"Inside initialization",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -1388,23 +1297,18 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
     testStepFail("1","string is not present");
   }
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_wakeup_event_detected_CAN_A_Wakeup_during_Initialization()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1421,27 +1325,25 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -1455,7 +1357,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -1544,24 +1446,20 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
 // /***************************************************************************************************************/    
 //                                              // Test Step   Call the function Test_GetHWIO_e_WakeupSigSt during initialization
 //  /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Configure init_wakeup variable to invoke GetHWIO_e_WakeupSigSt interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify init_wakeup is configured as 1"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_DBGR_VariableSet("init_wakeup","1");
-//  E_DBGR_VariableCheck("init_wakeup",1,Equal);
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   /***************************************************************************************************************/    
                                               // Test Step 3  Call the function Test_SetHWIO_PowerDown by setting StartPowerDown to 1 then check transceiver is in the SLEEP mode and PMIC to STANDBY mode
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -1579,11 +1477,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/    
                                               // Test Step 5  This step involves sending a CAN wakeup frame with ID 0x123 and 8 bytes of data from Canoe.
   /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
-//  //TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_CAN_SendMessage(0x123, CANA_Wakeup, 8, 1);
-//  A_CAN_SendMessage(0x123, CANA_Wakeup, 8, 1);
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   setTimer(periodicTimer_CAN2,1);
   /***************************************************************************************************************/    
@@ -1591,7 +1485,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -1605,8 +1499,6 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogShortTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -1620,8 +1512,6 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   
   strncpy(searchString,"Inside initialization",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -1634,23 +1524,18 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   }
   cancelTimer(periodicTimer_CAN2);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_wakeup_event_detected_CAN_B_Wakeup_during_Initialization()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1663,26 +1548,26 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   /***************************************************************************************************************/    
                                               // Test Step 2 Configure the values for the structure TsCNDD_CanTrcvCnfgType for CAN2 Channel.
@@ -1695,7 +1580,7 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -1772,24 +1657,20 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
 //  /***************************************************************************************************************/    
 //                                              // Test Step   Call the function Test_GetHWIO_e_WakeupSigSt during initialization
 //  /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Configure init_wakeup variable to invoke GetHWIO_e_WakeupSigSt interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify init_wakeup is configured as 1"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_DBGR_VariableSet("init_wakeup","1");
-//  E_DBGR_VariableCheck("init_wakeup",1,Equal);
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   /***************************************************************************************************************/    
                                               // Test Step 3  Call the function Test_SetHWIO_PowerDown by setting StartPowerDown to 1 then check transceiver is in the SLEEP mode and PMIC to STANDBY mode
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -1807,18 +1688,14 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/    
                                               // Test Step 4  This step involves sending a CAN wakeup frame with ID 0x456 and 4 bytes of data from Canoe.
   /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
-// // TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_CAN_SendMessage(0x456, CANB_Wakeup, 4, 2);
-//  A_CAN_SendMessage(0x456, CANB_Wakeup, 4, 2);
+TestStepAddActionExpected( chActionText, chExpectedText );
   setTimer(periodicTimer_CAN8,1);
   /***************************************************************************************************************/    
                                               // Test Step 6  Verify Transceiver wakeUp or not.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -1832,8 +1709,6 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogShortTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -1847,8 +1722,6 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   
   strncpy(searchString,"Inside initialization",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -1863,22 +1736,17 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   cancelTimer(periodicTimer_CAN8);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
  
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wakeup_event_detected_is_Battery_during_Shutdown()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -1900,14 +1768,12 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
   /***************************************************************************************************************/    
                                               // Test Step  Run the Software and capture UART log using python
@@ -1919,7 +1785,7 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure delay_shutdown variable to invoke delay during shutdown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify delay_shutdown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("Test_delay_shutdown","1");
   E_DBGR_VariableCheck("Test_delay_shutdown",1,Equal);
   
@@ -1966,8 +1832,6 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogShortTimeout,"waiting for battery disconnect");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -1980,8 +1844,6 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
   }
   
   strncpy(searchString,"CAN Transcevier 0 is moving to SLEEP mode",256);
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -1992,22 +1854,17 @@ testcase Verify_that_the_software_reports_wkupPwrOn_for_GetHWIO_e_WakeupSigSt_wa
   {
     testStepPass("1","string is not present");
   }
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_Multiple_for_GetHWIO_e_WakeupSigSt_wakeup_event_detected_is_CAN_A_bus_and_CAN_B_bus()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -2025,7 +1882,7 @@ testcase Verify_that_the_software_reports_Multiple_for_GetHWIO_e_WakeupSigSt_wak
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
@@ -2039,7 +1896,7 @@ testcase Verify_that_the_software_reports_Multiple_for_GetHWIO_e_WakeupSigSt_wak
 
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -2053,7 +1910,7 @@ testcase Verify_that_the_software_reports_Multiple_for_GetHWIO_e_WakeupSigSt_wak
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -2144,13 +2001,13 @@ testcase Verify_that_the_software_reports_Multiple_for_GetHWIO_e_WakeupSigSt_wak
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -2168,12 +2025,7 @@ testcase Verify_that_the_software_reports_Multiple_for_GetHWIO_e_WakeupSigSt_wak
   /***************************************************************************************************************/    
                                               // Test Step 5  This step involves sending a CAN wakeup frame with ID 0x123 and 8 bytes of data from Canoe.
   /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
-//  //TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_CAN_SendMessage(0x123, CANA_Wakeup, 8, 1);
-//  A_CAN_SendMessage(0x123, CANA_Wakeup, 8, 1);
-//  A_CAN_SendMessage(0x456, CANB_Wakeup, 4, 2);
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   setTimer(periodicTimer_Multiple,1);
   
@@ -2182,7 +2034,7 @@ testcase Verify_that_the_software_reports_Multiple_for_GetHWIO_e_WakeupSigSt_wak
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -2196,8 +2048,6 @@ testcase Verify_that_the_software_reports_Multiple_for_GetHWIO_e_WakeupSigSt_wak
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -2211,22 +2061,17 @@ testcase Verify_that_the_software_reports_Multiple_for_GetHWIO_e_WakeupSigSt_wak
  
   cancelTimer(periodicTimer_Multiple);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_wakeup_event_detected_is_CAN_A_bus_during_Shutdown()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -2244,27 +2089,25 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -2278,7 +2121,7 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -2355,14 +2198,10 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
     /***************************************************************************************************************/    
                                               // Test Step   Call the function Test_GetHWIO_e_WakeupSigSt during initialization
   /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Configure delay_shutdown variable to invoke delay during shutdown interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify delay_shutdown is configured as 1"); 
-//  //TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_DBGR_VariableSet("delay_shutdown","1");
-//  E_DBGR_VariableCheck("delay_shutdown",1,Equal);
+TestStepAddActionExpected( chActionText, chExpectedText );
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
@@ -2371,24 +2210,20 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   SysExec("powershell", "-ExecutionPolicy Bypass -File ./serial_logging.ps1", automation_root);
   setTimer(periodicTimer_CAN2, 1);
-//  snprintf( chActionText, elCount(chActionText), "Configure delay_shutdown variable to invoke delay during shutdown interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify delay_shutdown is configured as 1"); 
   
-//  A_CAN_SendBurstMessage( 0x456,  CANB_Wakeup, 10000,  4, 2, cc_eCAN_NORMAL);
   
   /***************************************************************************************************************/    
                                               // Test Step 3  Call the function Test_SetHWIO_PowerDown by setting StartPowerDown to 1 then check transceiver is in the SLEEP mode and PMIC to STANDBY mode
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
   
 
-  
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
   /***************************************************************************************************************/    
                           // Test Step 7 Check UART log in the Tera Term window is update: Last wakeup event is: 2 (wkupCanBusA).
@@ -2397,11 +2232,9 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
 
   snprintf( chActionText, elCount(chActionText), "waiting for UART log"); 
   snprintf( chExpectedText, elCount(chExpectedText), "waiting for UART log"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -2414,23 +2247,18 @@ testcase Verify_that_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_
   }
   cancelTimer(periodicTimer_CAN2);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay); 
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error_frame_counter_overflow_for_CAN2_Channel()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2447,7 +2275,7 @@ testcase Verify_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_Func_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
@@ -2461,7 +2289,7 @@ testcase Verify_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_Func_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -2478,13 +2306,13 @@ testcase Verify_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_Func_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -2504,7 +2332,7 @@ testcase Verify_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_Func_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN error frame counter overflow"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN error frame counter overflow transmitted."); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   /* Injects exactly cc_nWakeup_ErrFramesCAN1 (100) error frames on CAN1 to trigger
    * the error-counter overflow wakeup path.  Loop count is compile-time fixed;
    * the loop always terminates. */
@@ -2517,7 +2345,7 @@ testcase Verify_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_Func_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -2531,8 +2359,6 @@ testcase Verify_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_Func_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -2545,8 +2371,6 @@ testcase Verify_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_Func_
   }
   strncpy(searchString,"PN frame detection error wakeup event found in transceiver",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -2558,23 +2382,18 @@ testcase Verify_the_software_reports_wkupCanBusA_for_GetHWIO_e_WakeupSigSt_Func_
     testStepFail("1","string is not present");
   }
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error_frame_counter_overflow_for_CAN8_Channel()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2591,12 +2410,10 @@ testcase Verify_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_Func_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -2605,13 +2422,13 @@ testcase Verify_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_Func_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");
   waitForNotRunning(cc_dwWakeup_BP_PollTimeout);
 
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -2628,13 +2445,13 @@ testcase Verify_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_Func_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -2654,7 +2471,7 @@ testcase Verify_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_Func_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN error frame counter overflow"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN error frame counter overflow transmitted."); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   /* Injects exactly cc_nWakeup_ErrFramesCAN2 (200) error frames on CAN2 to trigger
    * the error-counter overflow wakeup path.  Loop count is compile-time fixed;
    * the loop always terminates. */
@@ -2667,7 +2484,7 @@ testcase Verify_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_Func_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -2681,8 +2498,6 @@ testcase Verify_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_Func_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -2695,8 +2510,6 @@ testcase Verify_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_Func_
   }
   strncpy(searchString,"PN frame detection error wakeup event found in transceiver 1",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -2708,23 +2521,18 @@ testcase Verify_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_Func_
     testStepFail("1","string is not present");
   }
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error_frame_counter_overflow_for_CAN2_during_initilization()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2741,27 +2549,25 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -2776,11 +2582,7 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
 //  /***************************************************************************************************************/    
 //                                              // Test Step   Call the function Test_GetHWIO_e_WakeupSigSt during initialization
 //  /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Configure init_wakeup variable to invoke GetHWIO_e_WakeupSigSt interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify init_wakeup is configured as 1"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_DBGR_VariableSet("init_wakeup","1");
-//  E_DBGR_VariableCheck("init_wakeup",1,Equal);
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   
   /***************************************************************************************************************/    
@@ -2788,13 +2590,13 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -2814,7 +2616,7 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN error frame counter overflow"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN error frame counter overflow transmitted."); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   /* Injects exactly cc_nWakeup_ErrFramesCAN1 (100) error frames on CAN1 to trigger
    * the error-counter overflow wakeup path.  Loop count is compile-time fixed;
    * the loop always terminates. */
@@ -2827,7 +2629,7 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -2841,8 +2643,6 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogShortTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -2855,8 +2655,6 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   }
   strncpy(searchString,"PN frame detection error wakeup event found in transceiver",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -2869,8 +2667,6 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   }
   strncpy(searchString,"Inside initialization",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -2882,23 +2678,18 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
     testStepFail("1","string is not present");
   }
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error_frame_counter_overflow_for_CAN8_during_initilization()
 {
      /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2915,27 +2706,25 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -2950,11 +2739,7 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
 //  /***************************************************************************************************************/    
 //                                              // Test Step   Call the function Test_GetHWIO_e_WakeupSigSt during initialization
 //  /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Configure init_wakeup variable to invoke GetHWIO_e_WakeupSigSt interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify init_wakeup is configured as 1"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_DBGR_VariableSet("init_wakeup","1");
-//  E_DBGR_VariableCheck("init_wakeup",1,Equal);
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   
   /***************************************************************************************************************/    
@@ -2962,13 +2747,13 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -2988,7 +2773,7 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN error frame counter overflow"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN error frame counter overflow transmitted."); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   /* Injects exactly cc_nWakeup_ErrFramesCAN2 (200) error frames on CAN2 to trigger
    * the error-counter overflow wakeup path.  Loop count is compile-time fixed;
    * the loop always terminates. */
@@ -3001,7 +2786,7 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   
@@ -3015,8 +2800,6 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -3029,8 +2812,6 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   }
   strncpy(searchString,"PN frame detection error wakeup event found in transceiver 1",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -3043,8 +2824,6 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   }
   strncpy(searchString,"Inside initialization",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -3056,22 +2835,17 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
     testStepFail("1","string is not present");
   }
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_wakeup_event_detected_is_CAN_B_bus_during_Shutdown()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -3089,27 +2863,25 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -3123,7 +2895,7 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -3200,15 +2972,11 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
     /***************************************************************************************************************/    
                                               // Test Step   Call the function Test_GetHWIO_e_WakeupSigSt during initialization
   /***************************************************************************************************************/
-//  snprintf( chActionText, elCount(chActionText), "Configure delay_shutdown variable to invoke delay during shutdown interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify delay_shutdown is configured as 1"); 
-//  //TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_DBGR_VariableSet("delay_shutdown","1");
-//  E_DBGR_VariableCheck("delay_shutdown",1,Equal);
+TestStepAddActionExpected( chActionText, chExpectedText );
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
@@ -3217,23 +2985,20 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   /***************************************************************************************************************/
   SysExec("powershell", "-ExecutionPolicy Bypass -File ./serial_logging.ps1", automation_root);
   setTimer(periodicTimer_CAN8, 1);
-//  snprintf( chActionText, elCount(chActionText), "Configure delay_shutdown variable to invoke delay during shutdown interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify delay_shutdown is configured as 1"); 
   
-//  A_CAN_SendBurstMessage( 0x456,  CANB_Wakeup, 10000,  4, 2, cc_eCAN_NORMAL);
   A_GENERIC_SetTimeout(cc_dwWakeup_PeriodicMsgWait,"sending periodic msg");
   /***************************************************************************************************************/    
                                               // Test Step 3  Call the function Test_SetHWIO_PowerDown by setting StartPowerDown to 1 then check transceiver is in the SLEEP mode and PMIC to STANDBY mode
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
   
 
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
   
   
@@ -3244,11 +3009,9 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
 
   snprintf( chActionText, elCount(chActionText), "waiting for UART log"); 
   snprintf( chExpectedText, elCount(chExpectedText), "waiting for UART log"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -3261,23 +3024,18 @@ testcase Verify_that_the_software_reports_wkupCanBusB_for_GetHWIO_e_WakeupSigSt_
   }
   cancelTimer(periodicTimer_CAN8);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error_frame_counter_overflow_for_CAN2_during_shutdown()
 {
      /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -3294,27 +3052,25 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -3339,17 +3095,13 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   
   snprintf( chActionText, elCount(chActionText), "waiting for UART log"); 
   snprintf( chExpectedText, elCount(chExpectedText), "waiting for UART log"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTCaptureDelay,"waiting for UART log");
  
-//  snprintf( chActionText, elCount(chActionText), "Configure delay_shutdown variable to invoke delay during shutdown interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify delay_shutdown is configured as 1"); 
-//  //TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_DBGR_VariableSet("delay_shutdown","1");
-//  E_DBGR_VariableCheck("delay_shutdown",1,Equal);
+TestStepAddActionExpected( chActionText, chExpectedText );
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
 
@@ -3358,15 +3110,14 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);   
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
-  
   
   
   /***************************************************************************************************************/    
@@ -3374,7 +3125,7 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_SleepDetectTimeout,cc_eCAN_ABSENT,"CAN2");
   
@@ -3388,8 +3139,6 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogShortTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -3402,8 +3151,6 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   }
   strncpy(searchString,"Frame error counter overflow fault detected in transceiver 0",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -3417,23 +3164,18 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   cancelTimer(periodic_error_2);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
 
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error_frame_counter_overflow_for_CAN8_during_shutdown()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -3450,27 +3192,25 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -3495,17 +3235,13 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   
   snprintf( chActionText, elCount(chActionText), "waiting for UART log"); 
   snprintf( chExpectedText, elCount(chExpectedText), "waiting for UART log"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTCaptureDelay,"waiting for UART log");
  
-//  snprintf( chActionText, elCount(chActionText), "Configure delay_shutdown variable to invoke delay during shutdown interface"); 
-//  snprintf( chExpectedText, elCount(chExpectedText), "Verify delay_shutdown is configured as 1"); 
-//  //TestStepAddActionExpected( chActionText, chExpectedText );
-//  A_DBGR_VariableSet("delay_shutdown","1");
-//  E_DBGR_VariableCheck("delay_shutdown",1,Equal);
+TestStepAddActionExpected( chActionText, chExpectedText );
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
 
@@ -3514,13 +3250,13 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);   
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
   
   /***************************************************************************************************************/    
@@ -3528,7 +3264,7 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_SleepDetectTimeout,cc_eCAN_ABSENT,"CAN1");
   
@@ -3542,8 +3278,6 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogShortTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -3556,8 +3290,6 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   }
   strncpy(searchString,"Frame error counter overflow fault detected in transceiver 1",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -3571,22 +3303,17 @@ testcase Verify_the_software_reports_GetHWIO_e_WakeupSigSt_Func_due_to_CAN_error
   cancelTimer(periodic_error_8);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
 
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_does_not_report_a_CAN_A_BUS_WAKEUP_when_an_invalid_PN_frame_is_sent()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -3604,27 +3331,25 @@ testcase Verify_that_the_software_does_not_report_a_CAN_A_BUS_WAKEUP_when_an_inv
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   
   /***************************************************************************************************************/    
@@ -3638,7 +3363,7 @@ testcase Verify_that_the_software_does_not_report_a_CAN_A_BUS_WAKEUP_when_an_inv
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -3729,13 +3454,13 @@ testcase Verify_that_the_software_does_not_report_a_CAN_A_BUS_WAKEUP_when_an_inv
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -3755,7 +3480,7 @@ testcase Verify_that_the_software_does_not_report_a_CAN_A_BUS_WAKEUP_when_an_inv
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_CAN_SendMessage(0x144, CANA_Wakeup_1, 8, 1);
   A_CAN_SendMessage(0x144, CANA_Wakeup_1, 8, 1);
   //setTimer(periodicTimer_CAN2, 1);
@@ -3765,7 +3490,7 @@ testcase Verify_that_the_software_does_not_report_a_CAN_A_BUS_WAKEUP_when_an_inv
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_SleepDetectTimeout,cc_eCAN_ABSENT,"CAN1");
   
@@ -3779,8 +3504,6 @@ testcase Verify_that_the_software_does_not_report_a_CAN_A_BUS_WAKEUP_when_an_inv
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -3796,23 +3519,18 @@ testcase Verify_that_the_software_does_not_report_a_CAN_A_BUS_WAKEUP_when_an_inv
   
   cancelTimer(periodicTimer_CAN2);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_the_software_does_not_report_a_CAN_B_BUS_WAKEUP_when_an_invalid_PN_frame_is_sent()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -3825,26 +3543,26 @@ testcase Verify_that_the_software_does_not_report_a_CAN_B_BUS_WAKEUP_when_an_inv
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Call the function MngCNDD_CanTrcvInitialize to initialize the CAN transceiver.
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Init callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Init"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Init");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCanTrcv_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCanTrcv_Init function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Init");
   /***************************************************************************************************************/    
                                               // Test Step 2 Configure the values for the structure TsCNDD_CanTrcvCnfgType for CAN2 Channel.
@@ -3857,7 +3575,7 @@ testcase Verify_that_the_software_does_not_report_a_CAN_B_BUS_WAKEUP_when_an_inv
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in TestCan_Init "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in TestCan_Init function"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );  
+ TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCan_Init");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -3936,13 +3654,13 @@ testcase Verify_that_the_software_does_not_report_a_CAN_B_BUS_WAKEUP_when_an_inv
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure StartPowerDown variable to invoke Test_SetHWIO_PowerDown interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
  E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_CheckState(T32_State_Down);
   
    /***************************************************************************************************************/    
@@ -3962,7 +3680,7 @@ testcase Verify_that_the_software_does_not_report_a_CAN_B_BUS_WAKEUP_when_an_inv
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x123"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x123"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_CAN_SendMessage(0x446, CANB_Wakeup, 4, 2);
   A_CAN_SendMessage(0x446, CANB_Wakeup, 4, 2);
   
@@ -3973,7 +3691,7 @@ testcase Verify_that_the_software_does_not_report_a_CAN_B_BUS_WAKEUP_when_an_inv
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01"); 
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText ); 
+  TestStepAddActionExpected( chActionText, chExpectedText ); 
   
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_SleepDetectTimeout,cc_eCAN_ABSENT,"CAN1");
   
@@ -3987,8 +3705,6 @@ testcase Verify_that_the_software_does_not_report_a_CAN_B_BUS_WAKEUP_when_an_inv
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(cc_dwWakeup_UARTLogTimeout,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -4005,23 +3721,18 @@ testcase Verify_that_the_software_does_not_report_a_CAN_B_BUS_WAKEUP_when_an_inv
   
   cancelTimer(periodicTimer_CAN8);
   testWaitForTimeout(cc_dwWakeup_TimerFlushDelay);
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Stress_for_WakeUp_Sleep()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -4041,13 +3752,13 @@ testcase Stress_for_WakeUp_Sleep()
 
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 debugger Running
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
   /* Bounded stress loop: runs exactly cc_nWakeup_StressIterations (50) wakeup/sleep
    * cycles alternating CAN-A and CAN-B wakeup stimuli.
@@ -4069,7 +3780,7 @@ testcase Stress_for_WakeUp_Sleep()
   A_GENERIC_SetTimeout(cc_dwWakeup_StressCycleDelay,"waiting to move ECU to SLEEP");
   snprintf( chActionText, elCount(chActionText), "ECU is moving to Sleep mode");
   snprintf( chExpectedText, elCount(chExpectedText), "ECU is in sleep mode");
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_SleepDetectTimeout,cc_eCAN_ABSENT,"CAN1");
 
   snprintf( chActionText, elCount(chActionText), "ECU is in sleep mode");
@@ -4099,7 +3810,6 @@ testcase Stress_for_WakeUp_Sleep()
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_CAN_SendMessage(0x456, CANB_Wakeup, 4, 2);
   A_CAN_SendMessage(0x456, CANB_Wakeup, 4, 2);
-  //testWaitForTimeout(1500);
 
   }
   /***************************************************************************************************************/
@@ -4107,28 +3817,23 @@ testcase Stress_for_WakeUp_Sleep()
   /***************************************************************************************************************/
   snprintf(chActionText, elCount(chActionText), "ECU wakeup Stress Test count %d",Stress);
 	snprintf(chExpectedText, elCount(chExpectedText), "ECU is running Stress Test count %d",Stress);
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_CAN_WaitForMessageByID(0x105,cc_dwWakeup_ResumeTimeout,cc_eCAN_PRESENT,"CAN1");
   Stress = Stress + 1;
   }
   Stress = 0; /* reset so the next test case always starts from iteration 0 */
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Stres_Test_Power_Reset()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -4158,14 +3863,12 @@ testcase Stres_Test_Power_Reset()
   Stress = 0;
   while (Stress < cc_nWakeup_StressIterations)
   {
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running ");
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state");
 
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running ");
   snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state");
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_Go();
 
   /***************************************************************************************************************/
@@ -4178,7 +3881,7 @@ testcase Stres_Test_Power_Reset()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Transmit CAN message. ID:0x40000101, PDU info:0x01");
   snprintf( chExpectedText, elCount(chExpectedText), "CAN message transmitted. ID:0x40000101, PDU info:0x01");
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_CAN_WaitForMessageByID(0x00000101,cc_dwWakeup_SleepDetectTimeout,cc_eCAN_ABSENT,"CAN1");
 
   /***************************************************************************************************************/
@@ -4200,5 +3903,12 @@ testcase Stres_Test_Power_Reset()
 
   }
   Stress = 0; /* reset so the next test case always starts from iteration 0 */
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
