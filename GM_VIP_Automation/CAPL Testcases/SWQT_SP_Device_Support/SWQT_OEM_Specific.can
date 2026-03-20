@@ -840,7 +840,6 @@ export testcase CmdIgnSts_HMI_Test()
   if(response == 1) testStepPass("");
   
 
-
   // Teardown: resume ECU and clear breakpoints to restore clean state for next test
   snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
   snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
@@ -1416,7 +1415,6 @@ export testcase Sleep_Wakeup(long iterations)
 }
 
 
-
 export testcase _5_1_Sleep_Wake_Cycle_Test()
 {
   double current, Volt;
@@ -1783,7 +1781,6 @@ export testcase DV_PV_PowerCycleTest()
 }
 
 
-
 export testcase Power_Cycle_Interrupt_ECU_Shutdown()
 {
   char takenImageName[50];
@@ -1891,7 +1888,6 @@ export testcase TTFI(long iterations)
     testWaitForTimeout(5000);
     
 
-    
     strncpy(fullCommand, batchFileNameWithASpace, 256);
     strncat(fullCommand, "1200x900 checkWhenSwitchAway 1200x900", 256); 
     strncat(fullCommand, "_BlackScreen", 256);
@@ -2419,17 +2415,14 @@ export testcase HMI_Frame_Rate_Test(char resolution[])
 
 //export void Retry_With_Arguments(char functionName[], char arguments[][])
 //{
-//  int retries;
 //  long response;
 
 //  response = Write_Proxi(arguments[0]);
 //  if (response == 1)
 //  {
-//    testStepPass();
 //  }
 //  else
 //  {
-//    testStepFail();
 //  }
  
 //}
@@ -2835,7 +2828,6 @@ export void Main_Precondition()
  // $LwsAngle_SCCM=0;
   
   
-  
 }
 
 export void Main_Postcondition()
@@ -3030,7 +3022,6 @@ export long Write_Proxy()
 //    retries ++;
 //    response = 0;
 //    testStep("", "Wait for 500 ms");
-//    testWaitForTimeout(500);
 //    req.SendRequest();
 //    response = TestWaitForDiagRequestSent(req, 2000);
 //    if(response != 1)
@@ -3078,7 +3069,6 @@ export long Write_Proxy()
 //    strncpy(hexString, "", 500);
 //    for(i = dataStart; i < size; i++)
 //    {
-//      snprintf(buffer, 3, "%02x", primitiveRaw[i]);
 //      strncat(hexString, buffer, 500);
 //      if(i < size-1)
 //        strncat(hexString, " ", 500);
@@ -3087,7 +3077,6 @@ export long Write_Proxy()
 //    if(elCount(hexString) == elCount(correctString) && strncmp(hexString, correctString, elCount(hexString)) == 0)
 //    {
 //      write("", "Diagnostic response matched part numbers");
-//      testStepPass("", "%s matches from release notes!\n %s\n==\n%s ", DID, correctString,hexString);
 //      break;
 //    }
 //    else
@@ -3196,7 +3185,6 @@ export double Power_Supply_Get_Current()
 //    testStep("", "start running power control batch file, retries: %d", retries);
 //    response = testWaitForSyscall( fullCommand, 0, 60000);
 //    retries ++;
-//    testWaitForTimeout(5000);
   
 //  }
   
@@ -3226,7 +3214,6 @@ export double Power_Supply_Get_Current()
 //    else
 //    {
 //      write("File 'PSC.txt' was not opened for read access.");
-//      testStepFail("File 'PSC.txt' was not opened for read access.");
 //    }
     
 //    fileClose(glbHandle);
@@ -3234,7 +3221,6 @@ export double Power_Supply_Get_Current()
 //  else
 //  {
 //    write("failed to finish power supply control, exit code: %d", response);
-//    testStepFail(" ", "failed to finish power supply control, exit code: %d", response);
 //  }
 //  return -1;
 //}
@@ -3266,7 +3252,6 @@ void CaptureMCU_2_0()
 //  {
 //    char buffer[64];
 //    dword glbHandle;
-//    int port = 8;
       
 //    //
 //    // Opens the file in ASCII mode for read access.
@@ -3287,46 +3272,39 @@ void CaptureMCU_2_0()
       
 //      if (port != 999)
 //      {
-//        testStepPass("", "Found power supply at COM%d!", port);
 //        // Check if the port is avaliable
 //        rs232Open(port);
 //        if (1 == rs232Configure(port,9600,8,1,0))
 //        {
 //          write ("Connected COM%d!",port);
-//          testStepPass("", "Connected COM%d!",port);
 //        }
 //        else
 //        {
 //          write ("Failed to connect to COM%d", port);
-//          testStepFail(" ","Failed to connect to COM%d", port);
 //        }
 //        rs232Close(port);
 //      }
 //      else
 //      {
 //        write ("Failed to find power supply port");
-//        testStepFail("Failed to find power supply port");
 //        rs232Close(port);
 //      }
 //    }
 //    else
 //    {
 //      write ("File 'port.txt' was not opened for read access.");
-//      testStepFail("File 'port.txt' was not opened for read access.");
 //      rs232Close(port);
 //    }
 //  }
 //  else
 //  {
 //    write ("Failed to execute Check_Port.bat, exit code: %d", response);
-//    testStepFail(" ","Failed to execute Check_Port.bat, exit code: %d", response);
 //  }
 //}
 
 //export testcase THA_Sanity()
 //{
 //  long response;
-//  int i;
 //  long j;
 //  char temp[50];
 //  char defaultImageName[50];
@@ -3339,11 +3317,9 @@ void CaptureMCU_2_0()
 //  Set_Default_Session();
 //  Set_Extended_Session();
 //  diagSendRequest(req);
-//  testWaitForTimeout(3000);
 //  response = diagGetResponseCode(resp);
 //  if (response == -1)
 //  {
-//    testStepFail("","NRC on enabling USS debug mode for testing!");
 //  }
 //  testStep("","Starting testing THA-Trailer Hitch Assist!");
 //  Write_Proxy();
@@ -3358,13 +3334,11 @@ void CaptureMCU_2_0()
 //  $FDCAN2::EPS::EPS_FD_2::THA_SteeringTouchStat = 1;
 //  $FDCAN2::EPS::EPS_FD_2::THA_SteeringTouchStat = 0;
 //  
-//  testWaitForTimeout(2000);
 //  Capture_Image("THA_View","1200x900");
 //  $TrailerConnectionSts = 0; //Not connected
 //  $TrailerConnectionSts = 1;//Connected
 //  $ITBM_TrlrStat = 1; //Trailer is present, check gridlines (should disappear)
 //  if($DisplayView2 == 0){
-//    testStepFail("","HMI View did not change!");
 //  }
 //  Capture_Image("Trailer_View","1200x900");
 //  
@@ -3394,15 +3368,11 @@ void CaptureMCU_2_0()
 //  testStep("","DisplayView2 != 0 check");
 //  if($DisplayView2 == 0)
 //  {
-//    testStepFail("","View did not update!");
 //  }
 //  else{
-//  testStepPass();
 //  }
 //  
 //}
-
-
 
 
 void SendTop()

@@ -306,7 +306,6 @@ export testcase PowerCrankTest()
 /*@@end*/
 
 
-
 /*@@testcase:BrownOutRampTest():*/
 export testcase BrownOutRampTest()
 {

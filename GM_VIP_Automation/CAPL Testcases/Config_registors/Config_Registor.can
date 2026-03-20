@@ -23,7 +23,7 @@ variables
   byte CANB_Wakeup[4] =  {0x00,0x00,0x01,0x00};
   message 0x123 msg_2; // Define the CAN message with ID 0x123
   message 0x456 msg_8; // Define the CAN message with ID 0x456
-   int Stress =0;
+  int Stress;
   long CANID[70] = {0x00000401, 0x00000301, 0x00000201, 0x00000042, 0x0000039E, 0x00000211, 0x00000212, 0x0000039D, 0x0000020D, 0x0000039B, 0x0000003E, 0x000002B3, 0x00000398, 0x000000BA, 0x00000397, 0x00000270, 0x00000585, 0x0000056B, 0x0000052C, 0x000002D7, 0x00000523, 0x00000568, 0x00000522, 0x00000505, 0x00000593, 0x00000594, 0x00000582, 0x000005A4, 0x000000B6, 0x00000584, 0x000003C3, 0x000003C4, 0x000003C2, 0x000002D5, 0x000003A2, 0x000002D6, 0x0000057F, 0x00000590, 0x000005A1, 0x000005F9, 0x000000C0, 0x000002BF, 0x000003AA, 0x000003B1, 0x00000596, 0x000005C9, 0x000003A5, 0x0000003F, 0x000003A6, 0x000005D2, 0x000004F0, 0x00000599, 0x0000006F, 0x000005CA, 0x000005CB, 0x000005BA, 0x0000059B, 0x00000293, 0x000004E1, 0x000004DC, 0x000000AF, 0x000000AE, 0x00000595, 0x000005C4, 0x00000140, 0x000002D8, 0xC0000100, 0x00007000, 0x00000140, 0x00000140 };
   byte dat_64byte[64] = {0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55};
   
@@ -32,18 +32,6 @@ variables
 
 testcase Verify_that_FAILED_REGISTER_ID_initialized_to_default_values_during_PowerUp_Reset_initialization()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -71,8 +59,6 @@ testcase Verify_that_FAILED_REGISTER_ID_initialized_to_default_values_during_Pow
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line Failed_Register_ID = GetHWIO_e_FailedRegID();                                                   
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\4 "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister\\4"); 
   
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\4");
 
@@ -94,18 +80,6 @@ testcase Verify_that_FAILED_REGISTER_ID_initialized_to_default_values_during_Pow
 }
 testcase Verify_that_FAILED_BIT_ID_initialized_to_default_values_during_PowerUp_Reset_initialization()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -133,8 +107,6 @@ testcase Verify_that_FAILED_BIT_ID_initialized_to_default_values_during_PowerUp_
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line Failed_BIT_ID = GetHWIO_e_FailedBitID();                                                                                                           
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\5 "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister\\5"); 
   
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\5");
 
@@ -157,18 +129,6 @@ testcase Verify_that_FAILED_BIT_ID_initialized_to_default_values_during_PowerUp_
 
 testcase Verify_that_FAILED_REGISTER_RECOVER_STATUS_initialized_to_default_values_during_PowerUp_Reset_initialization()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -196,8 +156,6 @@ testcase Verify_that_FAILED_REGISTER_RECOVER_STATUS_initialized_to_default_value
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line Failed_Register_Recover_Status = GetHWIO_b_FailedRegRecovSt();/* To Do*/                                                                                                                                   
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\6 "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister\\6"); 
   
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\6");
 
@@ -220,18 +178,6 @@ testcase Verify_that_FAILED_REGISTER_RECOVER_STATUS_initialized_to_default_value
 
 testcase Verify_PerfmHWIO_b_ConfigRegTest_interface_for_test_status_returning_1_when_the_test_is_passed()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -259,8 +205,6 @@ testcase Verify_PerfmHWIO_b_ConfigRegTest_interface_for_test_status_returning_1_
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line Configuration_Registers_Test_Status = PerfmHWIO_b_ConfigRegTest();                                                                                                                                                        
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister"); 
   
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\4");
   /***************************************************************************************************************/
@@ -282,18 +226,6 @@ testcase Verify_PerfmHWIO_b_ConfigRegTest_interface_for_test_status_returning_1_
 
 testcase Verify_the_interface_GetHWIO_e_FailedRegID_returns_the_ID_as_0_when_no_failed_registers_last_test_cycle()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -321,8 +253,6 @@ testcase Verify_the_interface_GetHWIO_e_FailedRegID_returns_the_ID_as_0_when_no_
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at the line `FAILED_REGISTER_ID = GetHWIO_e_FailedRegID();`                                                                                                                                                   
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\4 "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister"); 
   
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\4");
   /***************************************************************************************************************/
@@ -345,18 +275,6 @@ testcase Verify_the_interface_GetHWIO_e_FailedRegID_returns_the_ID_as_0_when_no_
 testcase Verify_the_interface_GetHWIO_e_FailedBitID_returns_the_ID_as_0_when_there_is_no_last_failed_register()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -383,8 +301,6 @@ testcase Verify_the_interface_GetHWIO_e_FailedBitID_returns_the_ID_as_0_when_the
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at the line `FAILED_BIT_ID = GetHWIO_e_FailedBitID();`.	                                                                                                                                                   
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\5 "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister"); 
   
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\5");
   /***************************************************************************************************************/
@@ -406,18 +322,6 @@ testcase Verify_the_interface_GetHWIO_e_FailedBitID_returns_the_ID_as_0_when_the
 
 testcase Verify_the_interface_GetHWIO_b_FailedRegRecovSt_returns_the_recovery_status_as_0_when_success_for_the_last_failed_register_ID()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -445,8 +349,6 @@ testcase Verify_the_interface_GetHWIO_b_FailedRegRecovSt_returns_the_recovery_st
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at the line Failed_Register_Recover_Status = GetHWIO_b_FailedRegRecovSt();/* To Do*/                                                                                                                                                   
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ConfigRegister\\6 "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ConfigRegister"); 
   
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\6");
   /***************************************************************************************************************/

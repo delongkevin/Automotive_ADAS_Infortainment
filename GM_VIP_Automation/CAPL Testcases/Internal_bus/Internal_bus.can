@@ -23,18 +23,6 @@ variables
 testcase Verify_default_value_of_INTERNAL_BUS_STATUS_parameter()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -54,11 +42,9 @@ testcase Verify_default_value_of_INTERNAL_BUS_STATUS_parameter()
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 	Set a breakpoint at line INTERNAL_BUS_STATUS = GetHWIO_e_BusStatus(void); inside function void Test_GetHWIO_e_BusStatus(void).
   /***************************************************************************************************************/
@@ -70,8 +56,6 @@ testcase Verify_default_value_of_INTERNAL_BUS_STATUS_parameter()
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -96,18 +80,6 @@ testcase Verify_default_value_of_INTERNAL_BUS_STATUS_parameter()
 testcase Verify_GetHWIO_e_BusStatus_function_returns_correct_values()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -127,11 +99,9 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_correct_values()
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 	Set a breakpoint at line INTERNAL_BUS_STATUS = GetHWIO_e_BusStatus(void); inside function void Test_GetHWIO_e_BusStatus(void).
   /***************************************************************************************************************/
@@ -143,8 +113,6 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_correct_values()
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -171,8 +139,6 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_correct_values()
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   /***************************************************************************************************************/    
                                               // Test Step 4 	Set a breakpoint at line INTERNAL_BUS_STATUS = GetHWIO_e_BusStatus(void); inside function void Test_GetHWIO_e_BusStatus(void).
@@ -186,7 +152,6 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_correct_values()
 //                                              // Test Step 5 Run the debugger
 //  /***************************************************************************************************************/
  
-//  A_DBGR_Go();
   
    /***************************************************************************************************************/    
                                               // Test Step 3 Wait for the breakpoint to hit
@@ -208,18 +173,6 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_correct_values()
 testcase Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initialization()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -239,11 +192,9 @@ testcase Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initial
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 	Set a breakpoint at line INTERNAL_BUS_STATUS = GetHWIO_e_BusStatus(void); inside function void Test_GetHWIO_e_BusStatus(void).
   /***************************************************************************************************************/
@@ -255,8 +206,6 @@ testcase Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initial
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -286,9 +235,7 @@ testcase Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initial
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_R();
   
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   
   /***************************************************************************************************************/    
                                               // Test Step 3 verify INTERNAL_BUS_STATUS is having 2.
@@ -302,18 +249,6 @@ testcase Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initial
 
 testcase Verify_default_value_of_BUS_ID_parameter()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -334,11 +269,9 @@ testcase Verify_default_value_of_BUS_ID_parameter()
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 	Set a breakpoint at line BUS_ID = GetHWIO_e_BusID(void); inside function void Test_GetHWIO_e_BusID( void )
   /***************************************************************************************************************/
@@ -350,8 +283,6 @@ testcase Verify_default_value_of_BUS_ID_parameter()
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -378,18 +309,6 @@ testcase Verify_default_value_of_BUS_ID_parameter()
 testcase Verify_GetHWIO_e_BusStatus_function_returns_0_if_No_Fault_is_present_in_Bus_Network()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -409,14 +328,9 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_0_if_No_Fault_is_present_in
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 	Set a breakpoint at line INTERNAL_BUS_STATUS = GetHWIO_e_BusStatus(void); inside function void Test_GetHWIO_e_BusStatus(void).
   /***************************************************************************************************************/
@@ -428,8 +342,6 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_0_if_No_Fault_is_present_in
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -437,25 +349,11 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_0_if_No_Fault_is_present_in
   /***************************************************************************************************************/
  
   
-  snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusStatus "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusStatus function"); 
   E_DBGR_CheckState(T32_State_Running);
 }
 
 testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bus_Network()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -476,12 +374,10 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 2 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -494,8 +390,6 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
    /***************************************************************************************************************/    
                                               // Test Step 3 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -521,8 +415,6 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
    /***************************************************************************************************************/    
                                               // Test Step 6 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -563,8 +455,6 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
   /***************************************************************************************************************/    
                                               // Test Step 10 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -584,23 +474,10 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
   E_DBGR_VariableCheck("INTERNAL_BUS_STATUS",1,Equal);
   
   
-  
 }
 
 testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -621,11 +498,9 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
@@ -639,8 +514,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -666,8 +539,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
    /***************************************************************************************************************/    
                                               // Test Step 5 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -706,8 +577,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   /***************************************************************************************************************/    
                                               // Test Step 10 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -743,8 +612,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   /***************************************************************************************************************/    
                                               // Test Step 14 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   
@@ -770,18 +637,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
 testcase Verify_BUS_ID_is_set_to_No_Bus_Network_Error_during_Reset_Initialization()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -801,11 +656,9 @@ testcase Verify_BUS_ID_is_set_to_No_Bus_Network_Error_during_Reset_Initializatio
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 	Set a breakpoint at line BUS_ID = GetHWIO_e_BusID(void); inside function void Test_GetHWIO_e_BusID( void )
   /***************************************************************************************************************/
@@ -817,8 +670,6 @@ testcase Verify_BUS_ID_is_set_to_No_Bus_Network_Error_during_Reset_Initializatio
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -845,18 +696,6 @@ testcase Verify_BUS_ID_is_set_to_No_Bus_Network_Error_during_Reset_Initializatio
 testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCVR_and_SPI_MCU_CAN8TCVR_scenario_1()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -872,12 +711,10 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -890,8 +727,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -914,8 +749,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Getmode\\5");  
   
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
@@ -948,8 +781,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/    
                                               // Test Step 7 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -985,8 +816,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/    
                                               // Test Step 11  Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
@@ -1010,8 +839,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/    
                                               // Test Step 13 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1047,8 +874,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/    
                                               // Test Step 17 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -1068,23 +893,10 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   E_DBGR_VariableCheck("BUS_ID",3,Equal);
 
   
-  
 }
 
 testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCVR_and_SPI_MCU_PMIC_TLF4D_scenario_2()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -1101,12 +913,10 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -1119,8 +929,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1146,8 +954,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/    
                                               // Test Step 5 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1183,8 +989,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
    /***************************************************************************************************************/    
                                               // Test Step 9 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1215,8 +1019,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/    
                                               // Test Step 12 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1255,8 +1057,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/    
                                               // Test Step 17 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -1281,18 +1081,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
 testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCVR_and_SPI_MCU_PMIC_TLF4D_scenario_3()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1308,11 +1096,9 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
@@ -1326,8 +1112,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   /***************************************************************************************************************/    
@@ -1370,8 +1154,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/    
                                               // Test Step 5 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1407,8 +1189,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
    /***************************************************************************************************************/    
                                               // Test Step 9 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1439,8 +1219,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/    
                                               // Test Step 12 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1479,8 +1257,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/    
                                               // Test Step 17 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -1500,23 +1276,10 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   E_DBGR_VariableCheck("BUS_ID",6,Equal);
 
 
-  
 }
 
 testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MCU_CAN2TCVR_CAN8TCVR_and_SPI_MCU_PMIC_TLF4D_scenario_4()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -1533,12 +1296,10 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -1551,8 +1312,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1575,8 +1334,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Getmode\\5");  
   
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
@@ -1609,8 +1366,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/    
                                               // Test Step 7 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1646,8 +1401,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/    
                                               // Test Step 11  Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
@@ -1671,8 +1424,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/    
                                               // Test Step 13 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1712,8 +1463,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
    /***************************************************************************************************************/    
                                               // Test Step 9 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1744,8 +1493,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/    
                                               // Test Step 12 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1785,8 +1532,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/    
                                               // Test Step 16 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -1806,23 +1551,10 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   E_DBGR_VariableCheck("BUS_ID",7,Equal);
 
   
-  
 }
 
 testcase Verify_default_value_of_BUS_DEVICE_ID_parameter()
 {
-  /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
   /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
@@ -1843,11 +1575,9 @@ testcase Verify_default_value_of_BUS_DEVICE_ID_parameter()
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 	Set a breakpoint at line BUS_DEVICE_ID = GetHWIO_e_BusDeviceID(void); inside function void Test_GetHWIO_e_BusDeviceID( void )
   /***************************************************************************************************************/
@@ -1859,8 +1589,6 @@ testcase Verify_default_value_of_BUS_DEVICE_ID_parameter()
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1887,18 +1615,6 @@ testcase Verify_default_value_of_BUS_DEVICE_ID_parameter()
 testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -1918,12 +1634,10 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -1936,8 +1650,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -1963,8 +1675,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
    /***************************************************************************************************************/    
                                               // Test Step 5 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2003,8 +1713,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
   /***************************************************************************************************************/    
                                               // Test Step 10 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -2038,8 +1746,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
     /***************************************************************************************************************/    
                                               // Test Step 14 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   
@@ -2065,18 +1771,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
 testcase Verify_BUS_DEVICE_ID_is_set_to_No_Device_Error_during_Reset_Initialization()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2096,11 +1790,9 @@ testcase Verify_BUS_DEVICE_ID_is_set_to_No_Device_Error_during_Reset_Initializat
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 	Set a breakpoint at line BUS_DEVICE_ID =GetHWIO_e_BusDeviceID(void); inside function void Test_GetHWIO_e_BusDeviceID( void )
   /***************************************************************************************************************/
@@ -2112,8 +1804,6 @@ testcase Verify_BUS_DEVICE_ID_is_set_to_No_Device_Error_during_Reset_Initializat
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2140,18 +1830,6 @@ testcase Verify_BUS_DEVICE_ID_is_set_to_No_Device_Error_during_Reset_Initializat
 testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_CAN8TCVR_scenario_1()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2167,12 +1845,10 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
 /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -2185,8 +1861,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2209,8 +1883,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Getmode\\5");  
   
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
@@ -2243,8 +1915,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/    
                                               // Test Step 7 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2280,8 +1950,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/    
                                               // Test Step 11  Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
@@ -2305,8 +1973,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/    
                                               // Test Step 13 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2342,8 +2008,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/    
                                               // Test Step 16 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -2367,18 +2031,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
 testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_PMIC_TLF4D_scenario_2()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2394,12 +2046,10 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -2412,8 +2062,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2439,8 +2087,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/    
                                               // Test Step 5 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   testWaitForTimeout(500);
    /***************************************************************************************************************/    
@@ -2476,8 +2122,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
    /***************************************************************************************************************/    
                                               // Test Step 9 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2508,8 +2152,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/    
                                               // Test Step 12 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2548,8 +2190,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/    
                                               // Test Step 17 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -2574,18 +2214,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
 testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_PMIC_TLF4D_scenario_3()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2601,12 +2229,10 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -2619,8 +2245,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   /***************************************************************************************************************/    
@@ -2662,8 +2286,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/    
                                               // Test Step 5 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   testWaitForTimeout(500);
    /***************************************************************************************************************/    
@@ -2699,8 +2321,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
    /***************************************************************************************************************/    
                                               // Test Step 9 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2731,8 +2351,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/    
                                               // Test Step 12 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2771,8 +2389,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/    
                                               // Test Step 17 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -2792,24 +2408,11 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   E_DBGR_VariableCheck("BUS_DEVICE_ID",6,Equal);
 
 
-
 }
 
 testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8TCVR_and_PMIC_TLF4D_scenario_4()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -2825,11 +2428,9 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   
 /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
@@ -2843,8 +2444,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2867,8 +2466,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Getmode\\5");  
   
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
@@ -2901,8 +2498,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/    
                                               // Test Step 7 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -2938,8 +2533,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/    
                                               // Test Step 11  Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
@@ -2963,8 +2556,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/    
                                               // Test Step 13 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3004,8 +2595,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
    /***************************************************************************************************************/    
                                               // Test Step 9 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3036,8 +2625,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/    
                                               // Test Step 12 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3078,8 +2665,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/    
                                               // Test Step 16 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -3103,18 +2688,6 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
 testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_3()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -3130,11 +2703,9 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -3147,8 +2718,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3179,8 +2748,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
   /***************************************************************************************************************/    
                                               // Test Step 6 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3219,8 +2786,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
   /***************************************************************************************************************/    
                                               // Test Step 11 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -3244,18 +2809,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
 testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -3271,12 +2824,10 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -3289,8 +2840,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   /***************************************************************************************************************/    
@@ -3332,8 +2881,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
   /***************************************************************************************************************/    
                                               // Test Step 6 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3374,8 +2921,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
   /***************************************************************************************************************/    
                                               // Test Step 11 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -3400,18 +2945,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
 testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -3427,11 +2960,9 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
@@ -3445,8 +2976,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3472,8 +3001,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
   /***************************************************************************************************************/    
                                               // Test Step 5 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3513,8 +3040,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
   /***************************************************************************************************************/    
                                               // Test Step 10 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -3539,18 +3064,6 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
 testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Failed()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -3566,11 +3079,9 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -3583,8 +3094,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3615,8 +3124,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
   /***************************************************************************************************************/    
                                               // Test Step 6 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3655,8 +3162,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
   /***************************************************************************************************************/    
                                               // Test Step 11 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -3680,18 +3185,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
 testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -3707,12 +3200,10 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -3725,8 +3216,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
   /***************************************************************************************************************/    
@@ -3768,8 +3257,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
   /***************************************************************************************************************/    
                                               // Test Step 6 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3809,8 +3296,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
   /***************************************************************************************************************/    
                                               // Test Step 11 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    
@@ -3835,18 +3320,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
 testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -3862,12 +3335,10 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed(
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   
-  A_DBGR_Go();
+  A_DBGR_Go_Safe();
   /***************************************************************************************************************/    
                                               // Test Step 1 Set a breakpoint at line TestCanTrcv_Getmode(void); in OS_Tasks.c file
   /***************************************************************************************************************/
@@ -3880,8 +3351,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed(
    /***************************************************************************************************************/    
                                               // Test Step 2 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3907,8 +3376,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed(
   /***************************************************************************************************************/    
                                               // Test Step 5 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
   
    /***************************************************************************************************************/    
@@ -3948,8 +3415,6 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed(
   /***************************************************************************************************************/    
                                               // Test Step 10 Run the debugger
   /***************************************************************************************************************/
-  snprintf( chActionText, elCount(chActionText), "Run the software "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
   A_DBGR_Go();
 
   /***************************************************************************************************************/    

@@ -23,18 +23,6 @@ variables
 testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_0_when_the_battery_is_connected_voltage_is_in_the_normal_range()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -73,8 +61,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_0_when_t
   
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -97,18 +83,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_0_when_t
 testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_the_battery_is_disconnected()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -128,8 +102,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
   
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -160,8 +132,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   strncpy(searchString,"test_battconnstatus_hwio:battConnectionStatus = 1",256);
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -184,18 +154,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
 testcase Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditions_unless_cleared_by_the_ClrHWIO_BatConnectionStatus()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -238,8 +196,6 @@ testcase Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditio
   strncpy(searchString,"test_battconnstatus_hwio:Clear Battery Connection Status",256);
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -257,8 +213,6 @@ testcase Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditio
   
   strncpy(searchString,"test_battconnstatus_hwio:battConnectionStatus = 0",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -281,18 +235,6 @@ testcase Verify_that_the_BATTERY_DISCONNECT_status_is_retained_over_all_conditio
 testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_the_system_wakes_up_due_to_a_low_voltage_transient()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -340,8 +282,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   strncpy(searchString,"Power ON wakeup event found in transceiver 0",256);
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -355,8 +295,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   
   strncpy(searchString,"Power ON wakeup event found in transceiver 1",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -374,8 +312,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
   
   strncpy(searchString,"test_battconnstatus_hwio:battConnectionStatus = 1",256);
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -398,18 +334,6 @@ testcase Verify_that_the_GetHWIO_b_BatConnectionStatus_function_returns_1_when_t
 testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due_to_wakeup_signal_and_not_due_to_a_battery_disconnect()
 {
   /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -430,8 +354,6 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -553,7 +475,6 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
- // E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
@@ -600,8 +521,6 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -625,18 +544,6 @@ testcase Verify_GetHWIO_b_BatConnectionStatus_returns_0_when_system_wakes_up_due
 testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_unless_a_battery_disconnection_event_occurs()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -657,8 +564,6 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "ECU should be in running state"); 
  
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -780,7 +685,6 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   snprintf( chExpectedText, elCount(chExpectedText), "Verify StartPowerDown is configured as 1"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("StartPowerDown","1");
- // E_DBGR_VariableCheck("StartPowerDown",1,Equal);
   
   snprintf( chActionText, elCount(chActionText), "Check Trace32 is stopped"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Trace32 is stopped"); 
@@ -827,8 +731,6 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_GENERIC_SetTimeout(15000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -865,8 +767,6 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
   strncpy(searchString,"test_battconnstatus_hwio:battConnectionStatus = 1",256);
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
@@ -889,18 +789,6 @@ testcase Verify_that_the_BATTERY_CONNECT_status_is_retained_over_all_conditions_
 testcase Verify_Controller_Reset_when_Battery_Voltage_is_between_3_3V_and_4_5V_for_250ms()
 {
     /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -920,8 +808,6 @@ testcase Verify_Controller_Reset_when_Battery_Voltage_is_between_3_3V_and_4_5V_f
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
   
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -946,18 +832,6 @@ testcase Verify_Controller_Reset_when_Battery_Voltage_is_between_3_3V_and_4_5V_f
 testcase Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Battery_Voltage_is_between_3_3V_and_4_5V()
 {
    /***************************************************************************************************************/    
-                                                // Variable Definition
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
-                                               // Local Values
-  /***************************************************************************************************************/ 
-  
-
-  
-  /***************************************************************************************************************/    
                                               // Test Case Info
   /***************************************************************************************************************/
   setWriteDbgLevel(DebugOff);
@@ -977,8 +851,6 @@ testcase Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Ba
   TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointDeleteAll();
   
-  snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
-  snprintf( chExpectedText, elCount(chExpectedText), "Ecu is should be in running state"); 
   
   A_DBGR_R();
   A_DBGR_Go_Safe();
@@ -1018,8 +890,6 @@ testcase Verify_Battery_Connection_Status_Update_as_1_BATTERY_DISCONNECT_when_Ba
   strncpy(searchString,"test_battconnstatus_hwio:battConnectionStatus = 1",256);
   A_GENERIC_SetTimeout(25000,"waiting for UART log");
   
-  snprintf(chActionText, elCount(chActionText), "Run Python script to check battConnectionStatus in log file");
-  snprintf(chExpectedText, elCount(chExpectedText), "Python script should execute successfully");
   result =iFcnt_READFILE_SearchKeywordInFile(teraterm,searchString,"string is present");
   
   if(result == 1)
