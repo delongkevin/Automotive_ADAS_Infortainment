@@ -263,6 +263,7 @@ class GMVIPGui(tk.Tk):
         self._runner = _TestRunner(self._q)
         self._last_report_path: Optional[Path] = None
         self._t32_process: Optional[subprocess.Popen] = None
+        self._t32_wait_thread: Optional[threading.Thread] = None
 
         # --- tkinter variables (must live on self so GC keeps them) ---------
         self._mode_var        = tk.StringVar(value="mock")
@@ -1197,16 +1198,25 @@ class GMVIPGui(tk.Tk):
         # ── Step 2: managed process still starting up? ────────────────────
         proc: Optional[subprocess.Popen] = self._t32_process
         if proc is not None and proc.poll() is None:
+            # Avoid spawning a new wait thread if one is already alive.
+            if self._t32_wait_thread is not None and self._t32_wait_thread.is_alive():
+                self._log_line(
+                    f"[GUI] Trace32 (PID={proc.pid}) is still starting up – "
+                    f"already waiting for RCL port {port} to open …",
+                    "info",
+                )
+                return
             self._log_line(
                 f"[GUI] Trace32 (PID={proc.pid}) is still starting up – "
                 f"waiting for RCL port {port} to open …",
                 "info",
             )
-            threading.Thread(
+            self._t32_wait_thread = threading.Thread(
                 target=self._wait_for_t32_port,
                 args=(port, settings.connect_max_wait_s),
                 daemon=True,
-            ).start()
+            )
+            self._t32_wait_thread.start()
             return
 
         # ── Step 3: validate the exe path ─────────────────────────────────
@@ -1245,11 +1255,12 @@ class GMVIPGui(tk.Tk):
             f"[GUI] Waiting up to {max_wait:.0f}s for Trace32 RCL port {port} to open …",
             "info",
         )
-        threading.Thread(
+        self._t32_wait_thread = threading.Thread(
             target=self._wait_for_t32_port,
             args=(port, max_wait),
             daemon=True,
-        ).start()
+        )
+        self._t32_wait_thread.start()
 
     def _wait_for_t32_port(self, port: int, max_wait_s: float) -> None:
         """Poll the RCL port until Trace32 is accepting connections or timeout.
