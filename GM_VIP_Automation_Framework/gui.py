@@ -37,7 +37,9 @@ import importlib.util
 import io
 import json
 import os
+import platform
 import queue
+import subprocess
 import sys
 import threading
 import time
@@ -97,6 +99,19 @@ _CLR = {
     "log_bg":     "#1e1e1e",
     "log_fg":     "#d4d4d4",
 }
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+# Seconds to wait after sending QUIT before force-killing the T32 process.
+_T32_QUIT_WAIT_S = 2
+
+# Common Trace32 executable names used as a fallback when the setting is empty.
+_T32_FALLBACK_EXE_NAMES = frozenset({
+    "t32marm.exe", "t32marm64.exe", "t32mppc.exe",
+    "t32marm",     "t32marm64",     "t32mppc",
+})
 
 # ---------------------------------------------------------------------------
 # Thread-safe output capture
@@ -247,6 +262,7 @@ class GMVIPGui(tk.Tk):
         self._q: "queue.Queue[tuple]" = queue.Queue()
         self._runner = _TestRunner(self._q)
         self._last_report_path: Optional[Path] = None
+        self._t32_process: Optional[subprocess.Popen] = None
 
         # --- tkinter variables (must live on self so GC keeps them) ---------
         self._mode_var        = tk.StringVar(value="mock")
@@ -369,7 +385,7 @@ class GMVIPGui(tk.Tk):
         tk.Label(pane, text="CMM Script (optional):", bg=_CLR["panel"],
                  font=("Arial", 9)).grid(row=5, column=0, sticky=tk.W, pady=(4, 0))
         cmm_frame = tk.Frame(pane, bg=_CLR["panel"])
-        cmm_frame.grid(row=6, column=0, sticky=tk.EW, pady=(2, 6))
+        cmm_frame.grid(row=6, column=0, sticky=tk.EW, pady=(2, 2))
         cmm_entry = tk.Entry(cmm_frame, textvariable=self._cmm_var, width=18,
                              font=("Courier", 8))
         cmm_entry.pack(side=tk.LEFT)
@@ -379,16 +395,56 @@ class GMVIPGui(tk.Tk):
                  "Optional CMM startup script passed to T32 at launch.\n"
                  "Only used when Auto-launch is enabled.")
 
+        # CMM edit + reload buttons
+        cmm_action_frame = tk.Frame(pane, bg=_CLR["panel"])
+        cmm_action_frame.grid(row=7, column=0, sticky=tk.EW, pady=(0, 4))
+        tk.Button(
+            cmm_action_frame, text="✏ Edit CMM", font=("Arial", 8),
+            bg="#17a2b8", fg="#fff", relief="flat", padx=4, pady=2,
+            cursor="hand2", command=self._edit_cmm_in_editor,
+        ).pack(side=tk.LEFT, padx=(0, 4))
+        tk.Button(
+            cmm_action_frame, text="↺ Reload CMM", font=("Arial", 8),
+            bg=_CLR["btn_clear"], fg="#fff", relief="flat", padx=4, pady=2,
+            cursor="hand2", command=self._reload_cmm,
+        ).pack(side=tk.LEFT)
+        _ToolTip(cmm_action_frame,
+                 "Edit CMM: open the selected CMM script in a text editor.\n"
+                 "Reload CMM: re-read the CMM path after saving edits.")
+
         # Verbose
         vb_cb = tk.Checkbutton(
             pane, text="Verbose output", variable=self._verbose_var,
             bg=_CLR["panel"], font=("Arial", 9), activebackground=_CLR["panel"],
         )
-        vb_cb.grid(row=7, column=0, sticky=tk.W, pady=(2, 10))
+        vb_cb.grid(row=8, column=0, sticky=tk.W, pady=(2, 6))
+
+        # --- Open / Close T32 buttons -------------------------------------
+        t32_frame = tk.Frame(pane, bg=_CLR["panel"])
+        t32_frame.grid(row=9, column=0, sticky=tk.EW, pady=(0, 4))
+        tk.Button(
+            t32_frame, text="▶ Open T32",
+            font=("Arial", 9, "bold"),
+            bg="#0056b3", fg="#fff",
+            activebackground="#003d80", activeforeground="#fff",
+            relief="flat", padx=6, pady=4, cursor="hand2",
+            command=self._open_t32,
+        ).pack(side=tk.LEFT, padx=(0, 4))
+        tk.Button(
+            t32_frame, text="✕ Close T32",
+            font=("Arial", 9, "bold"),
+            bg=_CLR["btn_stop"], fg="#fff",
+            activebackground="#c82333", activeforeground="#fff",
+            relief="flat", padx=6, pady=4, cursor="hand2",
+            command=self._close_t32,
+        ).pack(side=tk.LEFT)
+        _ToolTip(t32_frame,
+                 "Open T32: launch Trace32 using t32_exe_path from config.json.\n"
+                 "Close T32: send a quit command; force-kills the process if needed.")
 
         # --- Run / Stop buttons -------------------------------------------
         sep = ttk.Separator(pane, orient=tk.HORIZONTAL)
-        sep.grid(row=8, column=0, sticky=tk.EW, pady=6)
+        sep.grid(row=10, column=0, sticky=tk.EW, pady=6)
 
         self._run_btn = tk.Button(
             pane, text="▶  Run",
@@ -398,7 +454,7 @@ class GMVIPGui(tk.Tk):
             relief="flat", padx=12, pady=6, cursor="hand2",
             command=self._run_selected,
         )
-        self._run_btn.grid(row=9, column=0, sticky=tk.EW, pady=2)
+        self._run_btn.grid(row=11, column=0, sticky=tk.EW, pady=2)
 
         self._stop_btn = tk.Button(
             pane, text="■  Stop",
@@ -408,7 +464,7 @@ class GMVIPGui(tk.Tk):
             relief="flat", padx=12, pady=6, cursor="hand2",
             command=self._stop_run, state=tk.DISABLED,
         )
-        self._stop_btn.grid(row=10, column=0, sticky=tk.EW, pady=2)
+        self._stop_btn.grid(row=12, column=0, sticky=tk.EW, pady=2)
 
         self._report_btn = tk.Button(
             pane, text="🌐  Open Report",
@@ -418,7 +474,7 @@ class GMVIPGui(tk.Tk):
             relief="flat", padx=8, pady=5, cursor="hand2",
             command=self._open_last_report, state=tk.DISABLED,
         )
-        self._report_btn.grid(row=11, column=0, sticky=tk.EW, pady=(4, 2))
+        self._report_btn.grid(row=13, column=0, sticky=tk.EW, pady=(4, 2))
 
         tk.Button(
             pane, text="↺  Refresh Lists",
@@ -427,7 +483,7 @@ class GMVIPGui(tk.Tk):
             activebackground="#5a6268", activeforeground="#fff",
             relief="flat", padx=8, pady=5, cursor="hand2",
             command=self._refresh_suite_lists,
-        ).grid(row=12, column=0, sticky=tk.EW, pady=2)
+        ).grid(row=14, column=0, sticky=tk.EW, pady=2)
 
     def _build_notebook(self, parent: tk.Frame) -> None:
         """Right-hand tabbed area."""
@@ -471,6 +527,24 @@ class GMVIPGui(tk.Tk):
         scrollbar.config(command=self._py_listbox.yview)
         self._py_listbox.bind("<Double-1>", lambda _e: self._run_selected())
 
+        # Action buttons row
+        py_btn_frame = tk.Frame(frame, bg=_CLR["panel"])
+        py_btn_frame.pack(anchor=tk.W, padx=12, pady=(2, 4))
+        tk.Button(
+            py_btn_frame, text="✏ Edit in IDLE", font=("Arial", 9),
+            bg="#17a2b8", fg="#fff", relief="flat", padx=8, pady=4,
+            cursor="hand2", command=self._edit_py_in_idle,
+        ).pack(side=tk.LEFT, padx=(0, 6))
+        tk.Button(
+            py_btn_frame, text="↺ Reload List", font=("Arial", 9),
+            bg=_CLR["btn_clear"], fg="#fff", relief="flat", padx=8, pady=4,
+            cursor="hand2", command=self._refresh_suite_lists,
+        ).pack(side=tk.LEFT)
+        _ToolTip(py_btn_frame,
+                 "Edit in IDLE: open the selected .py suite in Python IDLE "
+                 "(falls back to the OS default text editor if IDLE is unavailable).\n"
+                 "Reload List: re-scan for Python suite files after saving.")
+
         # "Run all" checkbox
         self._run_all_py_var = tk.BooleanVar(value=False)
         tk.Checkbutton(
@@ -506,6 +580,24 @@ class GMVIPGui(tk.Tk):
         self._json_listbox.pack(fill=tk.BOTH, expand=True)
         scrollbar.config(command=self._json_listbox.yview)
         self._json_listbox.bind("<Double-1>", lambda _e: self._run_selected())
+
+        # Action buttons row
+        json_btn_frame = tk.Frame(frame, bg=_CLR["panel"])
+        json_btn_frame.pack(anchor=tk.W, padx=12, pady=(2, 4))
+        tk.Button(
+            json_btn_frame, text="✏ Edit in IDLE", font=("Arial", 9),
+            bg="#17a2b8", fg="#fff", relief="flat", padx=8, pady=4,
+            cursor="hand2", command=self._edit_json_in_idle,
+        ).pack(side=tk.LEFT, padx=(0, 6))
+        tk.Button(
+            json_btn_frame, text="↺ Reload List", font=("Arial", 9),
+            bg=_CLR["btn_clear"], fg="#fff", relief="flat", padx=8, pady=4,
+            cursor="hand2", command=self._refresh_suite_lists,
+        ).pack(side=tk.LEFT)
+        _ToolTip(json_btn_frame,
+                 "Edit in IDLE: open the selected JSON suite in Python IDLE "
+                 "(falls back to the OS default text editor if IDLE is unavailable).\n"
+                 "Reload List: re-scan for JSON suite files after saving.")
 
         note = tk.Label(
             frame,
@@ -546,6 +638,7 @@ class GMVIPGui(tk.Tk):
         self._disc_suite_var     = tk.StringVar(value="test_symbol_discovery")
         self._disc_max_sym_var   = tk.StringVar(value="500")
         self._disc_resolve_var   = tk.BooleanVar(value=True)
+        self._disc_verbose_var   = tk.BooleanVar(value=False)
 
         fields = [
             ("Symbol Pattern (GLOB):", self._disc_pattern_var,
@@ -593,7 +686,19 @@ class GMVIPGui(tk.Tk):
             frame, text="Resolve symbol addresses (SYMBOL.EXIST – slower but more accurate)",
             variable=self._disc_resolve_var,
             bg=_CLR["panel"], font=("Arial", 9), activebackground=_CLR["panel"],
-        ).pack(anchor=tk.W, padx=12, pady=(6, 4))
+        ).pack(anchor=tk.W, padx=12, pady=(6, 2))
+
+        # Verbose debugging checkbox
+        vb_disc_cb = tk.Checkbutton(
+            frame, text="Verbose debug output (show raw T32 commands and responses)",
+            variable=self._disc_verbose_var,
+            bg=_CLR["panel"], font=("Arial", 9), activebackground=_CLR["panel"],
+        )
+        vb_disc_cb.pack(anchor=tk.W, padx=12, pady=(0, 4))
+        _ToolTip(vb_disc_cb,
+                 "Enable verbose mode to see every T32 command sent and the raw "
+                 "response received.\nUseful when aligning discovery commands with "
+                 "the installed Trace32 version so you can diagnose and correct issues.")
 
         tk.Button(
             frame,
@@ -818,6 +923,7 @@ class GMVIPGui(tk.Tk):
         suite    = self._disc_suite_var.get() or "test_symbol_discovery"
         out_raw  = self._disc_output_var.get()
         resolve  = self._disc_resolve_var.get()
+        verbose  = self._disc_verbose_var.get()
         try:
             max_sym = int(self._disc_max_sym_var.get())
         except ValueError:
@@ -828,13 +934,13 @@ class GMVIPGui(tk.Tk):
 
         self._log_line(
             f"\n[GUI] ── Symbol Discovery  pattern={pattern!r}  "
-            f"module={module!r}  ──", "info",
+            f"module={module!r}  verbose={verbose}  ──", "info",
         )
         self._runner.run(
             self._do_run_discover,
             out_dir=out_dir, suite=suite, pattern=pattern,
             module=module, bp=bp, port=int(port), al=al, cmm=cmm,
-            resolve=resolve, max_sym=max_sym,
+            resolve=resolve, max_sym=max_sym, verbose=verbose,
         )
 
     def _stop_run(self) -> None:
@@ -892,6 +998,7 @@ class GMVIPGui(tk.Tk):
         cmm: Optional[str],
         resolve: bool,
         max_sym: int,
+        verbose: bool,
         stop_event: threading.Event,
     ) -> None:
         """Worker: symbol discovery."""
@@ -906,6 +1013,7 @@ class GMVIPGui(tk.Tk):
             cmm_script=cmm,
             resolve_addresses=resolve,
             max_symbols=max_sym,
+            verbose=verbose,
         )
 
     # ------------------------------------------------------------------ config
@@ -1049,6 +1157,210 @@ class GMVIPGui(tk.Tk):
         path = filedialog.askdirectory(title="Select output directory")
         if path:
             self._disc_output_var.set(path)
+
+    # ------------------------------------------------------------------ T32 open/close
+
+    def _open_t32(self) -> None:
+        """Launch Trace32 using the exe path from config.json / settings."""
+        from GM_VIP_Automation_Framework.config import settings
+        from GM_VIP_Automation_Framework.core.connection import T32Connection
+        from GM_VIP_Automation_Framework.utils.exceptions import T32LaunchError
+
+        exe = settings.t32_exe_path or ""
+        if not exe or not Path(exe).is_file():
+            messagebox.showerror(
+                "Cannot Open T32",
+                f"Trace32 executable not found:\n  {exe or '(not set)'}\n\n"
+                "Set 't32_exe_path' in the Configuration tab and save config.json first.",
+            )
+            return
+
+        cmm = self._cmm_var.get() or None
+        try:
+            conn = T32Connection(
+                exe_path=exe,
+                config_path=settings.t32_config_path,
+                cmm_entry_script=cmm,
+            )
+            proc = conn.launch()
+            self._t32_process = proc
+            self._log_line(
+                f"[GUI] Trace32 launched  PID={proc.pid}  exe={exe}", "info",
+            )
+        except T32LaunchError as exc:
+            messagebox.showerror("T32 Launch Error", str(exc))
+        except Exception as exc:
+            messagebox.showerror("T32 Launch Error", f"Unexpected error:\n{exc}")
+
+    def _close_t32(self) -> None:
+        """Close Trace32: graceful quit via RCL, then force-kill if needed."""
+        import signal
+
+        from GM_VIP_Automation_Framework.config import settings
+        from GM_VIP_Automation_Framework.core.connection import T32Connection
+
+        port = self._port_var.get()
+        graceful_ok = False
+
+        # Attempt graceful quit via RCL QUIT command
+        try:
+            conn = T32Connection(port=int(port))
+            if conn.try_connect():
+                conn.cmd("QUIT")
+                self._log_line("[GUI] Sent QUIT command to Trace32 via RCL.", "info")
+                time.sleep(_T32_QUIT_WAIT_S)
+                graceful_ok = True
+        except Exception as exc:
+            self._log_line(f"[GUI] Graceful QUIT failed: {exc}", "warn")
+
+        # Kill the process we launched (if any)
+        proc: Optional[subprocess.Popen] = getattr(self, "_t32_process", None)
+        if proc is not None and proc.poll() is None:
+            if not graceful_ok:
+                self._log_line(
+                    f"[GUI] Force-killing Trace32 PID={proc.pid} …", "warn",
+                )
+            try:
+                proc.terminate()
+                proc.wait(timeout=3)
+            except Exception:
+                try:
+                    proc.kill()
+                    proc.wait(timeout=3)
+                except Exception as exc2:
+                    self._log_line(f"[GUI] Kill failed: {exc2}", "error")
+            finally:
+                self._t32_process = None
+            self._log_line("[GUI] Trace32 process stopped.", "info")
+        else:
+            # Try to find & kill any running T32 process by name
+            killed = self._kill_t32_by_name()
+            if not killed and not graceful_ok:
+                messagebox.showinfo(
+                    "Close T32",
+                    "No Trace32 process was found to close.\n"
+                    "It may have already exited, or was started externally.",
+                )
+
+    def _kill_t32_by_name(self) -> bool:
+        """Find and kill Trace32 processes by executable name. Returns True if any killed."""
+        from GM_VIP_Automation_Framework.config import settings
+
+        configured_names = {n.lower() for n in (settings.t32_exe_names or [])}
+        t32_names = configured_names | _T32_FALLBACK_EXE_NAMES
+        killed = False
+        system = platform.system().lower()
+
+        if system == "windows":
+            for name in t32_names:
+                try:
+                    subprocess.run(
+                        ["taskkill", "/F", "/IM", name],
+                        capture_output=True, check=False,
+                    )
+                    killed = True
+                    self._log_line(f"[GUI] taskkill /F /IM {name}", "warn")
+                except Exception:
+                    pass
+        else:
+            for name in t32_names:
+                try:
+                    result = subprocess.run(
+                        ["pkill", "-f", name],
+                        capture_output=True, check=False,
+                    )
+                    if result.returncode == 0:
+                        killed = True
+                        self._log_line(f"[GUI] pkill -f {name}", "warn")
+                except Exception:
+                    pass
+        return killed
+
+    # ------------------------------------------------------------------ CMM editor
+
+    def _edit_cmm_in_editor(self) -> None:
+        """Open the CMM script in a text editor (IDLE preferred)."""
+        path_str = self._cmm_var.get().strip()
+        if not path_str:
+            messagebox.showwarning(
+                "No CMM Script",
+                "No CMM script path is set.\nBrowse for a .cmm file first.",
+            )
+            return
+        path = Path(path_str)
+        if not path.is_file():
+            messagebox.showerror(
+                "File Not Found",
+                f"CMM script not found:\n{path}",
+            )
+            return
+        self._open_in_editor(path)
+
+    def _reload_cmm(self) -> None:
+        """Re-confirm the CMM path is valid and log it (useful after external edits)."""
+        path_str = self._cmm_var.get().strip()
+        if not path_str:
+            self._log_line("[GUI] CMM path is empty – nothing to reload.", "warn")
+            return
+        path = Path(path_str)
+        if path.is_file():
+            self._log_line(
+                f"[GUI] CMM script ready: {path}  "
+                f"({path.stat().st_size} bytes, modified {time.strftime('%H:%M:%S', time.localtime(path.stat().st_mtime))})",
+                "info",
+            )
+        else:
+            self._log_line(f"[GUI] CMM script not found: {path}", "error")
+
+    # ------------------------------------------------------------------ IDLE / editor helpers
+
+    def _edit_py_in_idle(self) -> None:
+        """Open the selected Python suite in IDLE (or fallback editor)."""
+        sel = self._py_listbox.curselection()
+        if not sel:
+            messagebox.showwarning("No Selection", "Please select a Python suite first.")
+            return
+        path = self._py_suites[sel[0]]
+        self._open_in_editor(path)
+
+    def _edit_json_in_idle(self) -> None:
+        """Open the selected JSON suite in IDLE (or fallback editor)."""
+        sel = self._json_listbox.curselection()
+        if not sel:
+            messagebox.showwarning("No Selection", "Please select a JSON suite first.")
+            return
+        path = self._json_files[sel[0]]
+        self._open_in_editor(path)
+
+    def _open_in_editor(self, path: Path) -> None:
+        """Open *path* in Python IDLE; fall back to OS default text editor."""
+        # Try IDLE first (works for .py and can display .json / .cmm as text)
+        try:
+            subprocess.Popen(
+                [sys.executable, "-m", "idlelib", str(path)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            self._log_line(f"[GUI] Opened in IDLE: {path}", "info")
+            return
+        except Exception as exc:
+            self._log_line(f"[GUI] IDLE not available ({exc}); trying OS editor …", "debug")
+
+        # OS-specific fallback
+        system = platform.system().lower()
+        try:
+            if system == "windows":
+                os.startfile(str(path))
+            elif system == "darwin":
+                subprocess.Popen(["open", str(path)])
+            else:
+                subprocess.Popen(["xdg-open", str(path)])
+            self._log_line(f"[GUI] Opened in OS editor: {path}", "info")
+        except Exception as exc:
+            messagebox.showerror(
+                "Cannot Open File",
+                f"Failed to open file in editor:\n{path}\n\nError: {exc}",
+            )
 
     # ------------------------------------------------------------------ queue poll
 
