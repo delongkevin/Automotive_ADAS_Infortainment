@@ -618,6 +618,7 @@ def _run_discover(
     cmm_script: Optional[str] = None,
     resolve_addresses: bool = True,
     max_symbols: int = 500,
+    verbose: bool = False,
 ) -> None:
     """Connect to Trace32, discover symbols, and write a test-case JSON + script.
 
@@ -647,6 +648,9 @@ def _run_discover(
         Verify each symbol with ``SYMBOL.EXIST`` (slower but more accurate).
     max_symbols:
         Cap the number of individually verified symbols.
+    verbose:
+        Print every T32 command sent and its raw response to aid in
+        diagnosing compatibility issues with the installed Trace32 version.
     """
     from GM_VIP_Automation_Framework.core.connection import T32Connection
     from GM_VIP_Automation_Framework.core.symbol_discovery import (
@@ -663,15 +667,33 @@ def _run_discover(
     conn = T32Connection(port=port or settings.rcl_port)
     conn.connect()
 
+    if verbose:
+        print(f"[GM_VIP][VERBOSE] Connected to Trace32 on port {port or settings.rcl_port}")
+        try:
+            t32_ver = conn.fnc("VERSION.BUILD()")
+            print(f"[GM_VIP][VERBOSE] Trace32 version: {t32_ver}")
+        except Exception as exc:
+            print(f"[GM_VIP][VERBOSE] Could not retrieve T32 version: {exc}")
+
     try:
         print(f"\n[GM_VIP] Discovering symbols  pattern={pattern!r} …")
+        if verbose:
+            print(f"[GM_VIP][VERBOSE] Sending: SYMBOL.LIST {pattern}")
         inventory = discover_symbols(
             pattern=pattern,
             connection=conn,
             resolve_addresses=resolve_addresses,
             max_symbols=max_symbols,
+            verbose=verbose,
         )
         print(f"[GM_VIP] {inventory.summary()}")
+
+        if verbose:
+            for sym in inventory:
+                print(
+                    f"[GM_VIP][VERBOSE]   {sym.kind.value:<10} {sym.name:<50} "
+                    f"addr={sym.address or '?':>12}  size={sym.size}"
+                )
 
         # Optional module filter
         if module_filter:
@@ -687,6 +709,8 @@ def _run_discover(
         if breakpoint_symbol:
             from GM_VIP_Automation_Framework.core import breakpoints as _bpm
             print(f"[GM_VIP] Verifying breakpoint on '{breakpoint_symbol}' …")
+            if verbose:
+                print(f"[GM_VIP][VERBOSE] Sending: BREAK.SET {breakpoint_symbol} /Program")
             try:
                 _bpm.set_breakpoint(breakpoint_symbol, conn)
                 print(f"[GM_VIP] Breakpoint set on '{breakpoint_symbol}' ✔")

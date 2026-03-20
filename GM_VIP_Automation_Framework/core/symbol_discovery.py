@@ -512,6 +512,7 @@ def _resolve_addresses(
     symbols: List[DiscoveredSymbol],
     conn,
     max_symbols: int = 500,
+    verbose: bool = False,
 ) -> List[DiscoveredSymbol]:
     """For each symbol, verify existence and fill in the address if missing.
 
@@ -529,21 +530,35 @@ def _resolve_addresses(
         t32_name = sym.name
 
         try:
-            raw = conn.fnc(f"SYMBOL.EXIST({t32_name})")
+            cmd = f"SYMBOL.EXIST({t32_name})"
+            if verbose:
+                _print(f"[VERBOSE] fnc({cmd!r})")
+            raw = conn.fnc(cmd)
+            if verbose:
+                _print(f"[VERBOSE]   → {raw!r}")
             exists = str(raw).strip().upper() in ("TRUE()", "TRUE", "1")
         except Exception as exc:  # noqa: BLE001
             logger.debug("SYMBOL.EXIST('%s') raised %s: %s", t32_name, type(exc).__name__, exc)
+            if verbose:
+                _print(f"[VERBOSE] SYMBOL.EXIST({t32_name!r}) error: {exc}")
             exists = sym.address != ""  # trust the parsed address if no API
 
         if exists and not sym.address:
             try:
-                raw_addr = conn.fnc(f"ADDRESS.OFFSET(SYMBOL.BEGIN({t32_name}))")
+                cmd = f"ADDRESS.OFFSET(SYMBOL.BEGIN({t32_name}))"
+                if verbose:
+                    _print(f"[VERBOSE] fnc({cmd!r})")
+                raw_addr = conn.fnc(cmd)
+                if verbose:
+                    _print(f"[VERBOSE]   → {raw_addr!r}")
                 address = str(raw_addr).strip()
             except Exception as exc:  # noqa: BLE001
                 logger.debug(
                     "ADDRESS.OFFSET(SYMBOL.BEGIN('%s')) raised %s: %s",
                     t32_name, type(exc).__name__, exc,
                 )
+                if verbose:
+                    _print(f"[VERBOSE] ADDRESS.OFFSET(SYMBOL.BEGIN({t32_name!r})) error: {exc}")
                 address = ""
         else:
             address = sym.address
@@ -571,6 +586,7 @@ def discover_symbols(
     connection=None,
     resolve_addresses: bool = True,
     max_symbols: int = 500,
+    verbose: bool = False,
 ) -> SymbolInventory:
     """Discover all symbols in the active Trace32 session.
 
@@ -596,6 +612,10 @@ def discover_symbols(
         this limit are included in the inventory but their addresses are
         taken from the parsed SYMBOL.LIST output without individual
         ``SYMBOL.EXIST`` confirmation.
+    verbose:
+        When ``True``, print the raw SYMBOL.LIST output and each
+        individual resolve command to aid in diagnosing Trace32 version
+        compatibility issues.
 
     Returns
     -------
@@ -605,16 +625,24 @@ def discover_symbols(
     conn = _resolve_conn(connection)
     _print(f"Starting symbol discovery (pattern='{pattern}') …")
 
+    if verbose:
+        _print(f"[VERBOSE] SYMBOL.LIST {pattern}")
+
     raw = _fetch_symbol_list(pattern, conn)
     if not raw:
         logger.warning("SYMBOL.LIST returned no output.  Is an ELF loaded?")
         return SymbolInventory()
 
+    if verbose:
+        _print(f"[VERBOSE] Raw SYMBOL.LIST output ({len(raw)} chars):\n{raw[:2000]}"
+               + ("…" if len(raw) > 2000 else ""))
+
     parsed = _parse_symbol_list(raw)
     _print(f"Parsed {len(parsed)} raw symbol entries.")
 
     if resolve_addresses:
-        resolved = _resolve_addresses(parsed, conn, max_symbols=max_symbols)
+        resolved = _resolve_addresses(parsed, conn, max_symbols=max_symbols,
+                                      verbose=verbose)
     else:
         resolved = parsed
 
