@@ -619,7 +619,7 @@ void E_DBGR_CheckConnection()
 * Change History:
 * Date(DD.MM.YY)        Author          Change info
 *
-* 15.03.26              Copilot         Created – zero-arg wrapper using lFctn_T32_AutoDetect().
+* 15.03.26              Copilot         Created - zero-arg wrapper using lFctn_T32_AutoDetect().
 */
 export testfunction A_DBGR_EnsureT32Running_AutoDetect()
 {
@@ -655,9 +655,7 @@ export testfunction A_DBGR_EnsureT32Running_AutoDetect()
   if (lDetectResult != Ok)
   {
     snprintf(chFailText, elcount(chFailText),
-             "Trace32 installation not found. "
-             "Checked: C:\\T32\\bin, C:\\T32, C:\\t32\\bin, C:\\t32. "
-             "Verify that Trace32 is installed and config.t32 is present.");
+             "Trace32 installation not found. Checked: C:\\T32\\bin, C:\\T32, C:\\t32\\bin, C:\\t32. Verify that Trace32 is installed and config.t32 is present.");
     if ((byte)DebugFuncInternal & bDebugFlag)
       writeDbgLevel(DebugFuncInternal, "FAIL: %s.", chFailText);
     vFctn_REPORTActionEvaluation(chFailText, FAIL);
@@ -680,7 +678,7 @@ export testfunction A_DBGR_EnsureT32Running_AutoDetect()
   }
   else
   {
-    write("A_DBGR_EnsureT32Running_AutoDetect: PORT not found in config.t32 – t32.ini not updated.");
+    write("A_DBGR_EnsureT32Running_AutoDetect: PORT not found in config.t32 - t32.ini not updated.");
     snprintf(chPassText, elcount(chPassText),
              "Trace32 installation detected at '%s'. PORT not in config.t32; t32.ini unchanged.",
              chFoundConfigPath);
@@ -716,7 +714,7 @@ export testfunction A_DBGR_EnsureT32Running_AutoDetect()
 * Change History:
 * Date(DD.MM.YY)        Author          Change info
 *
-* 10.03.26              Copilot         Created – auto-starts T32 when not connected.
+* 10.03.26              Copilot         Created - auto-starts T32 when not connected.
 */
 export testfunction A_DBGR_EnsureT32Running(char aT32ExePath[], char aT32ConfigFile[])
 {
@@ -755,7 +753,7 @@ export testfunction A_DBGR_EnsureT32Running(char aT32ExePath[], char aT32ConfigF
     return;
   }
 
-  // T32 is down or unreachable – try to launch it.
+  // T32 is down or unreachable - try to launch it.
   write("A_DBGR_EnsureT32Running: T32 state=%ld. Attempting to launch '%s'...", lState, aT32ExePath);
   lLaunchResult = lFctn_T32_Launch(aT32ExePath, aT32ConfigFile);
 
@@ -769,8 +767,7 @@ export testfunction A_DBGR_EnsureT32Running(char aT32ExePath[], char aT32ConfigF
   else
   {
     snprintf(chFailText, elcount(chFailText),
-             "Trace32 could not be launched or did not connect within %d ms. "
-             "Verify the exe path ('%s') and config file ('%s').",
+             "Trace32 could not be launched or did not connect within %d ms. Verify the exe path ('%s') and config file ('%s').",
              cc_dwT32_LaunchTimeout, aT32ExePath, aT32ConfigFile);
     if ((byte)DebugFuncInternal & bDebugFlag)
       writeDbgLevel(DebugFuncInternal, "FAIL: %s.", chFailText);
@@ -836,8 +833,7 @@ export testfunction A_DBGR_BreakpointSet(char aAddress[])
   else
   {
     nEffectiveReloadAt = cc_nT32_BPSetMaxRetries - 1;
-    write("A_DBGR_BreakpointSet: WARNING – cc_nT32_BPSetSymbolReloadAt (%d) >= cc_nT32_BPSetMaxRetries (%d). "
-          "Clamping reload threshold to %d.",
+    write("A_DBGR_BreakpointSet: WARNING - cc_nT32_BPSetSymbolReloadAt (%d) >= cc_nT32_BPSetMaxRetries (%d). Clamping reload threshold to %d.",
           cc_nT32_BPSetSymbolReloadAt, cc_nT32_BPSetMaxRetries, nEffectiveReloadAt);
   }
 
@@ -889,7 +885,7 @@ export testfunction A_DBGR_BreakpointSet(char aAddress[])
         writeDbgLevel(DebugFuncInternal, "PASS: %s.", chPassText);
       vFctn_REPORTActionEvaluation(chPassText, PASS);
       sv_T32_LastBreakpointSetOk = Ok;
-      return; // success – no further retries needed
+      return; // success - no further retries needed
     }
 
     // Failed on this attempt
@@ -937,7 +933,7 @@ export testfunction A_DBGR_BreakpointSet_AbortOnFail(char aAddress[])
   if (sv_T32_LastBreakpointSetOk != Ok)
   {
     snprintf(chAbortMsg, elcount(chAbortMsg),
-             "Symbol '%s' not found in T32 after %d attempt(s) – aborting test case to avoid 20-second GO timeout.",
+             "Symbol '%s' not found in T32 after %d attempt(s) - aborting test case to avoid 20-second GO timeout.",
              aAddress, cc_nT32_BPSetMaxRetries);
     write("ABORT: %s", chAbortMsg);
     testCaseFail();
