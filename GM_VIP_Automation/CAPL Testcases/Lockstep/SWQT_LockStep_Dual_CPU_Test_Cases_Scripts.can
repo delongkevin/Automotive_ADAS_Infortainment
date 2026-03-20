@@ -165,7 +165,7 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
 
 //  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("retval ", NO_FAILURE, Equal);
   
   
@@ -199,9 +199,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
  // A_DBGR_BreakpointDeleteAll();
 //  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -348,7 +355,7 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
 
 //  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  E_DBGR_VariableCheck("retval ", 0, Equal);
   
   
@@ -382,9 +389,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
  // A_DBGR_BreakpointDeleteAll();
 //  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -531,7 +545,7 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
 
 //  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );   
+TestStepAddActionExpected( chActionText, chExpectedText );   
 //  E_DBGR_VariableCheck("retval ", 0, Equal);
   
   
@@ -565,9 +579,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
  // A_DBGR_BreakpointDeleteAll();
 //  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -717,7 +738,7 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
 
 //  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );   
+TestStepAddActionExpected( chActionText, chExpectedText );   
 //  E_DBGR_VariableCheck("retval ", 0, Equal);
   
   
@@ -751,9 +772,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
  // A_DBGR_BreakpointDeleteAll();
 //  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -897,7 +925,7 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
 
 //  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  E_DBGR_VariableCheck("retval ", 0, Equal);
   
   
@@ -931,9 +959,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
  // A_DBGR_BreakpointDeleteAll();
 //  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -1085,7 +1120,7 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
 
 //  snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is NO_FAILURE."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = NO_FAILURE"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );   
+TestStepAddActionExpected( chActionText, chExpectedText );   
 //  E_DBGR_VariableCheck("retval ", 0, Equal);
   
   
@@ -1119,9 +1154,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   TestStepAddActionExpected( chActionText, chExpectedText );
  // A_DBGR_BreakpointDeleteAll();
 //  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 0, Equal);
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -1249,9 +1291,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   snprintf( chActionText, elCount(chActionText), "Add retval  Variable in watch window and check value is 2."); 
   snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and Verified the value retval  = 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("retval ", 2, Equal);
+  E_DBGR_VariableCheck("retval", 2, Equal);
   
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -1406,9 +1455,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   TestStepAddActionExpected( chActionText, chExpectedText );
  // A_DBGR_BreakpointDeleteAll();
 //  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 2, Equal);
+  E_DBGR_VariableCheck("retval", 2, Equal);
   
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 
@@ -1565,9 +1621,16 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoLockstep_fo
   TestStepAddActionExpected( chActionText, chExpectedText );
  // A_DBGR_BreakpointDeleteAll();
 //  A_DBGR_VariableSet("coreId", "0");   
-  E_DBGR_VariableCheck("retval ", 2, Equal);
+  E_DBGR_VariableCheck("retval", 2, Equal);
   
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 

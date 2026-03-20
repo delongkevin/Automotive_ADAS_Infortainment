@@ -81,9 +81,16 @@ testcase Verify_that_FAILED_REGISTER_ID_initialized_to_default_values_during_Pow
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify default value of Failed_Register_ID"); 
   snprintf( chExpectedText, elCount(chExpectedText), "default value Failed_Register_ID"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("Failed_Register_ID",0,Equal);
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 testcase Verify_that_FAILED_BIT_ID_initialized_to_default_values_during_PowerUp_Reset_initialization()
 {
@@ -136,9 +143,16 @@ testcase Verify_that_FAILED_BIT_ID_initialized_to_default_values_during_PowerUp_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify default value of Failed_BIT_ID"); 
   snprintf( chExpectedText, elCount(chExpectedText), "default value Failed_BIT_ID"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("Failed_BIT_ID",0,Equal);
   
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_that_FAILED_REGISTER_RECOVER_STATUS_initialized_to_default_values_during_PowerUp_Reset_initialization()
@@ -192,9 +206,16 @@ testcase Verify_that_FAILED_REGISTER_RECOVER_STATUS_initialized_to_default_value
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify default value of Failed_Register_Recover_Status"); 
   snprintf( chExpectedText, elCount(chExpectedText), "default value Failed_Register_Recover_Status"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("Failed_Register_Recover_Status",0,Equal);
 
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_PerfmHWIO_b_ConfigRegTest_interface_for_test_status_returning_1_when_the_test_is_passed()
@@ -247,9 +268,16 @@ testcase Verify_PerfmHWIO_b_ConfigRegTest_interface_for_test_status_returning_1_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify default value of Configuration_Registers_Test_Status"); 
   snprintf( chExpectedText, elCount(chExpectedText), "default value Configuration_Registers_Test_Status"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("Configuration_Registers_Test_Status",1,Equal);
 
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_the_interface_GetHWIO_e_FailedRegID_returns_the_ID_as_0_when_no_failed_registers_last_test_cycle()
@@ -302,9 +330,16 @@ testcase Verify_the_interface_GetHWIO_e_FailedRegID_returns_the_ID_as_0_when_no_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify value of Failed_Register_ID is 0"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Failed_Register_ID is 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("Failed_Register_ID",0,Equal);
 
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_the_interface_GetHWIO_e_FailedBitID_returns_the_ID_as_0_when_there_is_no_last_failed_register()
@@ -357,9 +392,16 @@ testcase Verify_the_interface_GetHWIO_e_FailedBitID_returns_the_ID_as_0_when_the
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify value of Failed_BIT_ID is 0"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Failed_BIT_ID is 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("Failed_BIT_ID",0,Equal);
 
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 
 testcase Verify_the_interface_GetHWIO_b_FailedRegRecovSt_returns_the_recovery_status_as_0_when_success_for_the_last_failed_register_ID()
@@ -412,8 +454,15 @@ testcase Verify_the_interface_GetHWIO_b_FailedRegRecovSt_returns_the_recovery_st
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify value of Failed_Register_Recover_Status is 0"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Failed_Register_Recover_Status is 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("Failed_Register_Recover_Status",0,Equal);
 
+
+  // Teardown: resume ECU and clear breakpoints to restore clean state for next test
+  snprintf( chActionText, elCount(chActionText), "Teardown: clear breakpoints and resume ECU");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is running with no active breakpoints");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  A_DBGR_BreakpointDeleteAll();
+  A_DBGR_Go();
 }
 

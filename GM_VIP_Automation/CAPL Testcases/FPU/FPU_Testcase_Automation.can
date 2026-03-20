@@ -485,7 +485,7 @@ testcase Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core0()
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvtPos  value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvtPos is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("VeTEST_FloatCvtPos ",2,Equal);
+  E_DBGR_VariableCheck("VeTEST_FloatCvtPos",2,Equal);
 }
 
 /***************************************************************************************************
@@ -1016,7 +1016,7 @@ testcase Testcase_Verify_Underflow_Scenerio_1_Core0()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos.myFloat", "0x00800000");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos.myFloat", 0x00800000, Equal);
   
@@ -1125,13 +1125,13 @@ testcase Testcase_Verify_Underflow_Scenerio_2_Core0()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -1240,13 +1240,13 @@ testcase Testcase_Verify_Underflow_Scenerio_3_Core0()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -1355,7 +1355,7 @@ testcase Testcase_Verify_Overflow_Scenerio_1_Core0()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
@@ -1464,13 +1464,13 @@ testcase Testcase_Verify_Overflow_Scenerio_2_Core0()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E38, Equal);
   
@@ -2060,7 +2060,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -2166,7 +2166,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E36, Equal);
 
@@ -2183,7 +2183,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_8 = (LONGINT)(VeTEST_FloatMaxNormNeg.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -2202,7 +2202,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -2219,7 +2219,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_4 = (LONGINT)(VeTEST_FloatMaxNormPos.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -2257,7 +2257,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes1 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes1 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes1",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -2266,7 +2266,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes2 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes2 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes2",-NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -2275,7 +2275,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes3 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes3 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes3",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -2284,7 +2284,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes4 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes4",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -2324,7 +2324,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes7 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes7 is 0xFFFFFFFF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes7",0xFFFFFFFF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -2406,7 +2406,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_4 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_4",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -2443,7 +2443,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_8 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_8 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_8",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -2480,7 +2480,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_12 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_12 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_12",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -2517,7 +2517,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_16 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_16 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_16",INF,Equal);
   
 //  /*******************************************************************************************************************************************************/    
@@ -2608,7 +2608,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvrt_ftouz_MaxPosL value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvrt_ftouz_MaxPosL is 4294967295"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_FloatCvrt_ftouz_MaxPosL",4294967295,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -3340,7 +3340,7 @@ testcase Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core1()
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvtPos  value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvtPos is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("VeTEST_FloatCvtPos ",2,Equal);
+  E_DBGR_VariableCheck("VeTEST_FloatCvtPos",2,Equal);
 }
 
 /***************************************************************************************************
@@ -3872,7 +3872,7 @@ testcase Testcase_Verify_Underflow_Scenerio_1_Core1()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos.myFloat", "0x00800000");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos.myFloat", 0x00800000, Equal);
   
@@ -3981,13 +3981,13 @@ testcase Testcase_Verify_Underflow_Scenerio_2_Core1()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -4096,13 +4096,13 @@ testcase Testcase_Verify_Underflow_Scenerio_3_Core1()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -4211,7 +4211,7 @@ testcase Testcase_Verify_Overflow_Scenerio_1_Core1()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
@@ -4320,13 +4320,13 @@ testcase Testcase_Verify_Overflow_Scenerio_2_Core1()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E38, Equal);
   
@@ -4917,7 +4917,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -5023,7 +5023,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E36, Equal);
 
@@ -5040,7 +5040,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_8 = (LONGINT)(VeTEST_FloatMaxNormNeg.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -5059,7 +5059,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -5076,7 +5076,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_4 = (LONGINT)(VeTEST_FloatMaxNormPos.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -5114,7 +5114,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes1 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes1 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes1",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -5123,7 +5123,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes2 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes2 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes2",-NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -5132,7 +5132,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes3 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes3 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes3",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -5141,7 +5141,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes4 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes4",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -5181,7 +5181,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes7 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes7 is 0xFFFFFFFF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes7",0xFFFFFFFF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -5263,7 +5263,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_4 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_4",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -5300,7 +5300,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_8 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_8 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_8",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -5337,7 +5337,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_12 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_12 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_12",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -5374,7 +5374,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_16 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_16 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_16",INF,Equal);
   
 //  /*******************************************************************************************************************************************************/    
@@ -5465,7 +5465,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvrt_ftouz_MaxPosL value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvrt_ftouz_MaxPosL is 4294967295"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_FloatCvrt_ftouz_MaxPosL",4294967295,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -6198,7 +6198,7 @@ testcase Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core2()
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvtPos  value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvtPos is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("VeTEST_FloatCvtPos ",2,Equal);
+  E_DBGR_VariableCheck("VeTEST_FloatCvtPos",2,Equal);
 }
 
 /***************************************************************************************************
@@ -6729,7 +6729,7 @@ testcase Testcase_Verify_Underflow_Scenerio_1_Core2()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos.myFloat", "0x00800000");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos.myFloat", 0x00800000, Equal);
   
@@ -6838,13 +6838,13 @@ testcase Testcase_Verify_Underflow_Scenerio_2_Core2()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -6953,13 +6953,13 @@ testcase Testcase_Verify_Underflow_Scenerio_3_Core2()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -7068,7 +7068,7 @@ testcase Testcase_Verify_Overflow_Scenerio_1_Core2()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
@@ -7177,13 +7177,13 @@ testcase Testcase_Verify_Overflow_Scenerio_2_Core2()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E38, Equal);
   
@@ -7772,7 +7772,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -7878,7 +7878,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E36, Equal);
 
@@ -7895,7 +7895,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_8 = (LONGINT)(VeTEST_FloatMaxNormNeg.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -7914,7 +7914,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -7931,7 +7931,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_4 = (LONGINT)(VeTEST_FloatMaxNormPos.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -7969,7 +7969,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes1 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes1 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes1",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -7978,7 +7978,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes2 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes2 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes2",-NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -7987,7 +7987,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes3 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes3 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes3",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -7996,7 +7996,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes4 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes4",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -8036,7 +8036,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes7 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes7 is 0xFFFFFFFF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes7",0xFFFFFFFF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -8118,7 +8118,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_4 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_4",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -8155,7 +8155,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_8 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_8 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_8",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -8192,7 +8192,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_12 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_12 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_12",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -8229,7 +8229,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_16 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_16 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_16",INF,Equal);
   
 //  /*******************************************************************************************************************************************************/    
@@ -8320,7 +8320,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvrt_ftouz_MaxPosL value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvrt_ftouz_MaxPosL is 4294967295"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_FloatCvrt_ftouz_MaxPosL",4294967295,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -9053,7 +9053,7 @@ testcase Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core3()
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvtPos  value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvtPos is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("VeTEST_FloatCvtPos ",2,Equal);
+  E_DBGR_VariableCheck("VeTEST_FloatCvtPos",2,Equal);
 }
 
 /***************************************************************************************************
@@ -9585,7 +9585,7 @@ testcase Testcase_Verify_Underflow_Scenerio_1_Core3()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos.myFloat", "0x00800000");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos.myFloat", 0x00800000, Equal);
   
@@ -9694,13 +9694,13 @@ testcase Testcase_Verify_Underflow_Scenerio_2_Core3()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -9809,13 +9809,13 @@ testcase Testcase_Verify_Underflow_Scenerio_3_Core3()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -9924,7 +9924,7 @@ testcase Testcase_Verify_Overflow_Scenerio_1_Core3()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
@@ -10033,13 +10033,13 @@ testcase Testcase_Verify_Overflow_Scenerio_2_Core3()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E38, Equal);
   
@@ -10629,7 +10629,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -10735,7 +10735,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E36, Equal);
 
@@ -10752,7 +10752,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_8 = (LONGINT)(VeTEST_FloatMaxNormNeg.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -10771,7 +10771,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -10788,7 +10788,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_4 = (LONGINT)(VeTEST_FloatMaxNormPos.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -10826,7 +10826,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes1 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes1 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes1",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -10835,7 +10835,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes2 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes2 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes2",-NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -10844,7 +10844,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes3 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes3 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes3",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -10853,7 +10853,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes4 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes4",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -10893,7 +10893,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes7 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes7 is 0xFFFFFFFF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes7",0xFFFFFFFF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -10975,7 +10975,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_4 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_4",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -11012,7 +11012,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_8 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_8 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_8",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -11049,7 +11049,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_12 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_12 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_12",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -11086,7 +11086,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_16 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_16 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_16",INF,Equal);
   
 //  /*******************************************************************************************************************************************************/    
@@ -11177,7 +11177,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvrt_ftouz_MaxPosL value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvrt_ftouz_MaxPosL is 4294967295"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_FloatCvrt_ftouz_MaxPosL",4294967295,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -11910,7 +11910,7 @@ testcase Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core4()
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvtPos  value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvtPos is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("VeTEST_FloatCvtPos ",2,Equal);
+  E_DBGR_VariableCheck("VeTEST_FloatCvtPos",2,Equal);
 }
 
 /***************************************************************************************************
@@ -12442,7 +12442,7 @@ testcase Testcase_Verify_Underflow_Scenerio_1_Core4()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos.myFloat", "0x00800000");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos.myFloat", 0x00800000, Equal);
   
@@ -12551,13 +12551,13 @@ testcase Testcase_Verify_Underflow_Scenerio_2_Core4()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -12666,13 +12666,13 @@ testcase Testcase_Verify_Underflow_Scenerio_3_Core4()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -12781,7 +12781,7 @@ testcase Testcase_Verify_Overflow_Scenerio_1_Core4()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
@@ -12890,13 +12890,13 @@ testcase Testcase_Verify_Overflow_Scenerio_2_Core4()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E38, Equal);
   
@@ -13487,7 +13487,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -13593,7 +13593,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E36, Equal);
 
@@ -13610,7 +13610,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_8 = (LONGINT)(VeTEST_FloatMaxNormNeg.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -13629,7 +13629,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -13646,7 +13646,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_4 = (LONGINT)(VeTEST_FloatMaxNormPos.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -13684,7 +13684,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes1 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes1 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes1",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -13693,7 +13693,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes2 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes2 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes2",-NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -13702,7 +13702,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes3 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes3 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes3",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -13711,7 +13711,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes4 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes4",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -13751,7 +13751,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes7 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes7 is 0xFFFFFFFF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes7",0xFFFFFFFF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -13833,7 +13833,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_4 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_4",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -13870,7 +13870,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_8 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_8 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_8",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -13907,7 +13907,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_12 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_12 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_12",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -13944,7 +13944,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_16 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_16 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_16",INF,Equal);
   
 //  /*******************************************************************************************************************************************************/    
@@ -14035,7 +14035,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvrt_ftouz_MaxPosL value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvrt_ftouz_MaxPosL is 4294967295"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_FloatCvrt_ftouz_MaxPosL",4294967295,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -14768,7 +14768,7 @@ testcase Testcase_Verify_Round_Towards_Zero_Scenerio_1_Core5()
   snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvtPos  value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvtPos is 2"); 
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("VeTEST_FloatCvtPos ",2,Equal);
+  E_DBGR_VariableCheck("VeTEST_FloatCvtPos",2,Equal);
 }
 
 /***************************************************************************************************
@@ -15301,7 +15301,7 @@ testcase Testcase_Verify_Underflow_Scenerio_1_Core5()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos.myFloat = 0x00800000"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos.myFloat", "0x00800000");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos.myFloat", 0x00800000, Equal);
   
@@ -15410,13 +15410,13 @@ testcase Testcase_Verify_Underflow_Scenerio_2_Core5()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -15525,13 +15525,13 @@ testcase Testcase_Verify_Underflow_Scenerio_3_Core5()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormPos = 1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormPos = 1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormPos", "1.17549435E-38");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormPos", 1.17549435E-38, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMinNormNeg = -1.17549435E-38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMinNormNeg", "-1.17549435E-38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMinNormNeg", -1.17549435E-38, Equal);
   
@@ -15640,7 +15640,7 @@ testcase Testcase_Verify_Overflow_Scenerio_1_Core5()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
@@ -15749,13 +15749,13 @@ testcase Testcase_Verify_Overflow_Scenerio_2_Core5()
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
   
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E38"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E38"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E38");
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E38, Equal);
   
@@ -16345,7 +16345,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_1_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -16451,7 +16451,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormNeg = -340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormNeg = -340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormNeg", "-340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormNeg", -340.28235E36, Equal);
 
@@ -16468,7 +16468,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_8 = (LONGINT)(VeTEST_FloatMaxNormNeg.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -16487,7 +16487,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   /*******************************************************************************************************************************************************/
 //  snprintf( chActionText, elCount(chActionText), "Set VeTEST_FloatMaxNormPos = 340.28235E36"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatMaxNormPos = 340.28235E36"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_VariableSet("VeTEST_FloatMaxNormPos", "340.28235E36");  
 //  E_DBGR_VariableCheck("VeTEST_FloatMaxNormPos", 340.28235E36, Equal);
 
@@ -16504,7 +16504,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperationsRes7_4 = (LONGINT)(VeTEST_FloatMaxNormPos.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float");
@@ -16542,7 +16542,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes1 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes1 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes1",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -16551,7 +16551,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes2 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes2 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes2",-NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -16560,7 +16560,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes3 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes3 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes3",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -16569,7 +16569,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes4 is NAN"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes4",NAN,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -16609,7 +16609,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_InvalidOperationsRes7 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_InvalidOperationsRes7 is 0xFFFFFFFF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_InvalidOperationsRes7",0xFFFFFFFF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -16691,7 +16691,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_4 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_4 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_4",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -16728,7 +16728,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_8 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_8 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_8",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -16765,7 +16765,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_12 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_12 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_12",INF,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -16802,7 +16802,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_Constant_16 value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_Constant_16 is INF"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_Constant_16",INF,Equal);
   
 //  /*******************************************************************************************************************************************************/    
@@ -16893,7 +16893,7 @@ testcase Testcase_Verify_Invalid_Operations_without_running_reset_Scenerio_2_Cor
 
 //  snprintf( chActionText, elCount(chActionText), "Verify the VeTEST_FloatCvrt_ftouz_MaxPosL value"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "VeTEST_FloatCvrt_ftouz_MaxPosL is 4294967295"); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  E_DBGR_VariableCheck("VeTEST_FloatCvrt_ftouz_MaxPosL",4294967295,Equal);
   
   /*******************************************************************************************************************************************************/    
@@ -18179,7 +18179,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations12 = VeTEST_FloatSignalingNan.myFloat / VeTEST_FloatPos; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\57");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\57");  
@@ -18207,7 +18207,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations13 = VeTEST_PINF.myFloat / VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\61");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\61");  
@@ -18249,7 +18249,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations14 = VeTEST_PINF.myFloat / VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\65");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\65"); 
@@ -18291,7 +18291,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations15 = VeTEST_NINF.myFloat/ VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\69");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\69");  
@@ -18333,7 +18333,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations16 = VeTEST_NINF.myFloat/ VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\73");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\73");  
@@ -18469,7 +18469,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations17 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatPos); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\77");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\77");  
@@ -18506,7 +18506,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations18 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatDenorm1.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\81");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\81");  
@@ -18555,7 +18555,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations19 = (VeTEST_FloatDenorm2.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\85");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\85"); 
@@ -18604,7 +18604,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations20 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\89");    
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\89");  
@@ -19651,7 +19651,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations12 = VeTEST_FloatSignalingNan.myFloat / VeTEST_FloatPos; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\57");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\57");  
@@ -19679,7 +19679,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations13 = VeTEST_PINF.myFloat / VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\61");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\61");  
@@ -19721,7 +19721,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations14 = VeTEST_PINF.myFloat / VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\65");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\65"); 
@@ -19763,7 +19763,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations15 = VeTEST_NINF.myFloat/ VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\69");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\69");  
@@ -19805,7 +19805,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations16 = VeTEST_NINF.myFloat/ VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\73");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\73");  
@@ -19941,7 +19941,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations17 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatPos); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\77");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\77");  
@@ -19978,7 +19978,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations18 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatDenorm1.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\81");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\81");  
@@ -20027,7 +20027,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations19 = (VeTEST_FloatDenorm2.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\85");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\85"); 
@@ -20076,7 +20076,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations20 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\89");    
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\89");  
@@ -21123,7 +21123,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations12 = VeTEST_FloatSignalingNan.myFloat / VeTEST_FloatPos; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\57");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\57");  
@@ -21151,7 +21151,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations13 = VeTEST_PINF.myFloat / VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\61");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\61");  
@@ -21193,7 +21193,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations14 = VeTEST_PINF.myFloat / VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\65");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\65"); 
@@ -21235,7 +21235,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations15 = VeTEST_NINF.myFloat/ VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\69");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\69");  
@@ -21277,7 +21277,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations16 = VeTEST_NINF.myFloat/ VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\73");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\73");  
@@ -21413,7 +21413,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations17 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatPos); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\77");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\77");  
@@ -21450,7 +21450,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations18 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatDenorm1.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\81");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\81");  
@@ -21499,7 +21499,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations19 = (VeTEST_FloatDenorm2.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\85");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\85"); 
@@ -21548,7 +21548,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations20 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\89");    
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\89");  
@@ -22595,7 +22595,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations12 = VeTEST_FloatSignalingNan.myFloat / VeTEST_FloatPos; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\57");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\57");  
@@ -22623,7 +22623,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations13 = VeTEST_PINF.myFloat / VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\61");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\61");  
@@ -22665,7 +22665,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations14 = VeTEST_PINF.myFloat / VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\65");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\65"); 
@@ -22707,7 +22707,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations15 = VeTEST_NINF.myFloat/ VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\69");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\69");  
@@ -22749,7 +22749,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations16 = VeTEST_NINF.myFloat/ VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\73");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\73");  
@@ -22885,7 +22885,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations17 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatPos); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\77");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\77");  
@@ -22922,7 +22922,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations18 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatDenorm1.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\81");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\81");  
@@ -22971,7 +22971,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations19 = (VeTEST_FloatDenorm2.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\85");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\85"); 
@@ -23020,7 +23020,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations20 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\89");    
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\89");  
@@ -24067,7 +24067,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations12 = VeTEST_FloatSignalingNan.myFloat / VeTEST_FloatPos; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\57");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\57");  
@@ -24095,7 +24095,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations13 = VeTEST_PINF.myFloat / VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\61");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\61");  
@@ -24137,7 +24137,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations14 = VeTEST_PINF.myFloat / VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\65");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\65"); 
@@ -24179,7 +24179,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations15 = VeTEST_NINF.myFloat/ VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\69");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\69");  
@@ -24221,7 +24221,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations16 = VeTEST_NINF.myFloat/ VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\73");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\73");  
@@ -24357,7 +24357,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations17 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatPos); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\77");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\77");  
@@ -24394,7 +24394,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations18 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatDenorm1.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\81");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\81");  
@@ -24443,7 +24443,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations19 = (VeTEST_FloatDenorm2.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\85");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\85"); 
@@ -24492,7 +24492,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations20 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\89");    
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\89");  
@@ -25539,7 +25539,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations12 = VeTEST_FloatSignalingNan.myFloat / VeTEST_FloatPos; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\57");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\57");  
@@ -25567,7 +25567,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations13 = VeTEST_PINF.myFloat / VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\61");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\61");  
@@ -25609,7 +25609,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations14 = VeTEST_PINF.myFloat / VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\65");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\65"); 
@@ -25651,7 +25651,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
     
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations15 = VeTEST_NINF.myFloat/ VeTEST_PINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\69");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\69");  
@@ -25693,7 +25693,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_DIV
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations16 = VeTEST_NINF.myFloat/ VeTEST_NINF.myFloat; inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\73");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\73");  
@@ -25829,7 +25829,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations17 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatPos); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\77");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\77");  
@@ -25866,7 +25866,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations18 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatDenorm1.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\81");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\81");  
@@ -25915,7 +25915,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations19 = (VeTEST_FloatDenorm2.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\85");  
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\85"); 
@@ -25964,7 +25964,7 @@ testcase Testcase_Verify_Invalid_Operations_FP_CONFIG_INIHIBIT_RESET_defined_CMP
   
 //  snprintf( chActionText, elCount(chActionText), "Set a breakpoint at VeTEST_InvalidOperations20 = (VeTEST_FloatSignalingNan.myFloat == VeTEST_FloatSignalingNan.myFloat); inside Test_Float(void) function."); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is set."); 
-//  TestStepAddActionExpected( chActionText, chExpectedText );  
+TestStepAddActionExpected( chActionText, chExpectedText );  
 //  A_DBGR_BreakpointSet_AbortOnFail("Test_Float\\89");    
 //  A_DBGR_Go();
 //  E_DBGR_BreakpointCheckForHalt("Test_Float\\89");  

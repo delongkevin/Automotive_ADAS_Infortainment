@@ -299,7 +299,7 @@ testcase To_verify_the_Os_Entry_OS_SMUSafety_ISR1_Software_interface()
   A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in CntrlRBSR_Background function defination side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in CntrlRBSR_Background function function defination side "); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("CntrlRBSR_Background");
 }
 testcase To_verify_the_Os_Entry_Task_Core0_10ms_Software_interface() 
@@ -1744,7 +1744,7 @@ testcase To_verify_the_Minimum_value_SetHWIO_h_RAM_ECC_Init_Software_interface()
   
   snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in App_MCALInit\\83"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in  App_MCALInit\\83 function");
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   //E_DBGR_BreakpointCheckForHalt(" App_MCALInit\\51");
    E_DBGR_CheckState(T32_State_Stopped);
   /***************************************************************************************************************/    
@@ -1790,7 +1790,7 @@ testcase To_verify_the_Minimum_value_SetHWIO_h_RAM_ECC_Init_Software_interface()
   snprintf( chActionText, elCount(chActionText), "Set the Test_fill variable  to minimum value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify fill variable to minimum value");
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("fill ",0,Equal);
+  E_DBGR_VariableCheck("fill",0,Equal);
   
   
 }
@@ -1864,7 +1864,7 @@ testcase To_verify_the_Mid_value_SetHWIO_h_RAM_ECC_Init_Software_interface()
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in start function function defination side "); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   //E_DBGR_RegisterCheck("D:0x2000008C","0");
-  E_DBGR_VariableCheck("start ",0x7FFFFFFF,Equal);
+  E_DBGR_VariableCheck("start",0x7FFFFFFF,Equal);
   snprintf( chActionText, elCount(chActionText), "Set the length variable  to mid value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify length variable to mid value");
   TestStepAddActionExpected( chActionText, chExpectedText );
@@ -1872,7 +1872,7 @@ testcase To_verify_the_Mid_value_SetHWIO_h_RAM_ECC_Init_Software_interface()
   snprintf( chActionText, elCount(chActionText), "Set the Test_fill variable  to mid value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify fill variable to mid value");
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("fill ",2147483647,Equal);
+  E_DBGR_VariableCheck("fill",2147483647,Equal);
   
   
 }
@@ -1947,7 +1947,7 @@ testcase To_verify_the_Maximum_value_SetHWIO_h_RAM_ECC_Init_Software_interface()
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in start function function defination side "); 
   TestStepAddActionExpected( chActionText, chExpectedText );
   //E_DBGR_RegisterCheck("D:0x2000008C","0");
-  E_DBGR_VariableCheck("start ",0xFFFFFFFF,Equal);
+  E_DBGR_VariableCheck("start",0xFFFFFFFF,Equal);
   snprintf( chActionText, elCount(chActionText), "Set the length variable  to maximum value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify length variable to maximum value");
   TestStepAddActionExpected( chActionText, chExpectedText );
@@ -1955,7 +1955,7 @@ testcase To_verify_the_Maximum_value_SetHWIO_h_RAM_ECC_Init_Software_interface()
   snprintf( chActionText, elCount(chActionText), "Set the Test_fill variable  to maximum value"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify fill variable to maximum value");
   TestStepAddActionExpected( chActionText, chExpectedText );
-  E_DBGR_VariableCheck("fill ",4294967295,Equal);
+  E_DBGR_VariableCheck("fill",4294967295,Equal);
   
   
 }
@@ -2004,7 +2004,7 @@ testcase To_verify_the_SetSDLAdaptor_h_RAM_ECC_Init_Software_interface()
   A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in SetSDLAdaptor_h_RAM_ECC_Init function defination side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in SetSDLAdaptor_h_RAM_ECC_Init function function defination side "); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("SetHWIO_h_RAM_ECC_Init");
 }
 testcase To_verify_the_GetHWIO_e_CacheRAM_Flt_Software_interface() 
@@ -2035,13 +2035,13 @@ testcase To_verify_the_GetHWIO_e_CacheRAM_Flt_Software_interface()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\11  Function call side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\11 in Function call side"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\11");  
   A_DBGR_Go();
   
   //snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in core0_main\\20 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\11 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\11");
   /***************************************************************************************************************/    
                                               // Test Step2 add break point at function defination side 
@@ -2052,7 +2052,7 @@ testcase To_verify_the_GetHWIO_e_CacheRAM_Flt_Software_interface()
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_WrtProtRAM_Flt"); 
   //snprintf( chActionText, elCount(chActionText), "Set Breakpoint in ECU running   "); 
   //snprintf( chExpectedText, elCount(chExpectedText), "verify is ECU is running ");  
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_Go();
   //TestStepAddActionExpected( chActionText, chExpectedText );
@@ -2135,13 +2135,13 @@ testcase To_verify_the_GetHWIO_y_CacheRAM_AddressFailed_Software_interface()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ecc_ram_injection\\12  Function call side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ecc_ram_injection\\12 in Function call side"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_ecc_ram_injection\\12");  
   A_DBGR_Go();
   
   //snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in core0_main\\20 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_ecc_ram_injection\\12 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("Test_ecc_ram_injection\\12");
   /***************************************************************************************************************/    
                                               // Test Step2 add break point at function defination side 
@@ -2152,7 +2152,7 @@ testcase To_verify_the_GetHWIO_y_CacheRAM_AddressFailed_Software_interface()
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_y_CacheRAM_AddressFailed"); 
   //snprintf( chActionText, elCount(chActionText), "Set Breakpoint in ECU running   "); 
   //snprintf( chExpectedText, elCount(chExpectedText), "verify is ECU is running ");  
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_Go();
   //TestStepAddActionExpected( chActionText, chExpectedText );
@@ -2235,13 +2235,13 @@ testcase To_verify_the_ClrHWIO_CacheRAM_Flt_Software_interface()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Test_ecc_ram_injection\\11  Function call side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Test_ecc_ram_injection\\11 in Function call side"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("Test_ecc_ram_injection\\11");  
   A_DBGR_Go();
   
   //snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in core0_main\\20 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_ecc_ram_injection\\11 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("Test_ecc_ram_injection\\11");
   /***************************************************************************************************************/    
                                               // Test Step2 add break point at function defination side 
@@ -2252,7 +2252,7 @@ testcase To_verify_the_ClrHWIO_CacheRAM_Flt_Software_interface()
   A_DBGR_BreakpointSet_AbortOnFail("ClrHWIO_CacheRAM_Flt"); 
   //snprintf( chActionText, elCount(chActionText), "Set Breakpoint in ECU running   "); 
   //snprintf( chExpectedText, elCount(chExpectedText), "verify is ECU is running ");  
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_Go();
   //TestStepAddActionExpected( chActionText, chExpectedText );
@@ -2489,7 +2489,7 @@ testcase To_verify_the_Minimum_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_i
   E_DBGR_VariableCheck("count",0,Equal);
 //  snprintf( chActionText, elCount(chActionText), "Check the break points are deleted"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoints are  deleted ");
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_BreakpointDeleteAll();
   
   
@@ -2505,7 +2505,7 @@ testcase To_verify_the_Minimum_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_i
   snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in Test_ecc_ram_injection\\9"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in  Test_ecc_ram_injection\\9 function"); 
   //E_DBGR_BreakpointCheckForHalt(" Test_ecc_ram_injection\\9");
-    //TestStepAddActionExpected( chActionText, chExpectedText );
+    TestStepAddActionExpected( chActionText, chExpectedText );
     E_DBGR_CheckState(T32_State_Stopped);
   // E_DBGR_BreakpointCheckForHalt(" Test_ecc_ram_injection\\9");
   /***************************************************************************************************************/    
@@ -2578,7 +2578,7 @@ testcase To_verify_the_Mid_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_inter
   E_DBGR_VariableCheck("count",0,Equal);
 //  snprintf( chActionText, elCount(chActionText), "Check the break points are deleted"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoints are  deleted ");
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_BreakpointDeleteAll();
   
   
@@ -2594,7 +2594,7 @@ testcase To_verify_the_Mid_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_inter
   snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in Test_ecc_ram_injection\\9"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in  Test_ecc_ram_injection\\9 function"); 
   //E_DBGR_BreakpointCheckForHalt(" Test_ecc_ram_injection\\9");
-    //TestStepAddActionExpected( chActionText, chExpectedText );
+    TestStepAddActionExpected( chActionText, chExpectedText );
     E_DBGR_CheckState(T32_State_Stopped);
   // E_DBGR_BreakpointCheckForHalt(" Test_ecc_ram_injection\\9");
   /***************************************************************************************************************/    
@@ -2667,7 +2667,7 @@ testcase To_verify_the_Maximum_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_i
   E_DBGR_VariableCheck("count",0,Equal);
 //  snprintf( chActionText, elCount(chActionText), "Check the break points are deleted"); 
 //  snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoints are  deleted ");
-//  TestStepAddActionExpected( chActionText, chExpectedText );
+TestStepAddActionExpected( chActionText, chExpectedText );
 //  A_DBGR_BreakpointDeleteAll();
   
   
@@ -2683,7 +2683,7 @@ testcase To_verify_the_Maximum_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_i
   snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in Test_ecc_ram_injection\\9"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in  Test_ecc_ram_injection\\9 function"); 
   //E_DBGR_BreakpointCheckForHalt(" Test_ecc_ram_injection\\9");
-    //TestStepAddActionExpected( chActionText, chExpectedText );
+    TestStepAddActionExpected( chActionText, chExpectedText );
     E_DBGR_CheckState(T32_State_Stopped);
   // E_DBGR_BreakpointCheckForHalt(" Test_ecc_ram_injection\\9");
   /***************************************************************************************************************/    
@@ -2697,7 +2697,7 @@ testcase To_verify_the_Maximum_value_GetHWIO_y_RAM_FailedCPU_Specific_Software_i
   A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in GetHWIO_y_RAM_FailedCPU_Specific function defination side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in GetHWIO_y_RAM_FailedCPU_Specific function function defination side "); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   //E_DBGR_BreakpointCheckForHalt("GetHWIO_y_RAM_FailedCPU_Specific");
   E_DBGR_CheckState(T32_State_Stopped);
   
@@ -2834,13 +2834,13 @@ testcase To_verify_the_ClrHWIO_WrtProtRAM_Flt_Software_interface()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\30 Function call side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\30 in Function call side"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\30");  
   A_DBGR_Go();
   
   //snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in core0_main\\20 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\30 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\30");
   /***************************************************************************************************************/    
                                               // Test Step2 add break point at function defination side 
@@ -2851,7 +2851,7 @@ testcase To_verify_the_ClrHWIO_WrtProtRAM_Flt_Software_interface()
   A_DBGR_BreakpointSet_AbortOnFail("ClrHWIO_WrtProtRAM_Flt"); 
   //snprintf( chActionText, elCount(chActionText), "Set Breakpoint in ECU running   "); 
   //snprintf( chExpectedText, elCount(chExpectedText), "verify is ECU is running ");  
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_Go();
   //TestStepAddActionExpected( chActionText, chExpectedText );
@@ -2888,13 +2888,13 @@ testcase To_verify_the_GetHWIO_b_WrtProtRAM_Flt_Software_interface()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\11  Function call side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\11 in Function call side"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\11");  
   A_DBGR_Go();
   
   //snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in core0_main\\20 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\11 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\11");
   /***************************************************************************************************************/    
                                               // Test Step2 add break point at function defination side 
@@ -2905,7 +2905,7 @@ testcase To_verify_the_GetHWIO_b_WrtProtRAM_Flt_Software_interface()
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_b_WrtProtRAM_Flt"); 
   //snprintf( chActionText, elCount(chActionText), "Set Breakpoint in ECU running   "); 
   //snprintf( chExpectedText, elCount(chExpectedText), "verify is ECU is running ");  
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_Go();
   //TestStepAddActionExpected( chActionText, chExpectedText );
@@ -2942,13 +2942,13 @@ testcase To_verify_the_GetHWIO_ptr_WrtProtRAM_FltAddr_Software_interface()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\18  Function call side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\18 in Function call side"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\18");  
   A_DBGR_Go();
   
   //snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in core0_main\\20 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\18 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\18");
   /***************************************************************************************************************/    
                                               // Test Step2 add break point at function defination side 
@@ -2959,7 +2959,7 @@ testcase To_verify_the_GetHWIO_ptr_WrtProtRAM_FltAddr_Software_interface()
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_ptr_WrtProtRAM_FltAddr"); 
   //snprintf( chActionText, elCount(chActionText), "Set Breakpoint in ECU running   "); 
   //snprintf( chExpectedText, elCount(chExpectedText), "verify is ECU is running ");  
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_Go();
   //TestStepAddActionExpected( chActionText, chExpectedText );
@@ -2996,13 +2996,13 @@ testcase To_verify_the_GetHWIO_ptr_WrtProtRAM_FltInstAddr_Software_interface()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\19  Function call side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\19 in Function call side"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\19");  
   A_DBGR_Go();
   
   //snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in core0_main\\20 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\19 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("MEMPROT_HWIO_ExecuteWriteTest_ProtectedAddress_WPArea\\19");
   /***************************************************************************************************************/    
                                               // Test Step2 add break point at function defination side 
@@ -3013,7 +3013,7 @@ testcase To_verify_the_GetHWIO_ptr_WrtProtRAM_FltInstAddr_Software_interface()
   A_DBGR_BreakpointSet_AbortOnFail("GetHWIO_ptr_WrtProtRAM_FltInstAddr"); 
   //snprintf( chActionText, elCount(chActionText), "Set Breakpoint in ECU running   "); 
   //snprintf( chExpectedText, elCount(chExpectedText), "verify is ECU is running ");  
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_Go();
   //TestStepAddActionExpected( chActionText, chExpectedText );
@@ -3050,13 +3050,13 @@ testcase To_verify_the_SetHWIO_b_WrtProtRAM_LckUnlck_True_Software_interface()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in MEMPROT_HWIO_Run_WriteProtectedRAM_Tests\\25  Function call side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set MEMPROT_HWIO_Run_WriteProtectedRAM_Tests\\25 in Function call side"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_Run_WriteProtectedRAM_Tests\\25");  
   A_DBGR_Go();
   
   //snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in core0_main\\20 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in MEMPROT_HWIO_Run_WriteProtectedRAM_Tests\\25 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("MEMPROT_HWIO_Run_WriteProtectedRAM_Tests\\25");
   /***************************************************************************************************************/    
                                               // Test Step2 add break point at function defination side 
@@ -3067,7 +3067,7 @@ testcase To_verify_the_SetHWIO_b_WrtProtRAM_LckUnlck_True_Software_interface()
   A_DBGR_BreakpointSet_AbortOnFail("SetHWIO_b_WrtProtRAM_LckUnlck\\5"); 
   //snprintf( chActionText, elCount(chActionText), "Set Breakpoint in ECU running   "); 
   //snprintf( chExpectedText, elCount(chExpectedText), "verify is ECU is running ");  
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_Go();
   //TestStepAddActionExpected( chActionText, chExpectedText );
@@ -3104,13 +3104,13 @@ testcase To_verify_the_SetHWIO_b_WrtProtRAM_LckUnlck_False_Software_interface()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in MEMPROT_HWIO_Run_WriteProtectedRAM_Tests\\25  Function call side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set MEMPROT_HWIO_Run_WriteProtectedRAM_Tests\\25 in Function call side"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );
+ TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("MEMPROT_HWIO_Run_WriteProtectedRAM_Tests\\25");  
   A_DBGR_Go();
   
   //snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in core0_main\\20 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in MEMPROT_HWIO_Run_WriteProtectedRAM_Tests\\25 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("MEMPROT_HWIO_Run_WriteProtectedRAM_Tests\\25");
   /***************************************************************************************************************/    
                                               // Test Step2 add break point at function defination side 
@@ -3121,7 +3121,7 @@ testcase To_verify_the_SetHWIO_b_WrtProtRAM_LckUnlck_False_Software_interface()
   A_DBGR_BreakpointSet_AbortOnFail("SetHWIO_b_WrtProtRAM_LckUnlck\\10"); 
   //snprintf( chActionText, elCount(chActionText), "Set Breakpoint in ECU running   "); 
   //snprintf( chExpectedText, elCount(chExpectedText), "verify is ECU is running ");  
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
 
   A_DBGR_Go();
   //TestStepAddActionExpected( chActionText, chExpectedText );
@@ -3687,20 +3687,20 @@ testcase To_verify_the_Tc4xMemProt_TrapHandler_Ifx_Software_interface()
   
  // snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in P:0x80833C36 stack overflow address"); 
   //snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in P:0x80833C36 stack overflow address function");
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   //E_DBGR_BreakpointCheckForHalt("P:0x80833C36");
   /***************************************************************************************************************/    
                       //Test Step2 add break point at function function call side of Tc4xMemProt_TrapHandler_Ifx 
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in Tc4xMemProt_TrapHandler_Ifx Function call side"); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set Tc4xMemProt_TrapHandler_Ifx in funaction call side"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("InternalProtectionError\\32"); 
 
   A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in Tc4xMemProt_TrapHandler_Ifx function call side"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Tc4xMemProt_TrapHandler_Ifx function function call side"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("InternalProtectionError\\32");
   /***************************************************************************************************************/    
                       //Test Step3 add break point at function function defination  side of Tc4xMemProt_TrapHandler_Ifx 
@@ -3713,7 +3713,7 @@ testcase To_verify_the_Tc4xMemProt_TrapHandler_Ifx_Software_interface()
   A_DBGR_Go();
   snprintf( chActionText, elCount(chActionText), "verify Breakpoint should hit in Tc4xMemProt_TrapHandler_Ifx function defination side"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Tc4xMemProt_TrapHandler_Ifx function function defination side"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("Tc4xMemProt_TrapHandler_Ifx");
   
   
@@ -3804,12 +3804,12 @@ testcase To_verify_the_hwio_reset_stack_request_Software_interface()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in InternalProtectionError\\42 Function call side  "); 
   snprintf( chExpectedText, elCount(chExpectedText), "verify is Breakpoint Set InternalProtectionError\\42 in Function call side"); 
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_BreakpointSet_AbortOnFail("InternalProtectionError\\42");  
   A_DBGR_Go();
   
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint in InternalProtectionError\\42 Function call side  ");
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in InternalProtectionError\\42 function");
-  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("InternalProtectionError\\42");
   /***************************************************************************************************************/    
                                               // Test Step2 add break point at function defination side 

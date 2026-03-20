@@ -64,7 +64,7 @@ testcase Verify_default_value_of_INTERNAL_BUS_STATUS_parameter()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusStatus callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusStatus"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusStatus\\5");  
   
    /***************************************************************************************************************/    
@@ -81,7 +81,7 @@ testcase Verify_default_value_of_INTERNAL_BUS_STATUS_parameter()
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusStatus "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusStatus function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusStatus\\5");
   
   /***************************************************************************************************************/    
@@ -137,7 +137,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusStatus callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusStatus"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusStatus\\8");  
   
    /***************************************************************************************************************/    
@@ -154,7 +154,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_correct_values()
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusStatus "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusStatus function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusStatus\\8");
   
   /***************************************************************************************************************/    
@@ -179,7 +179,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusStatus callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusStatus"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusStatus\\11");  
   
 //   /***************************************************************************************************************/    
@@ -195,7 +195,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_correct_values()
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusStatus "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusStatus function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusStatus\\11");
   
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
@@ -249,7 +249,7 @@ testcase Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initial
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusStatus callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusStatus"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusStatus\\5");  
   
    /***************************************************************************************************************/    
@@ -266,7 +266,7 @@ testcase Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initial
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusStatus "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusStatus function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusStatus\\5");
   
   /***************************************************************************************************************/    
@@ -295,7 +295,7 @@ testcase Verify_INTERNAL_BUS_STATUS_is_set_to_indeterminate_during_Reset_Initial
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure CanTrcvPnFrameDataMaskIndex variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify CanTrcvPnFrameDataMaskIndex is configured as 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("INTERNAL_BUS_STATUS",2,Equal);
   
 }
@@ -344,7 +344,7 @@ testcase Verify_default_value_of_BUS_ID_parameter()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusID callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusID"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusID\\13");  
   
    /***************************************************************************************************************/    
@@ -361,7 +361,7 @@ testcase Verify_default_value_of_BUS_ID_parameter()
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\13");
   
   /***************************************************************************************************************/    
@@ -422,7 +422,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_0_if_No_Fault_is_present_in
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusStatus callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusStatus"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusStatus\\6");  
   
    /***************************************************************************************************************/    
@@ -487,7 +487,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -503,7 +503,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
    snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -515,7 +515,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
    /***************************************************************************************************************/    
@@ -530,7 +530,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   /***************************************************************************************************************/    
@@ -556,7 +556,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusStatus callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusStatus"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusStatus\\8");
   
   
@@ -572,7 +572,7 @@ testcase Verify_GetHWIO_e_BusStatus_function_returns_1_if_Fault_is_present_in_Bu
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusStatus\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusStatus\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusStatus\\8");
   
   /***************************************************************************************************************/    
@@ -632,7 +632,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -648,7 +648,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -660,7 +660,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
    /***************************************************************************************************************/    
@@ -675,7 +675,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   /***************************************************************************************************************/    
@@ -700,7 +700,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusID\\8"); 
   
   /***************************************************************************************************************/    
@@ -715,7 +715,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\8");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -728,7 +728,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure BUSID variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify BUSID is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_VariableCheck("BUS_ID",0,Greater);
 
   
@@ -755,7 +755,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_correct_values()
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\13");
   
   /***************************************************************************************************************/    
@@ -811,7 +811,7 @@ testcase Verify_BUS_ID_is_set_to_No_Bus_Network_Error_during_Reset_Initializatio
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusID callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusID"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusID\\13");  
   
    /***************************************************************************************************************/    
@@ -828,7 +828,7 @@ testcase Verify_BUS_ID_is_set_to_No_Bus_Network_Error_during_Reset_Initializatio
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\13");
   
   /***************************************************************************************************************/    
@@ -883,7 +883,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -899,7 +899,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -911,7 +911,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Getmode\\5 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Getmode\\5"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );   
+ TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Getmode\\5");  
   
   snprintf( chActionText, elCount(chActionText), "Run the software "); 
@@ -920,7 +920,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Getmode\\5");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -933,7 +933,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
 
   snprintf( chActionText, elCount(chActionText), "Configure Channel_ID_B variable to invoke GetCNDD_e_CanTrcvOpMode interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Channel_ID_B is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("Channel_ID_B","1");
   E_DBGR_VariableCheck("Channel_ID_B",1,Equal);
   
@@ -957,7 +957,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -970,7 +970,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure TransferCount variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("TransferCount","5");
   E_DBGR_VariableCheck("TransferCount",5,Equal);
   
@@ -991,7 +991,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Getmode\\10");
   
    snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -1004,7 +1004,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -1019,7 +1019,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -1031,7 +1031,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure TransferCount variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("TransferCount","5");
   E_DBGR_VariableCheck("TransferCount",5,Equal);
   
@@ -1056,7 +1056,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\8");
   
   /***************************************************************************************************************/    
@@ -1112,7 +1112,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -1128,7 +1128,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -1140,7 +1140,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -1155,7 +1155,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   /***************************************************************************************************************/    
@@ -1176,7 +1176,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\14 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\14"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\14");  
   
   
@@ -1192,7 +1192,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\14 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\14 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\14");
   
   /***************************************************************************************************************/    
@@ -1209,7 +1209,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiSyncTransmitData32Bit\\24 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiSyncTransmitData32Bit\\24"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiSyncTransmitData32Bit\\24");  
   
   /***************************************************************************************************************/    
@@ -1224,7 +1224,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Spi_lQspiSyncTransmitData32Bit\\24 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Spi_lQspiSyncTransmitData32Bit\\24 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiSyncTransmitData32Bit\\24");
   
   /***************************************************************************************************************/    
@@ -1249,7 +1249,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusID\\8"); 
   
   /***************************************************************************************************************/    
@@ -1264,7 +1264,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN2TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\8");
   
   /***************************************************************************************************************/    
@@ -1319,7 +1319,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -1335,7 +1335,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure Channel_ID variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("Channel_ID","1");
   E_DBGR_VariableCheck("Channel_ID",1,Equal);
   
@@ -1364,7 +1364,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -1379,7 +1379,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   /***************************************************************************************************************/    
@@ -1400,7 +1400,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\14 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\14"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\14");  
   
   
@@ -1416,7 +1416,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\14 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\14 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\14");
   
   /***************************************************************************************************************/    
@@ -1433,7 +1433,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiSyncTransmitData32Bit\\24 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiSyncTransmitData32Bit\\24"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiSyncTransmitData32Bit\\24");  
   
   /***************************************************************************************************************/    
@@ -1448,7 +1448,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Spi_lQspiSyncTransmitData32Bit\\24 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Spi_lQspiSyncTransmitData32Bit\\24 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiSyncTransmitData32Bit\\24");
   
   /***************************************************************************************************************/    
@@ -1473,7 +1473,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusID\\8"); 
   
   /***************************************************************************************************************/    
@@ -1488,7 +1488,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_i_e_SPI_MCU_CAN8TCV
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\8");
   
   /***************************************************************************************************************/    
@@ -1544,7 +1544,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -1560,7 +1560,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -1572,7 +1572,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Getmode\\5 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Getmode\\5"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );   
+ TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Getmode\\5");  
   
   snprintf( chActionText, elCount(chActionText), "Run the software "); 
@@ -1581,7 +1581,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Getmode\\5");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -1594,7 +1594,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
 
   snprintf( chActionText, elCount(chActionText), "Configure Channel_ID_B variable to invoke GetCNDD_e_CanTrcvOpMode interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Channel_ID_B is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("Channel_ID_B","1");
   E_DBGR_VariableCheck("Channel_ID_B",1,Equal);
   
@@ -1618,7 +1618,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -1631,7 +1631,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure TransferCount variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("TransferCount","5");
   E_DBGR_VariableCheck("TransferCount",5,Equal);
   
@@ -1652,7 +1652,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Getmode\\10");
   
    snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -1665,7 +1665,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -1680,7 +1680,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -1692,7 +1692,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure TransferCount variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("TransferCount","5");
   E_DBGR_VariableCheck("TransferCount",5,Equal);
    
@@ -1705,7 +1705,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\14 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\14"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\14");  
   
   
@@ -1721,7 +1721,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\14 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\14 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\14");
   
   /***************************************************************************************************************/    
@@ -1738,7 +1738,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiSyncTransmitData32Bit\\24 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiSyncTransmitData32Bit\\24"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiSyncTransmitData32Bit\\24");  
   
   /***************************************************************************************************************/    
@@ -1753,7 +1753,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Spi_lQspiSyncTransmitData32Bit\\24 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Spi_lQspiSyncTransmitData32Bit\\24 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiSyncTransmitData32Bit\\24");
   
   /***************************************************************************************************************/    
@@ -1779,7 +1779,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusID\\8"); 
   
   /***************************************************************************************************************/    
@@ -1794,7 +1794,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_bus_faults_scenario_i_e_SPI_MC
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\8");
   
   /***************************************************************************************************************/    
@@ -1853,7 +1853,7 @@ testcase Verify_default_value_of_BUS_DEVICE_ID_parameter()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusID callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusID"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\11");  
   
    /***************************************************************************************************************/    
@@ -1870,7 +1870,7 @@ testcase Verify_default_value_of_BUS_DEVICE_ID_parameter()
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\11");
   
   /***************************************************************************************************************/    
@@ -1929,7 +1929,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -1945,7 +1945,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -1957,7 +1957,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
    /***************************************************************************************************************/    
@@ -1972,7 +1972,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   /***************************************************************************************************************/    
@@ -1997,7 +1997,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusDeviceID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusDeviceID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\8"); 
   
   /***************************************************************************************************************/    
@@ -2012,7 +2012,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\8");
   
   /***************************************************************************************************************/    
@@ -2032,7 +2032,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusDeviceID callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusDeviceID"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\11");  
   
     /***************************************************************************************************************/    
@@ -2050,7 +2050,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_correct_values()
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\11");
   
   /***************************************************************************************************************/    
@@ -2106,7 +2106,7 @@ testcase Verify_BUS_DEVICE_ID_is_set_to_No_Device_Error_during_Reset_Initializat
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusDeviceID callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusDeviceID"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\11");  
   
    /***************************************************************************************************************/    
@@ -2123,7 +2123,7 @@ testcase Verify_BUS_DEVICE_ID_is_set_to_No_Device_Error_during_Reset_Initializat
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\11");
   
   /***************************************************************************************************************/    
@@ -2178,7 +2178,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -2194,7 +2194,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -2206,7 +2206,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Getmode\\5 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Getmode\\5"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );   
+ TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Getmode\\5");  
   
   snprintf( chActionText, elCount(chActionText), "Run the software "); 
@@ -2215,7 +2215,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Getmode\\5");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -2228,7 +2228,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
 
   snprintf( chActionText, elCount(chActionText), "Configure Channel_ID_B variable to invoke GetCNDD_e_CanTrcvOpMode interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Channel_ID_B is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("Channel_ID_B","1");
   E_DBGR_VariableCheck("Channel_ID_B",1,Equal);
   
@@ -2252,7 +2252,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -2265,7 +2265,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure TransferCount variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("TransferCount","5");
   E_DBGR_VariableCheck("TransferCount",5,Equal);
   
@@ -2286,7 +2286,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Getmode\\10");
   
    snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -2299,7 +2299,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -2314,7 +2314,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   
@@ -2336,7 +2336,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusDeviceID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusDeviceID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\8"); 
   
   /***************************************************************************************************************/    
@@ -2351,7 +2351,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\8");
   
   /***************************************************************************************************************/    
@@ -2405,7 +2405,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -2421,7 +2421,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -2433,7 +2433,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -2448,7 +2448,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   /***************************************************************************************************************/    
@@ -2469,7 +2469,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\14 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\14"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\14");  
   
   
@@ -2485,7 +2485,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\14 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\14 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\14");
   
   /***************************************************************************************************************/    
@@ -2502,7 +2502,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiSyncTransmitData32Bit\\24 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiSyncTransmitData32Bit\\24"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiSyncTransmitData32Bit\\24");  
   
   /***************************************************************************************************************/    
@@ -2517,7 +2517,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Spi_lQspiSyncTransmitData32Bit\\24 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Spi_lQspiSyncTransmitData32Bit\\24 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiSyncTransmitData32Bit\\24");
   
   /***************************************************************************************************************/    
@@ -2542,7 +2542,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusDeviceID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusDeviceID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\8"); 
   
   /***************************************************************************************************************/    
@@ -2557,7 +2557,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN2TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\8");
   
   /***************************************************************************************************************/    
@@ -2612,7 +2612,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -2628,7 +2628,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure Channel_ID variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("Channel_ID","1");
   E_DBGR_VariableCheck("Channel_ID",1,Equal);
   
@@ -2656,7 +2656,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -2671,7 +2671,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   /***************************************************************************************************************/    
@@ -2692,7 +2692,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\14 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\14"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\14");  
   
   
@@ -2708,7 +2708,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\14 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\14 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\14");
   
   /***************************************************************************************************************/    
@@ -2725,7 +2725,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiSyncTransmitData32Bit\\24 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiSyncTransmitData32Bit\\24"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiSyncTransmitData32Bit\\24");  
   
   /***************************************************************************************************************/    
@@ -2740,7 +2740,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Spi_lQspiSyncTransmitData32Bit\\24 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Spi_lQspiSyncTransmitData32Bit\\24 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiSyncTransmitData32Bit\\24");
   
   /***************************************************************************************************************/    
@@ -2765,7 +2765,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusDeviceID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusDeviceID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\8"); 
   
   /***************************************************************************************************************/    
@@ -2780,7 +2780,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_and_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\8");
   
   /***************************************************************************************************************/    
@@ -2836,7 +2836,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -2852,7 +2852,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -2864,7 +2864,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint TestCanTrcv_Getmode\\5 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in TestCanTrcv_Getmode\\5"); 
- // TestStepAddActionExpected( chActionText, chExpectedText );   
+ TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("TestCanTrcv_Getmode\\5");  
   
   snprintf( chActionText, elCount(chActionText), "Run the software "); 
@@ -2873,7 +2873,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Getmode\\5");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -2886,7 +2886,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
 
   snprintf( chActionText, elCount(chActionText), "Configure Channel_ID_B variable to invoke GetCNDD_e_CanTrcvOpMode interface"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify Channel_ID_B is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("Channel_ID_B","1");
   E_DBGR_VariableCheck("Channel_ID_B",1,Equal);
   
@@ -2910,7 +2910,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -2923,7 +2923,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure TransferCount variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("TransferCount","5");
   E_DBGR_VariableCheck("TransferCount",5,Equal);
   
@@ -2944,7 +2944,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("TestCanTrcv_Getmode\\10");
   
    snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -2957,7 +2957,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -2972,7 +2972,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -2984,7 +2984,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure TransferCount variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 0"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("TransferCount","5");
   E_DBGR_VariableCheck("TransferCount",5,Equal);
    
@@ -2997,7 +2997,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\14 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\14"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\14");  
   
   
@@ -3013,7 +3013,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\14 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\14 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\14");
   
   /***************************************************************************************************************/    
@@ -3030,7 +3030,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiSyncTransmitData32Bit\\24 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiSyncTransmitData32Bit\\24"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiSyncTransmitData32Bit\\24");  
   
   /***************************************************************************************************************/    
@@ -3045,7 +3045,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Spi_lQspiSyncTransmitData32Bit\\24 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Spi_lQspiSyncTransmitData32Bit\\24 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiSyncTransmitData32Bit\\24");
   
   /***************************************************************************************************************/    
@@ -3072,7 +3072,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusDeviceID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusDeviceID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\8"); 
   
   /***************************************************************************************************************/    
@@ -3087,7 +3087,7 @@ testcase Verify_bitwise_OR_operation_for_multiple_device_faults_ie_CAN8TCVR_CAN8
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\8");
   
   /***************************************************************************************************************/    
@@ -3140,7 +3140,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\14 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\14"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\14");  
   
   
@@ -3156,7 +3156,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\14 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\14 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\14");
   
   /***************************************************************************************************************/    
@@ -3173,7 +3173,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiSyncTransmitData32Bit\\24 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiSyncTransmitData32Bit\\24"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiSyncTransmitData32Bit\\24");  
   
   /***************************************************************************************************************/    
@@ -3188,7 +3188,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Spi_lQspiSyncTransmitData32Bit\\24 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Spi_lQspiSyncTransmitData32Bit\\24 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiSyncTransmitData32Bit\\24");
   
   /***************************************************************************************************************/    
@@ -3213,7 +3213,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusID\\8"); 
   
   /***************************************************************************************************************/    
@@ -3228,7 +3228,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_PMIC_TLF4D_Bus_Network_
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\8");
   
   /***************************************************************************************************************/    
@@ -3282,7 +3282,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -3298,7 +3298,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure Channel_ID variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("Channel_ID","1");
   E_DBGR_VariableCheck("Channel_ID",1,Equal);
   
@@ -3326,7 +3326,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -3341,7 +3341,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   
@@ -3368,7 +3368,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusID\\8"); 
   
   /***************************************************************************************************************/    
@@ -3383,7 +3383,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN8TCVR_Bus_Network_2(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\8");
   
   /***************************************************************************************************************/    
@@ -3438,7 +3438,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -3454,7 +3454,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
   snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -3466,7 +3466,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -3481,7 +3481,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   /***************************************************************************************************************/    
@@ -3507,7 +3507,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusID\\8"); 
   
   /***************************************************************************************************************/    
@@ -3522,7 +3522,7 @@ testcase Verify_GetHWIO_e_BusID_function_returns_SPI_MCU_CAN2TCVR_Bus_Network_1(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusID\\8");
   
   /***************************************************************************************************************/    
@@ -3576,7 +3576,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\14 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\14"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\14");  
   
   
@@ -3592,7 +3592,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\14 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\14 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\14");
   
   /***************************************************************************************************************/    
@@ -3609,7 +3609,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiSyncTransmitData32Bit\\24 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiSyncTransmitData32Bit\\24"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiSyncTransmitData32Bit\\24");  
   
   /***************************************************************************************************************/    
@@ -3624,7 +3624,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Spi_lQspiSyncTransmitData32Bit\\24 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Spi_lQspiSyncTransmitData32Bit\\24 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiSyncTransmitData32Bit\\24");
   
   /***************************************************************************************************************/    
@@ -3649,7 +3649,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusDeviceID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusDeviceID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\8"); 
   
   /***************************************************************************************************************/    
@@ -3664,7 +3664,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_PMIC_TLF4D_Device_3_Faile
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\8");
   
   /***************************************************************************************************************/    
@@ -3718,7 +3718,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -3734,7 +3734,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Configure Channel_ID variable"); 
   snprintf( chExpectedText, elCount(chExpectedText), "Verify TransferCount is configured as 1"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );
+  TestStepAddActionExpected( chActionText, chExpectedText );
   A_DBGR_VariableSet("Channel_ID","1");
   E_DBGR_VariableCheck("Channel_ID",1,Equal);
   
@@ -3762,7 +3762,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -3777,7 +3777,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   /***************************************************************************************************************/    
@@ -3803,7 +3803,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusDeviceID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusDeviceID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\8"); 
   
   /***************************************************************************************************************/    
@@ -3818,7 +3818,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN8TCVR_Device_2_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\8");
   
   /***************************************************************************************************************/    
@@ -3873,7 +3873,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Os_Entry_Task_Core0_5ms\\13 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Os_Entry_Task_Core0_5ms\\13"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Os_Entry_Task_Core0_5ms\\13");  
   
   
@@ -3889,7 +3889,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Os_Entry_Task_Core0_5ms\\13");
   
    snprintf( chActionText, elCount(chActionText), "Flash the Software and ECU is running "); 
@@ -3901,7 +3901,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Spi_lQspiHWSetJobConfig\\18 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Spi_lQspiHWSetJobConfig\\18"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Spi_lQspiHWSetJobConfig\\18");  
   
   /***************************************************************************************************************/    
@@ -3916,7 +3916,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Os_Entry_Task_Core0_5ms\\13 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Os_Entry_Task_Core0_5ms\\13 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Spi_lQspiHWSetJobConfig\\18");
   
   /***************************************************************************************************************/    
@@ -3942,7 +3942,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Set Breakpoint Test_GetHWIO_e_BusDeviceID\\8 callback function "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint is Set in Test_GetHWIO_e_BusDeviceID\\8"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );   
+  TestStepAddActionExpected( chActionText, chExpectedText );   
   A_DBGR_BreakpointSet_AbortOnFail("Test_GetHWIO_e_BusDeviceID\\8"); 
   
   /***************************************************************************************************************/    
@@ -3957,7 +3957,7 @@ testcase Verify_GetHWIO_e_BusDeviceID_function_returns_CAN2TCVR_Device_1_Failed(
   /***************************************************************************************************************/
   snprintf( chActionText, elCount(chActionText), "Verify Breakpoint should hit in Test_GetHWIO_e_BusDeviceID\\8 "); 
   snprintf( chExpectedText, elCount(chExpectedText), "Breakpoint hit in Test_GetHWIO_e_BusDeviceID\\8 function"); 
-  //TestStepAddActionExpected( chActionText, chExpectedText );  
+  TestStepAddActionExpected( chActionText, chExpectedText );  
   E_DBGR_BreakpointCheckForHalt("Test_GetHWIO_e_BusDeviceID\\8");
   
   /***************************************************************************************************************/    
