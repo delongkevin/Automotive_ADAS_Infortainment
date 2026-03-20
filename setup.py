@@ -13,6 +13,21 @@ After installation you can run the sanity tests from anywhere:
 
 No hardware or Lauterbach library is required to run the tests; the
 lauterbach.trace32.rcl dependency is mocked inside the test file.
+
+GUI application
+---------------
+After installation, launch the graphical user interface with::
+
+    gm-vip-gui
+
+or via the main entry point::
+
+    python GM_VIP_Automation_Framework/main.py --gui
+
+The GUI requires tkinter, which ships with every standard CPython
+distribution.  On Debian/Ubuntu it can be installed with::
+
+    sudo apt-get install python3-tk
 """
 
 from setuptools import find_packages, setup
@@ -33,6 +48,14 @@ setup(
     extras_require={
         "dev": [
             "pytest>=7.0",
+        ],
+    },
+    entry_points={
+        "console_scripts": [
+            # CLI entry point (same as: python GM_VIP_Automation_Framework/main.py)
+            "gm-vip=GM_VIP_Automation_Framework.main:main",
+            # GUI entry point (same as: python GM_VIP_Automation_Framework/gui.py)
+            "gm-vip-gui=GM_VIP_Automation_Framework.gui:main",
         ],
     },
 )

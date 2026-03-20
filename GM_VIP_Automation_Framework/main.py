@@ -719,6 +719,7 @@ def _build_parser() -> argparse.ArgumentParser:
         description=(
             "GM VIP Automation Framework – test execution entry point.\n\n"
             "Examples:\n"
+            "  python main.py --gui                                # launch GUI application\n"
             "  python main.py --list\n"
             "  python main.py --suite test_sanity                  # mock (default)\n"
             "  python main.py --suite test_sanity --mode live      # real hardware\n"
@@ -731,6 +732,15 @@ def _build_parser() -> argparse.ArgumentParser:
             "  python main.py --discover --mode live --pattern 'g_*'  # filter by pattern\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--gui",
+        action="store_true",
+        help=(
+            "Launch the graphical user interface (GUI).  All command-line features "
+            "are available through the GUI, including running test suites, JSON test "
+            "cases, symbol discovery, and editing config.json settings."
+        ),
     )
     parser.add_argument(
         "--list",
@@ -863,6 +873,14 @@ def main(argv: Optional[List[str]] = None) -> None:
 
     verbosity = 2 if args.verbose else 1
 
+    # ------------------------------------------------------------------
+    # GUI mode (--gui)
+    # ------------------------------------------------------------------
+    if args.gui:
+        from GM_VIP_Automation_Framework.gui import main as _gui_main
+        _gui_main()
+        return
+
     if args.list:
         _print_list()
         return
@@ -871,6 +889,7 @@ def main(argv: Optional[List[str]] = None) -> None:
         # No target specified – show the list and a usage hint.
         _print_list()
         print("Tip: run  python main.py --help  for full usage information.")
+        print("Tip: run  python main.py --gui   to open the graphical interface.")
         return
 
     # ------------------------------------------------------------------
