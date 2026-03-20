@@ -33,6 +33,7 @@ No additional packages beyond the Python standard library are required.
 
 from __future__ import annotations
 
+import datetime
 import importlib.util
 import io
 import json
@@ -47,7 +48,7 @@ import traceback
 import unittest
 import webbrowser
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 # ---------------------------------------------------------------------------
 # Path bootstrap (same as main.py so imports work from any working directory)
@@ -89,6 +90,7 @@ _CLR = {
     "btn_run":    "#28a745",
     "btn_stop":   "#dc3545",
     "btn_open":   "#0056b3",
+    "btn_new":    "#6f42c1",   # purple – create/new actions
     "btn_clear":  "#6c757d",
     "log_pass":   "#1a7a2e",
     "log_fail":   "#c0392b",
@@ -105,7 +107,13 @@ _CLR = {
 # ---------------------------------------------------------------------------
 
 # Seconds to wait after sending QUIT before force-killing the T32 process.
-_T32_QUIT_WAIT_S = 2
+_T32_QUIT_WAIT_S = 5
+
+# Persistent GUI state file (saves all inputs across sessions).
+_GUI_STATE_PATH = _FRAMEWORK_DIR / "gui_state.json"
+
+# Interval in seconds between automatic T32 connection probes.
+_T32_MONITOR_INTERVAL_S = 3
 
 # Common Trace32 executable names used as a fallback when the setting is empty.
 _T32_FALLBACK_EXE_NAMES = frozenset({
@@ -254,8 +262,8 @@ class GMVIPGui(tk.Tk):
         super().__init__()
 
         self.title("GM VIP Automation Framework")
-        self.geometry("1100x760")
-        self.minsize(900, 600)
+        self.geometry("1100x780")
+        self.minsize(900, 620)
         self.configure(bg=_CLR["bg"])
 
         # Shared state
@@ -264,6 +272,12 @@ class GMVIPGui(tk.Tk):
         self._last_report_path: Optional[Path] = None
         self._t32_process: Optional[subprocess.Popen] = None
         self._t32_wait_thread: Optional[threading.Thread] = None
+        self._t32_monitor_thread: Optional[threading.Thread] = None
+        self._t32_connected: bool = False
+        self._t32_monitor_stop = threading.Event()
+
+        # Symbol Discovery queue: list of dicts with all SD parameters
+        self._disc_queue: List[Dict[str, Any]] = []
 
         # --- tkinter variables (must live on self so GC keeps them) ---------
         self._mode_var        = tk.StringVar(value="mock")
@@ -274,9 +288,20 @@ class GMVIPGui(tk.Tk):
         self._status_var      = tk.StringVar(value="Ready")
         self._anim_idx        = 0
 
+        # Test Creator variables
+        self._tc_py_name_var   = tk.StringVar(value="")
+        self._tc_json_name_var = tk.StringVar(value="")
+        self._tc_py_dir_var    = tk.StringVar(value="")
+        self._tc_json_dir_var  = tk.StringVar(value="")
+
         self._build_ui()
         self._refresh_suite_lists()
+        self._load_gui_state()
         self._poll_queue()
+        self._start_t32_monitor()
+
+        # Save state when the window is closed
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
 
     # ------------------------------------------------------------------ build
 
@@ -305,8 +330,11 @@ class GMVIPGui(tk.Tk):
         file_menu = tk.Menu(bar, tearoff=0)
         file_menu.add_command(label="Refresh Suite Lists",  command=self._refresh_suite_lists)
         file_menu.add_command(label="Open HTML Report…",    command=self._open_report_dialog)
+        file_menu.add_command(label="Browse All Reports",   command=lambda: self._nb.select(5))
         file_menu.add_separator()
-        file_menu.add_command(label="Exit",                 command=self.destroy)
+        file_menu.add_command(label="Save GUI State",       command=self._save_gui_state)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit",                 command=self._on_close)
         bar.add_cascade(label="File", menu=file_menu)
 
         run_menu = tk.Menu(bar, tearoff=0)
@@ -315,6 +343,12 @@ class GMVIPGui(tk.Tk):
         run_menu.add_separator()
         run_menu.add_command(label="Open Last Report in Browser", command=self._open_last_report)
         bar.add_cascade(label="Run", menu=run_menu)
+
+        tools_menu = tk.Menu(bar, tearoff=0)
+        tools_menu.add_command(label="Test Creator",         command=lambda: self._nb.select(4))
+        tools_menu.add_command(label="Symbol Discovery",     command=lambda: self._nb.select(2))
+        tools_menu.add_command(label="Configuration",        command=lambda: self._nb.select(3))
+        bar.add_cascade(label="Tools", menu=tools_menu)
 
         help_menu = tk.Menu(bar, tearoff=0)
         help_menu.add_command(label="About",  command=self._show_about)
@@ -495,10 +529,12 @@ class GMVIPGui(tk.Tk):
         nb.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, pady=6)
         self._nb = nb
 
-        self._build_py_suite_tab(nb)
-        self._build_json_tab(nb)
-        self._build_discover_tab(nb)
-        self._build_config_tab(nb)
+        self._build_py_suite_tab(nb)     # tab 0
+        self._build_json_tab(nb)         # tab 1
+        self._build_discover_tab(nb)     # tab 2
+        self._build_config_tab(nb)       # tab 3
+        self._build_test_creator_tab(nb) # tab 4
+        self._build_reports_tab(nb)      # tab 5
 
     # ── Python suites tab ──────────────────────────────────────────────────
 
@@ -540,11 +576,17 @@ class GMVIPGui(tk.Tk):
             py_btn_frame, text="↺ Reload List", font=("Arial", 9),
             bg=_CLR["btn_clear"], fg="#fff", relief="flat", padx=8, pady=4,
             cursor="hand2", command=self._refresh_suite_lists,
+        ).pack(side=tk.LEFT, padx=(0, 6))
+        tk.Button(
+            py_btn_frame, text="＋ New Suite", font=("Arial", 9),
+            bg=_CLR["btn_new"], fg="#fff", relief="flat", padx=8, pady=4,
+            cursor="hand2", command=lambda: self._nb.select(4),
         ).pack(side=tk.LEFT)
         _ToolTip(py_btn_frame,
                  "Edit in IDLE: open the selected .py suite in Python IDLE "
                  "(falls back to the OS default text editor if IDLE is unavailable).\n"
-                 "Reload List: re-scan for Python suite files after saving.")
+                 "Reload List: re-scan for Python suite files after saving.\n"
+                 "New Suite: open the Test Creator tab to create a new Python suite.")
 
         # "Run all" checkbox
         self._run_all_py_var = tk.BooleanVar(value=False)
@@ -594,11 +636,17 @@ class GMVIPGui(tk.Tk):
             json_btn_frame, text="↺ Reload List", font=("Arial", 9),
             bg=_CLR["btn_clear"], fg="#fff", relief="flat", padx=8, pady=4,
             cursor="hand2", command=self._refresh_suite_lists,
+        ).pack(side=tk.LEFT, padx=(0, 6))
+        tk.Button(
+            json_btn_frame, text="＋ New Suite", font=("Arial", 9),
+            bg=_CLR["btn_new"], fg="#fff", relief="flat", padx=8, pady=4,
+            cursor="hand2", command=lambda: self._nb.select(4),
         ).pack(side=tk.LEFT)
         _ToolTip(json_btn_frame,
                  "Edit in IDLE: open the selected JSON suite in Python IDLE "
                  "(falls back to the OS default text editor if IDLE is unavailable).\n"
-                 "Reload List: re-scan for JSON suite files after saving.")
+                 "Reload List: re-scan for JSON suite files after saving.\n"
+                 "New Suite: open the Test Creator tab to create a new JSON suite.")
 
         note = tk.Label(
             frame,
@@ -708,7 +756,50 @@ class GMVIPGui(tk.Tk):
             bg=_CLR["btn_run"], fg="#fff",
             relief="flat", padx=14, pady=6, cursor="hand2",
             command=self._run_discovery,
-        ).pack(anchor=tk.W, padx=12, pady=(4, 8))
+        ).pack(anchor=tk.W, padx=12, pady=(4, 4))
+
+        # ── Symbol Discovery Queue ─────────────────────────────────────────
+        sep = ttk.Separator(frame, orient=tk.HORIZONTAL)
+        sep.pack(fill=tk.X, padx=12, pady=(4, 6))
+
+        tk.Label(frame, text="Discovery Queue  (save configs and run them as suites)",
+                 font=("Arial", 9, "bold"), bg=_CLR["panel"], fg=_CLR["header"],
+                 ).pack(anchor=tk.W, padx=12)
+
+        queue_frame = tk.Frame(frame, bg=_CLR["panel"])
+        queue_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=(4, 4))
+
+        q_list_frame = tk.Frame(queue_frame, bg=_CLR["panel"])
+        q_list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        q_scrollbar = tk.Scrollbar(q_list_frame)
+        q_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self._disc_queue_listbox = tk.Listbox(
+            q_list_frame, font=("Courier", 9), selectmode=tk.SINGLE,
+            yscrollcommand=q_scrollbar.set, activestyle="dotbox",
+            selectbackground="#0056b3", selectforeground="#fff",
+            height=5,
+        )
+        self._disc_queue_listbox.pack(fill=tk.BOTH, expand=True)
+        q_scrollbar.config(command=self._disc_queue_listbox.yview)
+
+        q_btn_frame = tk.Frame(queue_frame, bg=_CLR["panel"])
+        q_btn_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(8, 0))
+
+        for lbl, cmd, bg in (
+            ("＋ Add Current",       self._add_to_disc_queue,   "#28a745"),
+            ("✕ Remove Selected",   self._remove_from_disc_queue, "#dc3545"),
+            ("🗑 Clear All",          self._clear_disc_queue,    "#6c757d"),
+            ("▶ Run as Python",     self._run_queue_as_python,  "#0056b3"),
+            ("▶ Run as JSON",       self._run_queue_as_json,    "#17a2b8"),
+        ):
+            tk.Button(
+                q_btn_frame, text=lbl, font=("Arial", 8),
+                bg=bg, fg="#fff", relief="flat", padx=6, pady=3,
+                cursor="hand2", command=cmd,
+                width=18,
+            ).pack(anchor=tk.W, pady=2)
 
     # ── Configuration editor tab ───────────────────────────────────────────
 
@@ -769,7 +860,7 @@ class GMVIPGui(tk.Tk):
                   bg="#17a2b8", fg="#fff", relief="flat", padx=6, pady=2,
                   command=self._copy_log).pack(side=tk.LEFT, padx=2)
         tk.Button(btn_row, text="Save Log…", font=("Arial", 8),
-                  bg="#6f42c1", fg="#fff", relief="flat", padx=6, pady=2,
+                  bg=_CLR["btn_new"], fg="#fff", relief="flat", padx=6, pady=2,
                   command=self._save_log).pack(side=tk.LEFT, padx=2)
         tk.Button(btn_row, text="Open Last Report", font=("Arial", 8),
                   bg=_CLR["btn_open"], fg="#fff", relief="flat", padx=6, pady=2,
@@ -800,9 +891,42 @@ class GMVIPGui(tk.Tk):
             self._log.tag_config(tag, foreground=colour)
 
     def _build_status_bar(self) -> None:
-        bar = tk.Frame(self, bg=_CLR["header"], height=22)
+        bar = tk.Frame(self, bg=_CLR["header"], height=26)
         bar.pack(fill=tk.X, side=tk.BOTTOM)
 
+        # T32 connection LED (left side)
+        t32_led_frame = tk.Frame(bar, bg=_CLR["header"])
+        t32_led_frame.pack(side=tk.LEFT, padx=(8, 0))
+        self._t32_led_canvas = tk.Canvas(
+            t32_led_frame, width=14, height=14,
+            bg=_CLR["header"], highlightthickness=0,
+        )
+        self._t32_led_canvas.pack(side=tk.LEFT, pady=6)
+        self._t32_led_oval = self._t32_led_canvas.create_oval(
+            2, 2, 12, 12, fill="#cc0000", outline="#880000",
+        )
+        tk.Label(
+            t32_led_frame, text=" T32", font=("Arial", 8),
+            fg="#ccc", bg=_CLR["header"],
+        ).pack(side=tk.LEFT)
+
+        # Test-running LED (second indicator)
+        run_led_frame = tk.Frame(bar, bg=_CLR["header"])
+        run_led_frame.pack(side=tk.LEFT, padx=(10, 0))
+        self._run_led_canvas = tk.Canvas(
+            run_led_frame, width=14, height=14,
+            bg=_CLR["header"], highlightthickness=0,
+        )
+        self._run_led_canvas.pack(side=tk.LEFT, pady=6)
+        self._run_led_oval = self._run_led_canvas.create_oval(
+            2, 2, 12, 12, fill="#555555", outline="#333333",
+        )
+        tk.Label(
+            run_led_frame, text=" Test", font=("Arial", 8),
+            fg="#ccc", bg=_CLR["header"],
+        ).pack(side=tk.LEFT)
+
+        # Status text
         self._status_lbl = tk.Label(
             bar, textvariable=self._status_var,
             font=("Arial", 9), fg="#fff", bg=_CLR["header"], padx=10,
@@ -1295,7 +1419,7 @@ class GMVIPGui(tk.Tk):
         ))
 
     def _close_t32(self) -> None:
-        """Close Trace32: graceful quit via RCL, then force-kill if needed."""
+        """Close Trace32: graceful quit via RCL, then countdown + force-kill if needed."""
         from GM_VIP_Automation_Framework.core.connection import T32Connection
 
         port = self._port_var.get()
@@ -1320,7 +1444,7 @@ class GMVIPGui(tk.Tk):
             self._finish_close_t32(graceful_ok=False)
 
     def _finish_close_t32(self, graceful_ok: bool = True) -> None:
-        """Complete T32 shutdown: kill managed process or fall back to name-based kill."""
+        """Complete T32 shutdown: countdown-kill managed process or fall back to name-based kill."""
         from GM_VIP_Automation_Framework.core.connection import T32Connection
 
         port = self._port_var.get()
@@ -1330,20 +1454,20 @@ class GMVIPGui(tk.Tk):
         if proc is not None and proc.poll() is None:
             if not graceful_ok:
                 self._log_line(
-                    f"[GUI] Force-killing Trace32 PID={proc.pid} …", "warn",
+                    f"[GUI] Trace32 (PID={proc.pid}) did not exit; starting countdown …", "warn",
                 )
-            try:
-                proc.terminate()
-                proc.wait(timeout=3)
-            except Exception:
-                try:
-                    proc.kill()
-                    proc.wait(timeout=3)
-                except Exception as exc2:
-                    self._log_line(f"[GUI] Kill failed: {exc2}", "error")
-            finally:
-                self._t32_process = None
-            self._log_line("[GUI] Trace32 process stopped.", "info")
+                self._countdown_kill_t32(proc)
+            else:
+                # Gave it _T32_QUIT_WAIT_S already – if still alive, countdown
+                if proc.poll() is None:
+                    self._log_line(
+                        f"[GUI] Trace32 (PID={proc.pid}) still alive after {_T32_QUIT_WAIT_S}s; "
+                        "starting countdown …", "warn",
+                    )
+                    self._countdown_kill_t32(proc)
+                else:
+                    self._t32_process = None
+                    self._log_line("[GUI] Trace32 exited gracefully.", "info")
             return
 
         # No managed process – only attempt name-based kill when graceful shutdown failed
@@ -1362,13 +1486,7 @@ class GMVIPGui(tk.Tk):
             still_running = False
 
         if still_running:
-            killed = self._kill_t32_by_name()
-            if not killed:
-                messagebox.showinfo(
-                    "Close T32",
-                    "No Trace32 process was found to close.\n"
-                    "It may have already exited, or was started externally.",
-                )
+            self._countdown_kill_t32(None)
         else:
             messagebox.showinfo(
                 "Close T32",
@@ -1510,6 +1628,9 @@ class GMVIPGui(tk.Tk):
                 elif msg[0] == "status":
                     state = msg[1]
                     self._on_status_change(state)
+                elif msg[0] == "t32_status":
+                    connected = msg[1]
+                    self._update_t32_led(connected)
         except queue.Empty:
             pass
         self.after(self._POLL_MS, self._poll_queue)
@@ -1521,11 +1642,21 @@ class GMVIPGui(tk.Tk):
             self._report_btn.config(state=tk.DISABLED)
             self._status_var.set("⏳ Running …")
             self._spin()
+            # Orange LED = test running
+            if hasattr(self, "_run_led_canvas"):
+                self._run_led_canvas.itemconfig(
+                    self._run_led_oval, fill="#ff8c00", outline="#cc6600",
+                )
         elif state == "idle":
             self._run_btn.config(state=tk.NORMAL)
             self._stop_btn.config(state=tk.DISABLED)
             self._status_var.set("✅ Done")
             self._enable_report_btn()
+            # Grey LED = idle
+            if hasattr(self, "_run_led_canvas"):
+                self._run_led_canvas.itemconfig(
+                    self._run_led_oval, fill="#555555", outline="#333333",
+                )
 
     def _spin(self) -> None:
         """Simple text spinner in the status bar while a test runs."""
@@ -1546,6 +1677,675 @@ class GMVIPGui(tk.Tk):
             self._last_report_path = reports[-1]
             self._report_btn.config(state=tk.NORMAL)
 
+    # ── Test Creator tab ────────────────────────────────────────────────────
+
+    def _build_test_creator_tab(self, nb: ttk.Notebook) -> None:
+        """Tab for creating new Python and JSON test suites from templates."""
+        frame = tk.Frame(nb, bg=_CLR["panel"])
+        nb.add(frame, text="  Test Creator  ")
+
+        tk.Label(
+            frame,
+            text="Create new test suites from built-in templates.",
+            font=("Arial", 9), bg=_CLR["panel"], fg="#555",
+        ).pack(anchor=tk.W, padx=12, pady=(10, 6))
+
+        # ── Python Suite creator ───────────────────────────────────────────
+        py_box = tk.LabelFrame(
+            frame, text=" New Python Suite ",
+            font=("Arial", 9, "bold"), bg=_CLR["panel"],
+            relief="groove", bd=2, padx=10, pady=8,
+        )
+        py_box.pack(fill=tk.X, padx=12, pady=(0, 8))
+
+        tk.Label(py_box, text="Suite name (no .py):", bg=_CLR["panel"],
+                 font=("Arial", 9)).grid(row=0, column=0, sticky=tk.W, pady=2)
+        tk.Entry(py_box, textvariable=self._tc_py_name_var, width=30,
+                 font=("Courier", 9)).grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(6, 0))
+
+        tk.Label(py_box, text="Destination folder:", bg=_CLR["panel"],
+                 font=("Arial", 9)).grid(row=1, column=0, sticky=tk.W, pady=2)
+        py_dir_frame = tk.Frame(py_box, bg=_CLR["panel"])
+        py_dir_frame.grid(row=1, column=1, sticky=tk.EW, pady=2, padx=(6, 0))
+        tk.Entry(py_dir_frame, textvariable=self._tc_py_dir_var, width=24,
+                 font=("Courier", 9)).pack(side=tk.LEFT, fill=tk.X, expand=True)
+        tk.Button(py_dir_frame, text="…", padx=3,
+                  command=self._browse_tc_py_dir).pack(side=tk.LEFT, padx=2)
+
+        tk.Button(
+            py_box, text="＋ Create Python Suite",
+            font=("Arial", 9, "bold"),
+            bg=_CLR["btn_new"], fg="#fff", relief="flat", padx=10, pady=5,
+            cursor="hand2", command=self._create_py_suite,
+        ).grid(row=2, column=0, columnspan=2, sticky=tk.W, pady=(6, 0))
+        _ToolTip(py_box,
+                 "Creates a new unittest-based Python test suite under the tests/ directory\n"
+                 "(or a custom folder). Opens in IDLE after creation.")
+        py_box.columnconfigure(1, weight=1)
+
+        # ── JSON Suite creator ─────────────────────────────────────────────
+        json_box = tk.LabelFrame(
+            frame, text=" New JSON Suite ",
+            font=("Arial", 9, "bold"), bg=_CLR["panel"],
+            relief="groove", bd=2, padx=10, pady=8,
+        )
+        json_box.pack(fill=tk.X, padx=12, pady=(0, 8))
+
+        tk.Label(json_box, text="Suite name (no _test_cases.json):", bg=_CLR["panel"],
+                 font=("Arial", 9)).grid(row=0, column=0, sticky=tk.W, pady=2)
+        tk.Entry(json_box, textvariable=self._tc_json_name_var, width=30,
+                 font=("Courier", 9)).grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(6, 0))
+
+        tk.Label(json_box, text="Destination folder:", bg=_CLR["panel"],
+                 font=("Arial", 9)).grid(row=1, column=0, sticky=tk.W, pady=2)
+        json_dir_frame = tk.Frame(json_box, bg=_CLR["panel"])
+        json_dir_frame.grid(row=1, column=1, sticky=tk.EW, pady=2, padx=(6, 0))
+        tk.Entry(json_dir_frame, textvariable=self._tc_json_dir_var, width=24,
+                 font=("Courier", 9)).pack(side=tk.LEFT, fill=tk.X, expand=True)
+        tk.Button(json_dir_frame, text="…", padx=3,
+                  command=self._browse_tc_json_dir).pack(side=tk.LEFT, padx=2)
+
+        tk.Button(
+            json_box, text="＋ Create JSON Suite",
+            font=("Arial", 9, "bold"),
+            bg="#17a2b8", fg="#fff", relief="flat", padx=10, pady=5,
+            cursor="hand2", command=self._create_json_suite,
+        ).grid(row=2, column=0, columnspan=2, sticky=tk.W, pady=(6, 0))
+        _ToolTip(json_box,
+                 "Creates a new JSON test-case file from the built-in template.\n"
+                 "Opens in the default editor after creation.")
+        json_box.columnconfigure(1, weight=1)
+
+        # ── Usage note ────────────────────────────────────────────────────
+        note = (
+            "ℹ️  After creation the new file appears in the Python Suites / JSON Suites tab\n"
+            "   after clicking  ↺ Reload List.  Edit the template, then run it from the suites tabs."
+        )
+        tk.Label(frame, text=note, font=("Arial", 9, "italic"),
+                 bg=_CLR["panel"], fg="#777", justify=tk.LEFT,
+                 ).pack(anchor=tk.W, padx=12, pady=4)
+
+    # ── Reports Browser tab ────────────────────────────────────────────────
+
+    def _build_reports_tab(self, nb: ttk.Notebook) -> None:
+        """Tab for browsing all previously generated HTML reports."""
+        frame = tk.Frame(nb, bg=_CLR["panel"])
+        nb.add(frame, text="  Reports  ")
+
+        tk.Label(
+            frame,
+            text="All HTML reports generated by previous test runs.  Double-click to open.",
+            font=("Arial", 9), bg=_CLR["panel"], fg="#555",
+        ).pack(anchor=tk.W, padx=12, pady=(10, 4))
+
+        # Buttons row
+        rep_btn_frame = tk.Frame(frame, bg=_CLR["panel"])
+        rep_btn_frame.pack(anchor=tk.W, padx=12, pady=(0, 4))
+        tk.Button(rep_btn_frame, text="↺ Refresh", font=("Arial", 9),
+                  bg=_CLR["btn_clear"], fg="#fff", relief="flat", padx=8, pady=4,
+                  cursor="hand2", command=self._refresh_reports_list).pack(side=tk.LEFT, padx=(0, 6))
+        tk.Button(rep_btn_frame, text="🌐 Open Selected", font=("Arial", 9),
+                  bg=_CLR["btn_open"], fg="#fff", relief="flat", padx=8, pady=4,
+                  cursor="hand2", command=self._open_selected_report).pack(side=tk.LEFT, padx=(0, 6))
+        tk.Button(rep_btn_frame, text="📁 Open Folder", font=("Arial", 9),
+                  bg=_CLR["btn_new"], fg="#fff", relief="flat", padx=8, pady=4,
+                  cursor="hand2", command=self._open_reports_folder).pack(side=tk.LEFT)
+
+        # Reports listbox
+        list_frame = tk.Frame(frame, bg=_CLR["panel"])
+        list_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=4)
+
+        scrollbar = tk.Scrollbar(list_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self._reports_listbox = tk.Listbox(
+            list_frame, font=("Courier", 10), selectmode=tk.SINGLE,
+            yscrollcommand=scrollbar.set, activestyle="dotbox",
+            selectbackground="#0056b3", selectforeground="#fff",
+        )
+        self._reports_listbox.pack(fill=tk.BOTH, expand=True)
+        scrollbar.config(command=self._reports_listbox.yview)
+        self._reports_listbox.bind("<Double-1>", lambda _e: self._open_selected_report())
+
+        # Internal list to map listbox index → Path
+        self._report_paths: List[Path] = []
+
+        # Auto-populate on tab build
+        self._refresh_reports_list()
+
+    # ------------------------------------------------------------------ test creator actions
+
+    def _browse_tc_py_dir(self) -> None:
+        path = filedialog.askdirectory(
+            title="Select destination folder for new Python suite",
+            initialdir=str(_FRAMEWORK_DIR / "tests"),
+        )
+        if path:
+            self._tc_py_dir_var.set(path)
+
+    def _browse_tc_json_dir(self) -> None:
+        path = filedialog.askdirectory(
+            title="Select destination folder for new JSON suite",
+            initialdir=str(_FRAMEWORK_DIR),
+        )
+        if path:
+            self._tc_json_dir_var.set(path)
+
+    def _create_py_suite(self) -> None:
+        """Create a new Python test suite from template and open in editor."""
+        name = self._tc_py_name_var.get().strip()
+        if not name:
+            messagebox.showwarning("Name Required", "Please enter a suite name.")
+            return
+        # Sanitise: strip .py if supplied
+        name = name.rstrip("/\\").replace(" ", "_")
+        if name.endswith(".py"):
+            name = name[:-3]
+
+        dest_str = self._tc_py_dir_var.get().strip()
+        dest = Path(dest_str) if dest_str else (_FRAMEWORK_DIR / "tests")
+        dest.mkdir(parents=True, exist_ok=True)
+        out_path = dest / f"{name}.py"
+
+        if out_path.exists():
+            if not messagebox.askyesno(
+                "File Exists",
+                f"File already exists:\n{out_path}\n\nOverwrite?",
+            ):
+                return
+
+        template = self._py_suite_template(name)
+        out_path.write_text(template, encoding="utf-8")
+        self._log_line(f"[GUI] Created Python suite: {out_path}", "pass")
+        self._refresh_suite_lists()
+        self._open_in_editor(out_path)
+
+    def _create_json_suite(self) -> None:
+        """Create a new JSON test-case file from template and open in editor."""
+        name = self._tc_json_name_var.get().strip()
+        if not name:
+            messagebox.showwarning("Name Required", "Please enter a suite name.")
+            return
+        name = name.strip().replace(" ", "_")
+        # Strip suffix if already supplied
+        for suffix in ("_test_cases.json", ".json"):
+            if name.endswith(suffix):
+                name = name[: -len(suffix)]
+
+        dest_str = self._tc_json_dir_var.get().strip()
+        dest = Path(dest_str) if dest_str else _FRAMEWORK_DIR
+        dest.mkdir(parents=True, exist_ok=True)
+        out_path = dest / f"{name}_test_cases.json"
+
+        if out_path.exists():
+            if not messagebox.askyesno(
+                "File Exists",
+                f"File already exists:\n{out_path}\n\nOverwrite?",
+            ):
+                return
+
+        template = self._json_suite_template(name)
+        out_path.write_text(json.dumps(template, indent=2), encoding="utf-8")
+        self._log_line(f"[GUI] Created JSON suite: {out_path}", "pass")
+        self._refresh_suite_lists()
+        self._open_in_editor(out_path)
+
+    @staticmethod
+    def _py_suite_template(name: str) -> str:
+        """Return a starter Python unittest suite as a string."""
+        return (
+            '"""\n'
+            f'{name} – GM VIP Automation Framework test suite\n'
+            f'Generated by GUI Test Creator on {datetime.date.today()}\n'
+            '"""\n'
+            "from __future__ import annotations\n\n"
+            "import sys\n"
+            "import unittest\n"
+            "from pathlib import Path\n\n"
+            "# Bootstrap sys.path so the suite can be run directly\n"
+            "_REPO = Path(__file__).resolve().parent.parent.parent\n"
+            "if str(_REPO) not in sys.path:\n"
+            "    sys.path.insert(0, str(_REPO))\n\n"
+            "from GM_VIP_Automation_Framework.core.connection import T32Connection\n\n\n"
+            f"class {name.title().replace('_', '')}Tests(unittest.TestCase):\n"
+            '    """Auto-generated test suite.  Add test methods below."""\n\n'
+            "    @classmethod\n"
+            "    def setUpClass(cls) -> None:\n"
+            "        # Replace with your connection logic (mock or live).\n"
+            "        cls.conn = T32Connection(mock=True)\n"
+            "        cls.conn.connect()\n\n"
+            "    @classmethod\n"
+            "    def tearDownClass(cls) -> None:\n"
+            "        cls.conn.disconnect()\n\n"
+            "    def test_placeholder(self) -> None:\n"
+            '        """Placeholder test – replace with real assertions."""\n'
+            "        self.assertTrue(True)\n\n\n"
+            'if __name__ == "__main__":\n'
+            "    unittest.main(verbosity=2)\n"
+        )
+
+    @staticmethod
+    def _json_suite_template(name: str) -> dict:
+        """Return a starter JSON test-case dict."""
+        return {
+            "_comment": f"GM VIP Automation Framework – {name} test cases",
+            "_generated": str(datetime.date.today()),
+            "test_suite": name,
+            "test_cases": [
+                {
+                    "name": "TC_Placeholder_01",
+                    "capl_reference": "",
+                    "enabled": True,
+                    "reset_before": False,
+                    "go_before_check": False,
+                    "breakpoints": [],
+                    "variables_write": {},
+                    "variables_check": {},
+                    "symbols_inspect": [],
+                },
+            ],
+        }
+
+    # ------------------------------------------------------------------ reports browser
+
+    def _refresh_reports_list(self) -> None:
+        """Scan Test_Report/ for HTML files and populate the reports listbox."""
+        self._report_paths = []
+        if not hasattr(self, "_reports_listbox"):
+            return
+        self._reports_listbox.delete(0, tk.END)
+
+        report_root = _FRAMEWORK_DIR / "Test_Report"
+        if not report_root.exists():
+            self._reports_listbox.insert(tk.END, "  (no reports found – run a test suite first)")
+            return
+
+        reports = sorted(
+            report_root.rglob("*.html"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+        if not reports:
+            self._reports_listbox.insert(tk.END, "  (no reports found – run a test suite first)")
+            return
+
+        for p in reports:
+            mtime = datetime.datetime.fromtimestamp(p.stat().st_mtime)
+            ts = mtime.strftime("%Y-%m-%d %H:%M")
+            label = f"  {ts}  {p.relative_to(_FRAMEWORK_DIR)}"
+            self._reports_listbox.insert(tk.END, label)
+            self._report_paths.append(p)
+
+    def _open_selected_report(self) -> None:
+        """Open the report selected in the reports listbox."""
+        if not hasattr(self, "_reports_listbox"):
+            return
+        sel = self._reports_listbox.curselection()
+        if not sel or sel[0] >= len(self._report_paths):
+            messagebox.showwarning("No Selection", "Please select a report to open.")
+            return
+        path = self._report_paths[sel[0]]
+        if path.is_file():
+            webbrowser.open(path.as_uri())
+        else:
+            messagebox.showerror("File Not Found", f"Report not found:\n{path}")
+
+    def _open_reports_folder(self) -> None:
+        """Open the Test_Report folder in the OS file manager."""
+        folder = _FRAMEWORK_DIR / "Test_Report"
+        folder.mkdir(parents=True, exist_ok=True)
+        system = platform.system().lower()
+        try:
+            if system == "windows":
+                os.startfile(str(folder))
+            elif system == "darwin":
+                subprocess.Popen(["open", str(folder)])
+            else:
+                subprocess.Popen(["xdg-open", str(folder)])
+        except Exception as exc:
+            messagebox.showerror("Cannot Open Folder", str(exc))
+
+    # ------------------------------------------------------------------ SD queue
+
+    def _add_to_disc_queue(self) -> None:
+        """Add the current Symbol Discovery configuration to the queue."""
+        entry: Dict[str, Any] = {
+            "pattern":  self._disc_pattern_var.get() or "*",
+            "module":   self._disc_module_var.get(),
+            "bp":       self._disc_bp_var.get(),
+            "suite":    self._disc_suite_var.get() or "test_symbol_discovery",
+            "max_sym":  self._disc_max_sym_var.get(),
+            "resolve":  self._disc_resolve_var.get(),
+            "verbose":  self._disc_verbose_var.get(),
+            "out_dir":  self._disc_output_var.get(),
+        }
+        self._disc_queue.append(entry)
+        self._refresh_disc_queue_list()
+        self._log_line(
+            f"[GUI] Added to Discovery Queue: pattern={entry['pattern']!r}  "
+            f"suite={entry['suite']!r}  ({len(self._disc_queue)} total)", "info",
+        )
+        self._save_gui_state()
+
+    def _remove_from_disc_queue(self) -> None:
+        """Remove the selected entry from the discovery queue."""
+        if not hasattr(self, "_disc_queue_listbox"):
+            return
+        sel = self._disc_queue_listbox.curselection()
+        if not sel:
+            return
+        idx = sel[0]
+        if idx < len(self._disc_queue):
+            removed = self._disc_queue.pop(idx)
+            self._log_line(
+                f"[GUI] Removed from queue: {removed.get('suite', '?')}", "info",
+            )
+            self._refresh_disc_queue_list()
+            self._save_gui_state()
+
+    def _clear_disc_queue(self) -> None:
+        """Clear all entries from the discovery queue."""
+        if not self._disc_queue:
+            return
+        if messagebox.askyesno("Clear Queue", "Remove all entries from the discovery queue?"):
+            self._disc_queue.clear()
+            self._refresh_disc_queue_list()
+            self._save_gui_state()
+            self._log_line("[GUI] Discovery queue cleared.", "info")
+
+    def _refresh_disc_queue_list(self) -> None:
+        """Repopulate the queue listbox from self._disc_queue."""
+        if not hasattr(self, "_disc_queue_listbox"):
+            return
+        self._disc_queue_listbox.delete(0, tk.END)
+        for i, entry in enumerate(self._disc_queue, 1):
+            suite   = entry.get("suite", "?")
+            pattern = entry.get("pattern", "*")
+            module  = entry.get("module", "")
+            mod_str = f"  mod={module!r}" if module else ""
+            self._disc_queue_listbox.insert(
+                tk.END,
+                f"  [{i}] {suite:<30}  pattern={pattern!r}{mod_str}",
+            )
+
+    def _run_queue_as_python(self) -> None:
+        """Run all queued Symbol Discovery configs and generate Python suites."""
+        if not self._disc_queue:
+            messagebox.showinfo("Empty Queue", "No entries in the discovery queue.")
+            return
+        if self._runner.running:
+            messagebox.showwarning("Busy", "A test is already running.")
+            return
+        port = self._port_var.get()
+        al   = self._auto_launch_var.get()
+        cmm  = self._cmm_var.get() or None
+        self._apply_port(port)
+        queue_copy = list(self._disc_queue)
+        self._log_line(
+            f"[GUI] ── Running {len(queue_copy)} queued discovery config(s) "
+            "→ Python suites ──", "info",
+        )
+        self._runner.run(self._do_run_queue_discover, entries=queue_copy,
+                         port=int(port), al=al, cmm=cmm)
+
+    def _run_queue_as_json(self) -> None:
+        """Run all queued Symbol Discovery configs and generate JSON suites."""
+        if not self._disc_queue:
+            messagebox.showinfo("Empty Queue", "No entries in the discovery queue.")
+            return
+        if self._runner.running:
+            messagebox.showwarning("Busy", "A test is already running.")
+            return
+        port = self._port_var.get()
+        al   = self._auto_launch_var.get()
+        cmm  = self._cmm_var.get() or None
+        self._apply_port(port)
+        queue_copy = list(self._disc_queue)
+        self._log_line(
+            f"[GUI] ── Running {len(queue_copy)} queued discovery config(s) "
+            "→ JSON suites ──", "info",
+        )
+        self._runner.run(self._do_run_queue_discover, entries=queue_copy,
+                         port=int(port), al=al, cmm=cmm)
+
+    @staticmethod
+    def _do_run_queue_discover(
+        entries: List[Dict[str, Any]],
+        port: int,
+        al: bool,
+        cmm: Optional[str],
+        stop_event: threading.Event,
+    ) -> None:
+        """Worker: run all queued discovery configs sequentially."""
+        for entry in entries:
+            if stop_event.is_set():
+                break
+            out_raw = entry.get("out_dir", "")
+            out_dir = Path(out_raw) if out_raw else None
+            try:
+                max_sym = int(entry.get("max_sym", 500))
+            except (ValueError, TypeError):
+                max_sym = 500
+            _run_discover(
+                output_dir=out_dir,
+                suite_name=entry.get("suite", "test_symbol_discovery"),
+                pattern=entry.get("pattern", "*"),
+                module_filter=entry.get("module", ""),
+                breakpoint_symbol=entry.get("bp", ""),
+                port=port,
+                auto_launch=al,
+                cmm_script=cmm,
+                resolve_addresses=bool(entry.get("resolve", True)),
+                max_symbols=max_sym,
+                verbose=bool(entry.get("verbose", False)),
+            )
+
+    # ------------------------------------------------------------------ T32 monitor
+
+    def _start_t32_monitor(self) -> None:
+        """Start the background thread that monitors T32 connection status."""
+        self._t32_monitor_stop.clear()
+        self._t32_monitor_thread = threading.Thread(
+            target=self._t32_monitor_loop,
+            daemon=True,
+            name="T32Monitor",
+        )
+        self._t32_monitor_thread.start()
+
+    def _t32_monitor_loop(self) -> None:
+        """Probe T32 RCL port every _T32_MONITOR_INTERVAL_S seconds."""
+        from GM_VIP_Automation_Framework.core.connection import T32Connection
+
+        last_state: Optional[bool] = None
+        while not self._t32_monitor_stop.is_set():
+            try:
+                port_str = self._port_var.get()
+                port = int(port_str) if port_str.isdigit() else 20000
+                probe = T32Connection(port=port)
+                connected = probe.try_connect()
+                if connected:
+                    probe.disconnect()
+            except Exception:
+                connected = False
+
+            if connected != last_state:
+                last_state = connected
+                self._q.put(("t32_status", connected))
+
+            self._t32_monitor_stop.wait(_T32_MONITOR_INTERVAL_S)
+
+    def _update_t32_led(self, connected: bool) -> None:
+        """Update the T32 LED color in the status bar (main thread only)."""
+        self._t32_connected = connected
+        if not hasattr(self, "_t32_led_canvas"):
+            return
+        if connected:
+            self._t32_led_canvas.itemconfig(
+                self._t32_led_oval, fill="#00cc44", outline="#008822",
+            )
+        else:
+            self._t32_led_canvas.itemconfig(
+                self._t32_led_oval, fill="#cc0000", outline="#880000",
+            )
+
+    # ------------------------------------------------------------------ GUI state persistence
+
+    def _load_gui_state(self) -> None:
+        """Load persisted GUI state from gui_state.json (best-effort)."""
+        if not _GUI_STATE_PATH.is_file():
+            return
+        try:
+            data: Dict[str, Any] = json.loads(
+                _GUI_STATE_PATH.read_text(encoding="utf-8")
+            )
+        except Exception:
+            return
+
+        def _set(var: tk.Variable, key: str) -> None:
+            if key in data:
+                try:
+                    var.set(data[key])
+                except Exception:
+                    pass
+
+        _set(self._mode_var,        "mode")
+        _set(self._port_var,        "port")
+        _set(self._auto_launch_var, "auto_launch")
+        _set(self._cmm_var,         "cmm")
+        _set(self._verbose_var,     "verbose")
+        _set(self._disc_pattern_var,  "disc_pattern")
+        _set(self._disc_module_var,   "disc_module")
+        _set(self._disc_bp_var,       "disc_bp")
+        _set(self._disc_suite_var,    "disc_suite")
+        _set(self._disc_max_sym_var,  "disc_max_sym")
+        _set(self._disc_resolve_var,  "disc_resolve")
+        _set(self._disc_verbose_var,  "disc_verbose")
+        _set(self._disc_output_var,   "disc_out_dir")
+        _set(self._tc_py_name_var,    "tc_py_name")
+        _set(self._tc_py_dir_var,     "tc_py_dir")
+        _set(self._tc_json_name_var,  "tc_json_name")
+        _set(self._tc_json_dir_var,   "tc_json_dir")
+
+        # Restore discovery queue
+        raw_queue = data.get("disc_queue", [])
+        if isinstance(raw_queue, list):
+            self._disc_queue = [e for e in raw_queue if isinstance(e, dict)]
+            self._refresh_disc_queue_list()
+
+        self._log_line("[GUI] GUI state restored from gui_state.json", "debug")
+
+    def _save_gui_state(self) -> None:
+        """Persist current GUI field values to gui_state.json."""
+        data: Dict[str, Any] = {
+            "mode":         self._mode_var.get(),
+            "port":         self._port_var.get(),
+            "auto_launch":  self._auto_launch_var.get(),
+            "cmm":          self._cmm_var.get(),
+            "verbose":      self._verbose_var.get(),
+            "disc_pattern": self._disc_pattern_var.get(),
+            "disc_module":  self._disc_module_var.get(),
+            "disc_bp":      self._disc_bp_var.get(),
+            "disc_suite":   self._disc_suite_var.get(),
+            "disc_max_sym": self._disc_max_sym_var.get(),
+            "disc_resolve": self._disc_resolve_var.get(),
+            "disc_verbose": self._disc_verbose_var.get(),
+            "disc_out_dir": self._disc_output_var.get(),
+            "tc_py_name":   self._tc_py_name_var.get(),
+            "tc_py_dir":    self._tc_py_dir_var.get(),
+            "tc_json_name": self._tc_json_name_var.get(),
+            "tc_json_dir":  self._tc_json_dir_var.get(),
+            "disc_queue":   self._disc_queue,
+        }
+        try:
+            _GUI_STATE_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            self._log_line(f"[GUI] GUI state saved to {_GUI_STATE_PATH}", "debug")
+        except Exception as exc:
+            self._log_line(f"[GUI] Could not save GUI state: {exc}", "warn")
+
+    def _on_close(self) -> None:
+        """Save GUI state and stop background threads before closing."""
+        self._t32_monitor_stop.set()
+        self._save_gui_state()
+        self.destroy()
+
+    # ------------------------------------------------------------------ countdown kill
+
+    def _countdown_kill_t32(self, proc: Optional[subprocess.Popen]) -> None:
+        """Show a 5-second countdown popup, then force-kill Trace32."""
+        dlg = tk.Toplevel(self)
+        dlg.title("Stopping Trace32 …")
+        dlg.resizable(False, False)
+        dlg.grab_set()
+        dlg.configure(bg="#fff3cd")
+
+        tk.Label(
+            dlg,
+            text="Trace32 did not exit gracefully.\nForce-killing in:",
+            font=("Arial", 11), bg="#fff3cd", pady=10, padx=20,
+        ).pack()
+
+        count_var = tk.StringVar(value="5")
+        count_lbl = tk.Label(
+            dlg, textvariable=count_var,
+            font=("Arial", 36, "bold"), fg="#c0392b", bg="#fff3cd",
+        )
+        count_lbl.pack(pady=(0, 10))
+
+        cancelled = threading.Event()
+
+        def _cancel() -> None:
+            cancelled.set()
+            dlg.destroy()
+
+        tk.Button(
+            dlg, text="Cancel (T32 already closed)",
+            font=("Arial", 9), bg=_CLR["btn_clear"], fg="#fff",
+            relief="flat", padx=10, pady=4,
+            command=_cancel,
+        ).pack(pady=(0, 12))
+
+        # Centre the dialog over the main window
+        self.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() - 300) // 2
+        y = self.winfo_y() + (self.winfo_height() - 180) // 2
+        dlg.geometry(f"300x180+{x}+{y}")
+
+        remaining = [5]
+
+        def _tick() -> None:
+            if cancelled.is_set():
+                return
+            remaining[0] -= 1
+            count_var.set(str(remaining[0]))
+            if remaining[0] <= 0:
+                dlg.destroy()
+                self._force_kill_t32_now(proc)
+            else:
+                dlg.after(1000, _tick)
+
+        dlg.after(1000, _tick)
+        self.wait_window(dlg)
+
+    def _force_kill_t32_now(self, proc: Optional[subprocess.Popen]) -> None:
+        """Immediately kill Trace32 (managed process or by name)."""
+        if proc is not None and proc.poll() is None:
+            try:
+                proc.kill()
+                proc.wait(timeout=3)
+            except Exception as exc:
+                self._log_line(f"[GUI] Force-kill failed: {exc}", "error")
+            finally:
+                self._t32_process = None
+            self._log_line("[GUI] Trace32 force-killed (PID kill).", "warn")
+            return
+
+        killed = self._kill_t32_by_name()
+        if killed:
+            self._log_line("[GUI] Trace32 force-killed (by name).", "warn")
+        else:
+            self._log_line("[GUI] No Trace32 process found to kill.", "info")
+        self._t32_process = None
+
     # ------------------------------------------------------------------ about
 
     def _show_about(self) -> None:
@@ -1559,9 +2359,16 @@ class GMVIPGui(tk.Tk):
             "  • Run Python test suites (mock or live)\n"
             "  • Run JSON-driven test cases\n"
             "  • Discover Trace32 symbols\n"
+            "  • Symbol Discovery Queue (save & batch-run configs)\n"
+            "  • Test Creator (new Python and JSON suites from templates)\n"
+            "  • Reports Browser (view all historical HTML reports)\n"
+            "  • T32 status LED (green=connected / red=disconnected)\n"
+            "  • Test running LED (orange=running)\n"
+            "  • Persistent GUI state (restored on next launch)\n"
             "  • Edit config.json settings\n"
             "  • Real-time colour-coded output log\n"
             "  • Stop long-running tests at any time\n"
+            "  • Force-kill T32 with 5-second countdown\n"
             "  • Open HTML reports in the browser\n\n"
             "Trace32 is a product of Lauterbach GmbH.\n"
             "MAGNA is a registered trademark of Magna International.",

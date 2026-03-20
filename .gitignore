@@ -31,3 +31,9 @@ STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/NAND_Standard_binaries/
 # CANoe / bench runtime logs – regenerated each run.
 STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/Command_List.log
 STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/python/Command_List.log
+
+# GM VIP GUI – persisted state (restored automatically on next launch)
+GM_VIP_Automation_Framework/gui_state.json
+
+# GUI screenshot generated during development
+gui_screenshot.png
