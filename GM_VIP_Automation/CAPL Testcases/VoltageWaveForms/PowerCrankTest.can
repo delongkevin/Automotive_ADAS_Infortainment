@@ -7,8 +7,8 @@ variables
   msTimer tStepTimer;
   
   // Test parameters
-  float gCurrentVoltage = 5.5;
-  float gTargetVoltage = 17.5; //6-16v   22v
+  float gCurrentVoltage = 6.0;
+  float gTargetVoltage = 17.0; //6-17v (clamped by SetVoltage to [6.0, 17.0])
   float gStepSize = 0.1;
   float gNormalVoltage = 12.3;
   dword gMinStepTime = 650;  
@@ -260,13 +260,13 @@ export testcase PowerCrankTest()
   write("Starting PowerCrankTest");
   write("Power Supply: BK Precision 1687B");
   write("COM Port: COM%d", gComPort);
-  write("Voltage Range: %.2fV to %.2fV", 5.9, 17.1);
+  write("Voltage Range: %.2fV to %.2fV", 6.0, 17.0);
   write("Step Size: %.2fV", gStepSize);
   write("Step Duration: %d-%d seconds (randomized)", gMinStepTime/1000, gMaxStepTime/1000);
   write("==================================================");
   
   // Reset current voltage
-  gCurrentVoltage = 5.9;
+  gCurrentVoltage = 6.0;
   gTestRunning = 1;
   
   // Open serial port

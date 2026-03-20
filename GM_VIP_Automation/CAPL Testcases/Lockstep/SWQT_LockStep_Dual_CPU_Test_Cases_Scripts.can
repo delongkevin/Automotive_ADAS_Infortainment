@@ -138,7 +138,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
     // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
   /*******************************************************************************************************************************************************/
 
-TestStepAddActionExpected( chActionText, chExpectedText );
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);
   
   
   /**************************************************************************************************************************************************************/    
@@ -278,11 +281,14 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
   E_DBGR_BreakpointCheckForHalt("GetHWIO_b_LockstepStN\\69");    
   
   
-//   /*******************************************************************************************************************************************************/    
-//    // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
-//  /*******************************************************************************************************************************************************/
+   /*******************************************************************************************************************************************************/    
+    // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
+  /*******************************************************************************************************************************************************/
 
-TestStepAddActionExpected( chActionText, chExpectedText );  
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);  
   
   
   /**************************************************************************************************************************************************************/    
@@ -426,7 +432,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
     // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
   /*******************************************************************************************************************************************************/
 
-TestStepAddActionExpected( chActionText, chExpectedText );   
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);   
   
   
   /**************************************************************************************************************************************************************/    
@@ -570,7 +579,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
     // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
   /*******************************************************************************************************************************************************/
 
-TestStepAddActionExpected( chActionText, chExpectedText );   
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);   
   
   
   /**************************************************************************************************************************************************************/    
@@ -711,7 +723,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
     // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
   /*******************************************************************************************************************************************************/
 
-TestStepAddActionExpected( chActionText, chExpectedText );  
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);  
   
   
   /**************************************************************************************************************************************************************/    
@@ -855,7 +870,10 @@ testcase The_Software_shall_Report_GetHWIO_b_LockstepStN_status_as_NoFailure_for
     // Test Step 15: Add retval  Variable in watch window and check value is NO_FAILURE.
   /*******************************************************************************************************************************************************/
 
-TestStepAddActionExpected( chActionText, chExpectedText );   
+  snprintf( chActionText, elCount(chActionText), "Add retval Variable in watch window and check value is NO_FAILURE.");
+  snprintf( chExpectedText, elCount(chExpectedText), "Variable added in watch window and verified the value retval = NO_FAILURE");
+  TestStepAddActionExpected( chActionText, chExpectedText );
+  E_DBGR_VariableCheck("retval", 0, Equal);   
   
   
   /**************************************************************************************************************************************************************/    

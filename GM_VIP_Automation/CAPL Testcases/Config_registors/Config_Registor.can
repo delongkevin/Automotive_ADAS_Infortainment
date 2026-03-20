@@ -60,6 +60,9 @@ testcase Verify_that_FAILED_REGISTER_ID_initialized_to_default_values_during_Pow
                                               // Test Step 1 Set a breakpoint at line Failed_Register_ID = GetHWIO_e_FailedRegID();                                                   
   /***************************************************************************************************************/
   
+  snprintf( chActionText, elCount(chActionText), "Verify ECU halted at breakpoint Test_ConfigRegister\\4.");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is halted at breakpoint Test_ConfigRegister\\4");
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\4");
 
   /***************************************************************************************************************/    
@@ -108,6 +111,9 @@ testcase Verify_that_FAILED_BIT_ID_initialized_to_default_values_during_PowerUp_
                                               // Test Step 1 Set a breakpoint at line Failed_BIT_ID = GetHWIO_e_FailedBitID();                                                                                                           
   /***************************************************************************************************************/
   
+  snprintf( chActionText, elCount(chActionText), "Verify ECU halted at breakpoint Test_ConfigRegister\\5.");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is halted at breakpoint Test_ConfigRegister\\5");
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\5");
 
   /***************************************************************************************************************/    
@@ -157,6 +163,9 @@ testcase Verify_that_FAILED_REGISTER_RECOVER_STATUS_initialized_to_default_value
                                               // Test Step 1 Set a breakpoint at line Failed_Register_Recover_Status = GetHWIO_b_FailedRegRecovSt();/* To Do*/                                                                                                                                   
   /***************************************************************************************************************/
   
+  snprintf( chActionText, elCount(chActionText), "Verify ECU halted at breakpoint Test_ConfigRegister\\6.");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is halted at breakpoint Test_ConfigRegister\\6");
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\6");
 
   /***************************************************************************************************************/    
@@ -206,6 +215,9 @@ testcase Verify_PerfmHWIO_b_ConfigRegTest_interface_for_test_status_returning_1_
                                               // Test Step 1 Set a breakpoint at line Configuration_Registers_Test_Status = PerfmHWIO_b_ConfigRegTest();                                                                                                                                                        
   /***************************************************************************************************************/
   
+  snprintf( chActionText, elCount(chActionText), "Verify ECU halted at breakpoint Test_ConfigRegister\\4.");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is halted at breakpoint Test_ConfigRegister\\4");
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\4");
   /***************************************************************************************************************/
                                               // Test Step 2 Verify the interface returns 1 when the configuration register value is the same as the expected value.                                        
@@ -254,6 +266,9 @@ testcase Verify_the_interface_GetHWIO_e_FailedRegID_returns_the_ID_as_0_when_no_
                                               // Test Step 1 Set a breakpoint at the line `FAILED_REGISTER_ID = GetHWIO_e_FailedRegID();`                                                                                                                                                   
   /***************************************************************************************************************/
   
+  snprintf( chActionText, elCount(chActionText), "Verify ECU halted at breakpoint Test_ConfigRegister\\4.");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is halted at breakpoint Test_ConfigRegister\\4");
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\4");
   /***************************************************************************************************************/
                                               // Test Step 2 Verify the interface returns 0 when the test is passed.                                      
@@ -302,6 +317,9 @@ testcase Verify_the_interface_GetHWIO_e_FailedBitID_returns_the_ID_as_0_when_the
                                               // Test Step 1 Set a breakpoint at the line `FAILED_BIT_ID = GetHWIO_e_FailedBitID();`.	                                                                                                                                                   
   /***************************************************************************************************************/
   
+  snprintf( chActionText, elCount(chActionText), "Verify ECU halted at breakpoint Test_ConfigRegister\\5.");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is halted at breakpoint Test_ConfigRegister\\5");
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\5");
   /***************************************************************************************************************/
                                               // Test Step 2 Verify the interface returns 0 when the test is passed.                                      
@@ -350,6 +368,9 @@ testcase Verify_the_interface_GetHWIO_b_FailedRegRecovSt_returns_the_recovery_st
                                               // Test Step 1 Set a breakpoint at the line Failed_Register_Recover_Status = GetHWIO_b_FailedRegRecovSt();/* To Do*/                                                                                                                                                   
   /***************************************************************************************************************/
   
+  snprintf( chActionText, elCount(chActionText), "Verify ECU halted at breakpoint Test_ConfigRegister\\6.");
+  snprintf( chExpectedText, elCount(chExpectedText), "ECU is halted at breakpoint Test_ConfigRegister\\6");
+  TestStepAddActionExpected( chActionText, chExpectedText );
   E_DBGR_BreakpointCheckForHalt("Test_ConfigRegister\\6");
   /***************************************************************************************************************/
                                               // Test Step 2 Verify the interface returns 0 when the test is passed.                                      
@@ -367,4 +388,3 @@ testcase Verify_the_interface_GetHWIO_b_FailedRegRecovSt_returns_the_recovery_st
   A_DBGR_BreakpointDeleteAll();
   A_DBGR_Go();
 }
-
