@@ -36,6 +36,7 @@ Public API
 
 from __future__ import annotations
 
+import fnmatch
 import re
 import sys
 import tempfile
@@ -261,48 +262,177 @@ def _classify_kind(name: str, kind_col: str) -> SymbolKind:
     return SymbolKind.FUNCTION   # default: treat as function
 
 
-def _fetch_symbol_list(pattern: str, conn) -> str:
-    """Run ``SYMBOL.LIST <pattern>`` and return the raw AREA text.
+def _make_tmp_path(suffix: str) -> Path:
+    """Return a writable temp-file path that T32 can also access.
 
-    Uses the AREA-buffer-then-save approach from :func:`symbols.list_symbols`.
-    Returns an empty string when T32 is not available or the command fails.
+    Trace32 runs as a Windows process that may not have write permission to
+    the user's ``AppData\\Local\\Temp`` folder.  Prefer the current working
+    directory (the folder from which ``python main.py`` is executed), which
+    both Python and T32 can always reach.  Fall back to the OS temp dir only
+    if CWD is not writable.
     """
+    last_exc: Optional[Exception] = None
+    for tmp_dir in (Path.cwd(), None):
+        try:
+            file_kwargs: dict = dict(suffix=suffix, delete=False, mode="w", encoding="utf-8")
+            if tmp_dir is not None:
+                file_kwargs["dir"] = str(tmp_dir)
+            with tempfile.NamedTemporaryFile(**file_kwargs) as fh:
+                return Path(fh.name)
+        except OSError as exc:
+            last_exc = exc
+    raise OSError(
+        f"Cannot create a writable temp file in CWD or system temp dir: {last_exc}"
+    )
+
+
+def _fetch_symbol_list(pattern: str, conn) -> str:
+    """Run ``SYMBOL.LIST <pattern>`` and return the raw text.
+
+    Tries three strategies in order:
+
+    1. **SYMBOL.LIST.SAVE** – direct file export (modern T32 firmware ≥ ~2020).
+       T32 writes the list-window content straight to the temp file.  Returns
+       immediately; an empty result means no ELF is loaded.
+
+    2. **PRACTICE DO-script** – writes a temp CMM that uses T32 PRACTICE file
+       I/O (``OPEN``/``WRITE``/``CLOSE``) with ``SYMBOL.COUNT()`` and
+       ``SYMBOL.NAME(n)`` to enumerate every symbol.  Supported on T32
+       firmware from approximately 2010 onward.  When the *pattern* is not
+       the catch-all ``"*"`` a Python-level :func:`fnmatch.fnmatch` filter is
+       applied to the returned names so only matching symbols are kept.
+
+    3. **AREA-buffer last resort** – opens the PRACTICE AREA, clears it, runs
+       ``SYMBOL.LIST``, then saves the AREA.  On most modern T32 versions
+       ``SYMBOL.LIST`` outputs to its own GUI window (not the AREA), so this
+       strategy is unlikely to succeed; it is kept only as a safety net.  The
+       polling timeout is capped at 5 seconds to avoid a 60-second hang.
+
+    Temp files are placed in the current working directory so that the T32
+    process (which may lack write access to the system temp folder) can reach
+    them.  A fallback to the OS temp dir is used if CWD is not writable.
+
+    Returns an empty string when T32 is not available or all strategies fail.
+    """
+    tmp_txt: Optional[Path] = None
+    tmp_cmm: Optional[Path] = None
     try:
+        tmp_txt = _make_tmp_path(".txt")
+
+        # ------------------------------------------------------------------
+        # Strategy 1: SYMBOL.LIST.SAVE – direct file export.
+        # SYMBOL.LIST opens its own GUI window in Trace32; AREA.SAVE cannot
+        # capture that output.  SYMBOL.LIST.SAVE writes the window content
+        # directly to a file, bypassing the AREA entirely.
+        # ------------------------------------------------------------------
+        try:
+            conn.cmd(f"SYMBOL.LIST {pattern}")
+            conn.cmd(f"SYMBOL.LIST.SAVE {tmp_txt}")
+            text = tmp_txt.read_text(encoding="utf-8", errors="replace") if tmp_txt.exists() else ""
+            logger.debug("_fetch_symbol_list: SYMBOL.LIST.SAVE strategy succeeded.")
+            return text
+        except Exception as exc:  # noqa: BLE001
+            logger.debug(
+                "SYMBOL.LIST.SAVE unavailable (%s); trying PRACTICE DO-script.", exc
+            )
+
+        # ------------------------------------------------------------------
+        # Strategy 2: PRACTICE DO-script using SYMBOL.COUNT / SYMBOL.NAME.
+        # Writes a temp CMM that enumerates all symbols via file I/O.
+        # The DO command is synchronous: the output file is ready when it
+        # returns.  A Python fnmatch filter is applied when pattern != "*".
+        # Both the CMM and output .txt are in CWD so T32 can write to them.
+        # ------------------------------------------------------------------
+        try:
+            tmp_cmm = _make_tmp_path(".cmm")
+            # Use forward slashes in the CMM so Windows paths don't need
+            # extra escaping (T32 PRACTICE accepts both separators).
+            txt_path_fwd = str(tmp_txt).replace("\\", "/")
+            tmp_cmm.write_text(
+                "; Auto-generated by GM VIP Automation Framework\n"
+                "; Enumerate all symbols via PRACTICE file I/O\n"
+                "LOCAL &i &cnt &sym\n"
+                "; SYMBOL.LIST populates SYMBOL.COUNT()/SYMBOL.NAME() in this context\n"
+                f"SYMBOL.LIST {pattern}\n"
+                f'OPEN #1 "{txt_path_fwd}" /Create\n'
+                "&cnt=SYMBOL.COUNT()\n"
+                "&i=0.\n"
+                "WHILE &i<&cnt\n"
+                "(\n"
+                "  &sym=SYMBOL.NAME(&i)\n"
+                '  IF "&sym"!=""\n'
+                "  (\n"
+                '    WRITE #1 "&sym"\n'
+                "  )\n"
+                "  &i=&i+1.\n"
+                ")\n"
+                "CLOSE #1\n"
+                "ENDDO\n",
+                encoding="utf-8",
+            )
+            cmm_path_fwd = str(tmp_cmm).replace("\\", "/")
+            conn.cmd(f"DO {cmm_path_fwd}")
+            text = tmp_txt.read_text(encoding="utf-8", errors="replace") if tmp_txt.exists() else ""
+            if text:
+                # Apply a Python-level glob filter when the caller specified a
+                # non-trivial pattern (CMM dumps all symbols; SYMBOL.COUNT()
+                # does not accept a wildcard filter in all T32 versions).
+                if pattern and pattern != "*":
+                    pat_lower = pattern.lower()
+                    filtered: List[str] = []
+                    for line in text.splitlines():
+                        name = line.strip()
+                        if not name:
+                            continue
+                        # Match against the full module-qualified name or just
+                        # the short name after the last path separator.
+                        short = re.split(r"[/\\]", name)[-1]
+                        if (
+                            fnmatch.fnmatch(name.lower(), pat_lower)
+                            or fnmatch.fnmatch(short.lower(), pat_lower)
+                        ):
+                            filtered.append(line)
+                    text = "\n".join(filtered)
+                logger.debug(
+                    "_fetch_symbol_list: DO-script strategy succeeded (%d chars).", len(text)
+                )
+                return text
+            logger.debug("_fetch_symbol_list: DO-script returned empty output.")
+        except Exception as exc:  # noqa: BLE001
+            logger.debug(
+                "DO-script approach failed (%s); falling back to AREA (last resort).", exc
+            )
+
+        # ------------------------------------------------------------------
+        # Strategy 3: AREA-buffer last resort.
+        # On most modern T32 versions SYMBOL.LIST does NOT output to AREA;
+        # this strategy is kept only as a safety net.  The polling timeout is
+        # capped at 5 s to avoid a 60-second hang.
+        # ------------------------------------------------------------------
         conn.cmd("AREA")
         conn.cmd("AREA.CLEAR")
         conn.cmd(f"SYMBOL.LIST {pattern}")
 
-        with tempfile.NamedTemporaryFile(
-            suffix=".txt", delete=False, mode="w", encoding="utf-8"
-        ) as tf:
-            tmp = Path(tf.name)
-
-        # Poll until AREA.SAVE succeeds.  In practice, Trace32 executes
-        # SYMBOL.LIST synchronously so the AREA is populated before the
-        # PRACTICE API returns.  We retry only to tolerate transient RCL
-        # hiccups; a single successful save is sufficient even when the
-        # symbol list is empty.
-        deadline = time.monotonic() + settings.cmm_timeout_s
-        saved = False
+        deadline = time.monotonic() + min(settings.cmm_timeout_s, 5.0)
         while time.monotonic() < deadline:
-            time.sleep(0.1)
+            time.sleep(0.2)
             try:
-                conn.cmd(f"AREA.SAVE {tmp}")
-                saved = True   # command succeeded → content (or empty) is final
-                break
+                conn.cmd(f"AREA.SAVE {tmp_txt}")
             except Exception:  # noqa: BLE001
                 continue
+            if tmp_txt.exists() and tmp_txt.stat().st_size > 0:
+                break
 
-        if not saved:
-            logger.warning("AREA.SAVE did not succeed within %.0fs.", settings.cmm_timeout_s)
-
-        text = tmp.read_text(encoding="utf-8", errors="replace") if tmp.exists() else ""
-        if tmp.exists():
-            tmp.unlink(missing_ok=True)
+        text = tmp_txt.read_text(encoding="utf-8", errors="replace") if tmp_txt.exists() else ""
         return text
     except Exception as exc:  # noqa: BLE001
         logger.warning("_fetch_symbol_list('%s') failed: %s", pattern, exc)
         return ""
+    finally:
+        if tmp_txt is not None and tmp_txt.exists():
+            tmp_txt.unlink(missing_ok=True)
+        if tmp_cmm is not None and tmp_cmm.exists():
+            tmp_cmm.unlink(missing_ok=True)
 
 
 def _parse_symbol_list(raw: str) -> List[DiscoveredSymbol]:
