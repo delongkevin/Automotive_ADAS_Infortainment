@@ -263,6 +263,7 @@ class GMVIPGui(tk.Tk):
         self._runner = _TestRunner(self._q)
         self._last_report_path: Optional[Path] = None
         self._t32_process: Optional[subprocess.Popen] = None
+        self._t32_wait_thread: Optional[threading.Thread] = None
 
         # --- tkinter variables (must live on self so GC keeps them) ---------
         self._mode_var        = tk.StringVar(value="mock")
@@ -1161,11 +1162,64 @@ class GMVIPGui(tk.Tk):
     # ------------------------------------------------------------------ T32 open/close
 
     def _open_t32(self) -> None:
-        """Launch Trace32 using the exe path from config.json / settings."""
+        """Launch Trace32, or detect an already-running instance.
+
+        Detection order
+        ---------------
+        1. Probe the configured RCL port.  If Trace32 is already listening,
+           log the fact and return – no second instance is started.
+        2. If a process launched by this session is still alive (but the port
+           hasn't opened yet), skip the launch and just wait for the port.
+        3. Otherwise validate the exe path, start the process, then poll the
+           port in a background thread so the UI remains responsive.  The log
+           panel will show "[GUI] Trace32 ready on port …" when the API
+           connection becomes available.
+        """
         from GM_VIP_Automation_Framework.config import settings
         from GM_VIP_Automation_Framework.core.connection import T32Connection
         from GM_VIP_Automation_Framework.utils.exceptions import T32LaunchError
 
+        port_str = self._port_var.get()
+        try:
+            port = int(port_str)
+        except ValueError:
+            port = settings.rcl_port
+
+        # ── Step 1: check whether T32 is already listening on the RCL port ──
+        probe = T32Connection(port=port)
+        if probe.try_connect():
+            probe.disconnect()
+            self._log_line(
+                f"[GUI] Trace32 is already running on port {port} – no launch needed.",
+                "info",
+            )
+            return
+
+        # ── Step 2: managed process still starting up? ────────────────────
+        proc: Optional[subprocess.Popen] = self._t32_process
+        if proc is not None and proc.poll() is None:
+            # Avoid spawning a new wait thread if one is already alive.
+            if self._t32_wait_thread is not None and self._t32_wait_thread.is_alive():
+                self._log_line(
+                    f"[GUI] Trace32 (PID={proc.pid}) is still starting up – "
+                    f"already waiting for RCL port {port} to open …",
+                    "info",
+                )
+                return
+            self._log_line(
+                f"[GUI] Trace32 (PID={proc.pid}) is still starting up – "
+                f"waiting for RCL port {port} to open …",
+                "info",
+            )
+            self._t32_wait_thread = threading.Thread(
+                target=self._wait_for_t32_port,
+                args=(port, settings.connect_max_wait_s),
+                daemon=True,
+            )
+            self._t32_wait_thread.start()
+            return
+
+        # ── Step 3: validate the exe path ─────────────────────────────────
         exe = settings.t32_exe_path or ""
         if not exe or not Path(exe).is_file():
             messagebox.showerror(
@@ -1175,6 +1229,7 @@ class GMVIPGui(tk.Tk):
             )
             return
 
+        # ── Step 4: launch T32 ────────────────────────────────────────────
         cmm = self._cmm_var.get() or None
         try:
             conn = T32Connection(
@@ -1189,8 +1244,55 @@ class GMVIPGui(tk.Tk):
             )
         except T32LaunchError as exc:
             messagebox.showerror("T32 Launch Error", str(exc))
+            return
         except Exception as exc:
             messagebox.showerror("T32 Launch Error", f"Unexpected error:\n{exc}")
+            return
+
+        # ── Step 5: poll the RCL port in a background thread ──────────────
+        max_wait = settings.connect_max_wait_s
+        self._log_line(
+            f"[GUI] Waiting up to {max_wait:.0f}s for Trace32 RCL port {port} to open …",
+            "info",
+        )
+        self._t32_wait_thread = threading.Thread(
+            target=self._wait_for_t32_port,
+            args=(port, max_wait),
+            daemon=True,
+        )
+        self._t32_wait_thread.start()
+
+    def _wait_for_t32_port(self, port: int, max_wait_s: float) -> None:
+        """Poll the RCL port until Trace32 is accepting connections or timeout.
+
+        Runs in a daemon background thread so the UI stays responsive.
+        Status messages are posted to the queue and appear in the log panel.
+        """
+        from GM_VIP_Automation_Framework.core.connection import T32Connection
+
+        deadline = time.monotonic() + max_wait_s
+        while time.monotonic() < deadline:
+            probe = T32Connection(port=port)
+            if probe.try_connect():
+                probe.disconnect()
+                self._q.put((
+                    "log",
+                    f"[GUI] ✔ Trace32 ready on port {port}. You can now run tests.",
+                    "pass",
+                ))
+                return
+            time.sleep(1.0)
+
+        self._q.put((
+            "log",
+            (
+                f"[GUI] Trace32 did not open port {port} within "
+                f"{max_wait_s:.0f}s. "
+                f"Verify that config.t32 includes 'RCL=NETASSIST / PORT={port}' "
+                "and that your CMM startup script opens the API connection."
+            ),
+            "warn",
+        ))
 
     def _close_t32(self) -> None:
         """Close Trace32: graceful quit via RCL, then force-kill if needed."""
