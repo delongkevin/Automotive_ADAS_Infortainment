@@ -1194,9 +1194,6 @@ class GMVIPGui(tk.Tk):
 
     def _close_t32(self) -> None:
         """Close Trace32: graceful quit via RCL, then force-kill if needed."""
-        import signal
-
-        from GM_VIP_Automation_Framework.config import settings
         from GM_VIP_Automation_Framework.core.connection import T32Connection
 
         port = self._port_var.get()
@@ -1206,14 +1203,27 @@ class GMVIPGui(tk.Tk):
         try:
             conn = T32Connection(port=int(port))
             if conn.try_connect():
-                conn.cmd("QUIT")
-                self._log_line("[GUI] Sent QUIT command to Trace32 via RCL.", "info")
-                time.sleep(_T32_QUIT_WAIT_S)
+                try:
+                    conn.cmd("QUIT")
+                    self._log_line("[GUI] Sent QUIT command to Trace32 via RCL.", "info")
+                finally:
+                    conn.disconnect()
+                # Schedule the rest of the shutdown after the wait so the UI stays responsive
+                self.after(int(_T32_QUIT_WAIT_S * 1000), self._finish_close_t32)
                 graceful_ok = True
+            else:
+                self._finish_close_t32(graceful_ok=False)
         except Exception as exc:
             self._log_line(f"[GUI] Graceful QUIT failed: {exc}", "warn")
+            self._finish_close_t32(graceful_ok=False)
 
-        # Kill the process we launched (if any)
+    def _finish_close_t32(self, graceful_ok: bool = True) -> None:
+        """Complete T32 shutdown: kill managed process or fall back to name-based kill."""
+        from GM_VIP_Automation_Framework.core.connection import T32Connection
+
+        port = self._port_var.get()
+
+        # Kill the process we launched (if any) and it is still alive
         proc: Optional[subprocess.Popen] = getattr(self, "_t32_process", None)
         if proc is not None and proc.poll() is None:
             if not graceful_ok:
@@ -1232,15 +1242,37 @@ class GMVIPGui(tk.Tk):
             finally:
                 self._t32_process = None
             self._log_line("[GUI] Trace32 process stopped.", "info")
-        else:
-            # Try to find & kill any running T32 process by name
+            return
+
+        # No managed process – only attempt name-based kill when graceful shutdown failed
+        if graceful_ok:
+            self._log_line("[GUI] Trace32 exited gracefully.", "info")
+            return
+
+        # Re-probe the RCL port to confirm Trace32 is still reachable before killing by name
+        still_running = False
+        try:
+            probe = T32Connection(port=int(port))
+            if probe.try_connect():
+                still_running = True
+                probe.disconnect()
+        except Exception:
+            still_running = False
+
+        if still_running:
             killed = self._kill_t32_by_name()
-            if not killed and not graceful_ok:
+            if not killed:
                 messagebox.showinfo(
                     "Close T32",
                     "No Trace32 process was found to close.\n"
                     "It may have already exited, or was started externally.",
                 )
+        else:
+            messagebox.showinfo(
+                "Close T32",
+                "No Trace32 process was found to close.\n"
+                "It may have already exited, or was started externally.",
+            )
 
     def _kill_t32_by_name(self) -> bool:
         """Find and kill Trace32 processes by executable name. Returns True if any killed."""
@@ -1254,12 +1286,13 @@ class GMVIPGui(tk.Tk):
         if system == "windows":
             for name in t32_names:
                 try:
-                    subprocess.run(
+                    result = subprocess.run(
                         ["taskkill", "/F", "/IM", name],
                         capture_output=True, check=False,
                     )
-                    killed = True
-                    self._log_line(f"[GUI] taskkill /F /IM {name}", "warn")
+                    if result.returncode == 0:
+                        killed = True
+                        self._log_line(f"[GUI] taskkill /F /IM {name}", "warn")
                 except Exception:
                     pass
         else:
