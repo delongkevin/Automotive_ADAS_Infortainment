@@ -145,7 +145,7 @@ if _REPO_ROOT not in sys.path:
 #   2. Open Trace32 and load your ARM debug session.
 #   3. Confirm config.t32 has:  RCL=NETASSIST  PACKLEN=1024  PORT=20000
 # ============================================================================
-USE_LIVE_T32    = True  # ← flip to True to connect to real Trace32 hardware
+USE_LIVE_T32    = False  # ← flip to True to connect to real Trace32 hardware
 T32_LIVE_PORT    = 20000  # Trace32 API/intercom port  (must match PORT= in config.t32)
 T32_LIVE_PACKLEN = 1024   # RCL packet length in bytes (must match PACKLEN= in config.t32)
 
@@ -164,7 +164,7 @@ T32_LIVE_PACKLEN = 1024   # RCL packet length in bytes (must match PACKLEN= in c
 #                      (python-can) instead of CANoe.  Useful when CANoe is
 #                      not available but you have a Vector/PEAK CAN interface.
 # ============================================================================
-USE_CANOE       = True  # ← flip to True when CANoe is open (live mode only)
+USE_CANOE       = False  # ← flip to True when CANoe is open (live mode only)
 USE_CAN_BUS     = False  # ← flip to True to use python-can hardware adapter
 
 # CANoe / python-can settings (only used when USE_LIVE_T32 = True)
@@ -180,7 +180,7 @@ CAN_BUS_BITRATE     = 500_000    # bits per second
 #                            power-cycle the ECU before test groups.
 # USE_POWER_SUPPLY = False → ECU is already powered; power supply untouched.
 # ============================================================================
-USE_POWER_SUPPLY = True      # ← flip to True when PSU is connected on COM4
+USE_POWER_SUPPLY = False      # ← flip to True when PSU is connected on COM4
 PSU_PORT         = "COM4"    # Serial port (matches the bench USB-CDC assignment)
 PSU_VOLTAGE_V    = 12.0      # ECU supply voltage in volts
 PSU_CURRENT_A    = 2.0       # ECU supply current limit in amperes
