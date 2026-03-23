@@ -40,6 +40,7 @@ import json
 import os
 import platform
 import queue
+import re
 import subprocess
 import sys
 import threading
@@ -48,7 +49,7 @@ import traceback
 import unittest
 import webbrowser
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 # ---------------------------------------------------------------------------
 # Path bootstrap (same as main.py so imports work from any working directory)
@@ -275,6 +276,9 @@ class GMVIPGui(tk.Tk):
         self._t32_monitor_thread: Optional[threading.Thread] = None
         self._t32_connected: bool = False
         self._t32_monitor_stop = threading.Event()
+        # Thread-safe copy of the RCL port for the monitor thread (plain int,
+        # updated on the main thread whenever the Entry widget changes or state loads).
+        self._monitor_port: int = 20000
 
         # Symbol Discovery queue: list of dicts with all SD parameters
         self._disc_queue: List[Dict[str, Any]] = []
@@ -287,6 +291,9 @@ class GMVIPGui(tk.Tk):
         self._verbose_var     = tk.BooleanVar(value=False)
         self._status_var      = tk.StringVar(value="Ready")
         self._anim_idx        = 0
+
+        # Keep _monitor_port in sync whenever the port Entry is edited.
+        self._port_var.trace_add("write", self._on_port_var_changed)
 
         # Test Creator variables
         self._tc_py_name_var   = tk.StringVar(value="")
@@ -1143,11 +1150,20 @@ class GMVIPGui(tk.Tk):
 
     # ------------------------------------------------------------------ config
 
+    def _on_port_var_changed(self, *_args) -> None:
+        """Keep ``_monitor_port`` in sync whenever the port Entry is edited (main thread)."""
+        try:
+            self._monitor_port = int(self._port_var.get())
+        except ValueError:
+            pass  # Leave the previous valid port in place while the user is typing
+
     def _apply_port(self, port_str: str) -> None:
         """Push the GUI port value into the shared settings singleton."""
         try:
+            port_int = int(port_str)
             from GM_VIP_Automation_Framework.config import settings
-            settings.rcl_port = int(port_str)
+            settings.rcl_port = port_int
+            self._monitor_port = port_int
         except Exception:
             pass
 
@@ -1833,14 +1849,25 @@ class GMVIPGui(tk.Tk):
 
     def _create_py_suite(self) -> None:
         """Create a new Python test suite from template and open in editor."""
-        name = self._tc_py_name_var.get().strip()
-        if not name:
+        raw = self._tc_py_name_var.get().strip()
+        if not raw:
             messagebox.showwarning("Name Required", "Please enter a suite name.")
             return
-        # Sanitise: strip .py if supplied
-        name = name.rstrip("/\\").replace(" ", "_")
-        if name.endswith(".py"):
-            name = name[:-3]
+
+        # Strip a trailing .py suffix if the user typed it
+        if raw.endswith(".py"):
+            raw = raw[:-3]
+
+        # Restrict to safe identifier characters only – reject any path separators,
+        # dots (which could be used for directory traversal), and special chars.
+        name = re.sub(r"[^A-Za-z0-9_]", "_", raw).strip("_")
+        if not name:
+            messagebox.showerror(
+                "Invalid Name",
+                "Suite name must contain at least one letter, digit or underscore.\n"
+                "Characters like '/', '..', '-' are not allowed.",
+            )
+            return
 
         dest_str = self._tc_py_dir_var.get().strip()
         dest = Path(dest_str) if dest_str else (_FRAMEWORK_DIR / "tests")
@@ -1862,15 +1889,25 @@ class GMVIPGui(tk.Tk):
 
     def _create_json_suite(self) -> None:
         """Create a new JSON test-case file from template and open in editor."""
-        name = self._tc_json_name_var.get().strip()
-        if not name:
+        raw = self._tc_json_name_var.get().strip()
+        if not raw:
             messagebox.showwarning("Name Required", "Please enter a suite name.")
             return
-        name = name.strip().replace(" ", "_")
-        # Strip suffix if already supplied
+
+        # Strip trailing suffixes if the user typed them
         for suffix in ("_test_cases.json", ".json"):
-            if name.endswith(suffix):
-                name = name[: -len(suffix)]
+            if raw.endswith(suffix):
+                raw = raw[: -len(suffix)]
+
+        # Same safe-character restriction as the Python creator
+        name = re.sub(r"[^A-Za-z0-9_]", "_", raw).strip("_")
+        if not name:
+            messagebox.showerror(
+                "Invalid Name",
+                "Suite name must contain at least one letter, digit or underscore.\n"
+                "Characters like '/', '..', '-' are not allowed.",
+            )
+            return
 
         dest_str = self._tc_json_dir_var.get().strip()
         dest = Path(dest_str) if dest_str else _FRAMEWORK_DIR
@@ -1960,19 +1997,26 @@ class GMVIPGui(tk.Tk):
             self._reports_listbox.insert(tk.END, "  (no reports found – run a test suite first)")
             return
 
-        reports = sorted(
-            report_root.rglob("*.html"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
-        if not reports:
+        # Precompute (mtime, path) once per file; skip files deleted mid-scan.
+        candidates: List[Tuple[float, Path]] = []
+        for p in report_root.rglob("*.html"):
+            try:
+                candidates.append((p.stat().st_mtime, p))
+            except OSError:
+                pass  # file was removed between rglob and stat
+
+        if not candidates:
             self._reports_listbox.insert(tk.END, "  (no reports found – run a test suite first)")
             return
 
-        for p in reports:
-            mtime = datetime.datetime.fromtimestamp(p.stat().st_mtime)
+        candidates.sort(key=lambda t: t[0], reverse=True)
+        for mtime_ts, p in candidates:
+            mtime = datetime.datetime.fromtimestamp(mtime_ts)
             ts = mtime.strftime("%Y-%m-%d %H:%M")
-            label = f"  {ts}  {p.relative_to(_FRAMEWORK_DIR)}"
+            try:
+                label = f"  {ts}  {p.relative_to(_FRAMEWORK_DIR)}"
+            except ValueError:
+                label = f"  {ts}  {p}"
             self._reports_listbox.insert(tk.END, label)
             self._report_paths.append(p)
 
@@ -2076,17 +2120,21 @@ class GMVIPGui(tk.Tk):
         if self._runner.running:
             messagebox.showwarning("Busy", "A test is already running.")
             return
-        port = self._port_var.get()
+        try:
+            port = int(self._port_var.get())
+        except ValueError:
+            from GM_VIP_Automation_Framework.config import settings
+            port = settings.rcl_port
         al   = self._auto_launch_var.get()
         cmm  = self._cmm_var.get() or None
-        self._apply_port(port)
+        self._apply_port(str(port))
         queue_copy = list(self._disc_queue)
         self._log_line(
             f"[GUI] ── Running {len(queue_copy)} queued discovery config(s) "
             "→ Python suites ──", "info",
         )
         self._runner.run(self._do_run_queue_discover, entries=queue_copy,
-                         port=int(port), al=al, cmm=cmm)
+                         port=port, al=al, cmm=cmm)
 
     def _run_queue_as_json(self) -> None:
         """Run all queued Symbol Discovery configs and generate JSON suites."""
@@ -2096,17 +2144,21 @@ class GMVIPGui(tk.Tk):
         if self._runner.running:
             messagebox.showwarning("Busy", "A test is already running.")
             return
-        port = self._port_var.get()
+        try:
+            port = int(self._port_var.get())
+        except ValueError:
+            from GM_VIP_Automation_Framework.config import settings
+            port = settings.rcl_port
         al   = self._auto_launch_var.get()
         cmm  = self._cmm_var.get() or None
-        self._apply_port(port)
+        self._apply_port(str(port))
         queue_copy = list(self._disc_queue)
         self._log_line(
             f"[GUI] ── Running {len(queue_copy)} queued discovery config(s) "
             "→ JSON suites ──", "info",
         )
         self._runner.run(self._do_run_queue_discover, entries=queue_copy,
-                         port=int(port), al=al, cmm=cmm)
+                         port=port, al=al, cmm=cmm)
 
     @staticmethod
     def _do_run_queue_discover(
@@ -2153,14 +2205,18 @@ class GMVIPGui(tk.Tk):
         self._t32_monitor_thread.start()
 
     def _t32_monitor_loop(self) -> None:
-        """Probe T32 RCL port every _T32_MONITOR_INTERVAL_S seconds."""
+        """Probe T32 RCL port every _T32_MONITOR_INTERVAL_S seconds.
+
+        Intentionally avoids touching any Tkinter variables (not thread-safe).
+        Uses the plain ``_monitor_port`` int attribute, which is kept in sync
+        by ``_on_port_var_changed`` on the main thread.
+        """
         from GM_VIP_Automation_Framework.core.connection import T32Connection
 
         last_state: Optional[bool] = None
         while not self._t32_monitor_stop.is_set():
             try:
-                port_str = self._port_var.get()
-                port = int(port_str) if port_str.isdigit() else 20000
+                port = self._monitor_port
                 probe = T32Connection(port=port)
                 connected = probe.try_connect()
                 if connected:
@@ -2213,6 +2269,9 @@ class GMVIPGui(tk.Tk):
         _set(self._auto_launch_var, "auto_launch")
         _set(self._cmm_var,         "cmm")
         _set(self._verbose_var,     "verbose")
+
+        # Sync the thread-safe port copy after restoring the Tkinter variable.
+        self._on_port_var_changed()
         _set(self._disc_pattern_var,  "disc_pattern")
         _set(self._disc_module_var,   "disc_module")
         _set(self._disc_bp_var,       "disc_bp")
