@@ -116,10 +116,24 @@ _GUI_STATE_PATH = _FRAMEWORK_DIR / "gui_state.json"
 # Interval in seconds between automatic T32 connection probes.
 _T32_MONITOR_INTERVAL_S = 3
 
+# Seconds of continuous T32 detection failure before showing a retry dialog.
+_T32_DETECT_WARN_S = 30
+
 # Common Trace32 executable names used as a fallback when the setting is empty.
 _T32_FALLBACK_EXE_NAMES = frozenset({
     "t32marm.exe", "t32marm64.exe", "t32mppc.exe",
     "t32marm",     "t32marm64",     "t32mppc",
+})
+
+# C keyword / type names excluded from symbol extraction results.
+_C_KEYWORDS: frozenset = frozenset({
+    'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break',
+    'continue', 'return', 'goto', 'sizeof', 'typedef', 'struct',
+    'union', 'enum', 'void', 'int', 'char', 'float', 'double',
+    'short', 'long', 'unsigned', 'signed', 'const', 'static',
+    'extern', 'volatile', 'auto', 'register', 'inline',
+    'NULL', 'true', 'false', 'uint8_t', 'uint16_t', 'uint32_t',
+    'int8_t', 'int16_t', 'int32_t', 'bool',
 })
 
 # ---------------------------------------------------------------------------
@@ -279,9 +293,22 @@ class GMVIPGui(tk.Tk):
         # Thread-safe copy of the RCL port for the monitor thread (plain int,
         # updated on the main thread whenever the Entry widget changes or state loads).
         self._monitor_port: int = 20000
+        # Thread-safe copy of the configured RCL packlen for the monitor/wait threads.
+        # Updated from settings when a port change is applied.
+        self._monitor_packlen: int = 1024
+        # Thread-safe mode copy for the monitor thread (plain str).
+        self._monitor_mode: str = "mock"
+        # Whether the 30-second timeout warning was already sent in this failure cycle.
+        self._t32_warn_sent: bool = False
+        # Signalled by the UI when the user clicks "Retry Now" or switches modes,
+        # so the monitor thread resets its failure-streak start time immediately.
+        self._t32_fail_reset = threading.Event()
 
         # Symbol Discovery queue: list of dicts with all SD parameters
         self._disc_queue: List[Dict[str, Any]] = []
+
+        # Registered C source files (for the C Source Files tab)
+        self._c_files: List[Path] = []
 
         # --- tkinter variables (must live on self so GC keeps them) ---------
         self._mode_var        = tk.StringVar(value="mock")
@@ -294,6 +321,8 @@ class GMVIPGui(tk.Tk):
 
         # Keep _monitor_port in sync whenever the port Entry is edited.
         self._port_var.trace_add("write", self._on_port_var_changed)
+        # Keep _monitor_mode in sync whenever the mode radio changes.
+        self._mode_var.trace_add("write", self._on_mode_var_changed)
 
         # Test Creator variables
         self._tc_py_name_var   = tk.StringVar(value="")
@@ -355,6 +384,7 @@ class GMVIPGui(tk.Tk):
         tools_menu.add_command(label="Test Creator",         command=lambda: self._nb.select(4))
         tools_menu.add_command(label="Symbol Discovery",     command=lambda: self._nb.select(2))
         tools_menu.add_command(label="Configuration",        command=lambda: self._nb.select(3))
+        tools_menu.add_command(label="C Source Files",       command=lambda: self._nb.select(6))
         bar.add_cascade(label="Tools", menu=tools_menu)
 
         help_menu = tk.Menu(bar, tearoff=0)
@@ -542,6 +572,7 @@ class GMVIPGui(tk.Tk):
         self._build_config_tab(nb)       # tab 3
         self._build_test_creator_tab(nb) # tab 4
         self._build_reports_tab(nb)      # tab 5
+        self._build_c_files_tab(nb)      # tab 6
 
     # ── Python suites tab ──────────────────────────────────────────────────
 
@@ -1157,6 +1188,24 @@ class GMVIPGui(tk.Tk):
         except ValueError:
             pass  # Leave the previous valid port in place while the user is typing
 
+    def _on_mode_var_changed(self, *_args) -> None:
+        """Keep ``_monitor_mode`` in sync whenever the mode radio changes (main thread).
+
+        Also signals the monitor thread to restart its 30-second failure-streak
+        timer so that switching to live mode starts a fresh detection cycle.
+        """
+        try:
+            self._monitor_mode = self._mode_var.get()
+            self._t32_warn_sent = False
+            self._t32_fail_reset.set()
+        except tk.TclError as exc:
+            # Tkinter raises TclError when the underlying Tcl variable is destroyed
+            # during shutdown.  Route through the log panel so it is visible.
+            self._log_line(
+                f"[GUI] Failed to update monitor mode: {exc}\n{traceback.format_exc()}",
+                "error",
+            )
+
     def _apply_port(self, port_str: str) -> None:
         """Push the GUI port value into the shared settings singleton."""
         try:
@@ -1164,6 +1213,7 @@ class GMVIPGui(tk.Tk):
             from GM_VIP_Automation_Framework.config import settings
             settings.rcl_port = port_int
             self._monitor_port = port_int
+            self._monitor_packlen = settings.rcl_packlen
         except Exception:
             pass
 
@@ -1426,10 +1476,15 @@ class GMVIPGui(tk.Tk):
         self._q.put((
             "log",
             (
-                f"[GUI] Trace32 did not open port {port} within "
-                f"{max_wait_s:.0f}s. "
-                f"Verify that config.t32 includes 'RCL=NETASSIST / PORT={port}' "
-                "and that your CMM startup script opens the API connection."
+                f"[GUI] ⚠ Trace32 did not open port {port} within "
+                f"{max_wait_s:.0f}s.\n"
+                "       Troubleshooting checklist:\n"
+                f"       1. Verify config.t32 contains:  RCL=NETASSIST / PORT={port} / PACKLEN={self._monitor_packlen}\n"
+                "       2. Confirm Trace32 has permission to bind the network port "
+                "(try running as Administrator on Windows).\n"
+                "       3. Check that no firewall or antivirus is blocking the RCL port.\n"
+                "       4. If Trace32 is already running, click 'Open T32' so the GUI can "
+                "attach to the existing instance rather than launching a second one."
             ),
             "warn",
         ))
@@ -1647,6 +1702,9 @@ class GMVIPGui(tk.Tk):
                 elif msg[0] == "t32_status":
                     connected = msg[1]
                     self._update_t32_led(connected)
+                elif msg[0] == "t32_timeout_warn":
+                    port = msg[1]
+                    self._show_t32_timeout_dialog(port)
         except queue.Empty:
             pass
         self.after(self._POLL_MS, self._poll_queue)
@@ -2192,10 +2250,367 @@ class GMVIPGui(tk.Tk):
                 verbose=bool(entry.get("verbose", False)),
             )
 
+    # ------------------------------------------------------------------ C Source Files tab
+
+    def _build_c_files_tab(self, nb: ttk.Notebook) -> None:
+        """Tab for registering, viewing, and syncing *.c source files with Trace32."""
+        frame = tk.Frame(nb, bg=_CLR["panel"])
+        nb.add(frame, text="  C Source Files  ")
+
+        tk.Label(
+            frame,
+            text=(
+                "Register *.c source files, extract function and variable names, and\n"
+                "sync them with the Symbol Discovery tab to confirm Trace32 is loaded\n"
+                "with the latest compiled source."
+            ),
+            font=("Arial", 9), bg=_CLR["panel"], fg="#555", justify=tk.LEFT,
+        ).pack(anchor=tk.W, padx=12, pady=(10, 6))
+
+        # ── Registered files section ───────────────────────────────────────
+        file_box = tk.LabelFrame(
+            frame, text=" Registered C Files ",
+            font=("Arial", 9, "bold"), bg=_CLR["panel"],
+            relief="groove", bd=2, padx=8, pady=6,
+        )
+        file_box.pack(fill=tk.BOTH, expand=True, padx=12, pady=(0, 6))
+
+        c_btn_frame = tk.Frame(file_box, bg=_CLR["panel"])
+        c_btn_frame.pack(anchor=tk.W, pady=(0, 4))
+
+        tk.Button(
+            c_btn_frame, text="＋ Add File…", font=("Arial", 9),
+            bg=_CLR["btn_run"], fg="#fff", relief="flat", padx=8, pady=4,
+            cursor="hand2", command=self._c_add_file,
+        ).pack(side=tk.LEFT, padx=(0, 4))
+        tk.Button(
+            c_btn_frame, text="✕ Remove", font=("Arial", 9),
+            bg=_CLR["btn_stop"], fg="#fff", relief="flat", padx=8, pady=4,
+            cursor="hand2", command=self._c_remove_file,
+        ).pack(side=tk.LEFT, padx=(0, 4))
+        tk.Button(
+            c_btn_frame, text="✏ Open in Editor", font=("Arial", 9),
+            bg="#17a2b8", fg="#fff", relief="flat", padx=8, pady=4,
+            cursor="hand2", command=self._c_open_in_editor,
+        ).pack(side=tk.LEFT, padx=(0, 4))
+        tk.Button(
+            c_btn_frame, text="🗑 Clear All", font=("Arial", 9),
+            bg=_CLR["btn_clear"], fg="#fff", relief="flat", padx=8, pady=4,
+            cursor="hand2", command=self._c_clear_files,
+        ).pack(side=tk.LEFT)
+        _ToolTip(c_btn_frame,
+                 "Add File: browse for one or more *.c source files.\n"
+                 "Remove: unregister the selected file (does not delete it from disk).\n"
+                 "Open in Editor: open the selected file in IDLE or the OS default editor.\n"
+                 "Clear All: unregister every file in the list.")
+
+        # File listbox
+        c_list_frame = tk.Frame(file_box, bg=_CLR["panel"])
+        c_list_frame.pack(fill=tk.BOTH, expand=True)
+        c_scrollbar = tk.Scrollbar(c_list_frame)
+        c_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self._c_listbox = tk.Listbox(
+            c_list_frame, font=("Courier", 9), selectmode=tk.SINGLE,
+            yscrollcommand=c_scrollbar.set, activestyle="dotbox",
+            selectbackground="#0056b3", selectforeground="#fff",
+            height=6,
+        )
+        self._c_listbox.pack(fill=tk.BOTH, expand=True)
+        c_scrollbar.config(command=self._c_listbox.yview)
+        self._c_listbox.bind("<Double-1>", lambda _e: self._c_open_in_editor())
+
+        # ── Symbol extraction section ──────────────────────────────────────
+        sym_box = tk.LabelFrame(
+            frame, text=" Symbol Extraction ",
+            font=("Arial", 9, "bold"), bg=_CLR["panel"],
+            relief="groove", bd=2, padx=8, pady=6,
+        )
+        sym_box.pack(fill=tk.BOTH, expand=True, padx=12, pady=(0, 6))
+
+        sym_btn_frame = tk.Frame(sym_box, bg=_CLR["panel"])
+        sym_btn_frame.pack(anchor=tk.W, pady=(0, 4))
+        tk.Button(
+            sym_btn_frame, text="⚙ Extract Symbols from Selected File",
+            font=("Arial", 9), bg=_CLR["btn_new"], fg="#fff",
+            relief="flat", padx=8, pady=4, cursor="hand2",
+            command=self._c_extract_symbols,
+        ).pack(side=tk.LEFT, padx=(0, 4))
+        tk.Button(
+            sym_btn_frame, text="→ Sync with Symbol Discovery",
+            font=("Arial", 9), bg="#17a2b8", fg="#fff",
+            relief="flat", padx=8, pady=4, cursor="hand2",
+            command=self._c_sync_with_discovery,
+        ).pack(side=tk.LEFT)
+        _ToolTip(sym_btn_frame,
+                 "Extract Symbols: scans the selected .c file for function and variable names.\n"
+                 "Sync with Symbol Discovery: auto-fills the Symbol Discovery Module Filter\n"
+                 "with the selected file name and switches to that tab.  Run Discovery to\n"
+                 "confirm Trace32 has loaded the symbols from the latest compiled source.")
+
+        # Extracted symbol display
+        self._c_sym_text = tk.Text(
+            sym_box, font=("Courier", 9), height=7, state=tk.DISABLED,
+            bg="#fdfdfd", relief="solid", borderwidth=1, wrap=tk.WORD,
+        )
+        self._c_sym_text.pack(fill=tk.BOTH, expand=True)
+
+        # Internal state for extracted symbols
+        self._c_extracted_funcs: List[str] = []
+        self._c_extracted_vars: List[str] = []
+
+        # Tip
+        tk.Label(
+            frame,
+            text=(
+                "ℹ️  Tip: After extracting symbols, click '→ Sync with Symbol Discovery'\n"
+                "   to confirm Trace32 has loaded those symbols from the latest build.\n"
+                "   A ✔ prefix means the file exists on disk; ✘ means it was moved or deleted."
+            ),
+            font=("Arial", 9, "italic"), bg=_CLR["panel"], fg="#777", justify=tk.LEFT,
+        ).pack(anchor=tk.W, padx=12, pady=(0, 8))
+
+    # ── C Source Files actions ─────────────────────────────────────────────
+
+    def _c_add_file(self) -> None:
+        """Open a file dialog to add one or more *.c files to the registry."""
+        paths = filedialog.askopenfilenames(
+            title="Select C source file(s)",
+            filetypes=[("C source files", "*.c"), ("All files", "*.*")],
+        )
+        added = 0
+        for p_str in paths:
+            p = Path(p_str)
+            if p not in self._c_files:
+                self._c_files.append(p)
+                added += 1
+        if added:
+            self._c_refresh_listbox()
+            self._log_line(
+                f"[GUI] Added {added} C file(s) to the registry.", "info",
+            )
+            self._save_gui_state()
+
+    def _c_remove_file(self) -> None:
+        """Remove the selected C file from the registry (does not delete on disk)."""
+        if not hasattr(self, "_c_listbox"):
+            return
+        sel = self._c_listbox.curselection()
+        if not sel:
+            messagebox.showwarning("No Selection", "Please select a file to remove.")
+            return
+        idx = sel[0]
+        if idx < len(self._c_files):
+            removed = self._c_files.pop(idx)
+            self._log_line(f"[GUI] Removed from registry: {removed.name}", "info")
+            self._c_refresh_listbox()
+            self._save_gui_state()
+
+    def _c_clear_files(self) -> None:
+        """Clear all registered C files."""
+        if not self._c_files:
+            return
+        if messagebox.askyesno("Clear Files", "Remove all registered C source files?"):
+            self._c_files.clear()
+            self._c_refresh_listbox()
+            self._log_line("[GUI] C file registry cleared.", "info")
+            self._save_gui_state()
+
+    def _c_open_in_editor(self) -> None:
+        """Open the selected C file in IDLE or the OS default editor."""
+        if not hasattr(self, "_c_listbox"):
+            return
+        sel = self._c_listbox.curselection()
+        if not sel:
+            messagebox.showwarning("No Selection", "Please select a file to open.")
+            return
+        idx = sel[0]
+        if idx < len(self._c_files):
+            path = self._c_files[idx]
+            if not path.is_file():
+                messagebox.showerror("File Not Found", f"File not found:\n{path}")
+                return
+            self._open_in_editor(path)
+
+    def _c_refresh_listbox(self) -> None:
+        """Repopulate the C files listbox from self._c_files."""
+        if not hasattr(self, "_c_listbox"):
+            return
+        self._c_listbox.delete(0, tk.END)
+        for p in self._c_files:
+            exists_mark = "✔" if p.is_file() else "✘"
+            self._c_listbox.insert(tk.END, f"  {exists_mark}  {p}")
+
+    def _c_extract_symbols(self) -> None:
+        """Parse the selected C file and display extracted function/variable names."""
+        if not hasattr(self, "_c_listbox"):
+            return
+        sel = self._c_listbox.curselection()
+        if not sel:
+            messagebox.showwarning(
+                "No Selection",
+                "Please select a C file from the list first.",
+            )
+            return
+        idx = sel[0]
+        if idx >= len(self._c_files):
+            return
+        path = self._c_files[idx]
+        if not path.is_file():
+            messagebox.showerror("File Not Found", f"File not found:\n{path}")
+            return
+        try:
+            funcs, vars_ = self._parse_c_file(path)
+        except Exception as exc:
+            messagebox.showerror(
+                "Parse Error",
+                f"Could not parse {path.name}:\n{exc}",
+            )
+            return
+
+        self._c_extracted_funcs = funcs
+        self._c_extracted_vars  = vars_
+
+        # Display results in the text widget
+        self._c_sym_text.config(state=tk.NORMAL)
+        self._c_sym_text.delete("1.0", tk.END)
+        self._c_sym_text.insert(tk.END, f"File: {path}\n\n")
+        if funcs:
+            self._c_sym_text.insert(tk.END, f"Functions ({len(funcs)}):\n")
+            preview = funcs[:60]
+            self._c_sym_text.insert(tk.END, "  " + ",  ".join(preview) + "\n")
+            if len(funcs) > 60:
+                self._c_sym_text.insert(tk.END, f"  … and {len(funcs) - 60} more\n")
+        else:
+            self._c_sym_text.insert(tk.END, "Functions: (none found)\n")
+        self._c_sym_text.insert(tk.END, "\n")
+        if vars_:
+            self._c_sym_text.insert(tk.END, f"Global Variables ({len(vars_)}):\n")
+            preview_v = vars_[:60]
+            self._c_sym_text.insert(tk.END, "  " + ",  ".join(preview_v) + "\n")
+            if len(vars_) > 60:
+                self._c_sym_text.insert(tk.END, f"  … and {len(vars_) - 60} more\n")
+        else:
+            self._c_sym_text.insert(tk.END, "Global Variables: (none found)\n")
+        self._c_sym_text.config(state=tk.DISABLED)
+
+        self._log_line(
+            f"[GUI] Extracted {len(funcs)} function(s) and {len(vars_)} variable(s) "
+            f"from {path.name}.",
+            "info",
+        )
+
+    @staticmethod
+    def _parse_c_file(path: Path) -> Tuple[List[str], List[str]]:
+        """Extract function and variable names from a C file using simple heuristics.
+
+        Returns a tuple of ``(function_names, variable_names)``.  Both lists
+        contain unique identifiers in order of first appearance.
+        """
+        text = path.read_text(encoding="utf-8", errors="ignore")
+
+        # Remove block comments
+        text = re.sub(r'/\*.*?\*/', ' ', text, flags=re.DOTALL)
+        # Remove line comments
+        text = re.sub(r'//[^\n]*', '', text)
+        # Remove preprocessor directives (keep newlines so line offsets hold)
+        text = re.sub(r'^\s*#[^\n]*', '', text, flags=re.MULTILINE)
+        # Replace string literals with placeholders (avoid false identifier matches)
+        text = re.sub(r'"(?:[^"\\]|\\.)*"', '""', text)
+
+        # Function definitions: lines starting at column 0, then an identifier
+        # immediately followed by '(' (with optional spaces).
+        func_re = re.compile(
+            r'^(?:[\w\s*]+\s+)?([A-Za-z_]\w*)\s*\(',
+            re.MULTILINE,
+        )
+        funcs: List[str] = []
+        seen_f: set = set()
+        for m in func_re.finditer(text):
+            name = m.group(1)
+            if name and name not in _C_KEYWORDS and name not in seen_f:
+                seen_f.add(name)
+                funcs.append(name)
+
+        # Global variable declarations: non-indented lines ending with ';'
+        # that do NOT contain '(' (to exclude function prototypes / calls).
+        var_re = re.compile(
+            r'^(?![ \t])(?:[\w\s*]+\s+)([A-Za-z_]\w*)\s*(?:=\s*[^;(]+)?;',
+            re.MULTILINE,
+        )
+        vars_: List[str] = []
+        seen_v: set = set()
+        for m in var_re.finditer(text):
+            name = m.group(1)
+            if (
+                name
+                and name not in _C_KEYWORDS
+                and name not in seen_f   # don't repeat function names
+                and name not in seen_v
+            ):
+                seen_v.add(name)
+                vars_.append(name)
+
+        return funcs, vars_
+
+    def _c_sync_with_discovery(self) -> None:
+        """Auto-fill the Symbol Discovery tab with the selected C file's name and switch to it.
+
+        Sets the *Module Filter* to the C file's base name so that T32 symbol
+        discovery only returns symbols whose source path contains that name.
+        This is the most reliable way to verify that Trace32 is in sync with
+        the latest compiled source file.
+        """
+        if not hasattr(self, "_c_listbox"):
+            return
+        sel = self._c_listbox.curselection()
+        filename = ""
+        if sel and sel[0] < len(self._c_files):
+            # Preferred: use the file the user has selected in the listbox.
+            filename = self._c_files[sel[0]].name
+        elif not self._c_files:
+            messagebox.showwarning(
+                "No Files",
+                "No C files are registered yet.\nAdd a file using '＋ Add File…' first.",
+            )
+            return
+        else:
+            # No listbox selection – require the user to extract symbols first so
+            # we at least know which file they are working with.
+            if not self._c_extracted_funcs and not self._c_extracted_vars:
+                messagebox.showwarning(
+                    "No Selection",
+                    "Please select a C file in the list above, or run '⚙ Extract Symbols' first.",
+                )
+                return
+            # filename stays "" – we will sync without a module filter;
+            # the user can set it manually in the Discovery tab.
+
+        # Populate Symbol Discovery: use '*' pattern and filter by source file name
+        self._disc_pattern_var.set("*")
+        if filename:
+            self._disc_module_var.set(filename)
+
+        self._nb.select(2)  # Symbol Discovery tab
+
+        module_info = f"module='{filename}'" if filename else "module=<not set – select a file>"
+        tip = (
+            f"[GUI] Symbol Discovery pre-filled: pattern='*'  {module_info}.  "
+            "Click '▶ Run Discovery' to list all T32 symbols from that source file "
+            "and confirm they are in sync with the latest compiled code."
+        )
+        self._log_line(tip, "info")
+
     # ------------------------------------------------------------------ T32 monitor
 
     def _start_t32_monitor(self) -> None:
         """Start the background thread that monitors T32 connection status."""
+        # Initialise _monitor_packlen from settings so checklist messages show the
+        # configured value even before the first _apply_port() call.
+        try:
+            from GM_VIP_Automation_Framework.config import settings
+            self._monitor_packlen = settings.rcl_packlen
+        except Exception:
+            pass  # leave the default 1024 in place
         self._t32_monitor_stop.clear()
         self._t32_monitor_thread = threading.Thread(
             target=self._t32_monitor_loop,
@@ -2208,13 +2623,29 @@ class GMVIPGui(tk.Tk):
         """Probe T32 RCL port every _T32_MONITOR_INTERVAL_S seconds.
 
         Intentionally avoids touching any Tkinter variables (not thread-safe).
-        Uses the plain ``_monitor_port`` int attribute, which is kept in sync
-        by ``_on_port_var_changed`` on the main thread.
+        Uses the plain ``_monitor_port`` and ``_monitor_mode`` int/str attributes,
+        which are kept in sync by ``_on_port_var_changed`` /
+        ``_on_mode_var_changed`` on the main thread.
+
+        After ``_T32_DETECT_WARN_S`` seconds of continuous failed probes while in
+        *live* mode the monitor posts a ``t32_timeout_warn`` message so the main
+        thread can offer the user a retry / reconfigure dialog.
+
+        The failure-streak timer is only started/maintained when in *live* mode.
+        ``_t32_fail_reset`` can be set from the main thread at any time to
+        immediately restart the 30-second cycle (used by Retry Now and mode switch).
         """
         from GM_VIP_Automation_Framework.core.connection import T32Connection
 
         last_state: Optional[bool] = None
+        fail_start: Optional[float] = None   # monotonic time when failure streak began
+
         while not self._t32_monitor_stop.is_set():
+            # Check for an external reset request (Retry Now / mode switch).
+            if self._t32_fail_reset.is_set():
+                self._t32_fail_reset.clear()
+                fail_start = None
+
             try:
                 port = self._monitor_port
                 probe = T32Connection(port=port)
@@ -2223,6 +2654,26 @@ class GMVIPGui(tk.Tk):
                     probe.disconnect()
             except Exception:
                 connected = False
+
+            if connected:
+                # Successful connection – reset failure tracking.
+                fail_start = None
+                self._t32_warn_sent = False
+            elif self._monitor_mode == "live":
+                # Only track and warn about failures when in live mode.
+                now = time.monotonic()
+                if fail_start is None:
+                    fail_start = now
+                elif (
+                    not self._t32_warn_sent
+                    and (now - fail_start) >= _T32_DETECT_WARN_S
+                ):
+                    # First occurrence of a 30-second detection timeout in live mode.
+                    self._t32_warn_sent = True
+                    self._q.put(("t32_timeout_warn", port))
+            else:
+                # In mock mode: clear the streak so switching to live starts fresh.
+                fail_start = None
 
             if connected != last_state:
                 last_state = connected
@@ -2243,6 +2694,110 @@ class GMVIPGui(tk.Tk):
             self._t32_led_canvas.itemconfig(
                 self._t32_led_oval, fill="#cc0000", outline="#880000",
             )
+
+    def _show_t32_timeout_dialog(self, port: int) -> None:
+        """Show a dialog after 30 s of failed T32 detection in live mode.
+
+        Offers three actions:
+        * Retry now  – resets the warning flag so another 30-second cycle begins.
+        * Reconfigure – opens the Configuration tab so the user can update port / RCL settings.
+        * Dismiss     – suppresses further dialogs until T32 connects then disconnects again.
+        """
+        dlg = tk.Toplevel(self)
+        dlg.title("Trace32 Detection Timeout")
+        dlg.resizable(False, False)
+        dlg.grab_set()
+        dlg.configure(bg="#fff3cd")
+
+        # Icon + heading
+        tk.Label(
+            dlg,
+            text="⚠  Trace32 Not Detected",
+            font=("Arial", 12, "bold"), fg="#856404", bg="#fff3cd",
+            padx=16, pady=(12, 0),
+        ).pack(anchor=tk.W)
+
+        body = (
+            f"Trace32 has not responded on RCL port {port} for the last\n"
+            f"{_T32_DETECT_WARN_S} seconds.\n\n"
+            "Common causes:\n"
+            f"  • config.t32 is missing:  RCL=NETASSIST / PORT={port} / PACKLEN={self._monitor_packlen}\n"
+            "  • Trace32 does not have permission to open the network port\n"
+            "    (try running Trace32 as Administrator on Windows).\n"
+            "  • A firewall or antivirus is blocking the RCL port.\n"
+            "  • The port number in the GUI does not match the one in config.t32.\n"
+            "  • Trace32 is not running – click 'Open T32' to launch it first."
+        )
+        tk.Label(
+            dlg, text=body,
+            font=("Arial", 9), bg="#fff3cd", fg="#333",
+            justify=tk.LEFT, padx=16, pady=8,
+        ).pack(anchor=tk.W)
+
+        ttk.Separator(dlg, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=12, pady=(4, 8))
+
+        btn_frame = tk.Frame(dlg, bg="#fff3cd")
+        btn_frame.pack(padx=16, pady=(0, 12))
+
+        def _retry() -> None:
+            dlg.destroy()
+            # Signal the monitor thread to reset its failure-streak start time so
+            # the next 30-second cycle begins from now, not from the original fail.
+            self._t32_warn_sent = False
+            self._t32_fail_reset.set()
+            self._log_line(
+                f"[GUI] Retry requested – T32 detection timer reset on port {port} …",
+                "info",
+            )
+
+        def _reconfigure() -> None:
+            dlg.destroy()
+            self._nb.select(3)  # Configuration tab
+            self._log_line(
+                "[GUI] Opened Configuration tab.  Update port/RCL settings, save "
+                "config.json, then click 'Open T32' to retry.", "info",
+            )
+
+        def _dismiss() -> None:
+            dlg.destroy()
+            self._log_line(
+                "[GUI] T32 timeout warning dismissed.  "
+                "Warning will reappear after the next successful connection is lost.",
+                "debug",
+            )
+
+        tk.Button(
+            btn_frame, text="↺ Retry Now",
+            font=("Arial", 9, "bold"), bg="#28a745", fg="#fff",
+            relief="flat", padx=10, pady=5, cursor="hand2",
+            command=_retry,
+        ).pack(side=tk.LEFT, padx=(0, 6))
+        tk.Button(
+            btn_frame, text="⚙ Reconfigure",
+            font=("Arial", 9), bg="#0056b3", fg="#fff",
+            relief="flat", padx=10, pady=5, cursor="hand2",
+            command=_reconfigure,
+        ).pack(side=tk.LEFT, padx=(0, 6))
+        tk.Button(
+            btn_frame, text="✕ Dismiss",
+            font=("Arial", 9), bg=_CLR["btn_clear"], fg="#fff",
+            relief="flat", padx=10, pady=5, cursor="hand2",
+            command=_dismiss,
+        ).pack(side=tk.LEFT)
+
+        # Centre the dialog over the main window
+        self.update_idletasks()
+        w, h = 560, 320
+        x = self.winfo_x() + (self.winfo_width() - w) // 2
+        y = self.winfo_y() + (self.winfo_height() - h) // 2
+        dlg.geometry(f"{w}x{h}+{x}+{y}")
+
+        # Log a summary in the output panel too.
+        self._log_line(
+            f"[GUI] ⚠ T32 not detected on port {port} for {_T32_DETECT_WARN_S}s "
+            "– retry dialog opened.  Check config.t32 RCL settings and permissions.",
+            "warn",
+        )
 
     # ------------------------------------------------------------------ GUI state persistence
 
@@ -2291,6 +2846,14 @@ class GMVIPGui(tk.Tk):
             self._disc_queue = [e for e in raw_queue if isinstance(e, dict)]
             self._refresh_disc_queue_list()
 
+        # Restore C source files registry
+        raw_c_files = data.get("c_files", [])
+        if isinstance(raw_c_files, list):
+            self._c_files = [
+                Path(p) for p in raw_c_files if isinstance(p, str)
+            ]
+            self._c_refresh_listbox()
+
         self._log_line("[GUI] GUI state restored from gui_state.json", "debug")
 
     def _save_gui_state(self) -> None:
@@ -2314,6 +2877,7 @@ class GMVIPGui(tk.Tk):
             "tc_json_name": self._tc_json_name_var.get(),
             "tc_json_dir":  self._tc_json_dir_var.get(),
             "disc_queue":   self._disc_queue,
+            "c_files":      [str(p) for p in self._c_files],
         }
         try:
             _GUI_STATE_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
@@ -2421,7 +2985,9 @@ class GMVIPGui(tk.Tk):
             "  • Symbol Discovery Queue (save & batch-run configs)\n"
             "  • Test Creator (new Python and JSON suites from templates)\n"
             "  • Reports Browser (view all historical HTML reports)\n"
+            "  • C Source Files (register *.c files, extract symbols, sync with T32)\n"
             "  • T32 status LED (green=connected / red=disconnected)\n"
+            "  • 30-second T32 detection timeout with retry / reconfigure dialog\n"
             "  • Test running LED (orange=running)\n"
             "  • Persistent GUI state (restored on next launch)\n"
             "  • Edit config.json settings\n"
