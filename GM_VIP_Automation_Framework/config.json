@@ -23,6 +23,7 @@
 
   "rcl_port": 20000,
   "rcl_protocol": "UDP",
+  "rcl_packlen": 1024,
   "rcl_timeout_s": 1.0,
   "connect_max_wait_s": 60.0,
 
