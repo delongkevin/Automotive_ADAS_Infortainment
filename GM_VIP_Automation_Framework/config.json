@@ -18,7 +18,7 @@
     "t32mrisc64.exe"
   ],
 
-  "_comment3": "Optional: path to a *.cmm startup script. When set and Trace32 needs to be launched, it is passed via '-s <cmm_entry_script>'. Leave empty when Trace32 is already running.",
+  "_comment3": "Optional: path to a *.cmm startup script. When set and Trace32 needs to be launched, it is passed via '-s <cmm_entry_script>'. Leave empty when Trace32 is already running. The bundled default script is at scripts/smp_demo_multisieve.cmm (relative to this file).",
   "cmm_entry_script": "",
 
   "rcl_port": 20000,
