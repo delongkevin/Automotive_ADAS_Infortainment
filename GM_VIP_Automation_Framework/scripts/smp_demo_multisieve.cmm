@@ -1,0 +1,167 @@
+; --------------------------------------------------------------------------------
+; @Title: SMP multisieve demo script for TC4D9XE on TriBoard-TC4x9-COM
+; @Description:
+;   Loads the multisieve demo application (multi-core) into RAM and sets up a
+;   demo debug scenario for SMP debugging. Further information is available in
+;   the TriCore Processor Architecture Manual (pdf/debugger_tricore.pdf),
+;   chapter "SMP Debugging - Quick Start".
+; @Keywords: Infineon, multi-core, multisieve, TriCore
+; @Author: GM VIP Automation Framework maintainers
+; @Board: TriBoard-TC4x9-COM
+; @Chip: TC4D9XE
+; @License: This script is part of the GM VIP Automation Framework.
+;           Use and redistribution are governed by the repository's LICENSE file.
+; --------------------------------------------------------------------------------
+PRIVATE &is_headless
+PARAMETERS &is_headless
+&is_headless=("&is_headless"=="TRUE")
+
+LOCAL &ToolsDir
+&ToolsDir="~~/demo/tricore/hardware/tools/tc4x"
+
+
+LOCAL &elfFile_Appl &elfFile_Boot &hexFile_RPGM &elfFile_Hsm &stripKeyWord
+LOCAL &repoRoot &deliveryRoot
+PRIVATE &isRepoStructure
+
+&repoRoot="./../../.."
+&deliveryRoot="&repoRoot/../GM_Deliverable"
+&isRepoStructure=EXIST("&repoRoot/bin/APPL/DCU_SW.elf")  ; auto-detect repo structure
+
+if &isRepoStructure
+(
+    &stripKeyWord="sw"
+    &sourcePath="&repoRoot/sw"
+    &elfFile_Appl="&repoRoot/bin/APPL/DCU_SW.elf"
+    &elfFile_Boot="&repoRoot/bin/BOOT/DCU_SW.elf"
+    &hexFile_RPGM="&repoRoot/bin/RPGM/DCU_SW.hex"
+    &elfFile_HSM="&repoRoot/bin/HSM/DCU_SW.elf"
+)
+ELSE
+(
+    &stripKeyWord="HWIODeliverable"
+    &sourcePath="&deliveryRoot/HWIODeliverable"
+    &elfFile_Appl="&sourcePath/HWIOAPPL/Products/Magna_Testappl.elf"
+    &elfFile_Boot="&sourcePath/HWIOBOOT/Products/Magna_Testboot.elf"
+    &hexFile_RPGM="&sourcePath/HWIORPGM/Products/Magna_Testrpgm.hex"
+    &elfFile_HSM="&sourcePath/HWIOHSM/Products/Magna_Testhsm.elf"
+)
+
+
+
+; --------------------------------------------------------------------------------
+; initialize and start the debugger
+RESet
+
+SYStem.CPU TC4D9XE
+CORE.ASSIGN 1. 2. 3. 4. 5. 6. 7. // assign cores to the SMP system
+
+;Currently system.attach only works with Jtag mode.
+;uncomment below line for System.attach.
+;SYStem.CONFIG DEBUGPORTTYPE JTAG
+SYStem.Up
+
+; --------------------------------------------------------------------------------
+; Check PreRequisites
+GOSUB CheckPreRequisites
+
+; --------------------------------------------------------------------------------
+; optional settings:
+SYStem.Option DUALPORT ON
+SETUP.Var %SpotLight
+MAP.BOnchip 0x0--0xffffffff // force onchip-breakpoints
+
+; --------------------------------------------------------------------------------
+; Initialize RAM
+DO &ToolsDir/meminit_host.cmm "CPU*.PSPR"
+DO &ToolsDir/meminit_host.cmm "CPU*.DSPR"
+; --------------------------------------------------------------------------------
+; configure USR access to read 64-bit STM registers
+Data.USRACCESS 0xC0000000 0xD0000000 1024. ~~/demo/tricore/etc/usraccess/usraccess.gnu.bin
+
+; --------------------------------------------------------------------------------
+; Load elf file
+; - uses internal RAM only
+; - uses global addressing (core-local addressing of SPRAM is not recommended)
+;Data.LOAD.Elf "C:\SM\D2H7510_Platform_TC4\sw\TriCore Debug (TASKING)\sw.elf" /NOCODE
+PRINT "Loading Symbols..."
+Data.LOAD.Elf "&elfFile_Appl" /NoCODE          /SOURCEPATH "&sourcePath" /StripPart "&stripKeyWord"
+Data.LOAD.Elf "&elfFile_Boot" /NoCODE /NoClear /SOURCEPATH "&sourcePath" /StripPart "&stripKeyWord"
+Data.LOAD.Elf "&elfFile_HSM"  /NoCODE /NoClear /SOURCEPATH "&sourcePath" /StripPart "&stripKeyWord"
+
+; --------------------------------------------------------------------------------
+; open some windows
+IF !&is_headless
+(
+    WinCLEAR
+    WinPOS 0% 0% 33% 33%
+    TargetSystem.state
+    WinPOS 33% 0% 33% 33%
+    List.auto
+    WinPOS 66% 0% 33% 33%
+    Var.Watch
+
+    WinPOS 0% 33% 16% 33%
+    List.auto /CORE 0.
+    WinPOS 0% 66% 16% 33%
+    Register.view /CORE 0.
+
+    IF (CORENUMBER()>1.)
+    (
+        WinPOS 16% 33% 16% 33%
+        List.auto /CORE 1.
+        WinPOS 16% 66% 16% 33%
+        Register.view /CORE 1.
+    )
+    IF (CORENUMBER()>2.)
+    (
+        WinPOS 32% 33% 16% 33%
+        List.auto /CORE 2.
+        WinPOS 32% 66% 16% 33%
+        Register.view /CORE 2.
+    )
+    IF (CORENUMBER()>3.)
+    (
+        WinPOS 48% 33% 16% 33%
+        List.auto /CORE 3.
+        WinPOS 48% 66% 16% 33%
+        Register.view /CORE 3.
+    )
+
+    IF (CORENUMBER()>4.)
+    (
+        WinPOS 64% 33% 16% 33%
+        List.auto /CORE 4.
+        WinPOS 64% 66% 16% 33%
+        Register.view /CORE 4.
+    )
+    IF (CORENUMBER()>5.)
+    (
+        WinPOS 80% 33% 16% 33%
+        List.auto /CORE 5.
+        WinPOS 80% 66% 16% 33%
+        Register.view /CORE 5.
+    )
+
+    Var.AddWatch %Hex %Open shared_data
+    Var.AddWatch %Hex core0_flags core1_flags core2_flags core3_flags core4_flags core5_flags
+)
+
+PRINT "Programming Script Completed."
+ENDDO
+
+SUBROUTINE CheckPreRequisites
+(
+  PRIVATE &result
+
+  IF SYStem.Mode()<5.
+  (
+    PRINT %ERROR "The communication with the CPU is not established"
+    ENDDO
+  )
+  ; Check CSRM boot mode
+  DO &ToolsDir/check_demo_config.cmm CSRMCFG_is_Default
+  ENTRY &result
+  IF !&result
+    ENDDO
+)

@@ -67,27 +67,29 @@ if str(_REPO_ROOT) not in sys.path:
 from GM_VIP_Automation_Framework import runner  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# Edit these paths to match your environment.
-# ---------------------------------------------------------------------------
-
-#: Absolute path to your *.cmm startup script.
-#: Used only when Trace32 needs to be launched (AUTO_LAUNCH=True) and no
-#: running instance is found on rcl_port.  Set to empty string ("") or None
-#: to launch Trace32 without a startup script.
-CMM_ENTRY_SCRIPT: str = r"C:\workspace\tc4d9xe_debug.cmm"
-
-#: Set to True to allow the framework to launch Trace32 automatically when
-#: no running instance is found on the configured port.  Requires
-#: t32_exe_path and t32_config_path to be set in config.json.
-AUTO_LAUNCH: bool = False
-
-# ---------------------------------------------------------------------------
 # Paths – config.json and test_cases.json live in the GM_VIP_Automation_Framework
 # root, one level above this templates/ folder.
 # ---------------------------------------------------------------------------
 _FRAMEWORK_DIR = Path(__file__).resolve().parent.parent
 CONFIG_JSON = _FRAMEWORK_DIR / "config.json"
 TEST_CASES_JSON = _FRAMEWORK_DIR / "test_cases.json"
+
+# ---------------------------------------------------------------------------
+# Edit these paths to match your environment.
+# ---------------------------------------------------------------------------
+
+#: Absolute path to the *.cmm startup script.
+#: Defaults to the bundled SMP demo script (scripts/smp_demo_multisieve.cmm)
+#: shipped with the framework.  Override with your own absolute path when
+#: a project-specific script is needed, or set to empty string ("") or None
+#: to launch Trace32 without a startup script.
+_DEFAULT_CMM_PATH = _FRAMEWORK_DIR / "scripts" / "smp_demo_multisieve.cmm"
+CMM_ENTRY_SCRIPT: str = str(_DEFAULT_CMM_PATH) if _DEFAULT_CMM_PATH.is_file() else ""
+
+#: Set to True to allow the framework to launch Trace32 automatically when
+#: no running instance is found on the configured port.  Requires
+#: t32_exe_path and t32_config_path to be set in config.json.
+AUTO_LAUNCH: bool = False
 
 # ---------------------------------------------------------------------------
 # Run
