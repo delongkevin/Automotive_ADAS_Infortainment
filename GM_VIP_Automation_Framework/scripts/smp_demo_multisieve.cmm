@@ -1,17 +1,17 @@
 ; --------------------------------------------------------------------------------
-; @Title: Demo script for TC4D9XE on TriBoard-TC4x9-COM (SMP)
+; @Title: SMP multisieve demo script for TC4D9XE on TriBoard-TC4x9-COM
 ; @Description:
 ;   Loads the multisieve demo application (multi-core) into RAM and sets up a
 ;   demo debug scenario for SMP debugging. Further information is available in
-;   in the Tricore Processor Architecture Manual (pdf/debugger_tricore.pdf),
+;   the TriCore Processor Architecture Manual (pdf/debugger_tricore.pdf),
 ;   chapter "SMP Debugging - Quick Start".
 ; @Keywords: Infineon, multi-core, multisieve, TriCore
-; @Author: HDA, MEI
+; @Author: GM VIP Automation Framework maintainers
 ; @Board: TriBoard-TC4x9-COM
 ; @Chip: TC4D9XE
-; @Copyright: (C) 1989-2024 Lauterbach GmbH, licensed for use with TRACE32(R) only
+; @License: This script is part of the GM VIP Automation Framework.
+;           Use and redistribution are governed by the repository's LICENSE file.
 ; --------------------------------------------------------------------------------
-; $Id: smp_demo_multisieve.cmm 22310 2024-02-15 13:05:09Z meick $
 PRIVATE &is_headless
 PARAMETERS &is_headless
 &is_headless=("&is_headless"=="TRUE")
@@ -24,9 +24,9 @@ LOCAL &elfFile_Appl &elfFile_Boot &hexFile_RPGM &elfFile_Hsm &stripKeyWord
 LOCAL &repoRoot &deliveryRoot
 PRIVATE &isRepoStructure
 
-&isRepoStructure=FALSE()  ; FLAG:isRepoStructure
 &repoRoot="./../../.."
 &deliveryRoot="&repoRoot/../GM_Deliverable"
+&isRepoStructure=EXIST("&repoRoot/bin/APPL/DCU_SW.elf")  ; auto-detect repo structure
 
 if &isRepoStructure
 (
@@ -53,7 +53,7 @@ ELSE
 ; initialize and start the debugger
 RESet
 
-SYStem.CPU TC4D7XP
+SYStem.CPU TC4D9XE
 CORE.ASSIGN 1. 2. 3. 4. 5. 6. 7. // assign cores to the SMP system
 
 ;Currently system.attach only works with Jtag mode.

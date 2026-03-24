@@ -83,7 +83,8 @@ TEST_CASES_JSON = _FRAMEWORK_DIR / "test_cases.json"
 #: shipped with the framework.  Override with your own absolute path when
 #: a project-specific script is needed, or set to empty string ("") or None
 #: to launch Trace32 without a startup script.
-CMM_ENTRY_SCRIPT: str = str(_FRAMEWORK_DIR / "scripts" / "smp_demo_multisieve.cmm")
+_DEFAULT_CMM_PATH = _FRAMEWORK_DIR / "scripts" / "smp_demo_multisieve.cmm"
+CMM_ENTRY_SCRIPT: str = str(_DEFAULT_CMM_PATH) if _DEFAULT_CMM_PATH.is_file() else ""
 
 #: Set to True to allow the framework to launch Trace32 automatically when
 #: no running instance is found on the configured port.  Requires
