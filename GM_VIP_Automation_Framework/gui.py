@@ -293,10 +293,16 @@ class GMVIPGui(tk.Tk):
         # Thread-safe copy of the RCL port for the monitor thread (plain int,
         # updated on the main thread whenever the Entry widget changes or state loads).
         self._monitor_port: int = 20000
+        # Thread-safe copy of the configured RCL packlen for the monitor/wait threads.
+        # Updated from settings when a port change is applied.
+        self._monitor_packlen: int = 1024
         # Thread-safe mode copy for the monitor thread (plain str).
         self._monitor_mode: str = "mock"
         # Whether the 30-second timeout warning was already sent in this failure cycle.
         self._t32_warn_sent: bool = False
+        # Signalled by the UI when the user clicks "Retry Now" or switches modes,
+        # so the monitor thread resets its failure-streak start time immediately.
+        self._t32_fail_reset = threading.Event()
 
         # Symbol Discovery queue: list of dicts with all SD parameters
         self._disc_queue: List[Dict[str, Any]] = []
@@ -1185,14 +1191,20 @@ class GMVIPGui(tk.Tk):
     def _on_mode_var_changed(self, *_args) -> None:
         """Keep ``_monitor_mode`` in sync whenever the mode radio changes (main thread).
 
-        Also resets the timeout warning flag so switching to live mode starts a
-        fresh 30-second detection cycle.
+        Also signals the monitor thread to restart its 30-second failure-streak
+        timer so that switching to live mode starts a fresh detection cycle.
         """
         try:
             self._monitor_mode = self._mode_var.get()
             self._t32_warn_sent = False
-        except Exception:
-            pass
+            self._t32_fail_reset.set()
+        except tk.TclError as exc:
+            # Tkinter raises TclError when the underlying Tcl variable is destroyed
+            # during shutdown.  Route through the log panel so it is visible.
+            self._log_line(
+                f"[GUI] Failed to update monitor mode: {exc}\n{traceback.format_exc()}",
+                "error",
+            )
 
     def _apply_port(self, port_str: str) -> None:
         """Push the GUI port value into the shared settings singleton."""
@@ -1201,6 +1213,7 @@ class GMVIPGui(tk.Tk):
             from GM_VIP_Automation_Framework.config import settings
             settings.rcl_port = port_int
             self._monitor_port = port_int
+            self._monitor_packlen = settings.rcl_packlen
         except Exception:
             pass
 
@@ -1466,7 +1479,7 @@ class GMVIPGui(tk.Tk):
                 f"[GUI] ⚠ Trace32 did not open port {port} within "
                 f"{max_wait_s:.0f}s.\n"
                 "       Troubleshooting checklist:\n"
-                f"       1. Verify config.t32 contains:  RCL=NETASSIST / PORT={port} / PACKLEN=1024\n"
+                f"       1. Verify config.t32 contains:  RCL=NETASSIST / PORT={port} / PACKLEN={self._monitor_packlen}\n"
                 "       2. Confirm Trace32 has permission to bind the network port "
                 "(try running as Administrator on Windows).\n"
                 "       3. Check that no firewall or antivirus is blocking the RCL port.\n"
@@ -2591,6 +2604,13 @@ class GMVIPGui(tk.Tk):
 
     def _start_t32_monitor(self) -> None:
         """Start the background thread that monitors T32 connection status."""
+        # Initialise _monitor_packlen from settings so checklist messages show the
+        # configured value even before the first _apply_port() call.
+        try:
+            from GM_VIP_Automation_Framework.config import settings
+            self._monitor_packlen = settings.rcl_packlen
+        except Exception:
+            pass  # leave the default 1024 in place
         self._t32_monitor_stop.clear()
         self._t32_monitor_thread = threading.Thread(
             target=self._t32_monitor_loop,
@@ -2610,6 +2630,10 @@ class GMVIPGui(tk.Tk):
         After ``_T32_DETECT_WARN_S`` seconds of continuous failed probes while in
         *live* mode the monitor posts a ``t32_timeout_warn`` message so the main
         thread can offer the user a retry / reconfigure dialog.
+
+        The failure-streak timer is only started/maintained when in *live* mode.
+        ``_t32_fail_reset`` can be set from the main thread at any time to
+        immediately restart the 30-second cycle (used by Retry Now and mode switch).
         """
         from GM_VIP_Automation_Framework.core.connection import T32Connection
 
@@ -2617,6 +2641,11 @@ class GMVIPGui(tk.Tk):
         fail_start: Optional[float] = None   # monotonic time when failure streak began
 
         while not self._t32_monitor_stop.is_set():
+            # Check for an external reset request (Retry Now / mode switch).
+            if self._t32_fail_reset.is_set():
+                self._t32_fail_reset.clear()
+                fail_start = None
+
             try:
                 port = self._monitor_port
                 probe = T32Connection(port=port)
@@ -2630,19 +2659,21 @@ class GMVIPGui(tk.Tk):
                 # Successful connection – reset failure tracking.
                 fail_start = None
                 self._t32_warn_sent = False
-            else:
-                # Track how long we have been failing continuously.
+            elif self._monitor_mode == "live":
+                # Only track and warn about failures when in live mode.
                 now = time.monotonic()
                 if fail_start is None:
                     fail_start = now
                 elif (
                     not self._t32_warn_sent
-                    and self._monitor_mode == "live"
                     and (now - fail_start) >= _T32_DETECT_WARN_S
                 ):
                     # First occurrence of a 30-second detection timeout in live mode.
                     self._t32_warn_sent = True
                     self._q.put(("t32_timeout_warn", port))
+            else:
+                # In mock mode: clear the streak so switching to live starts fresh.
+                fail_start = None
 
             if connected != last_state:
                 last_state = connected
@@ -2690,7 +2721,7 @@ class GMVIPGui(tk.Tk):
             f"Trace32 has not responded on RCL port {port} for the last\n"
             f"{_T32_DETECT_WARN_S} seconds.\n\n"
             "Common causes:\n"
-            f"  • config.t32 is missing:  RCL=NETASSIST / PORT={port} / PACKLEN=1024\n"
+            f"  • config.t32 is missing:  RCL=NETASSIST / PORT={port} / PACKLEN={self._monitor_packlen}\n"
             "  • Trace32 does not have permission to open the network port\n"
             "    (try running Trace32 as Administrator on Windows).\n"
             "  • A firewall or antivirus is blocking the RCL port.\n"
@@ -2710,10 +2741,12 @@ class GMVIPGui(tk.Tk):
 
         def _retry() -> None:
             dlg.destroy()
-            # Reset warning flag so next 30-second cycle can warn again.
+            # Signal the monitor thread to reset its failure-streak start time so
+            # the next 30-second cycle begins from now, not from the original fail.
             self._t32_warn_sent = False
+            self._t32_fail_reset.set()
             self._log_line(
-                f"[GUI] Retry requested – resuming T32 detection on port {port} …",
+                f"[GUI] Retry requested – T32 detection timer reset on port {port} …",
                 "info",
             )
 
