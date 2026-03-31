@@ -296,10 +296,30 @@ class CAPLTestMonitor:
 
         while time.monotonic() < deadline:
             results = self._live_results()
+
+            # Determine which results are relevant for the completion check.
+            if module_names is None:
+                relevant_results = results
+            else:
+                relevant_results = [
+                    r for r in results
+                    if r.module in module_names
+                ]
+
+                # If we have not seen any results yet for the requested modules,
+                # keep waiting instead of treating this as "all completed".
+                if not relevant_results:
+                    logger.debug(
+                        "No CAPL test results yet for requested modules %s; "
+                        "continuing to wait.",
+                        module_names,
+                    )
+                    time.sleep(self._poll_s)
+                    continue
+
             pending = [
-                r for r in results
+                r for r in relevant_results
                 if r.verdict == CAPLVerdict.NONE
-                and (module_names is None or r.module in module_names)
             ]
             if not pending:
                 logger.info(

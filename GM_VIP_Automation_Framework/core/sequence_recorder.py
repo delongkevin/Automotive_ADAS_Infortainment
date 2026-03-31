@@ -66,7 +66,7 @@ from __future__ import annotations
 import datetime
 import json
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -517,10 +517,12 @@ class SequenceRecorder:
             "from __future__ import annotations",
             "",
             "import unittest",
+            "from unittest.mock import MagicMock",
             "",
             "import GM_VIP_Automation_Framework as t32",
             "from GM_VIP_Automation_Framework.core.canoe import CANoeClient",
             "from GM_VIP_Automation_Framework.core.capl_monitor import CAPLTestMonitor",
+            "from GM_VIP_Automation_Framework.core import debugger as _dbg",
             "",
             "",
             f"class Test_{_to_class_name(self._session_name)}(unittest.TestCase):",
@@ -532,6 +534,14 @@ class SequenceRecorder:
             "    def setUpClass(cls):",
             "        cls.canoe = CANoeClient(mock=cls.MOCK)",
             "        cls.canoe.connect()",
+            "        if cls.MOCK:",
+            "            # In mock mode, stub the T32 connection so t32.* calls",
+            "            # do not raise T32ConnectionError.",
+            "            mock_conn = MagicMock()",
+            "            mock_conn.fnc.return_value = '0'",
+            "            mock_conn.cmd.return_value = None",
+            "            _dbg.default_connection = mock_conn",
+            "        # else: connect to a real Trace32 instance before running.",
             "",
         ]
 
@@ -546,6 +556,7 @@ class SequenceRecorder:
             "    @classmethod",
             "    def tearDownClass(cls):",
             "        cls.canoe.disconnect()",
+            "        _dbg.default_connection = None",
             "",
             "",
             'if __name__ == "__main__":',
@@ -560,14 +571,12 @@ class SequenceRecorder:
         tc_idx = 0
         current_lines: List[str] = []
         current_name = ""
-        bps: List[str] = []
 
         def _flush():
-            nonlocal current_name, current_lines, bps
+            nonlocal current_name, current_lines
             if current_lines:
                 methods.append((current_name, list(current_lines)))
             current_lines = []
-            bps = []
 
         for evt in self._events:
             etype = evt.event_type
@@ -579,7 +588,6 @@ class SequenceRecorder:
                 current_lines.append(
                     f't32.set_breakpoint("{evt.symbol}")'
                 )
-                bps.append(evt.symbol)
 
             elif etype == "go":
                 if not current_lines:

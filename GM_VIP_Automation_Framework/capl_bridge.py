@@ -5,9 +5,9 @@ Orchestrates a combined **Vector CANoe + Trace32** test session:
 
 1. Attaches to a running CANoe instance and monitors CAPL test-module
    execution via :class:`~core.capl_monitor.CAPLTestMonitor`.
-2. On CAPL test failure, automatically sets Trace32 breakpoints at
-   relevant ECU symbols and re-drives the stimulus to capture the ECU
-   state at the point of failure.
+2. On CAPL test failure, halts the ECU in Trace32, inspects relevant ECU
+   symbols and variables, and then resumes execution so that the ECU state
+   at the point of failure can be captured and logged.
 3. Records the full debugging sequence with
    :class:`~core.sequence_recorder.SequenceRecorder`.
 4. Exports learned sequences as ``*_test_cases.json`` and
@@ -41,9 +41,9 @@ Typical usage
         bridge = CAPLBridge(canoe, conn)
         report = bridge.monitor_and_debug(timeout_s=300.0)
 
-    print("Passed:", len(report["passed"]))
-    print("Failed:", len(report["failed"]))
-    print("Generated test cases:", report["generated_test_cases"])
+    print("Passed:", len(report.passed))
+    print("Failed:", len(report.failed))
+    print("Generated test cases:", report.generated_test_cases)
 
 Mock mode
 ---------
@@ -61,8 +61,8 @@ import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .core.canoe import CANoeClient, CANoeError
-from .core.capl_monitor import CAPLTestMonitor, CAPLTestResult, CAPLVerdict
+from .core.canoe import CANoeClient
+from .core.capl_monitor import CAPLTestMonitor, CAPLTestResult
 from .core.sequence_recorder import SequenceRecorder
 from .utils.logger import get_logger
 from .utils.exceptions import T32FrameworkError
@@ -339,11 +339,14 @@ class CAPLBridge:
             return snapshot
 
         if self._mock:
-            # In mock mode, return synthetic debug data.
+            # In mock mode, mirror live behavior: record a synthetic halt/go pair
+            # so that learned sequences and CI replays match bench behavior more closely.
+            self._recorder.record_halt()
             snapshot["variables"] = {sym: "[MOCK] 0x0" for sym in self._debug_syms}
             snapshot["pc"] = "0x80001234"
             for sym in self._debug_syms:
                 self._recorder.record_variable_read(sym, "[MOCK] 0x0")
+            self._recorder.record_go()
             return snapshot
 
         try:

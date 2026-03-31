@@ -1,4 +1,0 @@
-lauterbach.trace32.rcl>=1.0.0
-
-[dev]
-pytest>=7.0

@@ -742,7 +742,7 @@ except Exception as e:
 import sys, os, json, pathlib
 
 # Ensure the framework is importable from the workspace.
-sys.path.insert(0, os.path.join(os.environ['WORKSPACE'], '..'))
+sys.path.insert(0, os.environ['WORKSPACE'])
 
 from GM_VIP_Automation_Framework.core.canoe import CANoeClient
 from GM_VIP_Automation_Framework.capl_bridge import CAPLBridge
@@ -783,7 +783,7 @@ if report.failed:
             post {
                 always {
                     archiveArtifacts(
-                        artifacts:         'Test Reports\\bridge_output\\**\\*',
+                        artifacts:         '**\\Test Reports\\bridge_output\\**\\*',
                         allowEmptyArchive: true,
                     )
                 }
@@ -796,25 +796,72 @@ if report.failed:
         // Replays previously learned test sequences entirely in Python without
         // CANoe or bench hardware.  This is the Continuous Testing (CT) stage.
         //
-        // Source files come from the bridge_output archive of the previous run
-        // OR from test_cases.json files committed to the repository.
+        // Two replay paths run in sequence:
+        //
+        //   1. pytest unit-test suite – validates framework correctness in mock
+        //      mode without any hardware.
+        //
+        //   2. python runner – discovers every *_test_cases.json exported by the
+        //      'CAPL Bridge' stage (or committed to the repo) and replays each
+        //      suite via runner.run_all_discovered().  The runner uses mock mode
+        //      so no T32 or CANoe connection is required.
         //
         // Runs on windows-agent (no bench hardware needed), making it suitable
         // for nightly CT runs in a Jenkins environment without a physical ECU.
         // ---------------------------------------------------------------------
             agent { label 'windows-agent' }
             steps {
+                // Step 1: framework unit tests (mock mode, no hardware).
                 bat """
                     python -m pytest ^
                         GM_VIP_Automation_Framework\\tests\\ ^
                         --tb=short -q ^
-                        --junitxml=Test Reports\\ct_results.xml
+                        --junitxml=Test Reports\\ct_unit_results.xml
                 """
+
+                // Step 2: replay learned *_test_cases.json sequences.
+                // Runs each suite discovered under the bridge_output directory
+                // (or the framework root if bridge_output is not present).
+                script {
+                    def replayScript = """
+import sys, os
+sys.path.insert(0, os.environ['WORKSPACE'])
+
+from GM_VIP_Automation_Framework import runner
+
+# Prefer the bridge output directory; fall back to the framework root.
+bridge_dir = os.path.join(
+    os.environ.get('AUTO_ROOT', os.environ['WORKSPACE']),
+    'Test Reports', 'bridge_output'
+)
+search_dir = bridge_dir if os.path.isdir(bridge_dir) else 'GM_VIP_Automation_Framework'
+
+json_files = runner.discover_test_case_files(search_dir)
+if not json_files:
+    print('No *_test_cases.json found in', search_dir, '- skipping CT replay.')
+    sys.exit(0)
+
+print('Replaying', len(json_files), 'test suite(s) from', search_dir)
+all_reports = runner.run_all_discovered(
+    directory=search_dir,
+    # resilient_connect=False: do not attempt to connect to a real T32 instance.
+    # The runner uses the framework in headless / offline mode (mock output).
+    resilient_connect=False,
+)
+total_pass = sum(r.pass_count for r in all_reports.values())
+total_fail = sum(r.fail_count for r in all_reports.values())
+print('CT replay summary: PASS=%d  FAIL=%d' % (total_pass, total_fail))
+if total_fail:
+    sys.exit(1)
+"""
+                    writeFile(file: 'run_ct_replay.py', text: replayScript)
+                }
+                bat "python run_ct_replay.py"
             }
             post {
                 always {
                     junit(
-                        testResults:       '**\\Test Reports\\ct_results.xml',
+                        testResults:       '**\\Test Reports\\ct_unit_results.xml',
                         allowEmptyResults: true,
                     )
                 }

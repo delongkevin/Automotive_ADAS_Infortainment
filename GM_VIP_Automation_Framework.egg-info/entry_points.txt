@@ -1,3 +1,0 @@
-[console_scripts]
-gm-vip = GM_VIP_Automation_Framework.main:main
-gm-vip-gui = GM_VIP_Automation_Framework.gui:main
