@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: GM-VIP-Automation-Framework
+Version: 0.1.0
+Summary: Python Trace32 API framework for GM VIP Automation test environments
+Requires-Python: >=3.9
+Provides-Extra: dev
