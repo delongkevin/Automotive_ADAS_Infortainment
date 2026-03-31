@@ -14,6 +14,9 @@ from .exceptions import (
     T32BreakpointNotReachedError,
     T32ConfigError,
     T32AutoDetectError,
+    CAPLError,
+    CAPLTestFailedError,
+    CAPLMonitorError,
 )
 from .logger import configure_logger, get_logger
 from .retry import retry, poll_until
@@ -31,6 +34,9 @@ __all__ = [
     "T32BreakpointNotReachedError",
     "T32ConfigError",
     "T32AutoDetectError",
+    "CAPLError",
+    "CAPLTestFailedError",
+    "CAPLMonitorError",
     "configure_logger",
     "get_logger",
     "retry",

@@ -16,11 +16,17 @@
 #        Runs the full GM_VIP_Automation_Framework/tests/ suite.
 #        All Trace32 API calls are mocked; no Lauterbach hardware or
 #        lauterbach.trace32.rcl library installation is required.
-#        Includes the 72-test sanity suite (test_sanity.py) that mirrors
-#        the executed entries in Sanity_report.html.
+#        Includes:
+#          - 72-test sanity suite (test_sanity.py)
+#          - CAPL test monitor tests (test_capl_monitor.py)
+#          - Sequence recorder tests (test_sequence_recorder.py)
+#          - CAPL bridge orchestration tests (test_capl_bridge.py)
+#          - Core API, generator, config, hardware, utils tests
 #
-# Bench-only stages (connecting to real Trace32 hardware) require a
-# self-hosted runner with a physical ECU and are out of scope here.
+# Bench-only stages (connecting to real Trace32 hardware and Vector CANoe)
+# require a self-hosted runner with a physical ECU and are out of scope here.
+# Those stages are handled by the GM_VIP_Automation/Jenkinsfile pipeline on
+# a dedicated windows-bench agent.
 # =============================================================================
 
 name: GM VIP Framework Python CI
@@ -135,5 +141,12 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Stage  | Result |" >> "$GITHUB_STEP_SUMMARY"
           echo "|--------|--------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Syntax & Lint | ${{ needs.lint.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Unit Tests    | ${{ job.status }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Syntax & Lint        | ${{ needs.lint.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Unit Tests           | ${{ job.status }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Test Modules Covered" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **test_sanity.py** – Trace32 sanity suite (72 tests, mock mode)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **test_capl_monitor.py** – CAPL test monitor (CANoe COM polling, mock+live paths)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **test_sequence_recorder.py** – Execution sequence recording and export" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **test_capl_bridge.py** – CAPL↔T32 bridge orchestration and learned-sequence export" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **test_core.py / test_generator.py / test_config_and_report.py / test_utils.py** – Core API tests" >> "$GITHUB_STEP_SUMMARY"

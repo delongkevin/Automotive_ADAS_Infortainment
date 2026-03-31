@@ -708,6 +708,119 @@ except Exception as e:
             }
         }
 
+
+        // ---------------------------------------------------------------------
+        stage('CAPL Bridge – Monitor and Auto-Debug') {
+        // ---------------------------------------------------------------------
+        // Runs the Python CAPLBridge while CANoe is active on the bench.
+        //
+        // What this stage does:
+        //   1. Connects to the running CANoe instance via COM (pywin32).
+        //   2. Polls the CANoe TestSystem for PASS/FAIL verdicts.
+        //   3. For each FAIL, halts the ECU via Trace32 RCL, captures the
+        //      variable snapshot and program counter, then resumes.
+        //   4. Exports the recorded sequences as:
+        //        <TEST_SUITE>_test_cases.json     – replayable runner JSON
+        //        <TEST_SUITE>_session_script.py   – pytest-compatible script
+        //        <TEST_SUITE>_bridge_report.json  – debug summary
+        //
+        // The exported files are archived and can be committed to the repo
+        // for replay in future CT (headless) runs.
+        //
+        // Skipped when RUN_ON_BENCH=false OR SKIP_TEST_SUITE=true.
+        // ---------------------------------------------------------------------
+            when {
+                allOf {
+                    expression { params.RUN_ON_BENCH    == true  }
+                    expression { params.SKIP_TEST_SUITE == false }
+                }
+            }
+            agent { label 'windows-bench' }
+            steps {
+                script {
+                    def bridgeScript = """
+import sys, os, json, pathlib
+
+# Ensure the framework is importable from the workspace.
+sys.path.insert(0, os.path.join(os.environ['WORKSPACE'], '..'))
+
+from GM_VIP_Automation_Framework.core.canoe import CANoeClient
+from GM_VIP_Automation_Framework.capl_bridge import CAPLBridge
+
+output_dir = os.path.join(os.environ['AUTO_ROOT'], 'Test Reports', 'bridge_output')
+session    = os.environ.get('TEST_SUITE', 'sanity').lower()
+
+with CANoeClient() as canoe:
+    bridge = CAPLBridge(
+        canoe_client=canoe,
+        output_dir=output_dir,
+        session_name=session,
+        poll_interval_s=2.0,
+        debug_symbols=[
+            'g_CanStatus', 'g_DiagStatus', 'g_ErrorCode',
+            'g_FaultFlag', 'g_TestResult',
+        ],
+    )
+    report = bridge.monitor_and_debug(timeout_s=600.0, export=True)
+    summary_path = report.save(output_dir=output_dir)
+
+print('Bridge report saved to:', summary_path)
+print('Passed:', len(report.passed))
+print('Failed:', len(report.failed))
+if report.failed:
+    print('Failed tests:')
+    for name in report.failed:
+        print('  -', name)
+        info = report.debug_reports.get(name, {})
+        if info.get('variables'):
+            for sym, val in info['variables'].items():
+                print('      %s = %s' % (sym, val))
+"""
+                    writeFile(file: 'run_capl_bridge.py', text: bridgeScript)
+                }
+                bat "python run_capl_bridge.py"
+            }
+            post {
+                always {
+                    archiveArtifacts(
+                        artifacts:         'Test Reports\\bridge_output\\**\\*',
+                        allowEmptyArchive: true,
+                    )
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('CT – Replay Learned Sequences (Headless)') {
+        // ---------------------------------------------------------------------
+        // Replays previously learned test sequences entirely in Python without
+        // CANoe or bench hardware.  This is the Continuous Testing (CT) stage.
+        //
+        // Source files come from the bridge_output archive of the previous run
+        // OR from test_cases.json files committed to the repository.
+        //
+        // Runs on windows-agent (no bench hardware needed), making it suitable
+        // for nightly CT runs in a Jenkins environment without a physical ECU.
+        // ---------------------------------------------------------------------
+            agent { label 'windows-agent' }
+            steps {
+                bat """
+                    python -m pytest ^
+                        GM_VIP_Automation_Framework\\tests\\ ^
+                        --tb=short -q ^
+                        --junitxml=Test Reports\\ct_results.xml
+                """
+            }
+            post {
+                always {
+                    junit(
+                        testResults:       '**\\Test Reports\\ct_results.xml',
+                        allowEmptyResults: true,
+                    )
+                }
+            }
+        }
+
         // ---------------------------------------------------------------------
         stage('Aggregate Reports') {
         // ---------------------------------------------------------------------
