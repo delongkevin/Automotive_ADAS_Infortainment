@@ -389,7 +389,7 @@ def check_capl_integration(t32_ctrl_root: Path) -> List[str]:
             errors.append(
                 f"[FAIL] cT32.cin: expected path string not found.\n"
                 f"       Check : {desc}\n"
-                f"       Missing: {needles[0]!r}"
+                f"       Expected one of: {', '.join(repr(n) for n in needles)}"
             )
 
     return errors
