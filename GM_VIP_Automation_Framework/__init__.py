@@ -58,6 +58,9 @@ from .utils import (
     T32BreakpointNotReachedError,
     T32ConfigError,
     T32AutoDetectError,
+    CAPLError,
+    CAPLTestFailedError,
+    CAPLMonitorError,
     configure_logger,
     get_logger,
 )
@@ -119,7 +122,15 @@ from .core import (
     run_cmm_command,
     run_cmm_script,
     check_cmm_script_result,
+    # CAPL monitoring
+    CAPLTestMonitor,
+    CAPLTestResult,
+    CAPLVerdict,
+    # Sequence recording
+    SequenceRecorder,
+    ExecutionEvent,
 )
+from .capl_bridge import CAPLBridge, CAPLBridgeReport
 
 __version__ = "1.3.0"
 
@@ -210,4 +221,18 @@ __all__ = [
     "run_cmm_command",
     "run_cmm_script",
     "check_cmm_script_result",
+    # CAPL monitoring
+    "CAPLTestMonitor",
+    "CAPLTestResult",
+    "CAPLVerdict",
+    # Sequence recording
+    "SequenceRecorder",
+    "ExecutionEvent",
+    # CAPL ↔ T32 bridge
+    "CAPLBridge",
+    "CAPLBridgeReport",
+    # CAPL / CANoe exceptions
+    "CAPLError",
+    "CAPLTestFailedError",
+    "CAPLMonitorError",
 ]

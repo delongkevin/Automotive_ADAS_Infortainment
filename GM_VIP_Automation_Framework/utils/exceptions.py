@@ -95,3 +95,32 @@ class T32ConfigError(T32FrameworkError):
 
 class T32AutoDetectError(T32FrameworkError):
     """Raised when auto-detection of the Trace32 installation fails."""
+
+
+# ---------------------------------------------------------------------------
+# CAPL / CANoe errors
+# ---------------------------------------------------------------------------
+
+class CAPLError(T32FrameworkError):
+    """Base class for CAPL and CANoe integration errors."""
+
+
+class CAPLTestFailedError(CAPLError):
+    """Raised when one or more CAPL test cases report a FAIL or ERROR verdict.
+
+    Attributes
+    ----------
+    failed_tests :
+        List of ``(module, test_case_name)`` tuples that failed.
+    """
+
+    def __init__(self, failed_tests: list, message: str = "") -> None:
+        self.failed_tests = failed_tests
+        names = ", ".join(f"{m}/{t}" for m, t in failed_tests)
+        super().__init__(
+            message or f"CAPL test(s) failed: {names}"
+        )
+
+
+class CAPLMonitorError(CAPLError):
+    """Raised when the CAPL test monitor cannot query the CANoe test system."""

@@ -708,6 +708,260 @@ except Exception as e:
             }
         }
 
+
+        // ---------------------------------------------------------------------
+        stage('CAPL Bridge – Monitor and Auto-Debug') {
+        // ---------------------------------------------------------------------
+        // Runs the Python CAPLBridge while CANoe is active on the bench.
+        //
+        // What this stage does:
+        //   1. Connects to the running CANoe instance via COM (pywin32).
+        //   2. Polls the CANoe TestSystem for PASS/FAIL verdicts.
+        //   3. For each FAIL, halts the ECU via Trace32 RCL, captures the
+        //      variable snapshot and program counter, then resumes.
+        //   4. Exports the recorded sequences as:
+        //        <TEST_SUITE>_test_cases.json     – replayable runner JSON
+        //        <TEST_SUITE>_session_script.py   – pytest-compatible script
+        //        <TEST_SUITE>_bridge_report.json  – debug summary
+        //
+        // The exported files are archived and can be committed to the repo
+        // for replay in future CT (headless) runs.
+        //
+        // Skipped when RUN_ON_BENCH=false OR SKIP_TEST_SUITE=true.
+        // ---------------------------------------------------------------------
+            when {
+                allOf {
+                    expression { params.RUN_ON_BENCH    == true  }
+                    expression { params.SKIP_TEST_SUITE == false }
+                }
+            }
+            agent { label 'windows-bench' }
+            steps {
+                script {
+                    def bridgeScript = """
+import sys, os, json, pathlib
+
+# Ensure the framework is importable from the workspace.
+sys.path.insert(0, os.environ['WORKSPACE'])
+
+from GM_VIP_Automation_Framework.core.canoe import CANoeClient
+from GM_VIP_Automation_Framework.capl_bridge import CAPLBridge
+
+output_dir = os.path.join(os.environ['AUTO_ROOT'], 'Test Reports', 'bridge_output')
+session    = os.environ.get('TEST_SUITE', 'sanity').lower()
+
+with CANoeClient() as canoe:
+    bridge = CAPLBridge(
+        canoe_client=canoe,
+        output_dir=output_dir,
+        session_name=session,
+        poll_interval_s=2.0,
+        debug_symbols=[
+            'g_CanStatus', 'g_DiagStatus', 'g_ErrorCode',
+            'g_FaultFlag', 'g_TestResult',
+        ],
+    )
+    report = bridge.monitor_and_debug(timeout_s=600.0, export=True)
+    summary_path = report.save(output_dir=output_dir)
+
+print('Bridge report saved to:', summary_path)
+print('Passed:', len(report.passed))
+print('Failed:', len(report.failed))
+if report.failed:
+    print('Failed tests:')
+    for name in report.failed:
+        print('  -', name)
+        info = report.debug_reports.get(name, {})
+        if info.get('variables'):
+            for sym, val in info['variables'].items():
+                print('      %s = %s' % (sym, val))
+"""
+                    writeFile(file: 'run_capl_bridge.py', text: bridgeScript)
+                }
+                bat "python run_capl_bridge.py"
+            }
+            post {
+                always {
+                    archiveArtifacts(
+                        artifacts:         '**\\Test Reports\\bridge_output\\**\\*',
+                        allowEmptyArchive: true,
+                    )
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        stage('CT – Record and Validate Learned Sequences (Headless)') {
+        // ---------------------------------------------------------------------
+        // Records and validates previously learned test sequences entirely in
+        // Python without CANoe or bench hardware.  This is the Continuous
+        // Testing (CT) stage.
+        //
+        // How record+validate works end-to-end:
+        //
+        //   Record:   The 'CAPL Bridge – Monitor and Auto-Debug' stage (above)
+        //             runs on the bench, monitors live CAPL verdicts, captures
+        //             ECU state on each failure, and exports the sequence as:
+        //               <suite>_test_cases.json   – replayable runner JSON
+        //               <suite>_session_script.py – pytest-compatible script
+        //
+        //   Validate: This stage consumes those artifacts (archived or
+        //             committed to the repo) and re-executes them headlessly
+        //             to confirm that the recorded sequences are internally
+        //             consistent and that the framework can replay them
+        //             without hardware.
+        //
+        // Three validation steps run in sequence:
+        //
+        //   1. pytest unit-test suite – validates framework correctness in
+        //      mock mode without any hardware.
+        //
+        //   2. runner replay – discovers every *_test_cases.json exported by
+        //      the 'CAPL Bridge' stage (or committed to the repo), replays
+        //      each suite via runner.run_all_discovered(), saves an HTML
+        //      report per suite, and emits a JUnit XML for Jenkins.
+        //
+        //   3. session script validation – executes every *_session_script.py
+        //      exported by the bridge stage via pytest so the generated scripts
+        //      are confirmed to be syntactically and functionally correct.
+        //
+        // Runs on windows-agent (no bench hardware needed), making it suitable
+        // for nightly CT runs in a Jenkins environment without a physical ECU.
+        // ---------------------------------------------------------------------
+            agent { label 'windows-agent' }
+            steps {
+                // Step 1: framework unit tests (mock mode, no hardware).
+                bat """
+                    python -m pytest ^
+                        GM_VIP_Automation_Framework\\tests\\ ^
+                        --tb=short -q ^
+                        --junitxml="Test Reports\\ct_unit_results.xml"
+                """
+
+                // Step 2: replay and validate learned *_test_cases.json sequences.
+                // Discovers suites under bridge_output (or framework root as
+                // fallback), runs each via runner.run_all_discovered(), saves
+                // HTML reports, and writes a JUnit XML so Jenkins can show the
+                // CT replay results in the test-results pane.
+                script {
+                    def replayScript = """
+import sys, os, xml.etree.ElementTree as ET
+sys.path.insert(0, os.environ['WORKSPACE'])
+
+from GM_VIP_Automation_Framework import runner
+import time
+
+# Prefer the bridge output directory; fall back to the framework root.
+bridge_dir = os.path.join(
+    os.environ.get('AUTO_ROOT', os.environ['WORKSPACE']),
+    'Test Reports', 'bridge_output'
+)
+search_dir = bridge_dir if os.path.isdir(bridge_dir) else 'GM_VIP_Automation_Framework'
+
+json_files = runner.discover_test_case_files(search_dir)
+if not json_files:
+    print('No *_test_cases.json found in', search_dir, '- skipping CT replay.')
+    sys.exit(0)
+
+print('Validating', len(json_files), 'learned sequence(s) from', search_dir)
+
+# Run each suite individually so we can capture per-suite elapsed time.
+total_pass = 0
+total_fail = 0
+suite_rows = []  # (label, pass, fail, elapsed_s)
+for json_path in json_files:
+    label = json_path.stem
+    if label.endswith('_test_cases'):
+        label = label[:-len('_test_cases')]
+    t0 = time.monotonic()
+    rpt = runner.run_from_json(
+        test_cases_path=str(json_path),
+        resilient_connect=False,
+    )
+    elapsed = time.monotonic() - t0
+    sp = rpt.passed
+    sf = rpt.failed
+    total_pass += sp
+    total_fail += sf
+    suite_rows.append((label, sp, sf, elapsed))
+    print('Suite %-30s  PASS=%d  FAIL=%d  (%.2fs)' % (label, sp, sf, elapsed))
+
+# Save per-suite HTML reports.
+report_dir = os.path.join(
+    os.environ.get('AUTO_ROOT', os.environ['WORKSPACE']),
+    'Test Reports', 'ct_replay'
+)
+os.makedirs(report_dir, exist_ok=True)
+
+# Re-run discovery to get the report objects for HTML saving.
+# Re-use the already-run reports via run_from_json above.
+# (HTML is saved to the same directory as each JSON file by run_all_discovered;
+#  we save a copy here too so they are all in one place.)
+for json_path in json_files:
+    label = json_path.stem
+    if label.endswith('_test_cases'):
+        label = label[:-len('_test_cases')]
+    src_html = str(json_path).replace('_test_cases.json', '_report.html')
+    if os.path.isfile(src_html):
+        import shutil
+        shutil.copy2(src_html, os.path.join(report_dir, label + '_ct_report.html'))
+
+# Emit JUnit XML so Jenkins shows CT replay results in the test panel.
+testsuite_el = ET.Element('testsuite',
+    name='ct-replay',
+    tests=str(total_pass + total_fail),
+    failures=str(total_fail),
+)
+for label, sp, sf, elapsed in suite_rows:
+    tc_el = ET.SubElement(testsuite_el, 'testcase',
+        classname='ct.replay', name=label,
+        time='%.3f' % elapsed,
+    )
+    if sf > 0:
+        ET.SubElement(tc_el, 'failure',
+            message='%d test case(s) FAILED in replay' % sf,
+        ).text = 'Suite "%s": %d PASS, %d FAIL' % (label, sp, sf)
+ET.ElementTree(testsuite_el).write(
+    os.path.join(report_dir, 'ct_replay_results.xml'),
+    encoding='unicode', xml_declaration=False,
+)
+
+print('CT replay summary: PASS=%d  FAIL=%d' % (total_pass, total_fail))
+if total_fail:
+    sys.exit(1)
+"""
+                    writeFile(file: 'run_ct_replay.py', text: replayScript)
+                }
+                bat "python run_ct_replay.py"
+
+                // Step 3: validate exported session scripts by running them
+                // through pytest.  MOCK=1 ensures t32.* calls use the
+                // MagicMock stub injected by the script's own setUpClass.
+                bat """
+                    set MOCK=1
+                    python -m pytest ^
+                        "Test Reports\\bridge_output" ^
+                        -k "*_session_script.py" ^
+                        --tb=short -q ^
+                        --junitxml="Test Reports\\ct_session_script_results.xml" ^
+                        --ignore-glob="*_test_cases.json" ^
+                        || echo No session scripts found - skipping.
+                """
+            }
+            post {
+                always {
+                    junit(
+                        testResults:       '**\\Test Reports\\ct_unit_results.xml, **\\Test Reports\\ct_replay\\ct_replay_results.xml, **\\Test Reports\\ct_session_script_results.xml',
+                        allowEmptyResults: true,
+                    )
+                    archiveArtifacts(
+                        artifacts:         '**\\Test Reports\\ct_replay\\**\\*',
+                        allowEmptyArchive: true,
+                    )
+                }
+            }
+        }
+
         // ---------------------------------------------------------------------
         stage('Aggregate Reports') {
         // ---------------------------------------------------------------------

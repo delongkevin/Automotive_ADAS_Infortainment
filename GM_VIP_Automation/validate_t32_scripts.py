@@ -47,9 +47,11 @@ Checks performed
             is exhausted, otherwise SYMBOL.RELOAD is never executed).
 
 5.  CAPL integration path consistency  (cT32.cin)
-        a)  lFctn_G_T32_RUN_CMM_CORE references T32_API.exe via the
-            expected relative sub-path:
+        a)  lFctn_G_T32_RUN_CMM_CORE / lFctn_CallT32API references T32_API.exe
+            via either the absolute bench path:
             "TestSuites\\AutomationDependent\\GenericLibraries\\T32_API.exe"
+            OR the portable relative path (resolved from CANoe's working dir):
+            "../AutomationDependent/GenericLibraries/T32_API.exe"
         b)  vFctn_T32_CommandCreate_StartUpScripts appends the expected
             Lauterbach sub-path:
             "TestSuites\\AutomationDependent\\Generic_Tools\\Lauterbach\\TC4_Aurix\\"
@@ -332,26 +334,40 @@ def check_t32_constants(t32_ctrl_root: Path) -> List[str]:
 # ---------------------------------------------------------------------------
 
 # Key sub-strings that must appear in cT32.cin to guarantee correct paths.
-# In CAPL string literals a single path separator is written as \\ (escaped
-# backslash).  Python reads these as two characters (\\ ) so the needles
-# below use \\\\ in the Python source, which produces the two-char sequence
-# (backslash + backslash) that actually appears in the file.
-_CAPL_PATH_CHECKS: List[Tuple[str, str, str]] = [
-    # (description, function context hint, required substring in file)
+# In CAPL string literals backslash separators are written as \\ (escaped).
+# Python reads these as two characters so the needles below use \\\\ in the
+# Python source to match the literal two-char sequence in the file.
+#
+# Each entry is (description, context_hint, [accepted_needles]).
+# The check passes when ANY of the accepted_needles is found in the file,
+# which allows the path to be expressed either as a repo-absolute Windows
+# path ("TestSuites\\...") or as a portable relative path ("../...").
+_CAPL_PATH_CHECKS: List[Tuple[str, str, List[str]]] = [
+    # T32_API.exe can be referenced as:
+    #   • Absolute bench path: "TestSuites\\AutomationDependent\\GenericLibraries\\T32_API.exe"
+    #   • Relative bench path: "../AutomationDependent/GenericLibraries/T32_API.exe"
+    # Both resolve to the same file; accept either form.
     (
         "T32_API.exe path in lFctn_G_T32_RUN_CMM_CORE / lFctn_CallT32API",
         "T32_API.exe",
-        "TestSuites\\\\AutomationDependent\\\\GenericLibraries\\\\T32_API.exe",
+        [
+            "TestSuites\\\\AutomationDependent\\\\GenericLibraries\\\\T32_API.exe",
+            "AutomationDependent/GenericLibraries/T32_API.exe",
+        ],
     ),
     (
         "Lauterbach sub-path in vFctn_T32_CommandCreate_StartUpScripts",
         "vFctn_T32_CommandCreate_StartUpScripts",
-        "TestSuites\\\\AutomationDependent\\\\Generic_Tools\\\\Lauterbach\\\\TC4_Aurix\\\\",
+        [
+            "TestSuites\\\\AutomationDependent\\\\Generic_Tools\\\\Lauterbach\\\\TC4_Aurix\\\\",
+        ],
     ),
     (
         "Cmm_Commands sub-path in vFctn_T32_CommandCreate_Cmm_Commands",
         "vFctn_T32_CommandCreate_Cmm_Commands",
-        "TC4_Aurix\\\\Cmm_Commands\\\\",
+        [
+            "TC4_Aurix\\\\Cmm_Commands\\\\",
+        ],
     ),
 ]
 
@@ -368,12 +384,12 @@ def check_capl_integration(t32_ctrl_root: Path) -> List[str]:
         return [f"[FAIL] Could not read {ct32_path}: {exc}"]
 
     errors: List[str] = []
-    for desc, context, needle in _CAPL_PATH_CHECKS:
-        if needle not in raw:
+    for desc, context, needles in _CAPL_PATH_CHECKS:
+        if not any(needle in raw for needle in needles):
             errors.append(
                 f"[FAIL] cT32.cin: expected path string not found.\n"
                 f"       Check : {desc}\n"
-                f"       Missing: {needle!r}"
+                f"       Expected one of: {', '.join(repr(n) for n in needles)}"
             )
 
     return errors

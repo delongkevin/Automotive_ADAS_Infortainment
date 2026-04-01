@@ -65,6 +65,8 @@ from .cmm import (
 from .can_bus import CANBusClient, CANBusError, CANFrame
 from .canoe import CANoeClient, CANoeError
 from .power_supply import BKPrecision1687B, PowerSupplyError
+from .capl_monitor import CAPLTestMonitor, CAPLTestResult, CAPLVerdict
+from .sequence_recorder import SequenceRecorder, ExecutionEvent
 
 __all__ = [
     # connection
@@ -135,4 +137,11 @@ __all__ = [
     # BK Precision 1687B power supply
     "BKPrecision1687B",
     "PowerSupplyError",
+    # CAPL test monitoring
+    "CAPLTestMonitor",
+    "CAPLTestResult",
+    "CAPLVerdict",
+    # Execution sequence recording
+    "SequenceRecorder",
+    "ExecutionEvent",
 ]
