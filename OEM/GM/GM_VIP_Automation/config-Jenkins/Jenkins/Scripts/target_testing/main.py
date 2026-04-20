@@ -272,7 +272,7 @@ def main() -> Optional[int]:
         uart_console.stop()
 
         pat = re.compile(r'".*L2H7890_Software')
-        CANOE_CONFIG = project_root / 'SWTest/GM_VIP_Automation/config.cin'
+        CANOE_CONFIG = project_root / 'SWTest/OEM/GM/GM_VIP_Automation/config.cin'
         project_root_backslash = project_root.as_posix().replace('/', re.escape('\\\\'))
         CANOE_CONFIG.write_text(pat.sub(f'"{project_root_backslash}', CANOE_CONFIG.read_text()))
 
@@ -280,7 +280,7 @@ def main() -> Optional[int]:
         kill_process_by_name("CANoe64.exe")
         canoe_ctrl = CanoeController()
         canoe_ctrl.open_config(
-            project_root / "SWTest/GM_VIP_Automation/GM_VIP_RBS/GM_VIP_SWtest.cfg"
+            project_root / "SWTest/OEM/GM/GM_VIP_Automation/GM_VIP_RBS/GM_VIP_SWtest.cfg"
         )
         canoe_ctrl.start_measurement()
         reports = canoe_ctrl.select_and_run_tests(env_names="GM_VIP_Sanity")

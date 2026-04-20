@@ -3,7 +3,7 @@
 # =============================================================================
 #
 # Project   : L2H4060 CVADAS BEV – ADAS Camera / Surround-View System
-# Folder    : STLA_SWTest/
+# Folder    : OEM/Stellantis/STLA_SWTest/
 #
 # Triggered when a version tag (stla-v*) is pushed or a GitHub Release
 # is published.  Completely independent of the GM VIP Automation pipeline.
@@ -58,13 +58,13 @@ jobs:
 
       - name: Syntax-check all STLA Python scripts
         run: |
-          python -m py_compile STLA_SWTest/simulate_tests.py
-          python -m py_compile STLA_SWTest/config/Jenkins/arg_parser.py
-          python -m py_compile STLA_SWTest/config/Scripts/report_parser.py
-          python -m py_compile STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Check_Port.py
-          python -m py_compile STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
-          python -m py_compile STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Image_Comparison.py
-          python -m py_compile STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/simulate_tests.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/config/Jenkins/arg_parser.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/config/Scripts/report_parser.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Check_Port.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Image_Comparison.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
           echo "All STLA Python scripts passed syntax check."
 
   # ---------------------------------------------------------------------------
@@ -88,18 +88,18 @@ jobs:
 
       - name: Run STLA test simulation
         run: |
-          python STLA_SWTest/simulate_tests.py \
-            --root    STLA_SWTest \
-            --out-dir "STLA_SWTest/Test Reports/simulation"
+          python OEM/Stellantis/STLA_SWTest/simulate_tests.py \
+            --root    OEM/Stellantis/STLA_SWTest \
+            --out-dir "OEM/Stellantis/STLA_SWTest/Test Reports/simulation"
 
       - name: Upload simulation artifacts
         uses: actions/upload-artifact@v4
         with:
           name: stla-simulation-artifacts
           path: |
-            STLA_SWTest/Test Reports/simulation/simulation_report.html
-            STLA_SWTest/Test Reports/simulation/simulation_summary.txt
-            STLA_SWTest/Test Reports/simulation/junit/*.xml
+            OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_report.html
+            OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_summary.txt
+            OEM/Stellantis/STLA_SWTest/Test Reports/simulation/junit/*.xml
           if-no-files-found: warn
 
   # ---------------------------------------------------------------------------
@@ -170,7 +170,7 @@ jobs:
   #     - name: Flash ECU – CANoe Flashing test unit
   #       run: |
   #         CANoe64.exe /Start /RunTestModules /Quit ^
-  #           "STLA_SWTest\BVTRBS\03_VariantDependent\Customer\CVADAS_RBS_TRSC\ME_L2H4060_DT_CVADAS_DSBus.cfg"
+  #           "OEM/Stellantis/STLA_SWTest\BVTRBS\03_VariantDependent\Customer\CVADAS_RBS_TRSC\ME_L2H4060_DT_CVADAS_DSBus.cfg"
   #
   #     - name: Upload bench report
   #       if: always()
@@ -178,5 +178,5 @@ jobs:
   #       with:
   #         name: stla-bench-report
   #         path: |
-  #           STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/*.html
-  #           STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/*.xml
+  #           OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/*.html
+  #           OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/*.xml

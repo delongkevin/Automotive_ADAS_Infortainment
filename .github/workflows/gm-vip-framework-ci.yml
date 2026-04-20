@@ -25,7 +25,7 @@
 #
 # Bench-only stages (connecting to real Trace32 hardware and Vector CANoe)
 # require a self-hosted runner with a physical ECU and are out of scope here.
-# Those stages are handled by the GM_VIP_Automation/Jenkinsfile pipeline on
+# Those stages are handled by the OEM/GM/GM_VIP_Automation/Jenkinsfile pipeline on
 # a dedicated windows-bench agent.
 # =============================================================================
 

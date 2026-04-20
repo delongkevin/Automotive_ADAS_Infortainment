@@ -53,8 +53,8 @@ Usage
     The script deduces ``controlLib/T32/`` relative to ``--root``.  Run
     it from the repo root or pass ``--root`` explicitly:
 
-        python GM_VIP_Automation/validate_dotnetT32dll.py \\
-            --root GM_VIP_Automation
+        python OEM/GM/GM_VIP_Automation/validate_dotnetT32dll.py \\
+            --root OEM/GM/GM_VIP_Automation
 
 Exit code
 ---------

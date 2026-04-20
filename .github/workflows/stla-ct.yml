@@ -3,7 +3,7 @@
 # =============================================================================
 #
 # Project   : L2H4060 CVADAS BEV – ADAS Camera / Surround-View System
-# Folder    : STLA_SWTest/
+# Folder    : OEM/Stellantis/STLA_SWTest/
 #
 # Runs the full STLA script validation and test simulation on a daily
 # schedule to catch regressions between feature commits.
@@ -38,7 +38,7 @@ on:
       - main
       - develop
     paths:
-      - 'STLA_SWTest/**'
+      - 'OEM/Stellantis/STLA_SWTest/**'
       - '.github/workflows/stla-ct.yml'
 
 # Restrict default token permissions to read-only for the whole workflow.
@@ -66,13 +66,13 @@ jobs:
 
       - name: Syntax-check all STLA Python scripts
         run: |
-          python -m py_compile STLA_SWTest/simulate_tests.py
-          python -m py_compile STLA_SWTest/config/Jenkins/arg_parser.py
-          python -m py_compile STLA_SWTest/config/Scripts/report_parser.py
-          python -m py_compile STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Check_Port.py
-          python -m py_compile STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
-          python -m py_compile STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Image_Comparison.py
-          python -m py_compile STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/simulate_tests.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/config/Jenkins/arg_parser.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/config/Scripts/report_parser.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Check_Port.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Image_Comparison.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
           echo "All STLA Python scripts passed syntax check."
 
   # ---------------------------------------------------------------------------
@@ -96,9 +96,9 @@ jobs:
 
       - name: Run full STLA test simulation
         run: |
-          python STLA_SWTest/simulate_tests.py \
-            --root    STLA_SWTest \
-            --out-dir "STLA_SWTest/Test Reports/simulation"
+          python OEM/Stellantis/STLA_SWTest/simulate_tests.py \
+            --root    OEM/Stellantis/STLA_SWTest \
+            --out-dir "OEM/Stellantis/STLA_SWTest/Test Reports/simulation"
 
       - name: Set date stamp for artifact names
         if: always()
@@ -109,7 +109,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stla-junit-results-${{ env.DATE }}
-          path: STLA_SWTest/Test Reports/simulation/junit/*.xml
+          path: OEM/Stellantis/STLA_SWTest/Test Reports/simulation/junit/*.xml
           if-no-files-found: warn
           retention-days: 30
 
@@ -118,7 +118,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stla-simulation-report-${{ env.DATE }}
-          path: STLA_SWTest/Test Reports/simulation/simulation_report.html
+          path: OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_report.html
           if-no-files-found: warn
           retention-days: 30
 
@@ -127,7 +127,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stla-simulation-summary-${{ env.DATE }}
-          path: STLA_SWTest/Test Reports/simulation/simulation_summary.txt
+          path: OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_summary.txt
           if-no-files-found: warn
           retention-days: 30
 
