@@ -5,7 +5,7 @@ debugger in GM VIP (Vehicle Integration Platform) automation test environments.
 
 This framework is the **Python-native replacement** for the CAPL-based T32
 control and test-support libraries (`cT32.cin` / `tsT32.cin`) found in the
-`GM_VIP_Automation` directory.  It provides the same logical operations
+`OEM/GM/GM_VIP_Automation` directory.  It provides the same logical operations
 (breakpoints, variable read/write, register operations, symbol search, CMM
 script execution) but:
 

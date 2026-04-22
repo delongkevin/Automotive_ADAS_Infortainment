@@ -19,5 +19,4 @@ if (-not (& python -m pip show pyserial 2>$null)) {
     & python -m pip install pyserial
 }
 
-& python $moduleRoot\GM_VIP_Automation\Serial.py
-
+& python $moduleRoot\OEM\GM\GM_VIP_Automation\Serial.py

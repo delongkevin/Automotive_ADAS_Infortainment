@@ -60,8 +60,8 @@ jobs:
 
       - name: Run CAPL syntax and consistency validation
         run: |
-          python GM_VIP_Automation/validate_capl.py \
-            --root GM_VIP_Automation
+          python OEM/GM/GM_VIP_Automation/validate_capl.py \
+            --root OEM/GM/GM_VIP_Automation
 
   # ---------------------------------------------------------------------------
   # Job 2 – Build dotnetT32dll.dll from source (.NET 8.0)
@@ -74,7 +74,7 @@ jobs:
       contents: read
 
     env:
-      DOTNET_PROJ: GM_VIP_Automation/AutomationDependent/GenericLibraries/dotnetT32dll
+      DOTNET_PROJ: OEM/GM/GM_VIP_Automation/AutomationDependent/GenericLibraries/dotnetT32dll
       STUB_OUT:    /tmp/canoe-stub
 
     steps:
@@ -113,8 +113,8 @@ jobs:
 
       - name: Validate dotnetT32dll build artifacts
         run: |
-          python GM_VIP_Automation/validate_dotnetT32dll.py \
-            --root GM_VIP_Automation
+          python OEM/GM/GM_VIP_Automation/validate_dotnetT32dll.py \
+            --root OEM/GM/GM_VIP_Automation
 
   # ---------------------------------------------------------------------------
   # Job 3 – Test Simulation + HTML Report
@@ -140,26 +140,26 @@ jobs:
 
       - name: Run test simulation
         run: |
-          python GM_VIP_Automation/simulate_tests.py \
-            --root    GM_VIP_Automation \
-            --out-dir GM_VIP_Automation/Test\ Reports/simulation
+          python OEM/GM/GM_VIP_Automation/simulate_tests.py \
+            --root    OEM/GM/GM_VIP_Automation \
+            --out-dir OEM/GM/GM_VIP_Automation/Test\ Reports/simulation
 
       - name: Generate simulation HTML report
         run: |
-          python GM_VIP_Automation/merge_reports.py \
-            --root      GM_VIP_Automation \
+          python OEM/GM/GM_VIP_Automation/merge_reports.py \
+            --root      OEM/GM/GM_VIP_Automation \
             --simulated \
-            --xml-dir   "GM_VIP_Automation/Test Reports/simulation" \
-            --out       "GM_VIP_Automation/Test Reports/simulation/simulation_report.html"
+            --xml-dir   "OEM/GM/GM_VIP_Automation/Test Reports/simulation" \
+            --out       "OEM/GM/GM_VIP_Automation/Test Reports/simulation/simulation_report.html"
 
       - name: Upload simulation artifacts
         uses: actions/upload-artifact@v4
         with:
           name: simulation-artifacts
           path: |
-            GM_VIP_Automation/Test Reports/simulation/simulation_report.html
-            GM_VIP_Automation/Test Reports/simulation/simulation_summary.txt
-            GM_VIP_Automation/Test Reports/simulation/junit/*.xml
+            OEM/GM/GM_VIP_Automation/Test Reports/simulation/simulation_report.html
+            OEM/GM/GM_VIP_Automation/Test Reports/simulation/simulation_summary.txt
+            OEM/GM/GM_VIP_Automation/Test Reports/simulation/junit/*.xml
           if-no-files-found: warn
 
   # ---------------------------------------------------------------------------
@@ -208,7 +208,7 @@ jobs:
   #     - name: Install Python dependencies
   #       run: |
   #         python -m pip install --upgrade pip
-  #         python -m pip install -r GM_VIP_Automation\requirements.txt
+  #         python -m pip install -r OEM/GM/GM_VIP_Automation\requirements.txt
   #
   #     - name: BVT – Bench Verification Test
   #       run: |
@@ -228,18 +228,18 @@ jobs:
   #     - name: Execute CANoe Test Suite
   #       run: |
   #         CANoe64.exe /Start /RunTestModules /Quit ^
-  #           "GM_VIP_Automation\GM_VIP_RBS\GM_VIP_SWtest.cfg"
+  #           "OEM/GM/GM_VIP_Automation\GM_VIP_RBS\GM_VIP_SWtest.cfg"
   #
   #     - name: Aggregate bench test reports
   #       if: always()
   #       run: |
-  #         python GM_VIP_Automation\merge_reports.py ^
-  #           --root "GM_VIP_Automation" ^
-  #           --out  "GM_VIP_Automation\Test Reports\merged_report.html"
+  #         python OEM/GM/GM_VIP_Automation\merge_reports.py ^
+  #           --root "OEM/GM/GM_VIP_Automation" ^
+  #           --out  "OEM/GM/GM_VIP_Automation\Test Reports\merged_report.html"
   #
   #     - name: Upload bench report
   #       if: always()
   #       uses: actions/upload-artifact@v4
   #       with:
   #         name: bench-report
-  #         path: GM_VIP_Automation/Test Reports/merged_report.html
+  #         path: OEM/GM/GM_VIP_Automation/Test Reports/merged_report.html

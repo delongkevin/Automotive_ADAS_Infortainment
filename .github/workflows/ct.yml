@@ -40,7 +40,7 @@ on:
       - main
       - develop
     paths:
-      - 'GM_VIP_Automation/**'
+      - 'OEM/GM/GM_VIP_Automation/**'
       - '.github/workflows/ct.yml'
 
 # Restrict default token permissions to read-only for the whole workflow.
@@ -71,8 +71,8 @@ jobs:
 
       - name: Run CAPL syntax and consistency validation
         run: |
-          python GM_VIP_Automation/validate_capl.py \
-            --root GM_VIP_Automation
+          python OEM/GM/GM_VIP_Automation/validate_capl.py \
+            --root OEM/GM/GM_VIP_Automation
 
   # ---------------------------------------------------------------------------
   # Job 2 – Build dotnetT32dll.dll from source (.NET 8.0)
@@ -85,7 +85,7 @@ jobs:
       contents: read
 
     env:
-      DOTNET_PROJ: GM_VIP_Automation/AutomationDependent/GenericLibraries/dotnetT32dll
+      DOTNET_PROJ: OEM/GM/GM_VIP_Automation/AutomationDependent/GenericLibraries/dotnetT32dll
       STUB_OUT:    /tmp/canoe-stub
 
     steps:
@@ -124,8 +124,8 @@ jobs:
 
       - name: Validate dotnetT32dll build artifacts
         run: |
-          python GM_VIP_Automation/validate_dotnetT32dll.py \
-            --root GM_VIP_Automation
+          python OEM/GM/GM_VIP_Automation/validate_dotnetT32dll.py \
+            --root OEM/GM/GM_VIP_Automation
 
   # ---------------------------------------------------------------------------
   # Job 3 – T32 Script Validation
@@ -151,8 +151,8 @@ jobs:
 
       - name: Validate T32 PRACTICE scripts and integration layer
         run: |
-          python GM_VIP_Automation/validate_t32_scripts.py \
-            --root GM_VIP_Automation
+          python OEM/GM/GM_VIP_Automation/validate_t32_scripts.py \
+            --root OEM/GM/GM_VIP_Automation
 
   # ---------------------------------------------------------------------------
   # Job 4 – Full Test Simulation
@@ -178,18 +178,18 @@ jobs:
 
       - name: Run full test simulation
         run: |
-          python GM_VIP_Automation/simulate_tests.py \
-            --root    GM_VIP_Automation \
-            --out-dir GM_VIP_Automation/Test\ Reports/simulation
+          python OEM/GM/GM_VIP_Automation/simulate_tests.py \
+            --root    OEM/GM/GM_VIP_Automation \
+            --out-dir OEM/GM/GM_VIP_Automation/Test\ Reports/simulation
 
       - name: Generate consolidated HTML report
         if: always()
         run: |
-          python GM_VIP_Automation/merge_reports.py \
-            --root      GM_VIP_Automation \
+          python OEM/GM/GM_VIP_Automation/merge_reports.py \
+            --root      OEM/GM/GM_VIP_Automation \
             --simulated \
-            --xml-dir   "GM_VIP_Automation/Test Reports/simulation" \
-            --out       "GM_VIP_Automation/Test Reports/simulation/simulation_report.html"
+            --xml-dir   "OEM/GM/GM_VIP_Automation/Test Reports/simulation" \
+            --out       "OEM/GM/GM_VIP_Automation/Test Reports/simulation/simulation_report.html"
 
       - name: Set date stamp for artifact names
         if: always()
@@ -200,7 +200,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: junit-results-${{ env.DATE }}
-          path: GM_VIP_Automation/Test Reports/simulation/junit/*.xml
+          path: OEM/GM/GM_VIP_Automation/Test Reports/simulation/junit/*.xml
           if-no-files-found: warn
           retention-days: 30
 
@@ -209,7 +209,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: simulation-report-${{ env.DATE }}
-          path: GM_VIP_Automation/Test Reports/simulation/simulation_report.html
+          path: OEM/GM/GM_VIP_Automation/Test Reports/simulation/simulation_report.html
           if-no-files-found: warn
           retention-days: 30
 
@@ -218,7 +218,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: simulation-summary-${{ env.DATE }}
-          path: GM_VIP_Automation/Test Reports/simulation/simulation_summary.txt
+          path: OEM/GM/GM_VIP_Automation/Test Reports/simulation/simulation_summary.txt
           if-no-files-found: warn
           retention-days: 30
 
