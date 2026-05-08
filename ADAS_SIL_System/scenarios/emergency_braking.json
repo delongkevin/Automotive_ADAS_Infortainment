@@ -1,0 +1,60 @@
+{
+  "name": "Emergency Braking",
+  "description": "Sudden braking scenario to test AEB system",
+  "duration": 30.0,
+
+  "initial_conditions": {
+    "ego_vehicle": {
+      "position": [0, 0, 0],
+      "velocity": 20.0,
+      "yaw": 0.0
+    }
+  },
+
+  "environment": {
+    "lighting": "day",
+    "weather": "clear",
+
+    "lanes": [
+      {
+        "id": 1,
+        "type": "dashed",
+        "side": "left",
+        "coefficients": [1.75, 0.0, 0.0, 0.0],
+        "points": []
+      },
+      {
+        "id": 2,
+        "type": "solid",
+        "side": "right",
+        "coefficients": [-1.75, 0.0, 0.0, 0.0],
+        "points": []
+      }
+    ],
+
+    "vehicles": [
+      {
+        "id": 1,
+        "position": {"x": 40.0, "y": 0.0, "z": 0.0},
+        "velocity": {"vx": 20.0, "vy": 0.0, "vz": 0.0},
+        "width": 1.8,
+        "height": 1.5,
+        "length": 4.5,
+        "rcs": 15.0
+      }
+    ],
+
+    "obstacles": [],
+    "pedestrians": [],
+    "traffic_signs": []
+  },
+
+  "events": [
+    {
+      "time": 5.0,
+      "type": "vehicle_emergency_brake",
+      "vehicle_id": 1,
+      "deceleration": -8.0
+    }
+  ]
+}

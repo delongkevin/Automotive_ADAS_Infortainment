@@ -1,0 +1,78 @@
+{
+  "_comment": "ADAS SIL System Configuration",
+  "dt": 0.01,
+
+  "vehicle": {
+    "mass": 1500.0,
+    "wheelbase": 2.7,
+    "track_width": 1.5,
+    "length": 4.5,
+    "width": 1.8,
+    "height": 1.5,
+    "cg_to_front": 1.2,
+    "cg_height": 0.5,
+    "drag_coefficient": 0.3,
+    "frontal_area": 2.2,
+    "max_acceleration": 3.0,
+    "max_deceleration": -8.0,
+    "max_steering_angle": 0.6108652382
+  },
+
+  "sensors": {
+    "front_radar": {
+      "enabled": true,
+      "position": [3.0, 0.0, 0.5],
+      "orientation": [0.0, 0.0, 0.0],
+      "max_range": 200.0,
+      "min_range": 0.5,
+      "fov_horizontal": 20.0,
+      "fov_vertical": 10.0,
+      "update_rate": 20.0,
+      "detection_probability": 0.95,
+      "range_noise_std": 0.2,
+      "angle_noise_std": 0.5
+    },
+
+    "front_camera": {
+      "enabled": true,
+      "position": [2.5, 0.0, 1.2],
+      "orientation": [0.0, 0.0, 0.0],
+      "max_range": 150.0,
+      "min_range": 2.0,
+      "fov_horizontal": 50.0,
+      "fov_vertical": 30.0,
+      "update_rate": 30.0,
+      "detection_probability": 0.98,
+      "lane_detection_enabled": true,
+      "resolution_width": 1920,
+      "resolution_height": 1080
+    }
+  },
+
+  "adas": {
+    "ldw": {
+      "enabled": true,
+      "warning_lateral_offset": 0.3,
+      "warning_ttb_threshold": 0.8,
+      "min_speed": 16.67
+    },
+
+    "acc": {
+      "enabled": true,
+      "min_speed": 8.33,
+      "max_speed": 50.0,
+      "max_acceleration": 2.0,
+      "max_deceleration": -3.0
+    },
+
+    "aeb": {
+      "enabled": true,
+      "min_speed": 2.78,
+      "max_speed": 22.22,
+      "ttc_warning": 2.5,
+      "ttc_partial_braking": 1.5,
+      "ttc_full_braking": 0.8,
+      "max_deceleration": -9.0
+    }
+  }
+}

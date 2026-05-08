@@ -1,0 +1,68 @@
+{
+  "name": "Highway Cruise",
+  "description": "Highway cruising scenario with ACC and lead vehicle",
+  "duration": 60.0,
+
+  "initial_conditions": {
+    "ego_vehicle": {
+      "position": [0, 0, 0],
+      "velocity": 27.8,
+      "yaw": 0.0
+    }
+  },
+
+  "environment": {
+    "lighting": "day",
+    "weather": "clear",
+
+    "lanes": [
+      {
+        "id": 1,
+        "type": "dashed",
+        "side": "left",
+        "coefficients": [1.75, 0.0, 0.0, 0.0],
+        "points": []
+      },
+      {
+        "id": 2,
+        "type": "solid",
+        "side": "right",
+        "coefficients": [-1.75, 0.0, 0.0, 0.0],
+        "points": []
+      }
+    ],
+
+    "vehicles": [
+      {
+        "id": 1,
+        "position": {"x": 50.0, "y": 0.0, "z": 0.0},
+        "velocity": {"vx": 22.2, "vy": 0.0, "vz": 0.0},
+        "width": 1.8,
+        "height": 1.5,
+        "length": 4.5,
+        "rcs": 15.0
+      }
+    ],
+
+    "obstacles": [],
+    "pedestrians": [],
+    "traffic_signs": []
+  },
+
+  "events": [
+    {
+      "time": 10.0,
+      "type": "vehicle_acceleration",
+      "vehicle_id": 1,
+      "acceleration": -1.0,
+      "duration": 5.0
+    },
+    {
+      "time": 25.0,
+      "type": "vehicle_acceleration",
+      "vehicle_id": 1,
+      "acceleration": 0.5,
+      "duration": 5.0
+    }
+  ]
+}
