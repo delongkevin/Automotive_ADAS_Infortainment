@@ -12,8 +12,8 @@ import json
 import sys
 from pathlib import Path
 
-from simulator import ADASSILSimulator
-from visualization import BirdEyeView, UnityBridge
+from ADAS_SIL_System.simulator import ADASSILSimulator
+from ADAS_SIL_System.visualization import BirdEyeView, UnityBridge
 
 # Configure logging
 logging.basicConfig(
@@ -26,6 +26,8 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+PACKAGE_ROOT = Path(__file__).parent
+DEFAULT_CONFIG_PATH = PACKAGE_ROOT / 'config' / 'default_config.json'
 
 
 def load_config(config_path: str) -> dict:
@@ -38,11 +40,15 @@ def load_config(config_path: str) -> dict:
     Returns:
         Configuration dictionary
     """
+    config_file = Path(config_path)
+    if not config_file.is_absolute() and not config_file.exists():
+        config_file = PACKAGE_ROOT / config_file
+
     try:
-        with open(config_path, 'r') as f:
+        with open(config_file, 'r') as f:
             return json.load(f)
     except FileNotFoundError:
-        logger.warning(f"Config file not found: {config_path}, using defaults")
+        logger.warning(f"Config file not found: {config_file}, using defaults")
         return {}
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON in config file: {e}")
@@ -79,7 +85,7 @@ def main():
     parser.add_argument(
         '--config',
         type=str,
-        default='config/default_config.json',
+        default=str(DEFAULT_CONFIG_PATH),
         help='Path to configuration file'
     )
 

@@ -37,6 +37,10 @@ class UnityBridge:
         self.clients: Set[websockets.WebSocketServerProtocol] = set()
         self.is_running = False
         self.server_thread = None
+        self.server_loop = None
+        self.shutdown_event = None
+        self.clients_lock = threading.Lock()
+        self.server_started = threading.Event()
 
         logger.info(f"Unity bridge initialized on {host}:{port}")
 
@@ -54,15 +58,35 @@ class UnityBridge:
 
     def _run_server(self):
         """Run the WebSocket server (internal)."""
-        asyncio.run(self._async_server())
+        self.server_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.server_loop)
+        self.shutdown_event = asyncio.Event()
+
+        try:
+            self.server_loop.run_until_complete(self._async_server())
+        finally:
+            pending_tasks = asyncio.all_tasks(self.server_loop)
+            for task in pending_tasks:
+                task.cancel()
+            if pending_tasks:
+                self.server_loop.run_until_complete(
+                    asyncio.gather(*pending_tasks, return_exceptions=True)
+                )
+            self.server_loop.close()
+            self.server_loop = None
+            self.shutdown_event = None
+            self.server_started.clear()
+            self.server = None
+            self.is_running = False
 
     async def _async_server(self):
         """Async WebSocket server implementation."""
-        async with websockets.serve(self._handle_client, self.host, self.port):
-            logger.info(f"WebSocket server listening on ws://{self.host}:{self.port}")
-            await asyncio.Future()  # Run forever
+        self.server = await websockets.serve(self._handle_client, self.host, self.port)
+        self.server_started.set()
+        logger.info(f"WebSocket server listening on ws://{self.host}:{self.port}")
+        await self.shutdown_event.wait()
 
-    async def _handle_client(self, websocket, path):
+    async def _handle_client(self, websocket, path=None):
         """
         Handle new client connection.
 
@@ -70,7 +94,8 @@ class UnityBridge:
             websocket: WebSocket connection
             path: Connection path
         """
-        self.clients.add(websocket)
+        with self.clients_lock:
+            self.clients.add(websocket)
         client_addr = websocket.remote_address
         logger.info(f"Unity client connected: {client_addr}")
 
@@ -81,7 +106,8 @@ class UnityBridge:
         except websockets.exceptions.ConnectionClosed:
             logger.info(f"Unity client disconnected: {client_addr}")
         finally:
-            self.clients.remove(websocket)
+            with self.clients_lock:
+                self.clients.discard(websocket)
 
     async def _handle_message(self, websocket, message: str):
         """
@@ -112,14 +138,18 @@ class UnityBridge:
         Args:
             state: Current simulation state dictionary
         """
-        if not self.clients:
+        if not self.is_running or self.server_loop is None or not self.server_started.is_set():
             return
 
         # Format state for Unity
         unity_message = self._format_for_unity(state)
 
-        # Send to all clients (synchronous wrapper for async)
-        asyncio.run(self._broadcast(unity_message))
+        # Send to all clients on the server event loop
+        future = asyncio.run_coroutine_threadsafe(
+            self._broadcast(unity_message),
+            self.server_loop
+        )
+        future.add_done_callback(self._log_broadcast_result)
 
     async def _broadcast(self, message: Dict):
         """
@@ -132,10 +162,28 @@ class UnityBridge:
             return
 
         message_json = json.dumps(message)
-        await asyncio.gather(
-            *[client.send(message_json) for client in self.clients],
+        with self.clients_lock:
+            clients = list(self.clients)
+
+        if not clients:
+            return
+
+        results = await asyncio.gather(
+            *[client.send(message_json) for client in clients],
             return_exceptions=True
         )
+        for client, result in zip(clients, results):
+            if isinstance(result, Exception):
+                logger.error(f"Error sending Unity state to {client.remote_address}: {result}")
+                with self.clients_lock:
+                    self.clients.discard(client)
+
+    def _log_broadcast_result(self, future):
+        """Log asynchronous broadcast failures."""
+        try:
+            future.result()
+        except Exception as exc:
+            logger.error(f"Unity state broadcast failed: {exc}")
 
     def _format_for_unity(self, state: Dict) -> Dict:
         """
@@ -184,5 +232,44 @@ class UnityBridge:
 
     def stop(self):
         """Stop the WebSocket server."""
+        if not self.is_running:
+            return
+
         self.is_running = False
+        if self.server_loop is not None and self.server_started.is_set():
+            shutdown_future = asyncio.run_coroutine_threadsafe(
+                self._shutdown_server(),
+                self.server_loop
+            )
+            try:
+                shutdown_future.result(timeout=5)
+            except Exception as exc:
+                logger.error(f"Timed out stopping Unity bridge cleanly: {exc}")
+
+        if self.server_thread is not None:
+            self.server_thread.join(timeout=5)
+            self.server_thread = None
+
         logger.info("Unity bridge stopped")
+
+    async def _shutdown_server(self):
+        """Close client connections and stop the server loop."""
+        with self.clients_lock:
+            clients = list(self.clients)
+
+        for client in clients:
+            try:
+                await client.close()
+            except Exception as exc:
+                logger.error(f"Error closing Unity client {client.remote_address}: {exc}")
+
+        with self.clients_lock:
+            self.clients.clear()
+
+        if self.server is not None:
+            self.server.close()
+            await self.server.wait_closed()
+            self.server = None
+
+        if self.shutdown_event is not None and not self.shutdown_event.is_set():
+            self.shutdown_event.set()

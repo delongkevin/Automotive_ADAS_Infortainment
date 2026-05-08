@@ -280,20 +280,23 @@ class CameraSensor(BaseSensor):
         lane_detections = []
 
         for lane in lanes:
-            # Check if lane is visible (within range and FOV)
-            # Simplified: check a few points along the lane
+            coeffs = lane.get('coefficients', [0, 0, 0, 0])
             lane_points = lane.get('points', [])
 
-            if len(lane_points) < 2:
-                continue
+            if len(lane_points) < 2 and coeffs:
+                lane_points = self._generate_lane_points(coeffs, ego_pos, ego_yaw)
 
-            # Check first point
-            first_point = np.array(lane_points[0])
-            if not self.is_in_fov(first_point, ego_pos, ego_yaw):
-                continue
+            normalized_points = []
+            for point in lane_points:
+                point_array = np.array(point, dtype=float)
+                if point_array.shape[0] == 2:
+                    point_array = np.append(point_array, ego_pos[2])
+                normalized_points.append(point_array)
 
-            # Polynomial coefficients for lane (e.g., c0 + c1*x + c2*x^2 + c3*x^3)
-            coeffs = lane.get('coefficients', [0, 0, 0, 0])
+            if not normalized_points or not any(
+                self.is_in_fov(point, ego_pos, ego_yaw) for point in normalized_points
+            ):
+                continue
 
             detection = {
                 'sensor_id': self.sensor_id,
@@ -311,3 +314,25 @@ class CameraSensor(BaseSensor):
             lane_detections.append(detection)
 
         return lane_detections
+
+    def _generate_lane_points(self, coefficients: List[float], ego_pos: np.ndarray,
+                              ego_yaw: float) -> List[np.ndarray]:
+        """Generate representative world-frame lane points from polynomial coefficients."""
+        sample_distances = np.linspace(
+            max(self.min_range, 5.0),
+            min(self.max_range, 30.0),
+            num=3
+        )
+        cos_yaw = np.cos(ego_yaw)
+        sin_yaw = np.sin(ego_yaw)
+        lane_points = []
+
+        for distance in sample_distances:
+            lateral_offset = sum(coef * distance**index for index, coef in enumerate(coefficients))
+            lane_points.append(np.array([
+                ego_pos[0] + distance * cos_yaw - lateral_offset * sin_yaw,
+                ego_pos[1] + distance * sin_yaw + lateral_offset * cos_yaw,
+                ego_pos[2]
+            ]))
+
+        return lane_points

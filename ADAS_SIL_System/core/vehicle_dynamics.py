@@ -62,11 +62,18 @@ class VehicleDynamics:
         # Powertrain limits
         self.max_acceleration = self.config.get('max_acceleration', 3.0)  # m/s^2
         self.max_deceleration = self.config.get('max_deceleration', -8.0)  # m/s^2
-        self.max_steering_angle = self.config.get('max_steering_angle', np.deg2rad(35))  # rad
-        self.max_steering_rate = self.config.get('max_steering_rate', np.deg2rad(45))  # rad/s
+        self.max_steering_angle = self._get_angle_config('max_steering_angle', np.deg2rad(35))  # rad
+        self.max_steering_rate = self._get_angle_config('max_steering_rate', np.deg2rad(45))  # rad/s
 
         # State variables
         self.reset_state()
+
+    def _get_angle_config(self, key: str, default: float) -> float:
+        """Read an angle config in either radians or degrees."""
+        value = self.config.get(key, default)
+        if abs(value) > 2 * np.pi:
+            return np.deg2rad(value)
+        return value
 
     def reset_state(self):
         """Reset vehicle state to initial conditions."""

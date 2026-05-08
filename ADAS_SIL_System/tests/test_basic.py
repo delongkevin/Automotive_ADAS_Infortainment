@@ -14,6 +14,7 @@ import sys
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from ADAS_SIL_System.simulator import ADASSILSimulator
 from core.vehicle_dynamics import VehicleDynamics
 from core.sensors import RadarSensor, CameraSensor
 from core.adas_features import LaneDepartureWarning, AdaptiveCruiseControl, AutomaticEmergencyBraking
@@ -58,6 +59,12 @@ class TestVehicleDynamics:
         assert vehicle.vx > 0
         assert vehicle.x > initial_x
 
+    def test_configured_steering_angle_accepts_degrees(self):
+        """Test steering angle config is interpreted correctly."""
+        vehicle = VehicleDynamics({'max_steering_angle': 35.0})
+        vehicle.set_controls(throttle=0.0, brake=0.0, steering_angle=10.0)
+        assert vehicle.steering_angle == pytest.approx(np.deg2rad(35.0))
+
 
 class TestRadarSensor:
     """Test radar sensor."""
@@ -79,8 +86,8 @@ class TestRadarSensor:
             'position': [0.0, 0.0, 0.0],
             'max_range': 100.0,
             'min_range': 1.0,
-            'fov_horizontal': np.deg2rad(20.0),
-            'fov_vertical': np.deg2rad(10.0)
+            'fov_horizontal': 20.0,
+            'fov_vertical': 10.0
         }
         sensor = RadarSensor('test_radar', config)
 
@@ -97,6 +104,61 @@ class TestRadarSensor:
             np.array([0.0, 0.0, 0.0]),
             0.0
         )
+
+    def test_rcs_threshold_filters_detections(self):
+        """Test weak radar targets are filtered by minimum RCS."""
+        vehicle = VehicleDynamics()
+        sensor = RadarSensor('test_radar', {
+            'position': [0.0, 0.0, 0.0],
+            'max_range': 100.0,
+            'fov_horizontal': 20.0,
+            'fov_vertical': 10.0,
+            'detection_probability': 1.0,
+            'false_alarm_rate': 0.0,
+            'update_rate': 1.0,
+            'min_rcs': 20.0
+        })
+        sensor.last_update_time = -1.0
+
+        detections = sensor.sense(vehicle, {
+            'vehicles': [{
+                'id': 1,
+                'position': {'x': 30.0, 'y': 0.0, 'z': 0.0},
+                'velocity': {'vx': 0.0, 'vy': 0.0, 'vz': 0.0},
+                'rcs': 10.0
+            }],
+            'obstacles': []
+        }, 0.0)
+
+        assert detections == []
+
+
+class TestCameraSensor:
+    """Test camera sensor behavior."""
+
+    def test_lane_detection_uses_coefficients_without_points(self):
+        """Test lane detection works when scenarios only provide polynomial coefficients."""
+        sensor = CameraSensor('test_camera', {
+            'position': [0.0, 0.0, 0.0],
+            'max_range': 100.0,
+            'fov_horizontal': 50.0,
+            'fov_vertical': 30.0
+        })
+
+        detections = sensor._detect_lanes(
+            [{
+                'id': 1,
+                'type': 'dashed',
+                'side': 'left',
+                'coefficients': [1.75, 0.0, 0.0, 0.0],
+                'points': []
+            }],
+            np.array([0.0, 0.0, 0.0]),
+            0.0
+        )
+
+        assert len(detections) == 1
+        assert detections[0]['coefficients'][0] == pytest.approx(1.75)
 
 
 class TestADASFeatures:
@@ -132,6 +194,69 @@ class TestADASFeatures:
         acc.disable()
         assert acc.enabled == False
         assert acc.active == False
+
+
+class TestSimulator:
+    """Test simulator integration behavior."""
+
+    def test_step_accepts_mixed_feature_signatures_and_processes_events(self):
+        """Test simulator steps without TypeError and applies scenario events."""
+        simulator = ADASSILSimulator({
+            'dt': 0.1,
+            'vehicle': {'max_steering_angle': 35.0},
+            'sensors': {
+                'front_radar': {
+                    'enabled': True,
+                    'position': [0.0, 0.0, 0.0],
+                    'max_range': 100.0,
+                    'min_range': 0.5,
+                    'fov_horizontal': 20.0,
+                    'fov_vertical': 10.0,
+                    'update_rate': 50.0,
+                    'detection_probability': 1.0,
+                    'false_alarm_rate': 0.0
+                },
+                'front_camera': {
+                    'enabled': True,
+                    'position': [0.0, 0.0, 0.0],
+                    'max_range': 100.0,
+                    'min_range': 0.5,
+                    'fov_horizontal': 50.0,
+                    'fov_vertical': 30.0,
+                    'update_rate': 50.0,
+                    'detection_probability': 1.0
+                }
+            }
+        })
+        simulator.load_scenario({
+            'name': 'event_test',
+            'initial_conditions': {
+                'ego_vehicle': {'position': [0.0, 0.0, 0.0], 'velocity': 20.0, 'yaw': 0.0}
+            },
+            'environment': {
+                'vehicles': [{
+                    'id': 1,
+                    'position': {'x': 10.0, 'y': 0.0, 'z': 0.0},
+                    'velocity': {'vx': 5.0, 'vy': 0.0, 'vz': 0.0},
+                    'rcs': 25.0
+                }],
+                'lanes': [
+                    {'id': 1, 'type': 'dashed', 'side': 'left', 'coefficients': [1.75, 0.0, 0.0, 0.0], 'points': []},
+                    {'id': 2, 'type': 'solid', 'side': 'right', 'coefficients': [-1.75, 0.0, 0.0, 0.0], 'points': []}
+                ]
+            },
+            'events': [{
+                'time': 0.0,
+                'type': 'vehicle_acceleration',
+                'vehicle_id': 1,
+                'acceleration': 1.0,
+                'duration': 0.2
+            }]
+        })
+
+        simulator.step()
+        lead_vehicle = simulator.environment['vehicles'][0]
+        assert lead_vehicle['velocity']['vx'] > 5.0
 
 
 if __name__ == '__main__':

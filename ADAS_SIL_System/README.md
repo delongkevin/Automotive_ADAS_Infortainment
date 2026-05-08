@@ -1,6 +1,6 @@
 # ADAS SIL (Software-in-the-Loop) System
 
-A comprehensive standalone ADAS simulation system with 3D visualization capabilities for testing Advanced Driver Assistance Systems in a software-in-the-loop environment.
+A standalone ADAS simulation system with 2D and 3D visualization hooks for testing Advanced Driver Assistance Systems in a software-in-the-loop environment.
 
 ## Features
 
@@ -8,22 +8,16 @@ A comprehensive standalone ADAS simulation system with 3D visualization capabili
 - **Lane Departure Warning (LDW)** - Detects lane drift and warns driver
 - **Adaptive Cruise Control (ACC)** - Maintains safe following distance
 - **Automatic Emergency Braking (AEB)** - Prevents or mitigates collisions
-- **Blind Spot Detection (BSD)** - Monitors blind spot zones
-- **Traffic Sign Recognition (TSR)** - Identifies and interprets traffic signs
-- **Lane Keep Assist (LKA)** - Actively maintains lane position
 
 ### Visualization Capabilities
-- 3D vehicle and environment rendering (Unity/Unreal Engine ready)
 - 2D bird's-eye view with real-time vehicle positioning
-- Dashboard display with ADAS indicators and warnings
-- Sensor coverage visualization (radar, camera, lidar FOV)
-- Real-time data plots and metrics
+- Sensor coverage visualization for the implemented radar/camera suite
+- Unity/Unreal Engine WebSocket bridge for external 3D rendering
 
 ### Simulation Features
 - Realistic vehicle dynamics model
-- Multi-sensor simulation (radar, camera, lidar, ultrasonic)
-- Synthetic scenario generation
-- CAN bus simulation with automotive message protocols
+- Multi-sensor simulation (radar, camera)
+- JSON scenarios with timed synthetic events
 - Configurable test scenarios in JSON format
 - Data logging and replay capabilities
 
@@ -37,40 +31,20 @@ ADAS_SIL_System/
 │   │   ├── base_sensor.py
 │   │   ├── radar.py
 │   │   ├── camera.py
-│   │   ├── lidar.py
-│   │   └── ultrasonic.py
 │   ├── adas_features/             # ADAS algorithm implementations
 │   │   ├── ldw.py                 # Lane Departure Warning
 │   │   ├── acc.py                 # Adaptive Cruise Control
 │   │   ├── aeb.py                 # Automatic Emergency Braking
-│   │   ├── bsd.py                 # Blind Spot Detection
-│   │   ├── tsr.py                 # Traffic Sign Recognition
-│   │   └── lka.py                 # Lane Keep Assist
-│   └── scenario_engine.py         # Scenario management
-├── can_interface/                 # CAN bus simulation
-│   ├── can_simulator.py
-│   ├── can_database.py
-│   └── message_definitions.py
+├── simulator.py                   # Simulator orchestration
 ├── visualization/                 # Visualization components
-│   ├── dashboard.py               # Main dashboard
 │   ├── bird_eye_view.py           # 2D top-down view
-│   ├── sensor_overlay.py          # Sensor visualization
-│   ├── data_plotter.py            # Real-time plots
 │   └── unity_bridge.py            # Unity/Unreal integration
 ├── scenarios/                     # Test scenario definitions
 │   ├── highway_cruise.json
-│   ├── urban_traffic.json
-│   ├── lane_change.json
 │   └── emergency_braking.json
-├── config/                        # Configuration files
-│   ├── vehicle_config.json
-│   ├── sensor_config.json
-│   └── adas_config.json
+├── config/
+│   └── default_config.json        # Default simulator configuration
 ├── tests/                         # Unit and integration tests
-├── utils/                         # Utility functions
-│   ├── logger.py
-│   ├── data_recorder.py
-│   └── metrics.py
 ├── main.py                        # Main application entry
 ├── requirements.txt               # Python dependencies
 └── README.md                      # This file
@@ -88,16 +62,20 @@ pip install -r ADAS_SIL_System/requirements.txt
 ### Running a Basic Simulation
 
 ```python
+import json
+
 from ADAS_SIL_System import ADASSILSimulator
 
 # Initialize simulator
 sim = ADASSILSimulator()
 
-# Load a scenario
-sim.load_scenario('scenarios/highway_cruise.json')
+# Load a scenario dictionary
+with open('ADAS_SIL_System/scenarios/highway_cruise.json', 'r') as scenario_file:
+    scenario = json.load(scenario_file)
+sim.load_scenario(scenario)
 
 # Run simulation
-sim.run(duration=60.0, visualization=True)
+sim.run(duration=60.0, real_time=False)
 
 # Access results
 results = sim.get_results()
@@ -107,34 +85,23 @@ print(f"ADAS Events: {results['adas_events']}")
 ### Running with 2D Visualization
 
 ```bash
-python ADAS_SIL_System/main.py --scenario highway_cruise --viz-2d
+python -m ADAS_SIL_System.main --scenario highway_cruise --viz-2d
 ```
 
 ### Running with Unity Integration
 
 ```bash
 # Start Unity bridge server
-python ADAS_SIL_System/main.py --scenario highway_cruise --unity-bridge --port 5555
+python -m ADAS_SIL_System.main --scenario highway_cruise --unity-bridge --port 5555
 ```
 
 Then connect your Unity application to `localhost:5555`.
 
 ## Configuration
 
-### Vehicle Configuration
-Edit `config/vehicle_config.json` to customize:
-- Vehicle dimensions and mass
-- Performance characteristics
-- Sensor mounting positions
-
-### Sensor Configuration
-Edit `config/sensor_config.json` to customize:
-- Sensor types and quantities
-- Field of view and range
-- Detection accuracy and noise models
-
-### ADAS Configuration
-Edit `config/adas_config.json` to customize:
+Edit `config/default_config.json` to customize:
+- Vehicle dimensions, mass, and steering limits
+- Radar/camera field of view, range, and noise models
 - ADAS feature activation thresholds
 - Warning timing parameters
 - Control authority limits
@@ -167,21 +134,6 @@ Scenarios are defined in JSON format:
 }
 ```
 
-## CAN Bus Integration
-
-The system simulates standard automotive CAN messages compatible with Vector CANoe:
-
-```python
-from ADAS_SIL_System.can_interface import CANSimulator
-
-can_sim = CANSimulator()
-can_sim.start()
-
-# Access CAN messages
-vehicle_speed = can_sim.get_signal('VehicleSpeed')
-steering_angle = can_sim.get_signal('SteeringWheelAngle')
-```
-
 ## Unity/Unreal Integration
 
 The system provides a JSON-based socket API for real-time communication with Unity/Unreal:
@@ -189,21 +141,18 @@ The system provides a JSON-based socket API for real-time communication with Uni
 ### Message Format
 ```json
 {
+  "type": "state_update",
   "timestamp": 1234567890.123,
   "vehicle": {
-    "position": [x, y, z],
-    "rotation": [roll, pitch, yaw],
-    "velocity": [vx, vy, vz]
+    "position": {"x": 12.3, "y": 0.0, "z": 0.0},
+    "rotation": {"roll": 0.0, "pitch": 0.0, "yaw": 0.1},
+    "velocity": {"vx": 20.0, "vy": 0.0, "vz": 0.0, "speed": 20.0},
+    "controls": {"throttle": 0.2, "brake": 0.0, "steering_angle": 0.0}
   },
-  "sensors": {
-    "radar": [...],
-    "camera": [...],
-    "lidar": [...]
-  },
-  "adas_status": {
-    "ldw": {"active": true, "warning": false},
-    "acc": {"active": true, "target_distance": 50.0},
-    "aeb": {"active": true, "braking": false}
+  "adas": {
+    "ldw": {"warning_active": false, "warning_side": null},
+    "acc": {"active": true, "target_speed": 27.8},
+    "aeb": {"warning_active": false, "braking_active": false}
   }
 }
 ```
@@ -215,10 +164,7 @@ The system provides a JSON-based socket API for real-time communication with Uni
 python -m pytest ADAS_SIL_System/tests/
 
 # Run specific test suite
-python -m pytest ADAS_SIL_System/tests/test_adas_features.py
-
-# Run with coverage
-python -m pytest --cov=ADAS_SIL_System ADAS_SIL_System/tests/
+python -m pytest ADAS_SIL_System/tests/test_basic.py
 ```
 
 ## Performance
@@ -226,14 +172,13 @@ python -m pytest --cov=ADAS_SIL_System ADAS_SIL_System/tests/
 - Real-time simulation at 100Hz update rate
 - Supports multiple concurrent sensors
 - Efficient scenario event processing
-- Low-latency Unity/Unreal bridge (<10ms)
+- Low-latency Unity/Unreal bridge for external 3D renderers
 
 ## Integration with Existing Frameworks
 
 This ADAS SIL system is designed to be standalone but can optionally integrate with:
-- **GM VIP Automation Framework**: CAN message compatibility
-- **Stellantis STLA test assets**: Scenario definitions and sensor models
-- **Vector CANoe**: CAN database export/import
+- **GM VIP Automation Framework**: shared scenario concepts or signal definitions, where applicable
+- **Stellantis STLA assets**: reusable scenario data or sensor assumptions, where applicable
 
 ## Contributing
 

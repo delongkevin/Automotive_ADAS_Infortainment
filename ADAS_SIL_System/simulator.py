@@ -7,6 +7,7 @@ Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np
+import copy
 from typing import Dict, List, Optional
 import logging
 import time
@@ -57,7 +58,19 @@ class ADASSILSimulator:
         self._initialize_adas_features()
 
         # Environment
-        self.environment = {
+        self.environment = self._create_default_environment()
+        self.scenario_events = []
+        self.next_event_index = 0
+
+        # Data logging
+        self.log_data = []
+        self.max_log_entries = 10000
+
+        logger.info("ADAS SIL Simulator initialized")
+
+    def _create_default_environment(self) -> Dict:
+        """Create a fresh default environment state."""
+        return {
             'vehicles': [],
             'pedestrians': [],
             'obstacles': [],
@@ -66,12 +79,6 @@ class ADASSILSimulator:
             'lighting': 'day',
             'weather': 'clear'
         }
-
-        # Data logging
-        self.log_data = []
-        self.max_log_entries = 10000
-
-        logger.info("ADAS SIL Simulator initialized")
 
     def _initialize_sensors(self):
         """Initialize sensor suite."""
@@ -137,10 +144,14 @@ class ADASSILSimulator:
             self.vehicle.set_state(pos[0], pos[1], yaw, vel)
 
         # Set environment
-        self.environment.update(scenario.get('environment', {}))
+        self.environment.update(copy.deepcopy(scenario.get('environment', {})))
 
         # Load scenario events
-        self.scenario_events = scenario.get('events', [])
+        self.scenario_events = sorted(
+            copy.deepcopy(scenario.get('events', [])),
+            key=lambda event: event.get('time', 0.0)
+        )
+        self.next_event_index = 0
 
         logger.info("Scenario loaded successfully")
 
@@ -149,11 +160,16 @@ class ADASSILSimulator:
         self.current_time = 0.0
         self.vehicle.reset_state()
         self.log_data = []
+        self.environment = self._create_default_environment()
+        self.scenario_events = []
+        self.next_event_index = 0
 
-        # Reset ADAS features
-        for feature in self.adas_features.values():
-            if hasattr(feature, 'disable'):
-                feature.disable()
+        for sensor in self.sensors.values():
+            sensor.last_update_time = 0.0
+            sensor.detections = []
+
+        self.adas_features = {}
+        self._initialize_adas_features()
 
         logger.info("Simulation reset")
 
@@ -161,6 +177,9 @@ class ADASSILSimulator:
         """
         Execute one simulation step.
         """
+        self._process_scenario_events()
+        self._update_environment_actors()
+
         # Collect sensor data
         sensor_data = []
         for sensor in self.sensors.values():
@@ -190,6 +209,61 @@ class ADASSILSimulator:
 
         # Update time
         self.current_time += self.dt
+
+    def _process_scenario_events(self):
+        """Apply all scenario events scheduled for the current simulation time."""
+        while self.next_event_index < len(self.scenario_events):
+            event = self.scenario_events[self.next_event_index]
+            if event.get('time', 0.0) > self.current_time + 1e-9:
+                break
+
+            self._apply_scenario_event(event)
+            self.next_event_index += 1
+
+    def _apply_scenario_event(self, event: Dict):
+        """Apply a single scenario event to an environment actor."""
+        vehicle = self._find_vehicle(event.get('vehicle_id'))
+        if vehicle is None:
+            logger.warning(f"Scenario event target not found: {event}")
+            return
+
+        event_type = event.get('type')
+        if event_type == 'vehicle_acceleration':
+            vehicle['acceleration'] = event.get('acceleration', 0.0)
+            duration = event.get('duration')
+            vehicle['acceleration_end_time'] = (
+                self.current_time + duration if duration is not None else None
+            )
+        elif event_type == 'vehicle_emergency_brake':
+            vehicle['acceleration'] = event.get('deceleration', -8.0)
+            vehicle['acceleration_end_time'] = None
+        else:
+            logger.warning(f"Unsupported scenario event type: {event_type}")
+
+    def _find_vehicle(self, vehicle_id: Optional[int]) -> Optional[Dict]:
+        """Find an environment vehicle by id."""
+        for vehicle in self.environment.get('vehicles', []):
+            if vehicle.get('id') == vehicle_id:
+                return vehicle
+        return None
+
+    def _update_environment_actors(self):
+        """Advance simple kinematics for environment vehicles."""
+        for vehicle in self.environment.get('vehicles', []):
+            velocity = vehicle.setdefault('velocity', {'vx': 0.0, 'vy': 0.0, 'vz': 0.0})
+            position = vehicle.setdefault('position', {'x': 0.0, 'y': 0.0, 'z': 0.0})
+
+            acceleration = vehicle.get('acceleration', 0.0)
+            acceleration_end_time = vehicle.get('acceleration_end_time')
+            if acceleration_end_time is not None and self.current_time >= acceleration_end_time:
+                acceleration = 0.0
+                vehicle.pop('acceleration', None)
+                vehicle.pop('acceleration_end_time', None)
+
+            velocity['vx'] = max(0.0, velocity.get('vx', 0.0) + acceleration * self.dt)
+            position['x'] += velocity['vx'] * self.dt
+            position['y'] += velocity.get('vy', 0.0) * self.dt
+            position['z'] += velocity.get('vz', 0.0) * self.dt
 
     def _compute_vehicle_controls(self, adas_status: Dict, vehicle_state: Dict) -> tuple:
         """

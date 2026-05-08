@@ -58,7 +58,8 @@ class AutomaticEmergencyBraking:
 
         logger.info("AEB system initialized")
 
-    def update(self, vehicle_state: Dict, sensor_data: List[Dict], current_time: float) -> Dict:
+    def update(self, vehicle_state: Dict, sensor_data: List[Dict],
+               current_time: float, dt: float = 0.0) -> Dict:
         """
         Update AEB system and determine braking action.
 
@@ -66,6 +67,7 @@ class AutomaticEmergencyBraking:
             vehicle_state: Current vehicle state
             sensor_data: List of sensor detections
             current_time: Current simulation time (s)
+            dt: Simulation time step (unused, kept for interface consistency)
 
         Returns:
             Dictionary with AEB status and control commands

@@ -290,7 +290,7 @@ public class VehicleController : MonoBehaviour
 public class SensorVisualizer : MonoBehaviour
 {
     public Material radarMaterial;
-    public Material cameraM material;
+    public Material cameraMaterial;
 
     void DrawSensorFOV(SensorData sensor)
     {

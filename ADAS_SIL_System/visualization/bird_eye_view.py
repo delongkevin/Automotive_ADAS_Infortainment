@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
+from matplotlib.transforms import Affine2D
 from typing import Dict, List, Optional
 import logging
 
@@ -53,6 +54,7 @@ class BirdEyeView:
 
         # Plot elements (initialized as None, created in update)
         self.ego_vehicle_patch = None
+        self.ego_arrow_patch = None
         self.sensor_patches = []
         self.object_patches = []
         self.lane_lines = []
@@ -76,6 +78,10 @@ class BirdEyeView:
         # Clear previous elements
         if self.ego_vehicle_patch:
             self.ego_vehicle_patch.remove()
+            self.ego_vehicle_patch = None
+        if self.ego_arrow_patch:
+            self.ego_arrow_patch.remove()
+            self.ego_arrow_patch = None
 
         for patch in self.sensor_patches + self.object_patches:
             patch.remove()
@@ -113,28 +119,33 @@ class BirdEyeView:
         yaw = vehicle_state['orientation']['yaw']
         dims = vehicle_state['dimensions']
 
-        # Vehicle rectangle (centered at origin in bird's eye view)
+        # Vehicle rectangle in vehicle-local coordinates
         width = dims['width']
         length = dims['length']
 
-        # Create rectangle at origin
         rect = patches.Rectangle(
             (-length/2, -width/2), length, width,
             linewidth=2, edgecolor='blue', facecolor='lightblue', alpha=0.7
         )
+        transform = Affine2D().rotate_around(0.0, 0.0, yaw).translate(
+            pos['x'], pos['y']
+        ) + self.ax.transData
+        rect.set_transform(transform)
 
         # Add direction indicator (arrow)
         arrow_length = length * 0.4
         arrow = patches.FancyArrow(
-            0, 0, arrow_length, 0,
+            -length * 0.1, 0, arrow_length, 0,
             width=width*0.3, head_width=width*0.6, head_length=length*0.2,
             fc='darkblue', ec='darkblue', alpha=0.8
         )
+        arrow.set_transform(transform)
 
         self.ax.add_patch(rect)
         self.ax.add_patch(arrow)
 
         self.ego_vehicle_patch = rect
+        self.ego_arrow_patch = arrow
 
     def _draw_sensor_coverage(self, vehicle_state: Dict, sensors: Dict):
         """

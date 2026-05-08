@@ -155,8 +155,9 @@ class BaseSensor(ABC):
             noisy_detection['elevation'] += np.random.normal(0, self.angle_noise_std)
 
         # Add velocity noise
-        if 'velocity' in noisy_detection:
-            noisy_detection['velocity'] += np.random.normal(0, self.velocity_noise_std)
+        for key in ('velocity', 'radial_velocity'):
+            if key in noisy_detection:
+                noisy_detection[key] += np.random.normal(0, self.velocity_noise_std)
 
         return noisy_detection
 

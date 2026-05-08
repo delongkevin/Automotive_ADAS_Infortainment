@@ -15,7 +15,7 @@
     "frontal_area": 2.2,
     "max_acceleration": 3.0,
     "max_deceleration": -8.0,
-    "max_steering_angle": 35.0
+    "max_steering_angle": 0.6108652382
   },
 
   "sensors": {

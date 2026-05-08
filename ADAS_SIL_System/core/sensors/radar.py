@@ -117,6 +117,10 @@ class RadarSensor(BaseSensor):
         if not self.is_in_fov(obj_pos, ego_pos, ego_yaw):
             return None
 
+        rcs = obj.get('rcs', 10.0)
+        if rcs < self.min_rcs:
+            return None
+
         # Apply detection probability
         if not self.apply_detection_probability():
             return None
@@ -177,7 +181,7 @@ class RadarSensor(BaseSensor):
             'azimuth': azimuth,
             'elevation': elevation,
             'radial_velocity': radial_velocity,
-            'rcs': obj.get('rcs', 10.0),  # Radar cross section
+            'rcs': rcs,  # Radar cross section
             'false_alarm': False
         }
 
