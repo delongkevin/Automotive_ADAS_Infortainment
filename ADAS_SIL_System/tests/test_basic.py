@@ -434,7 +434,7 @@ class TestSurroundViewCamera:
         svc = SurroundViewCamera()
         assert svc.enabled == True
         assert svc.active == True
-        assert len(svc.cameras) == 4  # Front, rear, left, right
+        assert len(svc.cameras) == 5  # Front, rear, left, right, cargo
 
     def test_camera_view_switching(self):
         """Test camera view mode switching."""
@@ -481,6 +481,306 @@ class TestSurroundViewCamera:
         status = svc.update(vehicle_state, [], 0.0, 0.033)
         assert status['system'] == 'surround_view_camera'
         assert status['enabled'] == True
+
+
+class TestSurroundViewCameraAllViews:
+    """Test all camera view modes with complete coverage."""
+
+    def test_all_view_modes_exist(self):
+        """Test all camera view modes are defined."""
+        svc = SurroundViewCamera()
+        
+        # Test all view modes are accessible
+        assert CameraViewMode.FRONT
+        assert CameraViewMode.REAR
+        assert CameraViewMode.LEFT
+        assert CameraViewMode.RIGHT
+        assert CameraViewMode.CARGO  # Truck bed / cargo area
+        assert CameraViewMode.BIRD_EYE
+        assert CameraViewMode.PANORAMIC_FRONT
+        assert CameraViewMode.PANORAMIC_REAR
+        assert CameraViewMode.FULL_SURROUND
+
+    def test_all_cameras_initialized(self):
+        """Test all cameras are properly initialized."""
+        svc = SurroundViewCamera()
+        
+        # Verify we have 5 cameras now (including cargo)
+        assert len(svc.cameras) == 5
+        
+        # Verify each camera has required properties
+        required_props = ['name', 'position', 'fov_h', 'fov_v', 'resolution', 'frame_rate', 'enabled']
+        for cam_name, cam_config in svc.cameras.items():
+            assert cam_name in ['front', 'rear', 'left', 'right', 'cargo']
+            for prop in required_props:
+                assert prop in cam_config
+
+    def test_cargo_camera_config(self):
+        """Test cargo camera is properly configured."""
+        svc = SurroundViewCamera()
+        
+        assert 'cargo' in svc.cameras
+        cargo_cam = svc.cameras['cargo']
+        assert cargo_cam['enabled'] == True
+        assert cargo_cam['name'] == 'Cargo Area / Truck Bed Camera'
+        assert cargo_cam['fov_h'] == 100.0
+        assert cargo_cam['fov_v'] == 75.0
+
+    def test_front_view_mode(self):
+        """Test front camera view mode."""
+        svc = SurroundViewCamera()
+        svc.set_view_mode(CameraViewMode.FRONT)
+        svc.view_controller.update(0.5)
+        assert svc.view_controller.current_view == CameraViewMode.FRONT
+
+    def test_rear_view_mode(self):
+        """Test rear camera view mode."""
+        svc = SurroundViewCamera()
+        svc.set_view_mode(CameraViewMode.REAR)
+        svc.view_controller.update(0.5)
+        assert svc.view_controller.current_view == CameraViewMode.REAR
+
+    def test_left_view_mode(self):
+        """Test left side camera view mode."""
+        svc = SurroundViewCamera()
+        svc.set_view_mode(CameraViewMode.LEFT)
+        svc.view_controller.update(0.5)
+        assert svc.view_controller.current_view == CameraViewMode.LEFT
+
+    def test_right_view_mode(self):
+        """Test right side camera view mode."""
+        svc = SurroundViewCamera()
+        svc.set_view_mode(CameraViewMode.RIGHT)
+        svc.view_controller.update(0.5)
+        assert svc.view_controller.current_view == CameraViewMode.RIGHT
+
+    def test_cargo_view_mode(self):
+        """Test cargo area camera view mode."""
+        svc = SurroundViewCamera()
+        svc.set_view_mode(CameraViewMode.CARGO)
+        svc.view_controller.update(0.5)
+        assert svc.view_controller.current_view == CameraViewMode.CARGO
+
+    def test_bird_eye_view_mode(self):
+        """Test bird's eye (top-down) view mode."""
+        svc = SurroundViewCamera()
+        svc.set_view_mode(CameraViewMode.BIRD_EYE)
+        svc.view_controller.update(0.5)
+        assert svc.view_controller.current_view == CameraViewMode.BIRD_EYE
+
+    def test_panoramic_front_view_mode(self):
+        """Test panoramic front view mode."""
+        svc = SurroundViewCamera()
+        svc.set_view_mode(CameraViewMode.PANORAMIC_FRONT)
+        svc.view_controller.update(0.5)
+        assert svc.view_controller.current_view == CameraViewMode.PANORAMIC_FRONT
+
+    def test_panoramic_rear_view_mode(self):
+        """Test panoramic rear view mode."""
+        svc = SurroundViewCamera()
+        svc.set_view_mode(CameraViewMode.PANORAMIC_REAR)
+        svc.view_controller.update(0.5)
+        assert svc.view_controller.current_view == CameraViewMode.PANORAMIC_REAR
+
+    def test_full_surround_view_mode(self):
+        """Test full surround view mode (all cameras)."""
+        svc = SurroundViewCamera()
+        svc.set_view_mode(CameraViewMode.FULL_SURROUND)
+        svc.view_controller.update(0.5)
+        assert svc.view_controller.current_view == CameraViewMode.FULL_SURROUND
+
+    def test_auto_switch_to_rear_when_reversing(self):
+        """Test automatic switch to rear view when reversing."""
+        svc = SurroundViewCamera()
+        vehicle_state = {
+            'position': {'x': 0.0, 'y': 0.0},
+            'orientation': {'yaw': 0.0},
+            'velocity': {'speed': 3.0},  # Moving backwards fast
+            'transmission': {'gear': 'R'},
+            'controls': {'steering_angle': 0.0},
+            'signals': {'turn_signal': None}
+        }
+
+        svc.enable_auto_switching(True)
+        svc.update(vehicle_state, [], 0.0, 0.033)
+        # After update, should have requested rear view
+        assert svc.view_controller.requested_view == CameraViewMode.REAR
+
+    def test_auto_switch_to_bird_eye_when_parking(self):
+        """Test automatic switch to bird's eye when parking (low speed reverse)."""
+        svc = SurroundViewCamera()
+        vehicle_state = {
+            'position': {'x': 0.0, 'y': 0.0},
+            'orientation': {'yaw': 0.0},
+            'velocity': {'speed': 0.5},  # Slow reverse for parking
+            'transmission': {'gear': 'R'},
+            'controls': {'steering_angle': 0.0},
+            'signals': {'turn_signal': None}
+        }
+
+        svc.enable_auto_switching(True)
+        svc.update(vehicle_state, [], 0.0, 0.033)
+        assert svc.view_controller.requested_view == CameraViewMode.BIRD_EYE
+
+    def test_auto_switch_to_cargo_when_parked(self):
+        """Test automatic switch to cargo view when vehicle is parked."""
+        svc = SurroundViewCamera()
+        vehicle_state = {
+            'position': {'x': 0.0, 'y': 0.0},
+            'orientation': {'yaw': 0.0},
+            'velocity': {'speed': 0.0},
+            'transmission': {'gear': 'P'},  # Parked
+            'controls': {'steering_angle': 0.0},
+            'signals': {'turn_signal': None}
+        }
+
+        svc.enable_auto_switching(True)
+        svc.update(vehicle_state, [], 0.0, 0.033)
+        assert svc.view_controller.requested_view == CameraViewMode.CARGO
+
+    def test_auto_switch_left_view_on_left_turn(self):
+        """Test automatic switch to left view when turning left."""
+        svc = SurroundViewCamera()
+        vehicle_state = {
+            'position': {'x': 0.0, 'y': 0.0},
+            'orientation': {'yaw': 0.0},
+            'velocity': {'speed': 10.0},
+            'transmission': {'gear': 'D'},
+            'controls': {'steering_angle': np.deg2rad(25)},  # Left turn
+            'signals': {'turn_signal': 'left'}
+        }
+
+        svc.enable_auto_switching(True)
+        svc.update(vehicle_state, [], 0.0, 0.033)
+        assert svc.view_controller.requested_view == CameraViewMode.LEFT
+
+    def test_auto_switch_right_view_on_right_turn(self):
+        """Test automatic switch to right view when turning right."""
+        svc = SurroundViewCamera()
+        vehicle_state = {
+            'position': {'x': 0.0, 'y': 0.0},
+            'orientation': {'yaw': 0.0},
+            'velocity': {'speed': 10.0},
+            'transmission': {'gear': 'D'},
+            'controls': {'steering_angle': np.deg2rad(-25)},  # Right turn
+            'signals': {'turn_signal': 'right'}
+        }
+
+        svc.enable_auto_switching(True)
+        svc.update(vehicle_state, [], 0.0, 0.033)
+        assert svc.view_controller.requested_view == CameraViewMode.RIGHT
+
+    def test_auto_switch_to_front_normal_driving(self):
+        """Test automatic switch to front view during normal driving."""
+        svc = SurroundViewCamera()
+        # Start with a different view
+        svc.set_view_mode(CameraViewMode.REAR)
+        svc.view_controller.update(0.5)
+        
+        vehicle_state = {
+            'position': {'x': 0.0, 'y': 0.0},
+            'orientation': {'yaw': 0.0},
+            'velocity': {'speed': 25.0},
+            'transmission': {'gear': 'D'},
+            'controls': {'steering_angle': 0.0},
+            'signals': {'turn_signal': None}
+        }
+
+        svc.enable_auto_switching(True)
+        svc.update(vehicle_state, [], 0.0, 0.033)
+        # Should request front view
+        assert svc.view_controller.requested_view == CameraViewMode.FRONT or \
+               svc.view_controller.current_view == CameraViewMode.FRONT
+
+    def test_all_views_with_blind_spot_detection(self):
+        """Test all camera views work with blind spot detection enabled."""
+        svc = SurroundViewCamera()
+        bsd = BlindSpotDetection()
+        bsd.enable()
+
+        for view_mode in [CameraViewMode.FRONT, CameraViewMode.REAR, CameraViewMode.LEFT, 
+                         CameraViewMode.RIGHT, CameraViewMode.CARGO, CameraViewMode.BIRD_EYE]:
+            svc.set_view_mode(view_mode)
+            vehicle_state = {
+                'position': {'x': 0.0, 'y': 0.0},
+                'orientation': {'yaw': 0.0},
+                'velocity': {'speed': 20.0}
+            }
+            sensor_data = []
+            
+            svc_status = svc.update(vehicle_state, sensor_data, 0.0, 0.033)
+            bsd_status = bsd.update(vehicle_state, sensor_data, 0.0)
+            
+            assert svc_status['enabled'] == True
+            assert bsd_status['enabled'] == True
+
+    def test_all_views_with_autonomous_parking(self):
+        """Test all camera views work with autonomous parking enabled."""
+        svc = SurroundViewCamera()
+        parking = AutonomousParking()
+        parking.enable()
+
+        for view_mode in [CameraViewMode.FRONT, CameraViewMode.REAR, CameraViewMode.LEFT, 
+                         CameraViewMode.RIGHT, CameraViewMode.CARGO, CameraViewMode.BIRD_EYE]:
+            svc.set_view_mode(view_mode)
+            vehicle_state = {
+                'position': {'x': 0.0, 'y': 0.0},
+                'orientation': {'yaw': 0.0},
+                'velocity': {'speed': 5.0}
+            }
+            sensor_data = []
+            
+            svc_status = svc.update(vehicle_state, sensor_data, 0.0, 0.033)
+            parking_status = parking.update(vehicle_state, sensor_data, 0.0, 0.01)
+            
+            assert svc_status['enabled'] == True
+            assert parking_status['enabled'] == True
+
+    def test_all_views_with_trailer_assistance(self):
+        """Test all camera views work with trailer assistance enabled."""
+        svc = SurroundViewCamera()
+        trailer = TrailerAssistance()
+        trailer.enable()
+
+        for view_mode in [CameraViewMode.FRONT, CameraViewMode.REAR, CameraViewMode.LEFT, 
+                         CameraViewMode.RIGHT, CameraViewMode.CARGO, CameraViewMode.BIRD_EYE]:
+            svc.set_view_mode(view_mode)
+            vehicle_state = {
+                'position': {'x': 0.0, 'y': 0.0},
+                'orientation': {'yaw': 0.0},
+                'velocity': {'vx': -2.0, 'vy': 0.0, 'speed': 2.0},
+                'controls': {'steering_angle': 0.0}
+            }
+            sensor_data = []
+            
+            svc_status = svc.update(vehicle_state, sensor_data, 0.0, 0.033)
+            trailer_status = trailer.update(vehicle_state, sensor_data, 0.0, 0.01)
+            
+            assert svc_status['enabled'] == True
+            assert trailer_status['enabled'] == True
+
+    def test_view_transition_smooth(self):
+        """Test smooth transition between views."""
+        svc = SurroundViewCamera()
+        svc.set_view_mode(CameraViewMode.FRONT)
+        svc.view_controller.update(1.0)
+        
+        # Verify we're on front view
+        assert svc.view_controller.current_view == CameraViewMode.FRONT
+        
+        # Switch to rear
+        svc.set_view_mode(CameraViewMode.REAR)
+        assert svc.view_controller.transition_in_progress == True
+        
+        # Partially complete transition
+        svc.view_controller.update(0.15)
+        assert svc.view_controller.transition_progress > 0.0
+        assert svc.view_controller.transition_progress < 1.0
+        
+        # Fully complete transition
+        svc.view_controller.update(1.0)
+        assert svc.view_controller.current_view == CameraViewMode.REAR
+        assert svc.view_controller.transition_in_progress == False
 
 
 class TestIntegratedADASFeatures:

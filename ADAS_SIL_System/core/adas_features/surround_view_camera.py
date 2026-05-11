@@ -21,6 +21,7 @@ class CameraViewMode(Enum):
     REAR = "rear"
     LEFT = "left"
     RIGHT = "right"
+    CARGO = "cargo"  # Truck bed / cargo area view
     BIRD_EYE = "bird_eye"
     PANORAMIC_FRONT = "panoramic_front"
     PANORAMIC_REAR = "panoramic_rear"
@@ -190,6 +191,16 @@ class SurroundViewCamera:
                 'frame_rate': 30,
                 'enabled': True,
                 'video_stream': None
+            },
+            'cargo': {
+                'name': 'Cargo Area / Truck Bed Camera',
+                'position': [-2.0, 0.0, 1.5],  # Rear cargo area
+                'fov_h': 100.0,  # Wide view of cargo area
+                'fov_v': 75.0,
+                'resolution': [1280, 960],
+                'frame_rate': 30,
+                'enabled': True,
+                'video_stream': None
             }
         }
 
@@ -259,6 +270,9 @@ class SurroundViewCamera:
             else:
                 # Low speed reverse - show bird's eye for parking
                 self.view_controller.request_view(CameraViewMode.BIRD_EYE)
+
+        elif gear == 'P':  # Parked - show cargo area if available
+            self.view_controller.request_view(CameraViewMode.CARGO)
 
         elif turn_signal == 'left' and abs(steering_angle) > np.deg2rad(10):
             # Turning left - show left side view
