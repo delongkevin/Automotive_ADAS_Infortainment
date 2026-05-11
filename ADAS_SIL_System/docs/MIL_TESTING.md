@@ -6,19 +6,19 @@ The MIL Testing Framework provides comprehensive, scenario-based testing for all
 
 ## Architecture
 
-### Core Components
+## Core Components
 
-```
+```text
 MIL Testing Framework
 ├── core/mil_testing.py           # Framework implementation
 ├── scenarios/*.json               # Test scenario definitions (7 scenarios)
 ├── tests/test_mil.py             # Pytest-based MIL test suite
 └── run_mil_tests.py              # Standalone test runner script
-```
+```text
 
-### Framework Structure
+## Framework Structure
 
-```
+```text
 MILScenarioRunner
 ├── Scenario Loading
 ├── Feature Initialization
@@ -32,108 +32,149 @@ MILScenarioRunner
     ├── Performance Metrics
     ├── Validation Results
     └── Report Generation
-```
+```text
 
 ## Test Scenarios
 
-### 1. Blind Spot Detection (blind_spot_detection.json)
+## 1. Blind Spot Detection (blind_spot_detection.json)
 
 **Purpose:** Validate blind spot detection with vehicles approaching from multiple angles
 
 **Duration:** 30 seconds
 
 **Test Cases:**
+
 - Vehicle approaching from left blind spot
+
 - Vehicle approaching from right blind spot  
+
 - Vehicle approaching from rear blind spot
+
 - Warning activation/deactivation validation
 
 **Success Criteria:**
+
 - All validations pass
+
 - Minimum accuracy: 95%
+
 - Maximum latency: 100ms
 
-### 2. Autonomous Parking - Parallel (autonomous_parking_parallel.json)
+## 2. Autonomous Parking - Parallel (autonomous_parking_parallel.json)
 
 **Purpose:** Test parallel parking space detection and execution
 
 **Duration:** 45 seconds
 
 **Test Cases:**
+
 - Parking space detection during forward drive
+
 - Parking initiation
+
 - Maneuver progression validation
+
 - Completion verification
 
 **Success Criteria:**
+
 - Space detection accuracy >= 90%
+
 - Progression from 0% to 100%
+
 - Maximum latency: 150ms
 
-### 3. Autonomous Parking - Perpendicular (autonomous_parking_perpendicular.json)  
+## 3. Autonomous Parking - Perpendicular (autonomous_parking_perpendicular.json)  
 
 **Purpose:** Test perpendicular parking maneuver
 
 **Duration:** 50 seconds
 
 **Test Cases:**
+
 - Perpendicular space setup and detection
+
 - Parking type validation (perpendicular vs parallel)
+
 - Progressive maneuver execution
+
 - Completion check
 
 **Success Criteria:**
+
 - Accurate space type detection
+
 - Smooth progression through parking stages
+
 - Maximum latency: 150ms
 
-### 4. Trailer Assistance (trailer_assistance.json)
+## 4. Trailer Assistance (trailer_assistance.json)
 
 **Purpose:** Validate trailer detection and steering correction with PID control
 
 **Duration:** 40 seconds
 
 **Test Cases:**
+
 - Trailer detection from sensor data
+
 - Steering angle response
+
 - PID correction validation
+
 - Angle recovery after correction
 
 **Success Criteria:**
+
 - Trailer detected consistently
+
 - Steering correction activated appropriately
+
 - Angle control within tolerance
+
 - Minimum accuracy: 92%
+
 - Maximum latency: 80ms
 
-### 5. Surround View Camera (surround_view_camera.json)
+## 5. Surround View Camera (surround_view_camera.json)
 
 **Purpose:** Test all 9 camera view modes and auto-switching logic
 
 **Duration:** 60 seconds
 
 **Test Cases:**
+
 - Front view (initial state)
+
 - Rear view (reverse gear)
+
 - Cargo view (parked)
+
 - Side views (sharp turns)
+
 - Bird's eye view (low speed parking)
+
 - View transition smoothness
 
 **Success Criteria:**
+
 - Correct view selection for all conditions
+
 - Accurate auto-switching logic
+
 - Transition completeness
+
 - Minimum accuracy: 98%
+
 - Maximum latency: 50ms
 
-### 6. Highway Cruise (highway_cruise.json)
+## 6. Highway Cruise (highway_cruise.json)
 
 **Purpose:** Test ACC in highway conditions
 
 **Duration:** Variable
 
-### 7. Emergency Braking (emergency_braking.json)
+## 7. Emergency Braking (emergency_braking.json)
 
 **Purpose:** Test AEB system response
 
@@ -141,55 +182,57 @@ MILScenarioRunner
 
 ## Usage
 
-### Running All MIL Tests via Python Script
+## Running All MIL Tests via Python Script
 
 ```bash
-# Run complete MIL test suite
+## Run complete MIL test suite
 python run_mil_tests.py
 
-# Run with custom output path
+## Run with custom output path
 python run_mil_tests.py --output my_report.txt
 
-# Run specific scenario
+## Run specific scenario
 python run_mil_tests.py --scenario blind_spot_detection
 
-# Verbose output
+## Verbose output
 python run_mil_tests.py --verbose
-```
+```text
 
-### Running Tests via Pytest
+## Running Tests via Pytest
 
 ```bash
-# Run all MIL tests
+## Run all MIL tests
 pytest ADAS_SIL_System/tests/test_mil.py -v
 
-# Run specific test class
+## Run specific test class
 pytest ADAS_SIL_System/tests/test_mil.py::TestBlindSpotDetection -v
 
-# Run with output
+## Run with output
 pytest ADAS_SIL_System/tests/test_mil.py -v --tb=short
 
-# Generate JUnit report
+## Generate JUnit report
 pytest ADAS_SIL_System/tests/test_mil.py -v --junit-xml=mil_results.xml
-```
+```text
 
-### Integration with CI/CD
+## Integration with CI/CD
 
 The MIL test suite can be integrated into CI/CD pipelines:
 
 ```yaml
-# Example GitHub Actions workflow
+## Example GitHub Actions workflow
+
 - name: Run MIL Tests
+
   run: |
     python -m pytest ADAS_SIL_System/tests/test_mil.py -v \
       --junit-xml=mil_results.xml \
       --cov=ADAS_SIL_System \
       --cov-report=xml
-```
+```text
 
 ## Scenario Definition Format
 
-### Example Scenario Structure
+## Example Scenario Structure
 
 ```json
 {
@@ -220,11 +263,11 @@ The MIL test suite can be integrated into CI/CD pipelines:
     "max_latency_ms": 100
   }
 }
-```
+```text
 
-### Event Types
+## Event Types
 
-#### 1. Validation Events
+## # # 1. Validation Events
 
 Checks feature behavior against expected values:
 
@@ -238,15 +281,19 @@ Checks feature behavior against expected values:
     "tolerance": 0.0
   }
 }
-```
+```text
 
 Validation operators:
+
 - `expected`: Exact value match
+
 - `expected_min`: Minimum threshold
+
 - `expected_max_abs`: Maximum absolute value
+
 - `expected_min_abs`: Minimum absolute value
 
-#### 2. Feature Commands
+## # # 2. Feature Commands
 
 Enable/disable or configure features:
 
@@ -258,15 +305,19 @@ Enable/disable or configure features:
     "command": "start_parking"
   }
 }
-```
+```text
 
 Available commands:
+
 - `enable`: Activate feature
+
 - `disable`: Deactivate feature
+
 - `set_guidance_mode`: Configure guidance parameters
+
 - Custom feature-specific commands
 
-#### 3. Vehicle Motion
+## # # 3. Vehicle Motion
 
 Simulate vehicle movements:
 
@@ -280,9 +331,9 @@ Simulate vehicle movements:
     "gear": "D"
   }
 }
-```
+```text
 
-#### 4. Environment Setup
+## # # 4. Environment Setup
 
 Configure environment conditions:
 
@@ -296,11 +347,11 @@ Configure environment conditions:
     "width": 2.5
   }
 }
-```
+```text
 
 ## Metrics Collection
 
-### PerformanceMetrics
+## PerformanceMetrics
 
 Each feature's performance is tracked across multiple dimensions:
 
@@ -329,9 +380,9 @@ class PerformanceMetrics:
     # Result
     passed: bool                        # Test passed/failed
     failure_reason: str                 # Reason for failure if any
-```
+```text
 
-### Validation Results
+## Validation Results
 
 Individual validation checks are tracked:
 
@@ -345,15 +396,15 @@ class ValidationResult:
     actual: Any            # Actual value
     error_msg: str         # Error message if failed
     latency_ms: float      # Latency to complete check
-```
+```text
 
 ## Reports
 
-### Report Contents
+## Report Contents
 
 The MIL test report includes:
 
-```
+```text
 MIL (Model-in-the-Loop) TEST REPORT
 Generated: 2026-05-11 14:32:15
 
@@ -377,29 +428,29 @@ Validations: 8/8
     Avg Step Time: 0.010ms
     Max Step Time: 0.150ms
     Validation Accuracy: 100.0%
-```
+```text
 
-### Generating Reports
+## Generating Reports
 
 ```python
-# Programmatically
+## Programmatically
 runner = MILScenarioRunner(simulator)
 results = runner.run_scenario('scenarios/scenario.json')
 report = runner.generate_report('output/report.txt')
 
-# Via command line
+## Via command line
 python run_mil_tests.py --output my_report.txt
-```
+```text
 
 ## Python API
 
-### Basic Usage
+## Basic Usage
 
 ```python
 from ADAS_SIL_System import ADASSILSimulator
 from ADAS_SIL_System.core.mil_testing import MILScenarioRunner
 
-# Initialize simulator
+## Initialize simulator
 config = {
     'dt': 0.01,
     'adas': {
@@ -410,26 +461,26 @@ config = {
 }
 simulator = ADASSILSimulator(config)
 
-# Create runner
+## Create runner
 runner = MILScenarioRunner(simulator)
 
-# Run scenario
+## Run scenario
 results = runner.run_scenario('scenarios/blind_spot_detection.json')
 
-# Check results
+## Check results
 if results.overall_pass:
     print("✓ Scenario passed")
 else:
     print("✗ Scenario failed")
 
-# Generate report
+## Generate report
 report = runner.generate_report('mil_report.txt')
-```
+```text
 
-### Advanced Usage - Custom Scenarios
+## Advanced Usage - Custom Scenarios
 
 ```python
-# Create custom scenario
+## Create custom scenario
 scenario = {
     'name': 'Custom Test',
     'duration': 30.0,
@@ -454,40 +505,45 @@ scenario = {
     }
 }
 
-# Save and run
+## Save and run
 import json
 with open('custom_scenario.json', 'w') as f:
     json.dump(scenario, f, indent=2)
 
 results = runner.run_scenario('custom_scenario.json')
-```
+```text
 
 ## Performance Expectations
 
-### Real-time Compliance
+## Real-time Compliance
 
 The MIL testing framework is designed for real-time or better-than-real-time execution:
 
 - **Simulator Update Rate:** 100 Hz (10ms timestep)
+
 - **Feature Latency:** < 150ms target
+
 - **Step Time:** < 1ms average
+
 - **Validation Latency:** < 100ms typical
 
-### Resource Usage
+## Resource Usage
 
 - **Memory:** ~500MB per simulator instance
+
 - **CPU:** Single-threaded execution on 1 core
+
 - **IO:** Minimal disk I/O except for report generation
 
 ## Extending the Framework
 
-### Adding New Scenarios
+## Adding New Scenarios
 
 1. Create JSON scenario file in `scenarios/`
 2. Define events and validation points
 3. Run with existing test runner
 
-### Adding New Test Classes
+## Adding New Test Classes
 
 ```python
 from ADAS_SIL_System.core.mil_testing import MILScenarioRunner
@@ -499,21 +555,21 @@ class TestMyFeature:
         
         assert results.overall_pass
         assert results.metrics['my_feature'].passed
-```
+```text
 
-### Custom Metrics
+## Custom Metrics
 
 ```python
-# Extend ScenarioValidator for custom metrics
+## Extend ScenarioValidator for custom metrics
 class CustomValidator(ScenarioValidator):
     def validate_custom_metric(self, feature_data):
         # Custom validation logic
         pass
-```
+```text
 
 ## Troubleshooting
 
-### Scenario Failing
+## Scenario Failing
 
 **Problem:** Validation failure
 
@@ -523,7 +579,7 @@ class CustomValidator(ScenarioValidator):
 3. Review event parameters
 4. Check success criteria thresholds
 
-### High Latency
+## High Latency
 
 **Problem:** Feature latency exceeds max_latency_ms
 
@@ -533,7 +589,7 @@ class CustomValidator(ScenarioValidator):
 3. Profile feature implementation
 4. Increase max_latency_ms criteria if acceptable
 
-### Missing Metrics
+## Missing Metrics
 
 **Problem:** No metrics collected for feature
 
@@ -547,27 +603,35 @@ class CustomValidator(ScenarioValidator):
 
 1. **Scenario Design**
    - Keep scenarios focused (test one feature per scenario)
+
    - Use realistic timings and distances
+
    - Include edge cases and boundary conditions
 
 2. **Validation**
    - Validate at multiple progress points
+
    - Check both positive and negative cases
+
    - Include timing and performance checks
 
 3. **Performance**
    - Set realistic accuracy thresholds (85-98%)
+
    - Account for simulator limitations
+
    - Profile slow operations
 
 4. **Reporting**
    - Generate reports for CI/CD
+
    - Archive reports for trend analysis
+
    - Monitor metrics over time
 
 ## Integration Examples
 
-### GitHub Actions CI/CD
+## GitHub Actions CI/CD
 
 ```yaml
 name: MIL Testing
@@ -579,66 +643,87 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-python@v2
+
         with:
           python-version: '3.10'
       
       - name: Install dependencies
+
         run: pip install -r ADAS_SIL_System/requirements.txt
       
       - name: Run MIL Tests
+
         run: python run_mil_tests.py --output mil_report.txt
       
       - name: Upload report
+
         if: always()
         uses: actions/upload-artifact@v2
         with:
           name: mil-report
           path: mil_report.txt
-```
+```text
 
-### Local Development Workflow
+## Local Development Workflow
 
 ```bash
-# 1. Make code changes
-# 2. Run unit tests
+## 1. Make code changes
+## 2. Run unit tests
 pytest ADAS_SIL_System/tests/test_basic.py -v
 
-# 3. Run MIL tests
+## 3. Run MIL tests
 python run_mil_tests.py
 
-# 4. Review results
+## 4. Review results
 less mil_test_report.txt
 
-# 5. Fix issues and iterate
-```
+## 5. Fix issues and iterate
+```text
 
 ## Summary
 
 The MIL Testing Framework provides:
 
 ✅ **Comprehensive Testing**
+
 - 7 pre-built scenarios covering all ADAS features
+
 - Scenario-based approach for realistic testing
+
 - Support for all 9 ADAS features
 
 ✅ **Performance Metrics**
+
 - Real-time metric collection
+
 - Latency and accuracy tracking
+
 - Step-level performance analysis
 
 ✅ **Validation & Reporting**
+
 - Automated validation checks
+
 - Detailed HTML/text reports
+
 - Success/failure criteria
 
 ✅ **Easy Integration**
+
 - pytest compatibility
+
 - Python API
+
 - Standalone script execution
+
 - CI/CD ready
 
 ✅ **Extensibility**
+
 - Custom scenario support
+
 - New test class creation
+
 - Metric customization

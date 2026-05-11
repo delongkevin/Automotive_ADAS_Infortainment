@@ -8,74 +8,74 @@ All new features include comprehensive tests. Run them with:
 cd /workspaces/Automotive_ADAS_Infortainment
 python -m pytest ADAS_SIL_System/tests/test_basic.py -v
 
-# Run specific feature tests:
+## Run specific feature tests:
 python -m pytest ADAS_SIL_System/tests/test_basic.py::TestBlindSpotDetection -v
 python -m pytest ADAS_SIL_System/tests/test_basic.py::TestAutonomousParking -v
 python -m pytest ADAS_SIL_System/tests/test_basic.py::TestSurroundViewCamera -v
-```
+```text
 
 ## Feature-by-Feature Examples
 
-### Blind Spot Detection (BSD)
+## Blind Spot Detection (BSD)
 
 Detect vehicles in blind spots on left, right, and rear:
 
 ```python
 from ADAS_SIL_System import ADASSILSimulator
 
-# Initialize simulator with BSD enabled
+## Initialize simulator with BSD enabled
 sim = ADASSILSimulator({
     'adas': {'bsd': {'enabled': True}}
 })
 
-# In simulation loop:
+## In simulation loop:
 vehicle_state = sim.vehicle.get_state()
 bsd_status = sim.adas_features['bsd'].update(
     vehicle_state, sensor_data, current_time
 )
 
-# Check for warnings:
+## Check for warnings:
 if bsd_status['warning_active']:
     direction = bsd_status['warning_side']  # 'left', 'right', 'rear'
     print(f"⚠️  Vehicle in {direction} blind spot!")
-```
+```text
 
-### Autonomous Parking
+## Autonomous Parking
 
 Automatically detect and park in parking spaces:
 
 ```python
-# Initialize with parking enabled
+## Initialize with parking enabled
 sim = ADASSILSimulator({
     'adas': {'parking': {'enabled': True}}
 })
 
 parking = sim.adas_features['parking']
 
-# Simulate scanning for parking spaces
+## Simulate scanning for parking spaces
 parking.enable()
 status = parking.update(vehicle_state, sensor_data, time, dt)
 
-# When space detected, start parking
+## When space detected, start parking
 if status['spaces_detected'] > 0:
     print(f"🅿️  Found {status['spaces_detected']} parking spaces")
     parking.start_parking()
 
-# Monitor parking progress
+## Monitor parking progress
 print(f"Parking progress: {status['progress'] * 100:.1f}%")
 print(f"Parking type: {status['parking_type']}")  # parallel or perpendicular
 
-# Brake when complete
+## Brake when complete
 if status['stage'] == 'complete':
     print("✅ Parking complete!")
-```
+```text
 
-### Trailer Assistance
+## Trailer Assistance
 
 Guide trailer steering during reverse maneuvers:
 
 ```python
-# Initialize with trailer features
+## Initialize with trailer features
 sim = ADASSILSimulator({
     'adas': {'trailer': {'enabled': True}}
 })
@@ -83,22 +83,22 @@ sim = ADASSILSimulator({
 trailer = sim.adas_features['trailer_assistance']
 trailer.enable()
 
-# Set guidance mode
+## Set guidance mode
 trailer.set_guidance_mode('auto', strength=0.8)
 
-# Set target angle (align trailer straight)
+## Set target angle (align trailer straight)
 import numpy as np
 trailer.set_target_angle(np.deg2rad(0))  # 0 degrees = straight
 
-# Update during reversing
+## Update during reversing
 vehicle_state['velocity']['vx'] = -2.0  # Negative = reversing
 status = trailer.update(vehicle_state, sensor_data, time, dt)
 
 if status['warning_active']:
     print(f"⚠️  Trailer angle critical: {status['current_trailer_angle']:.1f}°")
-```
+```text
 
-### Trailer Reverse Guidance
+## Trailer Reverse Guidance
 
 Guide vehicle-trailer through tight reverse maneuvers:
 
@@ -106,7 +106,7 @@ Guide vehicle-trailer through tight reverse maneuvers:
 reverse_guide = sim.adas_features['trailer_reverse']
 reverse_guide.enable()
 
-# Define path (series of waypoints)
+## Define path (series of waypoints)
 path = [
     (0.0, 0.0),      # Start position
     (5.0, 2.0),      # First turn
@@ -117,15 +117,15 @@ path = [
 reverse_guide.set_target_path(path)
 reverse_guide.start_guidance()
 
-# During reverse maneuver:
+## During reverse maneuver:
 status = reverse_guide.update(vehicle_state, sensor_data, time, dt)
 steering_cmd = status['steering_command']
 progress = status['path_progress']
 
 print(f"Following path: {progress*100:.1f}% complete")
-```
+```text
 
-### Surround View Camera
+## Surround View Camera
 
 Intelligent multi-camera view switching:
 
@@ -138,29 +138,29 @@ sim = ADASSILSimulator({
 
 svc = sim.adas_features['surround_view']
 
-# Auto-switching based on vehicle state (reverse, turning, etc.)
+## Auto-switching based on vehicle state (reverse, turning, etc.)
 svc.enable_auto_switching(True)
 
-# Or manual view control:
+## Or manual view control:
 svc.set_view_mode(CameraViewMode.REAR)
 
-# Configure display
+## Configure display
 svc.set_display_mode('pip')  # Picture-in-picture or 'split', 'single'
 
-# Record video
+## Record video
 svc.start_recording('front')
 svc.start_recording()  # All cameras
 
-# Monitor view state
+## Monitor view state
 status = svc.update(vehicle_state, sensor_data, time, dt)
 current = status['current_view']  # 'front', 'rear', 'bird_eye', etc.
 recording = status['cameras_recording']
 print(f"📷 Current view: {current}, Recording {recording} streams")
-```
+```text
 
 ## Common Scenarios
 
-### Scenario 1: Highway Driving with BSD
+## Scenario 1: Highway Driving with BSD
 
 ```python
 vehicle_state = {
@@ -186,30 +186,31 @@ status = bsd.update(vehicle_state, sensor_data, 0.0)
 
 if status['right_occupied']:
     print("⚠️  Car in right blind spot - use caution changing lanes!")
-```
 
-### Scenario 2: Parking Lot Maneuver
+```text
+
+## Scenario 2: Parking Lot Maneuver
 
 ```python
-# Switch to rear view automatically
+## Switch to rear view automatically
 vehicle_state['transmission'] = {'gear': 'R'}
 vehicle_state['velocity'] = {'speed': 0.0}
 
 parking = sim.adas_features['parking']
 svc = sim.adas_features['surround_view']
 
-# Surround view should auto-switch to bird's eye for parking
+## Surround view should auto-switch to bird's eye for parking
 svc.enable_auto_switching(True)
 
-# Detect and execute parking
+## Detect and execute parking
 for i in range(100):  # Simulate 100 steps
     status = parking.update(vehicle_state, sensor_data, i*0.01, 0.01)
     if status['spaces_detected'] > 0:
         print(f"Space found: {status['parking_type']}")
         break
-```
+```text
 
-### Scenario 3: Trailer Reversing
+## Scenario 3: Trailer Reversing
 
 ```python
 vehicle_state['velocity']['vx'] = -1.5  # Reversing
@@ -218,12 +219,12 @@ vehicle_state['controls']['steering_angle'] = np.deg2rad(15)
 trailer = sim.adas_features['trailer_assistance']
 reverse_guide = sim.adas_features['trailer_reverse']
 
-# Enable assistance
+## Enable assistance
 trailer.set_guidance_mode('auto')
 reverse_guide.set_target_path([(0, 0), (2, 2), (4, 4)])
 reverse_guide.start_guidance()
 
-# Execute reverse maneuver
+## Execute reverse maneuver
 for step in range(200):
     t_status = trailer.update(vehicle_state, sensor_data, step*0.01, 0.01)
     r_status = reverse_guide.update(vehicle_state, sensor_data, step*0.01, 0.01)
@@ -233,11 +234,11 @@ for step in range(200):
     
     if t_status['critical_angle']:
         print("⚠️  Trailer angle critical!")
-```
+```text
 
 ## Configuration Tips
 
-### Enable All Features at Once
+## Enable All Features at Once
 
 ```python
 config = {
@@ -253,9 +254,9 @@ config = {
 }
 
 sim = ADASSILSimulator(config)
-```
+```text
 
-### Customize Feature Parameters
+## Customize Feature Parameters
 
 ```python
 config = {
@@ -278,18 +279,21 @@ config = {
         }
     }
 }
-```
+```text
 
 ## Performance Notes
 
 - All features run at 100 Hz (0.01s time step)
+
 - Typical execution time: <5ms per update cycle
+
 - Can be used simultaneously in same simulation
+
 - Modular design allows enabling/disabling individually
 
 ## Troubleshooting
 
-### Feature not responding to sensor data
+## Feature not responding to sensor data
 
 Ensure sensor data includes correct dictionary keys:
 ```python
@@ -303,18 +307,18 @@ sensor_data = [{
     'velocity': speed,                # For BSD
     'false_alarm': False              # To filter noise
 }]
-```
+```text
 
-### View not switching automatically
+## View not switching automatically
 
 Enable auto-switching explicitly:
 ```python
 svc = sim.adas_features['surround_view']
 svc.enable_auto_switching(True)
 svc.switching_mode = 'context_aware'
-```
+```text
 
-### Parking not detecting spaces
+## Parking not detecting spaces
 
 Ensure ultrasonic/radar sensors are in configuration:
 ```python
@@ -322,10 +326,12 @@ Ensure ultrasonic/radar sensors are in configuration:
     'front_radar': {'enabled': True},
     'side_ultrasonic': {'enabled': True}  # For parking detection
 }
-```
+```text
 
 ## Further Reading
 
 - [NEW_FEATURES_SUMMARY.md](NEW_FEATURES_SUMMARY.md) - Detailed feature documentation
+
 - [README.md](README.md) - ADAS SIL System overview
+
 - [tests/test_basic.py](../tests/test_basic.py) - Test examples and usage patterns
