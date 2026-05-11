@@ -1,0 +1,299 @@
+{
+  "name": "City Driving with Traffic Sign Recognition",
+  "description": "Tests TSR system in urban environment with multiple sign types including speed limits, pedestrian crossings, school zones, and construction zones",
+  "duration": 90.0,
+  "environment": {
+    "weather": "clear",
+    "road_type": "urban_street",
+    "visibility": 200.0
+  },
+  "vehicle_config": {
+    "initial_speed": 0.0,
+    "initial_position": [0.0, 0.0],
+    "enabled_features": ["tsr", "acc"]
+  },
+  "events": [
+    {
+      "name": "Enable Traffic Sign Recognition",
+      "time": 1.0,
+      "type": "feature_command",
+      "parameters": {
+        "feature": "tsr",
+        "command": "enable"
+      }
+    },
+    {
+      "name": "Start driving in city",
+      "time": 2.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 10.0,
+        "duration": 5.0
+      }
+    },
+    {
+      "name": "Detect 30 km/h speed limit sign",
+      "time": 4.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "speed_30",
+        "distance": 30.0,
+        "position": [15.0, 0.0],
+        "confidence": 0.95
+      }
+    },
+    {
+      "name": "Verify speed limit sign detection",
+      "time": 5.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "speed_limit_kmh",
+        "expected": 30.0,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Accelerate to speed limit",
+      "time": 6.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 8.33,
+        "duration": 3.0
+      }
+    },
+    {
+      "name": "Approaching pedestrian crossing",
+      "time": 10.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "pedestrian",
+        "distance": 40.0,
+        "position": [30.0, 0.0],
+        "confidence": 0.92
+      }
+    },
+    {
+      "name": "Verify pedestrian crossing detection",
+      "time": 11.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "warning_signs",
+        "expected_contains": "pedestrian_crossing",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Pass pedestrian crossing area",
+      "time": 12.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 8.33,
+        "duration": 5.0
+      }
+    },
+    {
+      "name": "Detect school zone sign",
+      "time": 18.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "school",
+        "distance": 35.0,
+        "position": [48.0, 0.0],
+        "confidence": 0.98
+      }
+    },
+    {
+      "name": "Verify school zone detection",
+      "time": 19.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "warning_signs",
+        "expected_contains": "school_zone",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Continue through school zone",
+      "time": 20.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 6.94,
+        "duration": 8.0
+      }
+    },
+    {
+      "name": "Exit school zone, detect new speed limit (50 km/h)",
+      "time": 28.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "speed_50",
+        "distance": 25.0,
+        "position": [70.0, 0.0],
+        "confidence": 0.96
+      }
+    },
+    {
+      "name": "Verify speed limit change",
+      "time": 29.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "speed_limit_kmh",
+        "expected": 50.0,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Accelerate to new speed limit",
+      "time": 30.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 13.89,
+        "duration": 4.0
+      }
+    },
+    {
+      "name": "Detect construction zone",
+      "time": 35.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "construction",
+        "distance": 40.0,
+        "position": [90.0, 0.0],
+        "confidence": 0.89
+      }
+    },
+    {
+      "name": "Verify construction zone detection",
+      "time": 36.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "warning_signs",
+        "expected_contains": "construction_zone",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Slow down for construction zone",
+      "time": 37.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 8.33,
+        "duration": 10.0
+      }
+    },
+    {
+      "name": "Detect stop sign",
+      "time": 48.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "stop",
+        "distance": 30.0,
+        "position": [110.0, 0.0],
+        "confidence": 0.99
+      }
+    },
+    {
+      "name": "Verify stop sign detection",
+      "time": 49.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "warning_signs",
+        "expected_contains": "stop_sign",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Brake before stop sign",
+      "time": 50.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 0.0,
+        "duration": 3.0
+      }
+    },
+    {
+      "name": "Come to complete stop",
+      "time": 53.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "signs_detected",
+        "expected_min": 1,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Resume driving after stop",
+      "time": 55.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 8.33,
+        "duration": 10.0
+      }
+    },
+    {
+      "name": "Detect yield sign",
+      "time": 66.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "yield",
+        "distance": 35.0,
+        "position": [135.0, 0.0],
+        "confidence": 0.93
+      }
+    },
+    {
+      "name": "Verify yield sign detection",
+      "time": 67.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "warning_signs",
+        "expected_contains": "yield_sign",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Slow approach to yield sign",
+      "time": 68.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 2.78,
+        "duration": 5.0
+      }
+    },
+    {
+      "name": "Verify multiple signs detected",
+      "time": 74.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "signs_detected",
+        "expected_min": 0,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Final summary check",
+      "time": 89.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "enabled",
+        "expected": true,
+        "tolerance": 0.0
+      }
+    }
+  ],
+  "success_criteria": {
+    "all_validations_pass": true,
+    "min_accuracy": 0.90,
+    "max_latency_ms": 120
+  }
+}

@@ -17,13 +17,7 @@ from .core.sensors import RadarSensor, CameraSensor
 from .core.adas_features import (
     LaneDepartureWarning,
     AdaptiveCruiseControl,
-    AutomaticEmergencyBraking,
-    BlindSpotDetection,
-    AutonomousParking,
-    TrailerAssistance,
-    TrailerReverseGuidance,
-    SurroundViewCamera,
-    TrafficSignRecognition
+    AutomaticEmergencyBraking
 )
 
 logger = logging.getLogger(__name__)
@@ -124,27 +118,6 @@ class ADASSILSimulator:
         # Automatic Emergency Braking
         if adas_config.get('aeb', {}).get('enabled', True):
             self.adas_features['aeb'] = AutomaticEmergencyBraking(adas_config.get('aeb', {}))
-
-        # Blind Spot Detection
-        if adas_config.get('bsd', {}).get('enabled', False):
-            self.adas_features['bsd'] = BlindSpotDetection(adas_config.get('bsd', {}))
-
-        # Autonomous Parking
-        if adas_config.get('parking', {}).get('enabled', False):
-            self.adas_features['parking'] = AutonomousParking(adas_config.get('parking', {}))
-
-        # Trailer Assistance
-        if adas_config.get('trailer', {}).get('enabled', False):
-            self.adas_features['trailer_assistance'] = TrailerAssistance(adas_config.get('trailer', {}))
-            self.adas_features['trailer_reverse'] = TrailerReverseGuidance(adas_config.get('trailer', {}))
-
-        # Surround View Camera
-        if adas_config.get('surround_view', {}).get('enabled', False):
-            self.adas_features['surround_view'] = SurroundViewCamera(adas_config.get('surround_view', {}))
-
-        # Traffic Sign Recognition
-        if adas_config.get('tsr', {}).get('enabled', False):
-            self.adas_features['tsr'] = TrafficSignRecognition(adas_config.get('tsr', {}))
 
         logger.info(f"Initialized {len(self.adas_features)} ADAS features")
 

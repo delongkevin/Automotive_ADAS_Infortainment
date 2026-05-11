@@ -13,6 +13,7 @@ from .blind_spot_detection import BlindSpotDetection
 from .autonomous_parking import AutonomousParking
 from .trailer_assistance import TrailerAssistance, TrailerReverseGuidance
 from .surround_view_camera import SurroundViewCamera, CameraViewMode
+from .traffic_sign_recognition import TrafficSignRecognition, TrafficSignType
 
 __all__ = [
     'LaneDepartureWarning',
@@ -23,5 +24,7 @@ __all__ = [
     'TrailerAssistance',
     'TrailerReverseGuidance',
     'SurroundViewCamera',
-    'CameraViewMode'
+    'CameraViewMode',
+    'TrafficSignRecognition',
+    'TrafficSignType'
 ]

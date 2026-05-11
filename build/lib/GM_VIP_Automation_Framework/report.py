@@ -1,0 +1,818 @@
+"""
+GM VIP Automation Framework – Test Case Report
+===============================================
+Records breakpoints hit, variables read/written, and symbol states for each
+test case executed via the framework and serialises the results as JSON or HTML.
+
+The :class:`TestCaseReport` class is intentionally framework-agnostic: it holds
+pure Python data structures so it can be used with or without an active Trace32
+connection.
+
+Typical usage
+-------------
+::
+
+    from GM_VIP_Automation_Framework.report import TestCaseReport
+
+    report = TestCaseReport(name="MySuite")
+
+    report.begin_test_case("TC_Reset")
+    try:
+        t32.reset_target()
+        value = t32.read_variable("myModule.myCounter")
+        report.record_variable("myModule.myCounter", value)
+        report.record_breakpoint("myFunc", hit=True)
+        report.record_symbol("myFunc", exists=True, address="0x80001234")
+        report.pass_test_case()
+    except Exception as exc:
+        report.fail_test_case(str(exc))
+
+    report.save_json("report.json")
+    report.save_html("report.html")
+    print(report.summary())
+
+Public API
+----------
+- :class:`TestCaseReport` – accumulates results across multiple test cases.
+- :class:`TestCaseResult` – immutable snapshot of a single test case.
+"""
+
+from __future__ import annotations
+
+import datetime
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List, Optional
+
+__all__ = ["TestCaseReport", "TestCaseResult", "ModuleStatusReport"]
+
+# Suffix appended to variable names recorded via record_variable() for writes.
+_WRITE_SUFFIX = " (write)"
+
+
+# ---------------------------------------------------------------------------
+# Data model
+# ---------------------------------------------------------------------------
+
+@dataclass
+class TestCaseResult:
+    """Snapshot of a single test case execution.
+
+    Attributes
+    ----------
+    name:
+        Test case identifier (mirrors the CAPL ``testcase`` name).
+    status:
+        ``"PASS"``, ``"FAIL"``, or ``"ERROR"``.
+    error_message:
+        Non-empty string when *status* is ``"FAIL"`` or ``"ERROR"``.
+    breakpoints:
+        Mapping ``{symbol: hit_bool}`` for every breakpoint registered during
+        this test case.
+    variables:
+        Mapping ``{symbol: value_string}`` for every variable read or written.
+    symbols:
+        Mapping ``{symbol: {"exists": bool, "address": str}}`` for every symbol
+        inspected.
+    started_at:
+        ISO-8601 timestamp when :meth:`TestCaseReport.begin_test_case` was
+        called.
+    ended_at:
+        ISO-8601 timestamp when :meth:`TestCaseReport.pass_test_case` /
+        :meth:`TestCaseReport.fail_test_case` was called.
+    """
+
+    name: str
+    status: str = "PASS"
+    error_message: str = ""
+    breakpoints: Dict[str, bool] = field(default_factory=dict)
+    variables: Dict[str, str] = field(default_factory=dict)
+    symbols: Dict[str, dict] = field(default_factory=dict)
+    started_at: str = field(default_factory=lambda: _now())
+    ended_at: str = ""
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serialisable dictionary."""
+        return {
+            "name": self.name,
+            "status": self.status,
+            "error_message": self.error_message,
+            "started_at": self.started_at,
+            "ended_at": self.ended_at,
+            "breakpoints": self.breakpoints,
+            "variables": self.variables,
+            "symbols": self.symbols,
+        }
+
+
+# ---------------------------------------------------------------------------
+# Report accumulator
+# ---------------------------------------------------------------------------
+
+class TestCaseReport:
+    """Accumulate results for multiple test cases and export reports.
+
+    Parameters
+    ----------
+    name:
+        Human-readable suite / test-module name (used in report headers).
+    """
+
+    def __init__(self, name: str = "TestSuite") -> None:
+        self.name = name
+        self._results: List[TestCaseResult] = []
+        self._current: Optional[TestCaseResult] = None
+        self._started_at: str = _now()
+
+    # ------------------------------------------------------------------
+    # Test-case lifecycle
+    # ------------------------------------------------------------------
+
+    def begin_test_case(self, name: str) -> None:
+        """Start recording a new test case.
+
+        If a test case is already in progress it is automatically closed as
+        ``"ERROR"`` before the new one begins.
+
+        Parameters
+        ----------
+        name:
+            Test case identifier.
+        """
+        if self._current is not None:
+            self._current.status = "ERROR"
+            self._current.error_message = "Test case not closed before next begin_test_case()."
+            self._current.ended_at = _now()
+            self._results.append(self._current)
+        self._current = TestCaseResult(name=name)
+
+    def pass_test_case(self) -> None:
+        """Mark the current test case as **PASS** and close it."""
+        self._close_current("PASS")
+
+    def fail_test_case(self, message: str = "") -> None:
+        """Mark the current test case as **FAIL** and close it.
+
+        Parameters
+        ----------
+        message:
+            Description of the failure reason.
+        """
+        tc = self._ensure_current()
+        tc.error_message = message
+        self._close_current("FAIL")
+
+    # ------------------------------------------------------------------
+    # Recording helpers
+    # ------------------------------------------------------------------
+
+    def record_breakpoint(self, symbol: str, hit: bool) -> None:
+        """Record whether a breakpoint on *symbol* was hit.
+
+        Parameters
+        ----------
+        symbol:
+            Symbol / function name used as the breakpoint target.
+        hit:
+            ``True`` when the ECU halted at the symbol; ``False`` otherwise.
+        """
+        self._ensure_current().breakpoints[symbol] = hit
+
+    def record_variable(self, symbol: str, value: str) -> None:
+        """Record a variable read or write value.
+
+        Parameters
+        ----------
+        symbol:
+            Variable symbol name (or a descriptive label like ``"myVar (write)"``).
+        value:
+            The value as a string.
+        """
+        self._ensure_current().variables[symbol] = str(value)
+
+    def record_symbol(
+        self,
+        symbol: str,
+        exists: bool,
+        address: str = "",
+    ) -> None:
+        """Record the existence and address of a symbol.
+
+        Parameters
+        ----------
+        symbol:
+            Symbol name.
+        exists:
+            ``True`` when the symbol is in the loaded ELF debug information.
+        address:
+            Hexadecimal address string (empty when *exists* is ``False``).
+        """
+        self._ensure_current().symbols[symbol] = {
+            "exists": exists,
+            "address": address,
+        }
+
+    # ------------------------------------------------------------------
+    # Aggregated results
+    # ------------------------------------------------------------------
+
+    @property
+    def results(self) -> List[TestCaseResult]:
+        """All completed :class:`TestCaseResult` objects (read-only list)."""
+        return list(self._results)
+
+    @property
+    def passed(self) -> int:
+        """Number of test cases with status ``"PASS"``."""
+        return sum(1 for r in self._results if r.status == "PASS")
+
+    @property
+    def failed(self) -> int:
+        """Number of test cases with status ``"FAIL"``."""
+        return sum(1 for r in self._results if r.status == "FAIL")
+
+    @property
+    def errored(self) -> int:
+        """Number of test cases with status ``"ERROR"``."""
+        return sum(1 for r in self._results if r.status == "ERROR")
+
+    @property
+    def total(self) -> int:
+        """Total number of completed test cases."""
+        return len(self._results)
+
+    def summary(self) -> str:
+        """Return a one-line text summary of the report."""
+        return (
+            f"{self.name}: {self.total} test(s) – "
+            f"{self.passed} PASS, {self.failed} FAIL, {self.errored} ERROR"
+        )
+
+    # ------------------------------------------------------------------
+    # Serialisation
+    # ------------------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serialisable dictionary of the full report."""
+        return {
+            "suite": self.name,
+            "started_at": self._started_at,
+            "ended_at": _now(),
+            "total": self.total,
+            "passed": self.passed,
+            "failed": self.failed,
+            "errored": self.errored,
+            "test_cases": [r.to_dict() for r in self._results],
+        }
+
+    def save_json(self, path: str) -> None:
+        """Write the full report as a JSON file.
+
+        Parameters
+        ----------
+        path:
+            Destination file path.
+        """
+        Path(path).write_text(
+            json.dumps(self.to_dict(), indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    def save_html(self, path: str, show_pass: bool = False) -> None:
+        """Write the report as a self-contained HTML file.
+
+        Parameters
+        ----------
+        path:
+            Destination file path.
+        show_pass:
+            When ``True``, PASS test cases are rendered with a collapsed
+            ``<details>`` block in the body.  When ``False`` (default) PASS
+            entries are intentionally omitted from the detail section so the
+            report focuses on actionable failures; they still appear in the
+            summary statistics at the top.
+        """
+        Path(path).write_text(_render_html(self, show_pass=show_pass), encoding="utf-8")
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    def _ensure_current(self) -> TestCaseResult:
+        if self._current is None:
+            raise RuntimeError(
+                "No active test case. Call begin_test_case() first."
+            )
+        return self._current
+
+    def _close_current(self, status: str) -> None:
+        tc = self._ensure_current()
+        tc.status = status
+        tc.ended_at = _now()
+        self._results.append(tc)
+        self._current = None
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _now() -> str:
+    return datetime.datetime.now(tz=datetime.timezone.utc).isoformat(timespec="seconds")
+
+
+# ---------------------------------------------------------------------------
+# HTML renderer
+# ---------------------------------------------------------------------------
+
+def _render_html(report: TestCaseReport, show_pass: bool = False) -> str:
+    """Produce a self-contained HTML report string.
+
+    Parameters
+    ----------
+    report:
+        Completed :class:`TestCaseReport`.
+    show_pass:
+        When ``True``, PASS test cases are included in the detail section
+        (collapsed).  When ``False`` (default) PASS entries are omitted from
+        the detail section so the report focuses on actionable failures.
+    """
+
+    def _badge(status: str) -> str:
+        colour = {"PASS": "#28a745", "FAIL": "#dc3545", "ERROR": "#fd7e14"}.get(
+            status, "#6c757d"
+        )
+        return (
+            f'<span style="background:{colour};color:#fff;padding:2px 8px;'
+            f'border-radius:4px;font-weight:bold">{status}</span>'
+        )
+
+    def _table(mapping: dict, headers: tuple) -> str:
+        if not mapping:
+            return "<em>none</em>"
+        rows = ""
+        for k, v in mapping.items():
+            if isinstance(v, dict):
+                rows += (
+                    f"<tr><td>{k}</td>"
+                    + "".join(f"<td>{v.get(h, '')}</td>" for h in headers[1:])
+                    + "</tr>"
+                )
+            elif isinstance(v, bool):
+                rows += f"<tr><td>{k}</td><td>{'✔' if v else '✘'}</td></tr>"
+            else:
+                rows += f"<tr><td>{k}</td><td>{v}</td></tr>"
+        th = "".join(f"<th>{h}</th>" for h in headers)
+        return f"<table border='1' cellpadding='4'><tr>{th}</tr>{rows}</table>"
+
+    # Unknown-symbol diagnostic keywords (lower-case for comparison).
+    _UNKNOWN_SYM_KW = (
+        "t32symbolerror", "symbol not found", "unknown symbol",
+        "symbolerror", "symbol.exist",
+    )
+    _TIMEOUT_KW = (
+        "t32timeouterror", "timeout", "timed out",
+        "did not halt", "did not reach",
+    )
+
+    def _diag_banners(msg: str) -> str:
+        low = msg.lower()
+        parts = []
+        if any(k in low for k in _UNKNOWN_SYM_KW):
+            parts.append(
+                "<p style='background:#fff3cd;border-left:4px solid #ffc107;"
+                "padding:6px 10px;margin:4px 0;border-radius:0 4px 4px 0'>"
+                "⚠️ <strong>Unknown / unresolved T32 symbol detected</strong> – "
+                "verify the ELF is loaded and the symbol name is correct.</p>"
+            )
+        if any(k in low for k in _TIMEOUT_KW):
+            parts.append(
+                "<p style='background:#cce5ff;border-left:4px solid #004085;"
+                "padding:6px 10px;margin:4px 0;border-radius:0 4px 4px 0'>"
+                "⏱️ <strong>T32 / ECU timeout detected</strong> – "
+                "check hardware connections and timing settings.</p>"
+            )
+        return "\n".join(parts)
+
+    # Build detail section: omit PASS entries unless show_pass=True.
+    tcs_html = ""
+    rendered_count = 0
+    for tc in report.results:
+        if tc.status == "PASS" and not show_pass:
+            continue
+        rendered_count += 1
+        bp_html  = _table(tc.breakpoints, ("Symbol", "Hit"))
+        var_html = _table(tc.variables,   ("Symbol", "Value"))
+        sym_html = _table(tc.symbols,     ("Symbol", "Exists", "Address"))
+        err_html = (
+            f"<p style='color:red;margin:4px 0'>{tc.error_message}</p>"
+            + _diag_banners(tc.error_message)
+            if tc.error_message else ""
+        )
+        tcs_html += f"""
+        <details {"open" if tc.status != "PASS" else ""}>
+          <summary>{_badge(tc.status)} {tc.name}
+            &nbsp;<small style="color:#888">{tc.started_at} → {tc.ended_at}</small>
+          </summary>
+          {err_html}
+          <h4>Breakpoints</h4>{bp_html}
+          <h4>Variables</h4>{var_html}
+          <h4>Symbols</h4>{sym_html}
+        </details>
+        """
+
+    if rendered_count == 0:
+        tcs_html = (
+            "<p style='color:#28a745;font-size:1.05em;padding:10px;"
+            "background:#d4edda;border-radius:4px'>"
+            "✅ All tests passed – no failures or errors to report.</p>"
+        )
+
+    pass_note = (
+        "" if show_pass else
+        "<p style='color:#6c757d;font-size:0.85em'>"
+        "PASS results are omitted from this section.  "
+        "See the summary statistics above for full counts.</p>"
+    )
+
+    overall_colour = "#28a745" if report.failed == 0 and report.errored == 0 else "#dc3545"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>T32 Test Report – {report.name}</title>
+  <style>
+    * {{ box-sizing: border-box; }}
+    body {{ font-family: Arial, sans-serif; margin: 0; padding: 24px; color: #222; background: #f5f7fa; }}
+    .card {{ background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.10);
+             padding: 20px 28px; margin-bottom: 20px; }}
+    h1 {{ margin: 0 0 4px; font-size: 1.55em; }}
+    h2 {{ margin: 0 0 14px; font-size: 1.0em; color: #555; font-weight: normal; }}
+    h4 {{ margin: 10px 0 4px; font-size: 0.95em; }}
+    table {{ border-collapse: collapse; margin-bottom: 8px; width: 100%; }}
+    th {{ background: #e9ecef; }}
+    td, th {{ padding: 4px 8px; text-align: left; border: 1px solid #dee2e6; }}
+    details {{ border: 1px solid #dee2e6; border-radius: 4px;
+               margin-bottom: 8px; padding: 8px 12px; }}
+    summary {{ cursor: pointer; font-size: 1.0em; user-select: none; }}
+    summary:hover {{ color: #0056b3; }}
+    .footer {{ text-align: center; color: #aaa; font-size: 0.78em; margin-top: 28px; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔬 T32 Test Report</h1>
+    <h2 style="color:{overall_colour};font-weight:bold">{report.name}</h2>
+    <p>
+      Generated: {_now()}<br>
+      Total: <strong>{report.total}</strong> &nbsp;
+      Pass: <strong style="color:#28a745">{report.passed}</strong> &nbsp;
+      Fail: <strong style="color:#dc3545">{report.failed}</strong> &nbsp;
+      Error: <strong style="color:#fd7e14">{report.errored}</strong>
+    </p>
+  </div>
+  <div class="card">
+    <h2>Test Case Details</h2>
+    {pass_note}
+    {tcs_html}
+  </div>
+  <div class="footer">GM VIP Automation Framework &middot; {_now()}</div>
+</body>
+</html>
+"""
+
+
+# ---------------------------------------------------------------------------
+# Module status report
+# ---------------------------------------------------------------------------
+
+@dataclass
+class _ModuleSymbolRow:
+    """One row in a :class:`ModuleStatusReport` symbol table."""
+    symbol:    str
+    kind:      str   # "FUNCTION" / "VARIABLE" / "UNKNOWN"
+    exists:    bool
+    address:   str   = ""
+    bp_status: str   = ""   # "HIT" / "MISS" / "" (not tested)
+    value:     str   = ""   # last read value (variables only)
+    notes:     str   = ""
+
+
+class ModuleStatusReport:
+    """Professional status report across all discovered modules, symbols, and
+    functions from a live Trace32 session.
+
+    Usage
+    -----
+    ::
+
+        from GM_VIP_Automation_Framework.report import ModuleStatusReport
+        from GM_VIP_Automation_Framework.core.symbol_discovery import discover_symbols
+
+        inventory = discover_symbols(connection=conn)
+        msr = ModuleStatusReport.from_inventory(inventory)
+
+        # Optionally merge run-time results from a TestCaseReport.
+        msr.merge_test_case_report(tc_report)
+
+        msr.save_html("module_status.html")
+        print(msr.summary())
+    """
+
+    def __init__(self, suite_name: str = "Module Status") -> None:
+        self.suite_name = suite_name
+        self.generated_at: str = _now()
+        # module → list of rows
+        self._rows: Dict[str, List[_ModuleSymbolRow]] = {}
+        self._meta: Dict[str, str] = {}
+
+    # ------------------------------------------------------------------
+    # Factory
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def from_inventory(
+        cls,
+        inventory,
+        suite_name: str = "Module Status",
+    ) -> "ModuleStatusReport":
+        """Create a :class:`ModuleStatusReport` from a
+        :class:`~core.symbol_discovery.SymbolInventory`.
+
+        Parameters
+        ----------
+        inventory:
+            Pre-built symbol inventory.
+        suite_name:
+            Label used in report headers.
+        """
+        msr = cls(suite_name=suite_name)
+        msr._meta = {
+            "session_timestamp": inventory.session_timestamp,
+            "total_symbols":  str(len(inventory)),
+            "total_modules":  str(len(inventory.modules)),
+            "total_functions": str(len(inventory.functions)),
+            "total_variables": str(len(inventory.variables)),
+        }
+        for sym in inventory.symbols:
+            module = sym.module or "_global_"
+            row = _ModuleSymbolRow(
+                symbol  = sym.name,
+                kind    = sym.kind.value,
+                exists  = sym.exists,
+                address = sym.address,
+            )
+            msr._rows.setdefault(module, []).append(row)
+        return msr
+
+    # ------------------------------------------------------------------
+    # Merging run-time results
+    # ------------------------------------------------------------------
+
+    def merge_test_case_report(self, tc_report: "TestCaseReport") -> None:
+        """Overlay breakpoint-hit and variable-value data from *tc_report*.
+
+        Call after :meth:`from_inventory` to enrich the module status table
+        with run-time evidence gathered by :func:`~runner.run_from_json`.
+        """
+        # Build flat lookup: symbol → row
+        sym_map: Dict[str, _ModuleSymbolRow] = {}
+        for rows in self._rows.values():
+            for row in rows:
+                sym_map[row.symbol] = row
+
+        for tc in tc_report.results:
+            for sym, hit in tc.breakpoints.items():
+                if sym in sym_map:
+                    sym_map[sym].bp_status = "HIT" if hit else "MISS"
+            for sym, val in tc.variables.items():
+                clean = sym.replace(_WRITE_SUFFIX, "").strip()
+                if clean in sym_map:
+                    sym_map[clean].value = str(val)
+
+    # ------------------------------------------------------------------
+    # Summary
+    # ------------------------------------------------------------------
+
+    def summary(self) -> str:
+        """One-line text summary."""
+        total_syms = sum(len(rows) for rows in self._rows.values())
+        total_mods = len(self._rows)
+        bp_hit  = sum(
+            1 for rows in self._rows.values()
+            for r in rows if r.bp_status == "HIT"
+        )
+        bp_miss = sum(
+            1 for rows in self._rows.values()
+            for r in rows if r.bp_status == "MISS"
+        )
+        return (
+            f"{self.suite_name}: {total_mods} module(s), "
+            f"{total_syms} symbol(s), "
+            f"{bp_hit} breakpoint(s) HIT, {bp_miss} MISS"
+        )
+
+    # ------------------------------------------------------------------
+    # Serialisation
+    # ------------------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        """Return a JSON-serialisable dict."""
+        return {
+            "suite_name":   self.suite_name,
+            "generated_at": self.generated_at,
+            "meta":         self._meta,
+            "modules": {
+                mod: [
+                    {
+                        "symbol":    r.symbol,
+                        "kind":      r.kind,
+                        "exists":    r.exists,
+                        "address":   r.address,
+                        "bp_status": r.bp_status,
+                        "value":     r.value,
+                        "notes":     r.notes,
+                    }
+                    for r in rows
+                ]
+                for mod, rows in sorted(self._rows.items())
+            },
+        }
+
+    def save_json(self, path: str) -> None:
+        """Write the report as a JSON file."""
+        Path(path).write_text(
+            json.dumps(self.to_dict(), indent=2) + "\n", encoding="utf-8"
+        )
+
+    def save_html(self, path: str) -> None:
+        """Write the report as a self-contained HTML file."""
+        Path(path).write_text(_render_module_status_html(self), encoding="utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Module status HTML renderer
+# ---------------------------------------------------------------------------
+
+def _render_module_status_html(msr: ModuleStatusReport) -> str:
+    """Render *msr* as a professional, self-contained HTML status page."""
+
+    def _badge(text: str, colour: str) -> str:
+        return (
+            f'<span style="background:{colour};color:#fff;padding:1px 7px;'
+            f'border-radius:4px;font-size:0.85em;font-weight:bold">{text}</span>'
+        )
+
+    def _exists_badge(exists: bool) -> str:
+        return _badge("✔ EXISTS", "#28a745") if exists else _badge("✘ MISSING", "#dc3545")
+
+    def _kind_badge(kind: str) -> str:
+        colours = {
+            "FUNCTION": "#0056b3",
+            "VARIABLE": "#6f42c1",
+            "MODULE":   "#17a2b8",
+        }
+        return _badge(kind, colours.get(kind, "#6c757d"))
+
+    def _bp_badge(status: str) -> str:
+        if status == "HIT":
+            return _badge("● HIT",  "#28a745")
+        if status == "MISS":
+            return _badge("○ MISS", "#dc3545")
+        return "<em style='color:#aaa'>not tested</em>"
+
+    # Compute totals
+    total_modules = len(msr._rows)
+    total_symbols = sum(len(v) for v in msr._rows.values())
+    total_exist   = sum(1 for rows in msr._rows.values() for r in rows if r.exists)
+    total_miss    = total_symbols - total_exist
+    total_hit     = sum(1 for rows in msr._rows.values() for r in rows if r.bp_status == "HIT")
+    total_miss_bp = sum(1 for rows in msr._rows.values() for r in rows if r.bp_status == "MISS")
+
+    # Build meta row
+    meta_rows = ""
+    for k, v in msr._meta.items():
+        meta_rows += f"<tr><td><strong>{k.replace('_',' ').title()}</strong></td><td>{v}</td></tr>"
+
+    # Build per-module sections
+    modules_html = ""
+    for mod, rows in sorted(msr._rows.items()):
+        funcs = sum(1 for r in rows if r.kind == "FUNCTION")
+        varis = sum(1 for r in rows if r.kind == "VARIABLE")
+        hits  = sum(1 for r in rows if r.bp_status == "HIT")
+
+        rows_html = ""
+        for r in sorted(rows, key=lambda x: (x.kind, x.symbol)):
+            rows_html += (
+                f"<tr>"
+                f"<td><code>{r.symbol}</code></td>"
+                f"<td>{_kind_badge(r.kind)}</td>"
+                f"<td>{_exists_badge(r.exists)}</td>"
+                f"<td><code>{r.address or '—'}</code></td>"
+                f"<td>{_bp_badge(r.bp_status)}</td>"
+                f"<td><code>{r.value or '—'}</code></td>"
+                f"<td>{r.notes or ''}</td>"
+                f"</tr>"
+            )
+
+        modules_html += f"""
+        <details open>
+          <summary>
+            <strong>{mod}</strong>
+            &nbsp;
+            <small style="color:#555">
+              {len(rows)} symbol(s) &nbsp;|&nbsp;
+              {funcs} function(s) &nbsp;|&nbsp;
+              {varis} variable(s) &nbsp;|&nbsp;
+              {hits} BP hit(s)
+            </small>
+          </summary>
+          <table>
+            <tr>
+              <th>Symbol</th><th>Kind</th><th>Exists</th>
+              <th>Address</th><th>Breakpoint</th><th>Value</th><th>Notes</th>
+            </tr>
+            {rows_html}
+          </table>
+        </details>
+        """
+
+    overall_colour = (
+        "#28a745" if total_miss == 0 and total_miss_bp == 0
+        else "#dc3545"
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Module Status Report – {msr.suite_name}</title>
+  <style>
+    * {{ box-sizing: border-box; }}
+    body {{ font-family: Arial, sans-serif; margin: 0; padding: 24px; color: #222; background: #f5f7fa; }}
+    .card {{ background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.10);
+             padding: 20px 28px; margin-bottom: 20px; }}
+    h1 {{ margin: 0 0 6px; font-size: 1.6em; }}
+    h2 {{ margin: 0 0 14px; font-size: 1.05em; color: #555; font-weight: normal; }}
+    h3 {{ margin: 6px 0 10px; font-size: 1.1em; }}
+    table {{ border-collapse: collapse; width: 100%; margin-bottom: 8px; }}
+    th {{ background: #e9ecef; }}
+    td, th {{ padding: 5px 10px; text-align: left; border: 1px solid #dee2e6; font-size: 0.9em; }}
+    code {{ background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 0.88em; }}
+    details {{ border: 1px solid #dee2e6; border-radius: 6px;
+               margin-bottom: 10px; padding: 10px 14px; }}
+    summary {{ cursor: pointer; font-size: 1.0em; user-select: none; padding: 2px 0; }}
+    summary:hover {{ color: #0056b3; }}
+    .stat-grid {{ display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 0; }}
+    .stat {{ background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px;
+             padding: 10px 16px; min-width: 110px; text-align: center; }}
+    .stat .num {{ font-size: 1.8em; font-weight: bold; }}
+    .stat .lbl {{ font-size: 0.78em; color: #555; margin-top: 2px; }}
+    .footer {{ text-align: center; color: #aaa; font-size: 0.78em; margin-top: 28px; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📊 Module Status Report</h1>
+    <h2 style="color:{overall_colour};font-weight:bold">{msr.suite_name}</h2>
+    <p>Generated: {msr.generated_at}</p>
+    <div class="stat-grid">
+      <div class="stat"><div class="num">{total_modules}</div><div class="lbl">Modules</div></div>
+      <div class="stat"><div class="num">{total_symbols}</div><div class="lbl">Symbols</div></div>
+      <div class="stat" style="border-color:#28a745">
+        <div class="num" style="color:#28a745">{total_exist}</div>
+        <div class="lbl">Symbols Found</div>
+      </div>
+      <div class="stat" style="border-color:#dc3545">
+        <div class="num" style="color:#dc3545">{total_miss}</div>
+        <div class="lbl">Symbols Missing</div>
+      </div>
+      <div class="stat" style="border-color:#28a745">
+        <div class="num" style="color:#28a745">{total_hit}</div>
+        <div class="lbl">BP Hit</div>
+      </div>
+      <div class="stat" style="border-color:#dc3545">
+        <div class="num" style="color:#dc3545">{total_miss_bp}</div>
+        <div class="lbl">BP Miss</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Session Metadata</h3>
+    <table><tbody>{meta_rows}</tbody></table>
+  </div>
+
+  <div class="card">
+    <h3>Module Details</h3>
+    {modules_html}
+  </div>
+
+  <div class="footer">GM VIP Automation Framework – Module Status Report &middot; {msr.generated_at}</div>
+</body>
+</html>
+"""

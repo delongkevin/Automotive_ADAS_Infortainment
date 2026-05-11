@@ -1,0 +1,326 @@
+{
+  "name": "Highway Driving with Traffic Sign Recognition",
+  "description": "Tests TSR system on highway with high-speed driving, variable speed limits, lane management signs, and road condition warnings",
+  "duration": 120.0,
+  "environment": {
+    "weather": "clear",
+    "road_type": "highway",
+    "visibility": 400.0
+  },
+  "vehicle_config": {
+    "initial_speed": 0.0,
+    "initial_position": [0.0, 0.0],
+    "enabled_features": ["tsr", "acc"]
+  },
+  "events": [
+    {
+      "name": "Enable Traffic Sign Recognition",
+      "time": 1.0,
+      "type": "feature_command",
+      "parameters": {
+        "feature": "tsr",
+        "command": "enable"
+      }
+    },
+    {
+      "name": "Start accelerating on highway onramp",
+      "time": 2.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 15.0,
+        "duration": 8.0
+      }
+    },
+    {
+      "name": "Detect 110 km/h speed limit sign",
+      "time": 5.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "speed_110",
+        "distance": 50.0,
+        "position": [40.0, 0.0],
+        "confidence": 0.97
+      }
+    },
+    {
+      "name": "Verify speed limit 110 km/h detection",
+      "time": 6.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "speed_limit_kmh",
+        "expected": 110.0,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Accelerate to highway speed",
+      "time": 7.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 30.56,
+        "duration": 8.0
+      }
+    },
+    {
+      "name": "Cruise at speed limit",
+      "time": 15.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 30.56,
+        "duration": 15.0
+      }
+    },
+    {
+      "name": "Detect construction zone ahead",
+      "time": 20.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "construction",
+        "distance": 80.0,
+        "position": [150.0, 0.0],
+        "confidence": 0.88
+      }
+    },
+    {
+      "name": "Verify construction zone warning",
+      "time": 21.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "warning_signs",
+        "expected_contains": "construction_zone",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Gradually reduce speed before construction",
+      "time": 22.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 22.22,
+        "duration": 6.0
+      }
+    },
+    {
+      "name": "Navigate through construction zone",
+      "time": 28.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 22.22,
+        "duration": 8.0
+      }
+    },
+    {
+      "name": "Detect lane ends sign",
+      "time": 32.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "lane_ends",
+        "distance": 60.0,
+        "position": [215.0, 0.0],
+        "confidence": 0.94
+      }
+    },
+    {
+      "name": "Verify lane ends warning",
+      "time": 33.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "warning_signs",
+        "expected_contains": "lane_ends",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Merge lanes smoothly",
+      "time": 34.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 22.22,
+        "duration": 5.0
+      }
+    },
+    {
+      "name": "Exit construction zone, detect speed limit 130 km/h",
+      "time": 39.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "speed_130",
+        "distance": 40.0,
+        "position": [250.0, 0.0],
+        "confidence": 0.96
+      }
+    },
+    {
+      "name": "Verify new speed limit 130 km/h",
+      "time": 40.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "speed_limit_kmh",
+        "expected": 130.0,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Accelerate to new speed limit",
+      "time": 41.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 36.11,
+        "duration": 6.0
+      }
+    },
+    {
+      "name": "Cruise at 130 km/h",
+      "time": 47.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 36.11,
+        "duration": 12.0
+      }
+    },
+    {
+      "name": "Approach curve section",
+      "time": 58.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "curve_left",
+        "distance": 100.0,
+        "position": [380.0, 0.0],
+        "confidence": 0.91
+      }
+    },
+    {
+      "name": "Verify curve warning detection",
+      "time": 59.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "warning_signs",
+        "expected_contains": "curve_left",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Reduce speed before sharp curve",
+      "time": 60.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 22.22,
+        "duration": 6.0
+      }
+    },
+    {
+      "name": "Navigate through curve section",
+      "time": 66.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 22.22,
+        "steering_angle": 0.3,
+        "duration": 8.0
+      }
+    },
+    {
+      "name": "Complete curve, accelerate again",
+      "time": 74.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 36.11,
+        "steering_angle": 0.0,
+        "duration": 6.0
+      }
+    },
+    {
+      "name": "Detect exit sign",
+      "time": 78.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "exit",
+        "distance": 70.0,
+        "position": [550.0, 0.0],
+        "confidence": 0.93
+      }
+    },
+    {
+      "name": "Verify exit sign detection",
+      "time": 79.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "warning_signs",
+        "expected_contains": "exit",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Start exiting highway",
+      "time": 80.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 20.0,
+        "duration": 8.0
+      }
+    },
+    {
+      "name": "Detect merge sign on exit ramp",
+      "time": 85.0,
+      "type": "environment_setup",
+      "parameters": {
+        "sign_type": "merge",
+        "distance": 40.0,
+        "position": [610.0, 0.0],
+        "confidence": 0.90
+      }
+    },
+    {
+      "name": "Verify merge sign detection",
+      "time": 86.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "warning_signs",
+        "expected_contains": "merge",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Complete merge and slow to exit speed",
+      "time": 87.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 15.0,
+        "duration": 8.0
+      }
+    },
+    {
+      "name": "Verify TSR system still operational",
+      "time": 115.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "enabled",
+        "expected": true,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Final validation - sign detection statistics",
+      "time": 119.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "tsr",
+        "check_field": "signs_detected",
+        "expected_min": 0,
+        "tolerance": 0.0
+      }
+    }
+  ],
+  "success_criteria": {
+    "all_validations_pass": true,
+    "min_accuracy": 0.88,
+    "max_latency_ms": 120
+  }
+}

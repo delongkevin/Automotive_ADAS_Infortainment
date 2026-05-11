@@ -1,0 +1,105 @@
+{
+  "name": "Autonomous Parking - Parallel Space",
+  "description": "Tests autonomous parallel parking maneuver detection and execution",
+  "duration": 45.0,
+  "environment": {
+    "weather": "clear",
+    "road_type": "urban_street",
+    "visibility": 200.0
+  },
+  "vehicle_config": {
+    "initial_speed": 0.0,
+    "initial_position": [0.0, -3.5],
+    "enabled_features": ["parking"]
+  },
+  "events": [
+    {
+      "name": "Initialize parking search",
+      "time": 1.0,
+      "type": "feature_command",
+      "parameters": {
+        "feature": "parking",
+        "command": "enable"
+      }
+    },
+    {
+      "name": "Simulate parking space on right side",
+      "time": 2.0,
+      "type": "environment_setup",
+      "parameters": {
+        "parking_space_type": "parallel",
+        "side": "right",
+        "length": 6.0,
+        "width": 2.5,
+        "position": [15.0, 0.0]
+      }
+    },
+    {
+      "name": "Drive forward for parking search",
+      "time": 3.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 8.0,
+        "duration": 8.0
+      }
+    },
+    {
+      "name": "Check parking space detection",
+      "time": 11.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "parking",
+        "check_field": "spaces_detected",
+        "expected_min": 1,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Initiate parallel parking maneuver",
+      "time": 12.0,
+      "type": "feature_command",
+      "parameters": {
+        "feature": "parking",
+        "command": "start_parking"
+      }
+    },
+    {
+      "name": "Check parking progress advancement",
+      "time": 15.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "parking",
+        "check_field": "progress",
+        "expected_min": 0.2,
+        "tolerance": 0.05
+      }
+    },
+    {
+      "name": "Verify parking is progressing",
+      "time": 25.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "parking",
+        "check_field": "progress",
+        "expected_min": 0.7,
+        "tolerance": 0.05
+      }
+    },
+    {
+      "name": "Verify parking completion",
+      "time": 45.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "parking",
+        "check_field": "parking_complete",
+        "expected": true,
+        "tolerance": 0.0
+      }
+    }
+  ],
+  "success_criteria": {
+    "all_validations_pass": true,
+    "min_accuracy": 0.90,
+    "max_latency_ms": 150
+  }
+}

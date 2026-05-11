@@ -9,7 +9,7 @@ Successfully implemented 6 new advanced ADAS features for the ADAS Software-in-t
 
 ## Test Results
 
-```
+```text
 ============================== 33 passed in 1.35s ==============================
 ✅ TestVehicleDynamics (5 tests)
 ✅ TestRadarSensor (3 tests)
@@ -27,9 +27,11 @@ Successfully implemented 6 new advanced ADAS features for the ADAS Software-in-t
 ## New ADAS Features Implemented
 
 ### 1. **Blind Spot Detection (BSD)**
+
 **File:** `ADAS_SIL_System/core/adas_features/blind_spot_detection.py`
 
 **Features:**
+
 - Monitors left, right, and rear blind spot zones
 - Detects vehicles in non-visible areas using radar/camera data
 - Configurable detection zones (angles and ranges)
@@ -37,6 +39,7 @@ Successfully implemented 6 new advanced ADAS features for the ADAS Software-in-t
 - Warning activation when vehicles enter blind spots
 
 **Usage:**
+
 ```python
 from ADAS_SIL_System.core.adas_features import BlindSpotDetection
 
@@ -50,6 +53,7 @@ if status['warning_active']:
 ```
 
 **Key Methods:**
+
 - `enable()` / `disable()` - Control system
 - `update()` - Process sensor data and monitor blind spots
 - Returns status with: `left_occupied`, `right_occupied`, `rear_occupied`, `warning_active`, `warning_side`
@@ -57,9 +61,11 @@ if status['warning_active']:
 ---
 
 ### 2. **Autonomous Parking**
+
 **File:** `ADAS_SIL_System/core/adas_features/autonomous_parking.py`
 
 **Features:**
+
 - Detects parallel and perpendicular parking spaces
 - Calculates minimum required space dimensions
 - Executes automatic steering and speed control
@@ -67,6 +73,7 @@ if status['warning_active']:
 - Space occupancy tracking with confidence scores
 
 **Usage:**
+
 ```python
 from ADAS_SIL_System.core.adas_features import AutonomousParking
 
@@ -82,6 +89,7 @@ progress = status['progress']  # 0.0 to 1.0
 ```
 
 **Key Methods:**
+
 - `enable()` / `disable()` - Control system
 - `start_parking()` - Initiate maneuver
 - `cancel_parking()` - Abort current operation
@@ -91,9 +99,11 @@ progress = status['progress']  # 0.0 to 1.0
 ---
 
 ### 3. **Trailer Assistance**
+
 **File:** `ADAS_SIL_System/core/adas_features/trailer_assistance.py`
 
 **Features:**
+
 - Automatic trailer detection from sensor data
 - Real-time trailer angle estimation using kinematics
 - PID-based steering correction for trailer alignment
@@ -102,6 +112,7 @@ progress = status['progress']  # 0.0 to 1.0
 - Critical angle warning system
 
 **Usage:**
+
 ```python
 from ADAS_SIL_System.core.adas_features import TrailerAssistance
 
@@ -118,6 +129,7 @@ status = trailer.update(vehicle_state, sensor_data, current_time, dt)
 ```
 
 **Key Methods:**
+
 - `enable()` / `disable()` - Control system
 - `set_guidance_mode(mode, strength)` - Configure guidance ('auto', 'manual_assist', 'off')
 - `set_target_angle(angle)` - Set desired trailer angle
@@ -127,15 +139,18 @@ status = trailer.update(vehicle_state, sensor_data, current_time, dt)
 ---
 
 ### 4. **Trailer Reverse Guidance**
+
 **File:** `ADAS_SIL_System/core/adas_features/trailer_assistance.py`
 
 **Features:**
+
 - Waypoint-based path planning for reverse maneuvers
 - Automatic steering control to follow target path
 - Path progress tracking with configurable tolerance
 - Integration with TrailerAssistance system
 
 **Usage:**
+
 ```python
 from ADAS_SIL_System.core.adas_features import TrailerReverseGuidance
 
@@ -151,6 +166,7 @@ status = guidance.update(vehicle_state, sensor_data, current_time, dt)
 ```
 
 **Key Methods:**
+
 - `enable()` / `disable()` - Control system
 - `set_target_path(waypoints)` - Define reverse path
 - `start_guidance()` / `stop_guidance()` - Control guidance
@@ -160,9 +176,11 @@ status = guidance.update(vehicle_state, sensor_data, current_time, dt)
 ---
 
 ### 5. **Surround View Camera System**
+
 **File:** `ADAS_SIL_System/core/adas_features/surround_view_camera.py`
 
 **Features:**
+
 - 360-degree multi-camera view management
 - 8 view modes: Front, Rear, Left, Right, Bird's Eye, Panoramic Front/Rear, Full Surround
 - Automatic context-aware view switching based on vehicle state
@@ -172,6 +190,7 @@ status = guidance.update(vehicle_state, sensor_data, current_time, dt)
 - Simulated camera frame updates at configurable frame rates
 
 **View Modes:**
+
 ```python
 from ADAS_SIL_System.core.adas_features import CameraViewMode
 
@@ -186,6 +205,7 @@ CameraViewMode.FULL_SURROUND      # All cameras simultaneously
 ```
 
 **Usage:**
+
 ```python
 from ADAS_SIL_System.core.adas_features import SurroundViewCamera, CameraViewMode
 
@@ -209,6 +229,7 @@ status = svc.update(vehicle_state, sensor_data, current_time, dt)
 ```
 
 **Auto-Switching Logic:**
+
 - **Reversing (R gear):** Rear or Bird's Eye view
 - **Turning:** Side view matching turn direction
 - **Sharp steering:** Panoramic view
@@ -216,6 +237,7 @@ status = svc.update(vehicle_state, sensor_data, current_time, dt)
 - **Normal driving:** Front view
 
 **Key Methods:**
+
 - `enable()` / `disable()` - Control system
 - `set_view_mode(mode)` - Manual view selection
 - `enable_auto_switching(enable)` - Toggle automatic mode
@@ -258,7 +280,7 @@ simulator.adas_features['surround_view']    # Surround View Camera
 
 ## File Structure
 
-```
+```text
 ADAS_SIL_System/core/adas_features/
 ├── __init__.py                          # Updated: exports all features
 ├── ldw.py                               # Original: Lane Departure Warning
@@ -283,6 +305,7 @@ Comprehensive test suite added with 19 new tests covering:
 - Full simulator integration
 
 Run tests:
+
 ```bash
 cd /workspaces/Automotive_ADAS_Infortainment
 python -m pytest ADAS_SIL_System/tests/test_basic.py -v
@@ -291,6 +314,7 @@ python -m pytest ADAS_SIL_System/tests/test_basic.py -v
 ## Configuration Examples
 
 ### Enable Blind Spot Detection with Custom Zones
+
 ```python
 simulator = ADASSILSimulator({
     'adas': {
@@ -304,6 +328,7 @@ simulator = ADASSILSimulator({
 ```
 
 ### Configure Autonomous Parking
+
 ```python
 simulator = ADASSILSimulator({
     'adas': {
@@ -320,6 +345,7 @@ simulator = ADASSILSimulator({
 ```
 
 ### Setup Trailer Assistance
+
 ```python
 simulator = ADASSILSimulator({
     'adas': {
@@ -333,6 +359,7 @@ simulator = ADASSILSimulator({
 ```
 
 ### Configure Surround View
+
 ```python
 simulator = ADASSILSimulator({
     'adas': {

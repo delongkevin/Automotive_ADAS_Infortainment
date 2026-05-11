@@ -1,0 +1,56 @@
+================================================================================
+MIL (Model-in-the-Loop) TEST REPORT
+Generated: 2026-05-11 17:34:57
+================================================================================
+
+SUMMARY
+--------------------------------------------------------------------------------
+Total Scenarios: 4
+Passed: 2
+Failed: 2
+Success Rate: 50.0%
+
+DETAILED RESULTS
+--------------------------------------------------------------------------------
+
+Scenario: Blind Spot Detection Test Scenario
+Timestamp: 2026-05-11T17:34:56.719656
+Status: FAILED
+Duration: 30.00s
+Validations: 0/1
+
+  Feature: bsd
+    Status: FAIL
+    Step Count: 3000
+    Avg Step Time: 0.010ms
+    Max Step Time: 12.395ms
+    Validation Accuracy: 0.0%
+    Failure Reason: 5 validations failed
+
+Scenario: Emergency Braking
+Timestamp: 2026-05-11T17:34:56.958047
+Status: PASSED
+Duration: 30.00s
+Validations: 0/0
+
+Scenario: Highway Cruise
+Timestamp: 2026-05-11T17:34:57.118016
+Status: PASSED
+Duration: 60.00s
+Validations: 0/0
+
+Scenario: Trailer Assistance System Test
+Timestamp: 2026-05-11T17:34:57.599863
+Status: FAILED
+Duration: 40.00s
+Validations: 0/1
+
+  Feature: trailer_assistance
+    Status: FAIL
+    Step Count: 4000
+    Avg Step Time: 0.010ms
+    Max Step Time: 1.134ms
+    Validation Accuracy: 0.0%
+    Failure Reason: 4 validations failed
+
+================================================================================

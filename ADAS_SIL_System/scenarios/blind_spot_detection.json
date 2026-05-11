@@ -1,0 +1,133 @@
+{
+  "name": "Blind Spot Detection Test Scenario",
+  "description": "Tests BSD system with vehicles approaching from blind spot zones",
+  "duration": 30.0,
+  "environment": {
+    "weather": "clear",
+    "road_type": "highway",
+    "visibility": 300.0
+  },
+  "vehicle_config": {
+    "initial_speed": 25.0,
+    "initial_position": [0.0, -1.8],
+    "enabled_features": ["bsd"]
+  },
+  "events": [
+    {
+      "name": "Vehicle approaching from left blind spot",
+      "time": 2.0,
+      "type": "vehicle_approaching",
+      "parameters": {
+        "side": "left",
+        "speed": 20.0,
+        "initial_distance": 50.0,
+        "approach_speed": 3.0,
+        "target_zone": "blind_spot"
+      }
+    },
+    {
+      "name": "Check BSD warning for left side",
+      "time": 5.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "bsd",
+        "check_field": "left_occupied",
+        "expected": true,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Vehicle leaving left blind spot",
+      "time": 8.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "vehicle_id": 0,
+        "acceleration": 5.0,
+        "duration": 3.0
+      }
+    },
+    {
+      "name": "Verify left warning cleared",
+      "time": 11.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "bsd",
+        "check_field": "left_occupied",
+        "expected": false,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Vehicle approaching from right blind spot",
+      "time": 12.0,
+      "type": "vehicle_approaching",
+      "parameters": {
+        "side": "right",
+        "speed": 22.0,
+        "initial_distance": 50.0,
+        "approach_speed": 2.5,
+        "target_zone": "blind_spot"
+      }
+    },
+    {
+      "name": "Check BSD warning for right side",
+      "time": 15.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "bsd",
+        "check_field": "right_occupied",
+        "expected": true,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Vehicle accelerating away from right side",
+      "time": 18.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "vehicle_id": 1,
+        "acceleration": 4.0,
+        "duration": 2.5
+      }
+    },
+    {
+      "name": "Verify right warning cleared",
+      "time": 21.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "bsd",
+        "check_field": "right_occupied",
+        "expected": false,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Vehicle approaching from rear blind spot",
+      "time": 22.0,
+      "type": "vehicle_approaching",
+      "parameters": {
+        "side": "rear",
+        "speed": 30.0,
+        "initial_distance": 60.0,
+        "approach_speed": 4.0,
+        "target_zone": "blind_spot"
+      }
+    },
+    {
+      "name": "Check BSD warning for rear",
+      "time": 25.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "bsd",
+        "check_field": "rear_occupied",
+        "expected": true,
+        "tolerance": 0.0
+      }
+    }
+  ],
+  "success_criteria": {
+    "all_validations_pass": true,
+    "min_accuracy": 0.95,
+    "max_latency_ms": 100
+  }
+}

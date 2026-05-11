@@ -1,0 +1,115 @@
+{
+  "name": "Trailer Assistance System Test",
+  "description": "Tests trailer detection and steering correction with PID control",
+  "duration": 40.0,
+  "environment": {
+    "weather": "clear",
+    "road_type": "highway",
+    "visibility": 300.0
+  },
+  "vehicle_config": {
+    "initial_speed": 20.0,
+    "initial_position": [0.0, 0.0],
+    "has_trailer": true,
+    "trailer_length": 5.0,
+    "enabled_features": ["trailer_assistance"]
+  },
+  "events": [
+    {
+      "name": "Enable trailer assistance",
+      "time": 1.0,
+      "type": "feature_command",
+      "parameters": {
+        "feature": "trailer_assistance",
+        "command": "enable"
+      }
+    },
+    {
+      "name": "Set auto guidance mode",
+      "time": 2.0,
+      "type": "feature_command",
+      "parameters": {
+        "feature": "trailer_assistance",
+        "command": "set_guidance_mode",
+        "mode": "auto",
+        "strength": 0.8
+      }
+    },
+    {
+      "name": "Verify trailer detection",
+      "time": 3.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "trailer_assistance",
+        "check_field": "trailer_detected",
+        "expected": true,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Apply left steering input",
+      "time": 5.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "steering_angle": 0.3,
+        "duration": 5.0
+      }
+    },
+    {
+      "name": "Check trailer angle response",
+      "time": 10.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "trailer_assistance",
+        "check_field": "current_trailer_angle",
+        "expected_max_abs": 0.4,
+        "tolerance": 0.05
+      }
+    },
+    {
+      "name": "Apply right steering input",
+      "time": 11.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "steering_angle": -0.3,
+        "duration": 5.0
+      }
+    },
+    {
+      "name": "Verify correction is applied",
+      "time": 16.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "trailer_assistance",
+        "check_field": "steering_correction",
+        "expected_min_abs": 0.05,
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Center steering angle",
+      "time": 17.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "steering_angle": 0.0,
+        "duration": 5.0
+      }
+    },
+    {
+      "name": "Verify trailer alignment recovery",
+      "time": 22.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "trailer_assistance",
+        "check_field": "current_trailer_angle",
+        "expected": 0.0,
+        "tolerance": 0.1
+      }
+    }
+  ],
+  "success_criteria": {
+    "all_validations_pass": true,
+    "min_accuracy": 0.92,
+    "max_latency_ms": 80
+  }
+}

@@ -1,0 +1,218 @@
+{
+  "name": "Surround View Camera System Test",
+  "description": "Tests all camera view modes and auto-switching logic",
+  "duration": 60.0,
+  "environment": {
+    "weather": "clear",
+    "road_type": "urban_street",
+    "visibility": 200.0
+  },
+  "vehicle_config": {
+    "initial_speed": 0.0,
+    "initial_position": [0.0, 0.0],
+    "enabled_features": ["surround_view"]
+  },
+  "events": [
+    {
+      "name": "Enable surround view camera",
+      "time": 1.0,
+      "type": "feature_command",
+      "parameters": {
+        "feature": "surround_view",
+        "command": "enable"
+      }
+    },
+    {
+      "name": "Enable auto view switching",
+      "time": 2.0,
+      "type": "feature_command",
+      "parameters": {
+        "feature": "surround_view",
+        "command": "set_auto_switching",
+        "enabled": true
+      }
+    },
+    {
+      "name": "Verify front view (initial state)",
+      "time": 3.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "surround_view",
+        "check_field": "current_view",
+        "expected": "FRONT",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Shift to Reverse gear",
+      "time": 5.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "gear": "R"
+      }
+    },
+    {
+      "name": "Verify rear view switch (reverse gear)",
+      "time": 6.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "surround_view",
+        "check_field": "current_view",
+        "expected": "REAR",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Accelerate in reverse",
+      "time": 7.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": -5.0,
+        "duration": 3.0
+      }
+    },
+    {
+      "name": "Shift to Park",
+      "time": 10.5,
+      "type": "vehicle_motion",
+      "parameters": {
+        "gear": "P"
+      }
+    },
+    {
+      "name": "Verify cargo view (parked state)",
+      "time": 11.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "surround_view",
+        "check_field": "current_view",
+        "expected": "CARGO",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Shift to Drive gear",
+      "time": 13.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "gear": "D"
+      }
+    },
+    {
+      "name": "Verify front view (drive gear)",
+      "time": 14.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "surround_view",
+        "check_field": "current_view",
+        "expected": "FRONT",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Accelerate forward",
+      "time": 15.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 15.0,
+        "duration": 3.0
+      }
+    },
+    {
+      "name": "Apply left turn (sharp steering)",
+      "time": 18.5,
+      "type": "vehicle_motion",
+      "parameters": {
+        "steering_angle": 0.5,
+        "duration": 3.0
+      }
+    },
+    {
+      "name": "Verify left view switch (left turn)",
+      "time": 20.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "surround_view",
+        "check_field": "current_view",
+        "expected": "LEFT",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Center steering",
+      "time": 21.5,
+      "type": "vehicle_motion",
+      "parameters": {
+        "steering_angle": 0.0,
+        "duration": 2.0
+      }
+    },
+    {
+      "name": "Verify front view restore",
+      "time": 24.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "surround_view",
+        "check_field": "current_view",
+        "expected": "FRONT",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Apply right turn",
+      "time": 25.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "steering_angle": -0.5,
+        "duration": 3.0
+      }
+    },
+    {
+      "name": "Verify right view switch (right turn)",
+      "time": 26.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "surround_view",
+        "check_field": "current_view",
+        "expected": "RIGHT",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Reduce speed to parking speed",
+      "time": 29.0,
+      "type": "vehicle_motion",
+      "parameters": {
+        "speed_target": 2.0,
+        "duration": 2.0
+      }
+    },
+    {
+      "name": "Verify bird's eye view (low speed)",
+      "time": 31.5,
+      "type": "validation",
+      "parameters": {
+        "feature": "surround_view",
+        "check_field": "current_view",
+        "expected": "BIRD_EYE",
+        "tolerance": 0.0
+      }
+    },
+    {
+      "name": "Verify all cameras are recording",
+      "time": 33.0,
+      "type": "validation",
+      "parameters": {
+        "feature": "surround_view",
+        "check_field": "recording_active",
+        "expected": false,
+        "tolerance": 0.0
+      }
+    }
+  ],
+  "success_criteria": {
+    "all_validations_pass": true,
+    "min_accuracy": 0.98,
+    "max_latency_ms": 50
+  }
+}
