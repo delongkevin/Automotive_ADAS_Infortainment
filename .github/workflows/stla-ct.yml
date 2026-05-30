@@ -69,10 +69,10 @@ jobs:
           python -m py_compile OEM/Stellantis/STLA_SWTest/simulate_tests.py
           python -m py_compile OEM/Stellantis/STLA_SWTest/config/Jenkins/arg_parser.py
           python -m py_compile OEM/Stellantis/STLA_SWTest/config/Scripts/report_parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Check_Port.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Image_Comparison.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/Check_Port.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/Image_Comparison.py
+          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
           echo "All STLA Python scripts passed syntax check."
 
   # ---------------------------------------------------------------------------
