@@ -744,8 +744,8 @@ import sys, os, json, pathlib
 # Ensure the framework is importable from the workspace.
 sys.path.insert(0, os.environ['WORKSPACE'])
 
-from GM_VIP_Automation_Framework.core.canoe import CANoeClient
-from GM_VIP_Automation_Framework.capl_bridge import CAPLBridge
+from Automation_Framework.core.canoe import CANoeClient
+from Automation_Framework.capl_bridge import CAPLBridge
 
 output_dir = os.path.join(os.environ['AUTO_ROOT'], 'Test Reports', 'bridge_output')
 session    = os.environ.get('TEST_SUITE', 'sanity').lower()
@@ -833,7 +833,7 @@ if report.failed:
                 // Step 1: framework unit tests (mock mode, no hardware).
                 bat """
                     python -m pytest ^
-                        GM_VIP_Automation_Framework\\tests\\ ^
+                        Automation_Framework\\tests\\ ^
                         --tb=short -q ^
                         --junitxml="Test Reports\\ct_unit_results.xml"
                 """
@@ -848,7 +848,7 @@ if report.failed:
 import sys, os, xml.etree.ElementTree as ET
 sys.path.insert(0, os.environ['WORKSPACE'])
 
-from GM_VIP_Automation_Framework import runner
+from Automation_Framework import runner
 import time
 
 # Prefer the bridge output directory; fall back to the framework root.
@@ -856,7 +856,7 @@ bridge_dir = os.path.join(
     os.environ.get('AUTO_ROOT', os.environ['WORKSPACE']),
     'Test Reports', 'bridge_output'
 )
-search_dir = bridge_dir if os.path.isdir(bridge_dir) else 'GM_VIP_Automation_Framework'
+search_dir = bridge_dir if os.path.isdir(bridge_dir) else 'Automation_Framework'
 
 json_files = runner.discover_test_case_files(search_dir)
 if not json_files:

@@ -11,7 +11,7 @@ Automotive_ADAS_Infortainment/
 │   │   └── GM_VIP_Automation/          # GM center-stack radio automation assets
 │   └── Stellantis/
 │       └── STLA_SWTest/                # Stellantis ADAS/CVADAS test assets
-├── GM_VIP_Automation_Framework/        # Shared Python Trace32 automation framework
+├── Automation_Framework/        # Shared Python Trace32 automation framework
 ├── .github/workflows/                  # CI/CD workflows updated to OEM paths
 └── setup.py                            # Framework packaging entry
 ```
@@ -20,9 +20,9 @@ Automotive_ADAS_Infortainment/
 
 - **GM (Infotainment / Radio):** `OEM/GM/GM_VIP_Automation`
 - **Stellantis (ADAS / CVADAS):** `OEM/Stellantis/STLA_SWTest`
-- **Shared automation framework:** `GM_VIP_Automation_Framework`
+- **Shared automation framework:** `Automation_Framework`
 
 ## Notes
 
 - CI/CD workflows in `.github/workflows` now reference the consolidated OEM paths.
-- Existing framework package/module naming (`GM_VIP_Automation_Framework`) is preserved for compatibility.
+- Existing framework package/module naming (`Automation_Framework`) is preserved for compatibility.
