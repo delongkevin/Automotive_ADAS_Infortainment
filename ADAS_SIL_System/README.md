@@ -177,8 +177,8 @@ python -m pytest ADAS_SIL_System/tests/test_basic.py
 ## Integration with Existing Frameworks
 
 This ADAS SIL system is designed to be standalone but can optionally integrate with:
-- **GM VIP Automation Framework**: shared scenario concepts or signal definitions, where applicable
-- **Stellantis STLA assets**: reusable scenario data or sensor assumptions, where applicable
+- **Automation Framework**: shared scenario concepts or signal definitions, where applicable
+- **OEM ADAS test assets**: reusable scenario data or sensor assumptions, where applicable
 
 ## Contributing
 

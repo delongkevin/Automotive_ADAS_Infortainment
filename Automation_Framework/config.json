@@ -1,0 +1,48 @@
+{
+  "_comment": "Automation Framework – editable configuration file.",
+  "_comment2": "Edit only the values relevant to your setup. t32_exe_path and t32_config_path are only needed when auto_launch=True and Trace32 is not already running.",
+
+  "t32_exe_path": "C:\\T32\\bin\\windows64\\t32marm64.exe",
+  "t32_config_path": "C:\\T32\\config.t32",
+  "t32_search_dirs": [
+    "C:\\T32\\bin\\windows64",
+    "C:\\T32",
+    "C:\\t32\\bin",
+    "C:\\t32"
+  ],
+  "t32_exe_names": [
+    "t32marm.exe",
+    "t32marm64.exe",
+    "t32mppc.exe",
+    "t32mrisc.exe",
+    "t32mrisc64.exe"
+  ],
+
+  "_comment3": "Optional: path to a *.cmm startup script. When set and Trace32 needs to be launched, the value is passed to Trace32 as-is via '-s <cmm_entry_script>'. Use an absolute path (or a path relative to your working directory) to avoid failures when running from different directories. A bundled example script is at scripts/smp_demo_multisieve.cmm inside the Automation_Framework directory.",
+  "cmm_entry_script": "",
+
+  "rcl_port": 20000,
+  "rcl_protocol": "UDP",
+  "rcl_packlen": 1024,
+  "rcl_timeout_s": 1.0,
+  "connect_max_wait_s": 60.0,
+
+  "halt_timeout_s": 20.0,
+  "run_timeout_s": 3.0,
+  "poll_interval_s": 0.2,
+
+  "_comment4": "Synchronization timing. post_reset_settle_s: extra wait after SYStem.RESetTarget halts (lets T32 rebuild symbol/register state). go_settle_s: brief pause after GO before polling STATE.RUN().",
+  "post_reset_settle_s": 1.0,
+  "go_settle_s": 0.3,
+
+  "bp_max_retries": 10,
+  "bp_retry_interval_s": 0.5,
+  "bp_symbol_reload_at": 5,
+  "symbol_reload_wait_s": 5.0,
+
+  "_comment5": "intermediate_halt_max_gos: max GO retries when ECU halts at wrong address (intermediate halt) or at the reset vector (CO:6 hard-reset). Increase on targets that fire CO:6 frequently.",
+  "intermediate_halt_max_gos": 10,
+
+  "cmm_timeout_s": 60.0,
+  "temp_dir": ""
+}

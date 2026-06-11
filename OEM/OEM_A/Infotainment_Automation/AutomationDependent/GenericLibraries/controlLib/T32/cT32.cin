@@ -1,0 +1,977 @@
+/*@!Encoding:1252*/
+//  ====================================================
+//   VEONEER - Support functions for T32
+//  ====================================================
+//
+//  File name: cT32.cin
+//
+//  Created(DD.MM.YYYY): 04.05.2022
+//
+//  Description: Constants for T32 library
+//  --------------------------------------------------------------------
+includes
+{
+  #include "ccT32.cin"
+  #include "cdotnetT32dll.cin"
+
+  #pragma netlibrary("dotnetT32dll.dll")
+
+  #if TOOL_MAJOR_VERSION >= 17
+  #pragma library("caplT32dll.dll")
+  #else
+  #pragma library("caplT32dll_v16.dll")
+  #endif
+}
+
+ 
+/*! \fn void vFctn_T32_CommandCreate_Cmm_Commands(char aOutputStringCommand[],char aCommand[])
+*  \brief Function that will generate the string with the path to the specified command(cmm/bat file).
+*  \param[out]  aOutputStringCommand  - The string which will be generated.
+*  \param[in]   char aCommand[]       - The command(name of cmm/bat file) used
+*
+*  \return No Return.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 04.05.22               AnPa            Created and implemented
+*/
+void vFctn_T32_CommandCreate_Cmm_Commands(char aOutputStringCommand[], char aCommand[])
+{
+  byte bDebugFlag;
+  
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function vFctn_T32_CommandCreate_Cmm_Commands() called.");
+
+  vFctn_T32_ConfigPathCreate(aOutputStringCommand);                                                     //get initial path (first 4 folders structure until Canoe folder)
+  
+  strncat(aOutputStringCommand,"TestSuites\\AutomationDependent\\Generic_Tools\\Lauterbach\\TC4_Aurix\\Cmm_Commands\\", 1024);   //concatenate next folder structure untill Cmm_Commands folder is reached
+  strncat(aOutputStringCommand, aCommand, 1024);                                                    //concatenate the aCommand param which is the name of the cmm used
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+     writeDbgLevel (DebugFuncInternal, "Generated command string aOutputStringCommand = %s.", aOutputStringCommand);
+  
+}
+
+/*! \fn void vFctn_T32_CommandCreate_prj(char aOutputStringCommand[],char aCommand[])
+*  \brief Function that will generate the string with the path to the specified command(cmm/bat file).
+*  \param[out]  aOutputStringCommand  - The string which will be generated.
+*  \param[in]   char aCommand[]       - The command(name of cmm/bat file) used
+*
+*  \return No Return.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 04.05.22               AnPa            Created and implemented
+*/
+void vFctn_T32_CommandCreate_prj(char aOutputStringCommand[],char aCommand[])
+{
+  byte bDebugFlag;
+  
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function vFctn_T32_CommandCreate_prj() called.");
+
+  vFctn_T32_ConfigPathCreate(aOutputStringCommand);                                             //get initial path (first 4 folders structure until Canoe folder)
+  
+  strncat(aOutputStringCommand,"TestSuites\\AutomationDependent\\Generic_Tools\\Lauterbach\\TC4_Aurix\\prj\\", 1024);    //concatenate next folder structure untill prj folder is reached
+  strncat(aOutputStringCommand,aCommand, 1024);                                             //concatenate the aCommand param which is the name of the cmm used
+
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+     writeDbgLevel (DebugFuncInternal, "Generated command string aOutputStringCommand = %s.", aOutputStringCommand);
+  
+}
+
+
+/*!\fn void vFctn_T32_ConfigPathCreate(char aOutputStringPath[])
+*  \brief Function that will return the modified path generated from absolute configuration path. 
+*  \brief This function will be used to generate the string with the path to the specified command
+*
+*  \param[out]  aOutputStringPath     - The byte array which will be modified.
+*
+*  \return No Return.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 04.05.22               AnPa            Created and implemented
+*/
+void vFctn_T32_ConfigPathCreate(char aOutputStringPath[])
+{
+  char chCfgPath[500]; 
+  dword dwMatchNbr;
+  dword dwPosArray[20];
+  byte bDebugFlag;
+  
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+  
+  writeDbgLevel (DebugFuncCalls , "Function vFctn_T32_ConfigPathCreate() called.");
+
+  strncpy(aOutputStringPath,"",1024); //clear the string
+  
+  lFctn_READFILEConfigurationPath(chCfgPath);                                 //  get absolute configuration path 
+  
+  dwMatchNbr = dwFctn_CONV_FindCharPosInStr( chCfgPath,'\\', dwPosArray);     //  split path by '\'
+  bFctn_CONV_GetSubString(chCfgPath,0, dwPosArray[dwMatchNbr-4], aOutputStringPath);     //  get substring untill the last 3 '\'
+ 
+  strncat(aOutputStringPath,"\\",strlen(aOutputStringPath)+2);                //  concatenate "\\" character at the end of the base directory string
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "The modified path aOutputStringPath = %s.", aOutputStringPath); 
+  
+ }
+
+/*! \fn void vFctn_T32_CommandCreate_StartUpScripts(char aOutputStringCommand[],char aCommand[])
+*  \brief Function that will generate the string with the path to the specified command(cmm/bat file).
+*  \param[out]  aOutputStringCommand  - The string which will be generated.
+*  \param[in]   char aCommand[]       - The command(name of cmm/bat file) used
+*
+*  \return No Return.
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 04.05.22               AnPa            Created and implemented
+*/
+void vFctn_T32_CommandCreate_StartUpScripts(char aOutputStringCommand[],char aCommand[])
+{
+  byte bDebugFlag;
+  
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function vFctn_T32_CommandCreate_StartUpScripts() called.");
+  
+  vFctn_T32_ConfigPathCreate(aOutputStringCommand);                                         //get initial path (first 4 folders structure until Canoe folder)
+  
+  strncat(aOutputStringCommand,"TestSuites\\AutomationDependent\\Generic_Tools\\Lauterbach\\TC4_Aurix\\", 1024);     //concatenate next folder structure untill StartUp_Scripts folder is reached
+  strncat(aOutputStringCommand,aCommand, 1024);                                         //concatenate the aCommand param which is the name of the cmm/bat file used
+  
+  if ( (byte)DebugFuncInternal & bDebugFlag)
+     writeDbgLevel (DebugFuncInternal, "Generated command string aOutputStringCommand = %s.", aOutputStringCommand);
+  
+}
+
+/* ! long lFctn_CallT32API(char aCommand[], char aRetApiMessage[], long aRetApiExitCode[])
+*  \brief Function that calls the T32 API using .NET DLL with Execution.WaitForTask.
+*         Captures console output from T32_API.exe.
+*
+*         After every invocation (regardless of success or failure) a
+*         mandatory quiet gap (cc_dwT32_APICallMinGap) is inserted so that
+*         T32's socket server has finished processing/cleaning up the
+*         previous command before the next T32_API.exe process connects.
+*         There is deliberately no retry: if the call fails the test step
+*         is reported as FAIL and the operator re-runs the test case.
+*
+*  \return -1: The command was NOT successfully sent (DLL-level failure).
+*  \return  0: The command was successfully sent.
+*
+*  Change History:
+*  Date(DD.MM.YY)        Author          Change info
+*
+*  04.05.22              GaMo         Refactoring the code.
+*  31.01.26              Auto         Performance optimisation – removed unnecessary waits.
+*  12.03.26              Copilot      Added post-call gap (cc_dwT32_APICallMinGap) to prevent
+*                                     back-to-back socket contention.  Removed retry logic per
+*                                     project requirement: fail fast, re-run the test case.
+*  16.03.26              Copilot      Reverted T32_API.exe path to relative form.
+*                                     vFctn_T32_ConfigPathCreate + "TestSuites\..." assumed a
+*                                     specific bench directory structure that does not match every
+*                                     deployment.  The relative path "../AutomationDependent/
+*                                     GenericLibraries/T32_API.exe" is resolved from CANoe's
+*                                     working directory (the config-file folder) and works
+*                                     regardless of where the project is installed.
+*/
+long lFctn_CallT32API(char aCommand[], char aRetApiMessage[], long aRetApiExitCode[])
+{
+  long returnExeCall;
+  // Relative path from the CANoe config-file directory to T32_API.exe.
+  // ".." from RBS\ reaches the project root, then into
+  // AutomationDependent\GenericLibraries\.  Works on any bench
+  // regardless of where the project is installed.
+  char T32ApiExe[256] = "../AutomationDependent/GenericLibraries/T32_API.exe";
+
+  aRetApiExitCode[0] = -1;
+
+  returnExeCall = dllRunT32cmdNonBlocking(T32ApiExe, aCommand, aRetApiMessage, aRetApiExitCode);
+
+  // Exit code 259 (STILL_ACTIVE) is treated as success by the DLL layer;
+  // normalise the raw process exit code here so callers see 0 on success.
+  if (aRetApiExitCode[0] == 259)
+    aRetApiExitCode[0] = 0;
+
+  // Propagate DLL-level failure to the exit-code output so callers only need
+  // to check aRetApiExitCode[0] == 0 for a clean success test.
+  if (returnExeCall != 0)
+    aRetApiExitCode[0] = -1;
+
+  // Mandatory inter-call gap: gives T32's socket server time to close the
+  // current connection before the next T32_API.exe process attempts to open
+  // a new one.  Applied unconditionally (success and failure) so the gap is
+  // always present regardless of the outcome.
+  testWaitForTimeoutSilent(cc_dwT32_APICallMinGap);
+
+  return returnExeCall;
+}
+
+
+/*! long lFctn_T32_Launch(char aT32ExePath[], char aT32ConfigFile[])
+*  \brief Launches Trace32 if it is not already running.
+*         Calls the given T32 executable with the supplied config file, then polls
+*         the STATE command until the debugger transitions out of the Down (0) state
+*         or cc_dwT32_LaunchTimeout is reached.
+*
+*  \param[in] aT32ExePath   - Full path to the Trace32 executable
+*                             (e.g. "C:\\T32\\t32marm.exe").
+*  \param[in] aT32ConfigFile - Full path to the T32 config file to load
+*                              (e.g. "C:\\T32\\config.t32").
+*
+*  \return  Ok    (1) : T32 is connected (state != Down) after launch.
+*  \return  NotOk (0) : Timeout – T32 did not connect within cc_dwT32_LaunchTimeout.
+*  \return  Error (-1): Launch command could not be started.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+*
+* 10.03.26              Copilot         Created – auto-starts T32 when not running.
+*/
+long lFctn_T32_Launch(char aT32ExePath[], char aT32ConfigFile[])
+{
+  char chLaunchCmd[1024];
+  long lState;
+  long lElapsed;
+  long lPollInterval;
+  long lSyscallResult;
+  byte bDebugFlag;
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_T32_Launch() entered.");
+
+  // Build the launch command: <exe> -c <config>
+  snprintf(chLaunchCmd, elcount(chLaunchCmd), "\"%s\" -c \"%s\"", aT32ExePath, aT32ConfigFile);
+
+  if ((byte)DebugFuncParam & bDebugFlag)
+    writeDbgLevel(DebugFuncParam, "Launch command: %s", chLaunchCmd);
+
+  // Start T32 in the background (non-blocking: process launched and left running).
+  // TestWaitForSyscall with timeout 0 fires-and-forgets (does not wait for exit).
+  // Return value: -1 if the command could not be started, otherwise the process exit code.
+  lSyscallResult = TestWaitForSyscall(chLaunchCmd, 0, 0);
+  if (lSyscallResult == -1)
+  {
+    write("ERROR: lFctn_T32_Launch() – could not start T32 process. Command: %s", chLaunchCmd);
+    return Error;
+  }
+
+  write("lFctn_T32_Launch(): T32 process started. Waiting for connection...");
+
+  // Poll until T32 becomes connected or we time out.
+  lPollInterval = 1000; // check every 1 s
+  lElapsed = 0;
+
+  while (lElapsed < cc_dwT32_LaunchTimeout)
+  {
+    testWaitForTimeoutSilent(lPollInterval);
+    lElapsed += lPollInterval;
+
+    lState = lFctn_G_T32_GET_STATE();
+    if (lState != T32_State_Down && lState != Error)
+    {
+      write("T32 connected after %d ms (state=%d).", lElapsed, lState);
+      return Ok;
+    }
+    // Only log poll progress under debug flag to avoid flooding the test log
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "Waiting for T32 to connect... %d ms elapsed (state=%d).", lElapsed, lState);
+  }
+
+  write("ERROR: T32 did not connect within %d ms.", cc_dwT32_LaunchTimeout);
+  return NotOk;
+}
+
+
+/*! long lFctn_G_T32_GET_STATE()
+*  \brief Function that read the state of the system.
+*
+*  \return lState     - The state of the system: 0/1/2/3.
+*  \return -1 (Error) - An API error occurred
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 09.09.20              CrJu         Refactoring the code.
+*/
+long lFctn_G_T32_GET_STATE()
+{
+  long lState;
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128];
+  byte bDebugFlag;
+  
+  bDebugFlag = NotOk;
+  lState = Error;
+  
+  writeDbgLevel (DebugFuncCalls , "Function G_T32_GET_STATE() called.");
+  snprintf(chT32Cmd, elcount(chT32Cmd),"\"STATE\"");
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  if (lApiExitCode[0] == 0)
+  {
+    lState = atol(chApiMessage);
+    switch (lState)
+    {
+      case(0) : snprintf(msgInfo, elcount(msgInfo), "ECU is Down."); break;
+      case(1) : snprintf(msgInfo, elcount(msgInfo), "ECU is Halted."); break;
+      case(2) : snprintf(msgInfo, elcount(msgInfo), "ECU is Stopped."); break;
+      case(3) : snprintf(msgInfo, elcount(msgInfo), "ECU is Running."); break;
+      default : snprintf(msgInfo, elcount(msgInfo), "ECU state ERROR!!!."); break;
+    }
+  }
+  else // API Command Fail
+  {
+    snprintf(msgInfo, elcount(msgInfo), "API error message: %s", chApiMessage);
+  }
+  
+  if((byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, msgInfo);
+  
+
+  return lState;
+
+}
+
+/*! long lFctn_G_T32_GET_STATE(char aMsgInfo[])
+*  \brief Function that read the state of the system.
+*
+*  \return lState     - The state of the system: 0/1/2/3.
+*  \return -1 (Error) - An API error occured
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 09.09.20              CrJu         Refactoring the code.
+* 24.11.21              AnPu         Update function 
+* 16.02.22              IuSo         Refactoring the variable chT32Cmd.
+*/
+long lFctn_G_T32_GET_STATE(char aMsgInfo[])
+{
+  long lState;
+  long lApiExitCode[1];
+  char chApiMessage[512];
+  char chT32Cmd[128];
+  byte bDebugFlag;
+  
+  bDebugFlag = NotOk;
+  lState = Error;
+  
+  writeDbgLevel (DebugFuncCalls , "Function G_T32_GET_STATE() called.");
+  snprintf(chT32Cmd, elcount(chT32Cmd),"\"STATE\"");
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lApiExitCode);
+  
+  if (lApiExitCode[0] == 0)
+  {
+    lState = atol(chApiMessage);
+    switch (lState)
+    {
+      case(0) : snprintf(aMsgInfo, elcount(aMsgInfo), "ECU is Down."); break;
+      case(1) : snprintf(aMsgInfo, elcount(aMsgInfo), "ECU is Halted."); break;
+      case(2) : snprintf(aMsgInfo, elcount(aMsgInfo), "ECU is Stopped."); break;
+      case(3) : snprintf(aMsgInfo, elcount(aMsgInfo), "ECU is Running."); break;
+      default : snprintf(aMsgInfo, elcount(aMsgInfo), "ECU state ERROR!!!."); break;
+    }
+  }
+  else // API Command Fail
+  {
+    snprintf(aMsgInfo, elcount(aMsgInfo), "API error message: %s", chApiMessage);
+  }
+  
+  if((byte)DebugFuncInternal & bDebugFlag)
+    writeDbgLevel (DebugFuncInternal, msgInfo);
+
+  return lState;
+}
+
+
+/*! long lFctn_G_T32_RUN_CMM_CORE(char aAddress[], char aCore[], long aTimeOut, char aNumberOfParameters[])
+*  \brief Runs a CMM script via T32_API.exe using TestWaitForSyscall and checks the exit code.
+*         The script path is resolved relative to Generic_Tools\Lauterbach\TC4_Aurix\.
+*         T32_API.exe is also resolved from that same directory via
+*         vFctn_T32_CommandCreate_StartUpScripts so the command is self-contained.
+*
+*  \param[in] aAddress - CMM script filename or sub-path relative to Generic_Tools\Lauterbach\TC4_Aurix\
+*                        (e.g. "StartUp_Scripts\\startup.cmm" or "Cmm_Commands\\cmd.cmm").
+*  \param[in] aCore - The specific core (reserved for future use).
+*  \param[in] aTimeOut - The maximum wait time in ms at the end of which the application is expected to exit.
+*  \param[in] aNumberOfParameters - Additional parameters to pass to the CMM script (use "" for none).
+*
+*  \return  1: The application exited with the expected exit code.
+*  \return  0: The application did not exit within the wait time.
+*  \return -1: The application could not be started, e.g., due to an error in the command line.
+*  \return -2: The application exited with an exit code other than the one expected.
+*  \return -999: Waiting aborted due to end of measurement (this does not cause the application to be aborted).
+*
+* Change History: 
+* Date(DD.MM.YY)        Author          Change info                                                          
+*   
+* 09.09.20              CrJu         Refactoring the code.
+* 16.03.26              Copilot      Reverted T32_API.exe path back to the original
+*                                    vFctn_T32_CommandCreate_StartUpScripts approach.
+*                                    The prior change used vFctn_T32_ConfigPathCreate +
+*                                    "TestSuites\..." which breaks on benches where the project
+*                                    is not installed under a "TestSuites\" parent folder.
+*/
+long lFctn_G_T32_RUN_CMM_CORE(char aAddress[], char aCore[], long aTimeOut, char aNumberOfParameters[])
+{
+  byte bDebugFlag;
+  long lResult;
+  char chCommand[1024];
+  char chPassText[250];
+  char chFailText[250];
+  
+  lResult = NotOk;
+  
+  writeDbgLevel (DebugFuncCalls , "Function G_T32_RUN_CMM_CORE() entered.");
+  
+  // Build the command using vFctn_T32_CommandCreate_StartUpScripts which resolves the
+  // TC4_Aurix folder path and places T32_API.exe at the start of the command string.
+  vFctn_T32_CommandCreate_StartUpScripts(chCommand,"T32_API.exe \"DO "); // create StartUpScript folder structure path
+
+  // Append the CMM script address and any additional parameters
+  strncat(chCommand, aAddress, 1000);
+  strncat(chCommand, " ", 1000);
+  strncat(chCommand, aNumberOfParameters, 1000);
+  
+  lResult = TestWaitForSyscall(chCommand, 0, aTimeOut);
+  
+  // Expected Text
+  if (lResult)
+  {
+    snprintf(chPassText, elcount(chPassText), "The application exited with the expected exit code.");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "PASS:: %s.", chPassText);
+  }
+  else if(NotOk == lResult)
+  {
+    snprintf(chFailText, elcount(chFailText), "The application did not exit within the wait time.");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "FAIL: %s.", chFailText);
+  }
+  else if(Error == lResult)
+  {
+    snprintf(chFailText, elcount(chFailText), "The application could not be started, e.g., due to an error in the command line.");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "Error: %s.", chFailText);
+  }
+  else if(-2 == lResult)
+  {
+    snprintf(chFailText, elcount(chFailText), "The application exited with an exit code other than the one expected.");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "Error: %s.", chFailText);
+  }
+  else if(-999 == lResult)
+  {
+    snprintf(chFailText, elcount(chFailText), "Waiting aborted due to end of measurement (this does not cause the application to be aborted).");
+    if((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel (DebugFuncInternal, "Error: %s.", chFailText);
+  }
+  
+  return lResult;
+}
+
+
+/*! \fn long lFctn_T32_ReadRegister_AddressValue(char aAddress[], int64 &aRegisterValue, char aMappedResponseInfo[])
+*  \brief Function that will read the value of a specific address and return an ApiExitCode
+*  \param[in]  char aAddress[]            - address from where the register value is read
+*  \param[in]  int64 &aRegisterValue      - register value that will be stored
+*  \param[in]  char aMappedResponseInfo[] - mapped response
+*
+*  \return aRetApiExitCode: 0 when register was read successfully
+*                           different than 0 when register was not read
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 20.05.22               AnPa            Created and implemented
+*/
+long lFctn_T32_ReadRegister_AddressValue(char aAddress[], int64 &aRegisterValue, char aMappedResponseInfo[])
+{
+  char chApiMessage[512];
+  byte bDebugFlag;
+  char chT32Cmd[128] = "";
+  char chAuxiliar[512] = "0x";
+  long lRetApiExitCode[1];
+  
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function lFctn_T32_ReadRegister_AddressValue() called.");
+  
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"Print data.long(%s)\"", aAddress);
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lRetApiExitCode);
+
+  if (lRetApiExitCode[0] == 0)
+    { 
+       strncat(chAuxiliar, chApiMessage, elcount(chAuxiliar)); //Concat the prefix '0x' to the returning value; len = dest capacity (elcount), not chars-to-append.
+       aRegisterValue = (int64)atodbl(chAuxiliar); //Convert the returned string to int64 (must be int64 cast, not int, to preserve all 64 bits)
+       strncpy(chAuxiliar,"0x",3); //Reset the auxiliar string 
+      
+       snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Register value was read successfully: 0x%I64X.", aRegisterValue);
+      
+       if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+
+        return lRetApiExitCode[0]; 
+    }
+  else // API Command Fail
+    {
+       snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Register value was NOT read successfully. RetApiExitCode = %d.",  lRetApiExitCode[0]);
+      
+       if ((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+      
+       return lRetApiExitCode[0];
+    }
+}
+
+/*! \fn long lFctn_T32_Register_Check_Bit_Status(char aAddress[], byte aBit_Number, enum eBitStatus aBitStatus,char aMappedResponseInfo[])
+*  \brief Function that will return the status of a specific bit number of a specific address
+*  \param[in]  char aAddress[]            - address from where the register value is readed
+*  \param[in]  byte aBit_Number           - the bit number to be verified. (bit numbers start from 0, e.g. to verify the Port2 Pin7 the aBit_Number param should be 8 )
+*                                                                                                    (e.g. to verify bit 0 of an address the aBit_Number param should be 1)
+*  \param[in]  enum eBitStatus aBitStatus  -  eNotSet = 0 
+*                                             eSet = 1
+*  \param[in]  char aMappedResponseInfo[]  - mapped response
+*
+*  \return BitStatus code: Ok :when bit is set equal with expected aBitStatus
+*                          NotOk :when the bit is different than expected aBitStatus
+*                          Error :when error is detected at reading the register
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 20.05.22               AnPa            Created and implemented
+*/
+long lFctn_T32_Register_Check_Bit_Status(char aAddress[], byte aBit_Number, enum eBitStatus aBitStatus,char aMappedResponseInfo[])
+{
+  byte bDebugFlag;
+  int64 iRegisterValue;
+  byte bBitwiseMask = 1;  
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function lFctn_T32_Register_Check_Bit_Status() called.");
+
+
+  if (lFctn_T32_ReadRegister_AddressValue(aAddress,iRegisterValue, aMappedResponseInfo) == 0)
+   {      
+      iRegisterValue = iRegisterValue >> (aBit_Number-1);  //shift the value untill the specified bit number is on the first position so when the Bitwise AND is used the result will be 1/0
+
+      if ( (byte)DebugFuncInternal & bDebugFlag)
+        writeDbgLevel (DebugFuncInternal, "Register Value = 0x%I64X and Bit number value after Bitwise AND with 0x1 applied =%X.",iRegisterValue ,(iRegisterValue & bBitwiseMask));
+  
+      if((iRegisterValue & bBitwiseMask) == aBitStatus) //if the bit is setted to expected value 0 or 1
+      {       
+        snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Bit %d has the expected value: %X", aBit_Number, aBitStatus);      
+        return Ok;   // the bit status will be return (equal with 0 or 1)
+      }
+      else
+      {
+        snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Bit %d is different than expected value: %X.", aBit_Number,aBitStatus); 
+        return NotOk;  //the bit status is different than expect aBitStatus
+      }   
+    }
+  else // API Command Fail
+    {
+       if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, "Register value was NOT readed successfully.");
+      
+      return Error; //error at reading the register value
+    }
+}
+
+
+/*! \fn long lFctn_T32_ReadVariable(char aAddress[], int64 &aVariableValue, char aMappedResponseInfo[])
+*  \brief Function that will read the value of a specific variable address and return an ApiExitCode
+*  \param[in]  char aAddress[]            - name of the variable ("Symbol")
+*  \param[in]  int &aVariableValue      - variable value that will be stored
+*  \param[in]  char aMappedResponseInfo[] - mapped response
+*
+*  \return aRetApiExitCode: 0 when register was read successfully
+*                           different than 0 when register was not read
+*
+* Change History: 
+* Date(DD.MM.YY)        Author              Change info                                                          
+* 27.10.23               AnPa            Created and implemented
+*/
+long lFctn_T32_ReadVariable(char aAddress[], int &aVariableValue, char aMappedResponseInfo[])
+{
+  char chApiMessage[512];
+  byte bDebugFlag;
+  char chT32Cmd[128] = "";
+  long lRetApiExitCode[1];
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag; 
+  writeDbgLevel (DebugFuncCalls , "Function lFctn_T32_ReadVariable() called.");
+  
+  snprintf(chT32Cmd, elcount(chT32Cmd),  "\"print var.value(%s)*1.\"", aAddress);
+  lFctn_CallT32API(chT32Cmd, chApiMessage, lRetApiExitCode);
+
+  if (lRetApiExitCode[0] == 0)
+    { 
+       aVariableValue = (int)atodbl(chApiMessage); //Convert the returned string to int64
+       snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Variable value was read successfully: 0x%lX.", aVariableValue);
+      
+       if ( (byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+
+        return lRetApiExitCode[0]; 
+    }
+  else // API Command Fail
+    {
+       snprintf(aMappedResponseInfo, elCount(aMappedResponseInfo), "Variable value was NOT read successfully. RetApiExitCode = %d.",  lRetApiExitCode[0]);
+      
+       if ((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel (DebugFuncInternal, aMappedResponseInfo);
+      
+       return lRetApiExitCode[0];
+    }
+}
+
+
+// ============================================================
+// AUTO-DETECT TRACE32 INSTALLATION
+// ============================================================
+
+/*! long lFctn_T32_FindExeInDir(char aDir[], char aFoundExePath[])
+*  \brief Internal helper – searches a directory for a known Trace32 executable.
+*         Tries common exe names in order of automotive-project likelihood.
+*
+*  \param[in]  aDir         - Directory to search (must include trailing backslash).
+*  \param[out] aFoundExePath - Full path to the first matching exe, or "" if none found.
+*
+*  \return  Ok    (1) : A T32 executable was found in aDir.
+*  \return  NotOk (0) : No known T32 executable was found in aDir.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 15.03.26              Copilot         Created – part of T32 auto-detect feature.
+*/
+long lFctn_T32_FindExeInDir(char aDir[], char aFoundExePath[])
+{
+  char chExePath[256];
+  dword dwHandle;
+
+  // ARM Cortex-M/A (most common in automotive)
+  snprintf(chExePath, elcount(chExePath), "%st32marm.exe",    aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  // ARM 64-bit
+  snprintf(chExePath, elcount(chExePath), "%st32marm64.exe",  aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  // PowerPC / TriCore (Aurix)
+  snprintf(chExePath, elcount(chExePath), "%st32mppc.exe",    aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  // RISC-V 32-bit
+  snprintf(chExePath, elcount(chExePath), "%st32mrisc.exe",   aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  // RISC-V 64-bit
+  snprintf(chExePath, elcount(chExePath), "%st32mrisc64.exe", aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  // STM32 / generic STM
+  snprintf(chExePath, elcount(chExePath), "%st32mstm.exe",    aDir);
+  dwHandle = openFileRead(chExePath, 0);
+  if (dwHandle != 0) { fileClose(dwHandle); strncpy(aFoundExePath, chExePath, elcount(aFoundExePath)); return Ok; }
+
+  strncpy(aFoundExePath, "", 1);
+  return NotOk;
+}
+
+
+/*! long lFctn_T32_CheckInstallDir(char aDir[], char aFoundExePath[], char aFoundConfigPath[])
+*  \brief Internal helper – verifies that a complete T32 installation exists in aDir:
+*         config.t32 must be present AND at least one known T32 executable must exist
+*         in the same directory.  On success the output parameters are populated.
+*
+*  \param[in]  aDir             - Directory to check (must include trailing backslash).
+*  \param[out] aFoundExePath    - Full path to the first T32 exe found.
+*  \param[out] aFoundConfigPath - Full path to config.t32 in aDir.
+*
+*  \return  Ok    (1) : Both config.t32 and a T32 exe were found in aDir.
+*  \return  NotOk (0) : config.t32 or a T32 exe is missing from aDir.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 15.03.26              Copilot         Created – part of T32 auto-detect feature.
+*/
+long lFctn_T32_CheckInstallDir(char aDir[], char aFoundExePath[], char aFoundConfigPath[])
+{
+  char chConfigPath[256];
+  dword dwHandle;
+  long lExeResult;
+
+  // Check that config.t32 exists in this directory.
+  snprintf(chConfigPath, elcount(chConfigPath), "%sconfig.t32", aDir);
+  dwHandle = openFileRead(chConfigPath, 0);
+  if (dwHandle == 0)
+    return NotOk;
+  fileClose(dwHandle);
+
+  // config.t32 found – now look for a known T32 executable.
+  lExeResult = lFctn_T32_FindExeInDir(aDir, aFoundExePath);
+  if (lExeResult != Ok)
+    return NotOk;
+
+  strncpy(aFoundConfigPath, chConfigPath, elcount(aFoundConfigPath));
+  return Ok;
+}
+
+
+/*! long lFctn_T32_AutoDetect(char aFoundExePath[], char aFoundConfigPath[])
+*  \brief Searches the standard Trace32 installation directories for a valid
+*         T32 installation (config.t32 + a T32 executable).  Directories are
+*         tried in order of decreasing likelihood:
+*           1. C:\T32\bin\
+*           2. C:\T32\
+*           3. C:\t32\bin\  (lower-case variant)
+*           4. C:\t32\
+*
+*         When a valid installation is found the output parameters are set and
+*         the function returns Ok so the caller can launch T32 or read the port
+*         from config.t32 via lFctn_T32_ParseConfigPort().
+*
+*  \param[out] aFoundExePath    - Full path to the first T32 exe found (e.g. "C:\T32\bin\t32marm.exe").
+*  \param[out] aFoundConfigPath - Full path to config.t32 (e.g. "C:\T32\bin\config.t32").
+*
+*  \return  Ok    (1) : Installation found; output parameters are populated.
+*  \return  NotOk (0) : No T32 installation found in any of the candidate directories.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 15.03.26              Copilot         Created – auto-detects T32 install from standard paths.
+*/
+long lFctn_T32_AutoDetect(char aFoundExePath[], char aFoundConfigPath[])
+{
+  char chDir[64];
+  byte bDebugFlag;
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_T32_AutoDetect() entered.");
+
+  // Candidate 1: C:\T32\bin\ – default for Lauterbach installer (64-bit)
+  strncpy(chDir, "C:\\T32\\bin\\", elcount(chDir));
+  if (lFctn_T32_CheckInstallDir(chDir, aFoundExePath, aFoundConfigPath) == Ok)
+  {
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "T32 found in '%s'.", chDir);
+    return Ok;
+  }
+
+  // Candidate 2: C:\T32\ – root of Lauterbach install
+  strncpy(chDir, "C:\\T32\\", elcount(chDir));
+  if (lFctn_T32_CheckInstallDir(chDir, aFoundExePath, aFoundConfigPath) == Ok)
+  {
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "T32 found in '%s'.", chDir);
+    return Ok;
+  }
+
+  // Candidate 3: C:\t32\bin\ – lower-case variant
+  strncpy(chDir, "C:\\t32\\bin\\", elcount(chDir));
+  if (lFctn_T32_CheckInstallDir(chDir, aFoundExePath, aFoundConfigPath) == Ok)
+  {
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "T32 found in '%s'.", chDir);
+    return Ok;
+  }
+
+  // Candidate 4: C:\t32\ – lower-case root
+  strncpy(chDir, "C:\\t32\\", elcount(chDir));
+  if (lFctn_T32_CheckInstallDir(chDir, aFoundExePath, aFoundConfigPath) == Ok)
+  {
+    if ((byte)DebugFuncInternal & bDebugFlag)
+      writeDbgLevel(DebugFuncInternal, "T32 found in '%s'.", chDir);
+    return Ok;
+  }
+
+  write("lFctn_T32_AutoDetect: T32 not found. Checked C:\\T32\\bin, C:\\T32, C:\\t32\\bin, C:\\t32.");
+  strncpy(aFoundExePath,    "", 1);
+  strncpy(aFoundConfigPath, "", 1);
+  return NotOk;
+}
+
+
+/*! long lFctn_T32_ParseConfigPort(char aConfigPath[])
+*  \brief Reads a Trace32 config.t32 file and extracts the NETASSIST PORT number.
+*         The file is parsed line-by-line; the first line that begins with
+*         "PORT=" (case-sensitive, no leading whitespace) wins.
+*
+*  \param[in] aConfigPath - Full path to config.t32
+*                           (e.g. "C:\\T32\\bin\\config.t32").
+*
+*  \return  > 0  : The PORT value read from config.t32.
+*  \return -1 (Error) : File could not be opened or no PORT= line was found.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 15.03.26              Copilot         Created – parses NETASSIST PORT from config.t32.
+*/
+long lFctn_T32_ParseConfigPort(char aConfigPath[])
+{
+  dword dwHandle;
+  char chLine[256];
+  char chPortStr[16];
+  long lPort;
+  int nPosPort;
+  int nDigit;
+  int nSrcIdx;
+  char cChar;
+  byte bDebugFlag;
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+  lPort = Error;
+
+  writeDbgLevel(DebugFuncCalls, "Function lFctn_T32_ParseConfigPort() entered.");
+
+  dwHandle = openFileRead(aConfigPath, 0);
+  if (dwHandle == 0)
+  {
+    write("lFctn_T32_ParseConfigPort: cannot open '%s'.", aConfigPath);
+    return Error;
+  }
+
+  while (fileGetString(chLine, elcount(chLine), dwHandle) != 0)
+  {
+    // strstr returns the 0-based index of "PORT=" within chLine, or -1.
+    // We require the match to be at position 0 (line must start with PORT=)
+    // to avoid matching comment lines that contain the word "PORT=".
+    nPosPort = strstr(chLine, "PORT=");
+    if (nPosPort == 0)
+    {
+      // Extract decimal digits following "PORT="
+      nSrcIdx = 5;  // first character after "PORT="
+      for (nDigit = 0; nDigit < elcount(chPortStr) - 1; nDigit++)
+      {
+        cChar = chLine[nSrcIdx + nDigit];
+        if (cChar < '0' || cChar > '9')
+          break;
+        chPortStr[nDigit] = cChar;
+      }
+      chPortStr[nDigit] = '\0';
+
+      if (strlen(chPortStr) > 0)
+      {
+        lPort = atol(chPortStr);
+        if ((byte)DebugFuncInternal & bDebugFlag)
+          writeDbgLevel(DebugFuncInternal, "Parsed PORT=%d from '%s'.", lPort, aConfigPath);
+        break;
+      }
+    }
+  }
+
+  fileClose(dwHandle);
+
+  if (lPort <= 0)
+    write("lFctn_T32_ParseConfigPort: PORT= not found in '%s'.", aConfigPath);
+
+  return lPort;
+}
+
+
+/*! void vFctn_T32_SyncT32ini(long aPort)
+*  \brief Updates the t32.ini file (read by T32_API.exe at startup) so that
+*         T32_API.exe connects to the correct NETASSIST port.  The file is
+*         completely rewritten to ensure no stale values remain.
+*
+*         t32.ini is expected to live alongside T32_API.exe in the
+*         AutomationDependent\GenericLibraries\ directory.  The path is
+*         derived by going up one level from the CANoe config-file directory
+*         (e.g. from RBS\ to the project root) and then appending
+*         AutomationDependent\GenericLibraries\.
+*
+*  \param[in] aPort - The NETASSIST port number to write (e.g. 20000).
+*                     Ignored (and a warning logged) when <= 0.
+*
+*  \return No return.
+*
+* Change History:
+* Date(DD.MM.YY)        Author          Change info
+* 15.03.26              Copilot         Created – syncs t32.ini with the port detected in config.t32.
+* 16.03.26              Copilot         Fixed GenericLibraries path: replaced broken
+*                                       vFctn_T32_ConfigPathCreate + "TestSuites\..." with
+*                                       a direct computation from the config-file directory.
+*/
+void vFctn_T32_SyncT32ini(long aPort)
+{
+  char chGenericLibsDir[1024];
+  char chT32iniFullPath[600];
+  dword dwHandle;
+  char chLine[64];
+  int len;
+  int i;
+  int lastSep;
+  byte bDebugFlag;
+
+  bDebugFlag = cc_bT32_GlobalDebugFlag;
+  writeDbgLevel(DebugFuncCalls, "Function vFctn_T32_SyncT32ini() entered.");
+
+  if (aPort <= 0)
+  {
+    write("vFctn_T32_SyncT32ini: invalid port %d – t32.ini not updated.", aPort);
+    return;
+  }
+
+  // Build the path to the GenericLibraries directory (where t32.ini lives).
+  // 1. Get the CANoe config-file directory (e.g. "C:\bench\Infotainment_Automation\RBS\").
+  // 2. Strip the trailing backslash.
+  // 3. Find the last backslash and truncate there (+1) to get the project root
+  //    (e.g. "C:\bench\Infotainment_Automation\").
+  // 4. Append "AutomationDependent\GenericLibraries\".
+  // This mirrors the logic in config.cin and works on any bench regardless of
+  // where the project is installed.
+  lFctn_READFILEConfigurationPath(chGenericLibsDir);
+
+  len = strlen(chGenericLibsDir);
+  if (len > 0 && chGenericLibsDir[len - 1] == '\\')
+  {
+    chGenericLibsDir[len - 1] = '\0';
+    len--;
+  }
+
+  lastSep = -1;
+  for (i = 0; i < len; i++)
+  {
+    if (chGenericLibsDir[i] == '\\')
+      lastSep = i;
+  }
+
+  if (lastSep < 0)
+  {
+    write("vFctn_T32_SyncT32ini: WARNING – could not determine project root from path '%s'. t32.ini not updated.", chGenericLibsDir);
+    return;
+  }
+  chGenericLibsDir[lastSep + 1] = '\0';  // project root with trailing backslash
+
+  strncat(chGenericLibsDir, "AutomationDependent\\GenericLibraries\\", elcount(chGenericLibsDir));
+
+  snprintf(chT32iniFullPath, elcount(chT32iniFullPath), "%st32.ini", chGenericLibsDir);
+
+  // setWritePath + openFileWrite("filename", 0) rewrites the file.
+  setWritePath(chGenericLibsDir);
+  dwHandle = openFileWrite("t32.ini", 0);  // 0 = create / overwrite
+
+  if (dwHandle == 0)
+  {
+    write("vFctn_T32_SyncT32ini: WARNING – could not open '%s' for writing.", chT32iniFullPath);
+    return;
+  }
+
+  snprintf(chLine, elcount(chLine), "NODE=localhost\n");
+  filePutString(chLine, strlen(chLine), dwHandle);
+  snprintf(chLine, elcount(chLine), "PORT=%d\n", aPort);
+  filePutString(chLine, strlen(chLine), dwHandle);
+  snprintf(chLine, elcount(chLine), "PACKLEN=1024\n");
+  filePutString(chLine, strlen(chLine), dwHandle);
+
+  fileClose(dwHandle);
+
+  write("vFctn_T32_SyncT32ini: t32.ini updated with PORT=%d at '%s'.", aPort, chT32iniFullPath);
+}

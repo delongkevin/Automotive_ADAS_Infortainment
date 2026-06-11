@@ -1,0 +1,75 @@
+// This CIN is for hosting configurations to normalize for later
+// automation_root and teraterm are computed at runtime from the CANoe
+// configuration file path so the automation works on any bench without
+// requiring manual path edits after a Git clone.
+//
+// -----------------------------------------------------------------------
+// HOW TO CHANGE THE POWER SUPPLY COM PORT
+// -----------------------------------------------------------------------
+// Edit ONLY the line below.  Every test-case file that includes this CIN
+// passes powersupply_port to Power_ctrl.can functions, so a single-line
+// change here propagates automatically to the entire test suite.
+//   Current hardware: BK Precision 1687b on COM4.
+// -----------------------------------------------------------------------
+variables
+{
+    char automation_root[256] = "";  // computed by vFctn_Config_ComputePaths()
+    char teraterm[256]        = "";  // computed by vFctn_Config_ComputePaths()
+    int powersupply_port      = 4;   // COM port for BK Precision 1687b – change here only
+}
+
+/// Compute bench-specific paths from the CANoe configuration directory.
+///
+/// getAbsFilePath("") returns the directory that contains the currently
+/// loaded .cfg file (e.g. "C:\<bench>\Infotainment_Automation\RBS\").
+/// automation_root is the parent of that directory ("Infotainment_Automation\").
+/// teraterm is the serial-log file produced by serial_logging.ps1.
+///
+/// Call once per measurement start; subsequent calls are no-ops once the
+/// paths are already populated.
+void vFctn_Config_ComputePaths()
+{
+    char chCfgDir[256];
+    int  len;
+    int  lastSep;
+    int  i;
+
+    if (strlen(automation_root) > 0)
+        return; // already initialised (guard against duplicate on preStart)
+
+    // getAbsFilePath("") fills chCfgDir with the config directory path,
+    // including a trailing backslash.
+    getAbsFilePath("", chCfgDir, elcount(chCfgDir));
+
+    // Copy into automation_root and strip the trailing backslash.
+    strncpy(automation_root, chCfgDir, elcount(automation_root));
+    len = strlen(automation_root);
+    if (len > 0 && automation_root[len - 1] == '\\')
+    {
+        automation_root[len - 1] = '\0';
+        len--;
+    }
+
+    // Find the last backslash to strip the deepest directory component
+    // (i.e. "RBS") and keep the parent ("Infotainment_Automation\").
+    lastSep = -1;
+    for (i = 0; i < len; i++)
+    {
+        if (automation_root[i] == '\\')
+            lastSep = i;
+    }
+    if (lastSep >= 0)
+        automation_root[lastSep + 1] = '\0'; // retain trailing backslash
+
+    // Build the teraterm log path from automation_root.
+    // teraterm.txt is written by serial_logging.ps1 and contains the
+    // serial console output captured from the DUT during test execution.
+    snprintf(teraterm, elcount(teraterm), "%steraterm.txt", automation_root);
+}
+
+// Initialise paths at measurement start so every test module that includes
+// this file gets correct values before any testcase runs.
+on preStart
+{
+    vFctn_Config_ComputePaths();
+}
