@@ -1,6 +1,6 @@
 # Automotive ADAS + Infotainment Repository Layout
 
-This repository is consolidated for a consistent OEM flow across GM and Stellantis automotive software programs.
+This repository is consolidated for a consistent flow across multiple OEM automotive software programs.
 
 ## Consolidated hierarchy
 
@@ -9,8 +9,8 @@ Automotive_ADAS_Infortainment/
 ├── OEM/
 │   ├── OEM_A/
 │   │   └── Infotainment_Automation/          # Infotainment automation assets
-│   └── Stellantis/
-│       └── STLA_SWTest/                # Stellantis ADAS/CVADAS test assets
+│   └── OEM_B/
+│       └── ADAS_SWTest/                # ADAS/CVADAS test assets
 ├── Automation_Framework/        # Shared Python Trace32 automation framework
 ├── .github/workflows/                  # CI/CD workflows updated to OEM paths
 └── setup.py                            # Framework packaging entry
@@ -19,7 +19,7 @@ Automotive_ADAS_Infortainment/
 ## Program mapping
 
 - **OEM A (Infotainment / Radio):** `OEM/OEM_A/Infotainment_Automation`
-- **Stellantis (ADAS / CVADAS):** `OEM/Stellantis/STLA_SWTest`
+- **OEM B (ADAS / CVADAS):** `OEM/OEM_B/ADAS_SWTest`
 - **Shared automation framework:** `Automation_Framework`
 
 ## Notes

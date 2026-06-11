@@ -212,8 +212,8 @@ print(f"ADAS Events: {results['adas_events']}")
 
 The ADAS SIL system is designed as a standalone component but can optionally integrate with:
 
-- **GM VIP Automation Framework**: CAN message compatibility
-- **Stellantis STLA test assets**: Sensor models and scenarios
+- **Automation Framework**: CAN message compatibility
+- **OEM ADAS test assets**: Sensor models and scenarios
 - **Vector CANoe**: Database export/import capability
 
 ## Technology Stack

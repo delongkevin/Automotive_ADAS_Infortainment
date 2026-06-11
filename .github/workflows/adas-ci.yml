@@ -1,11 +1,11 @@
 # =============================================================================
-# STLA CVADAS ADAS SW Test – Continuous Integration (CI)
+# CVADAS ADAS SW Test – Continuous Integration (CI)
 # =============================================================================
 #
 # Project   : L2H4060 CVADAS BEV – ADAS Camera / Surround-View System
-# Folder    : OEM/Stellantis/STLA_SWTest/
+# Folder    : OEM/OEM_B/ADAS_SWTest/
 #
-# Triggered on every push and pull-request that touches OEM/Stellantis/STLA_SWTest/.
+# Triggered on every push and pull-request that touches OEM/OEM_B/ADAS_SWTest/.
 # Completely independent of the Infotainment Automation pipeline.
 #
 # What runs here (no ADAS bench hardware required):
@@ -20,10 +20,10 @@
 #
 # Bench-only stages (Flash ECU, BVT, SWQT Tests, CPU Load) require a
 # self-hosted Windows runner with CANoe and the ADAS ECU connected.
-# They are defined in the OEM/Stellantis/STLA_SWTest/Jenkinsfile and in stla-cd.yml.
+# They are defined in the OEM/OEM_B/ADAS_SWTest/Jenkinsfile and in adas-cd.yml.
 # =============================================================================
 
-name: STLA CI
+name: ADAS CI
 
 on:
   push:
@@ -33,15 +33,15 @@ on:
       - 'feature/**'
       - 'fix/**'
     paths:
-      - 'OEM/Stellantis/STLA_SWTest/**'
-      - '.github/workflows/stla-ci.yml'
+      - 'OEM/OEM_B/ADAS_SWTest/**'
+      - '.github/workflows/adas-ci.yml'
   pull_request:
     branches:
       - main
       - develop
     paths:
-      - 'OEM/Stellantis/STLA_SWTest/**'
-      - '.github/workflows/stla-ci.yml'
+      - 'OEM/OEM_B/ADAS_SWTest/**'
+      - '.github/workflows/adas-ci.yml'
 
 # Restrict default token permissions to read-only for the whole workflow.
 permissions:
@@ -66,25 +66,25 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Syntax-check all STLA Python scripts
+      - name: Syntax-check all ADAS Python scripts
         # py_compile catches syntax errors without importing hardware-specific
         # modules (pyserial, openpyxl, matplotlib) that aren't available on the
         # hosted runner.
         run: |
-          python -m py_compile OEM/Stellantis/STLA_SWTest/simulate_tests.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/config/Jenkins/arg_parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/config/Scripts/report_parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/Check_Port.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/Image_Comparison.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
-          echo "All STLA Python scripts passed syntax check."
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/simulate_tests.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/config/Jenkins/arg_parser.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/config/Scripts/report_parser.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/Check_Port.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/Image_Comparison.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
+          echo "All ADAS Python scripts passed syntax check."
 
   # ---------------------------------------------------------------------------
   # Job 2 – Test Simulation + Report
   # ---------------------------------------------------------------------------
   simulate:
-    name: Simulate STLA Test Cases
+    name: Simulate ADAS Test Cases
     runs-on: ubuntu-latest
     needs: validate-scripts
     permissions:
@@ -99,49 +99,49 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Run STLA test simulation
+      - name: Run ADAS test simulation
         run: |
-          python OEM/Stellantis/STLA_SWTest/simulate_tests.py \
-            --root    OEM/Stellantis/STLA_SWTest \
-            --out-dir "OEM/Stellantis/STLA_SWTest/Test Reports/simulation"
+          python OEM/OEM_B/ADAS_SWTest/simulate_tests.py \
+            --root    OEM/OEM_B/ADAS_SWTest \
+            --out-dir "OEM/OEM_B/ADAS_SWTest/Test Reports/simulation"
 
       - name: Publish JUnit test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stla-junit-results
-          path: OEM/Stellantis/STLA_SWTest/Test Reports/simulation/junit/*.xml
+          name: adas-junit-results
+          path: OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/junit/*.xml
           if-no-files-found: warn
 
       - name: Upload simulation HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stla-simulation-report
-          path: OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_report.html
+          name: adas-simulation-report
+          path: OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/simulation_report.html
           if-no-files-found: warn
 
       - name: Upload simulation summary
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stla-simulation-summary
-          path: OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_summary.txt
+          name: adas-simulation-summary
+          path: OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/simulation_summary.txt
           if-no-files-found: warn
 
       - name: Write job summary
         if: always()
         run: |
-          echo "## STLA CVADAS – CI Run" >> "$GITHUB_STEP_SUMMARY"
+          echo "## CVADAS – CI Run" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Stage | Result |" >> "$GITHUB_STEP_SUMMARY"
           echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
           echo "| Script Validation | ${{ needs.validate-scripts.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Test Simulation   | ${{ job.status }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          if [ -f "OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_summary.txt" ]; then
+          if [ -f "OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/simulation_summary.txt" ]; then
             echo "### Simulation Summary" >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
-            cat "OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_summary.txt" >> "$GITHUB_STEP_SUMMARY"
+            cat "OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/simulation_summary.txt" >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           fi

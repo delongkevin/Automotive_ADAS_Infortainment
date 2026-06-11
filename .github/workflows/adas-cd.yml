@@ -1,11 +1,11 @@
 # =============================================================================
-# STLA CVADAS ADAS SW Test – Continuous Delivery (CD)
+# CVADAS ADAS SW Test – Continuous Delivery (CD)
 # =============================================================================
 #
 # Project   : L2H4060 CVADAS BEV – ADAS Camera / Surround-View System
-# Folder    : OEM/Stellantis/STLA_SWTest/
+# Folder    : OEM/OEM_B/ADAS_SWTest/
 #
-# Triggered when a version tag (stla-v*) is pushed or a GitHub Release
+# Triggered when a version tag (adas-v*) is pushed or a GitHub Release
 # is published.  Completely independent of the Infotainment Automation pipeline.
 #
 # Pipeline overview
@@ -24,12 +24,12 @@
 #   BENCH_STAGING_DIR  – optional staging path on the bench PC
 # =============================================================================
 
-name: STLA CD
+name: ADAS CD
 
 on:
   push:
     tags:
-      - 'stla-v*'
+      - 'adas-v*'
   release:
     types: [published]
 
@@ -56,22 +56,22 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Syntax-check all STLA Python scripts
+      - name: Syntax-check all ADAS Python scripts
         run: |
-          python -m py_compile OEM/Stellantis/STLA_SWTest/simulate_tests.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/config/Jenkins/arg_parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/config/Scripts/report_parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Check_Port.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/Image_Comparison.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
-          echo "All STLA Python scripts passed syntax check."
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/simulate_tests.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/config/Jenkins/arg_parser.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/config/Scripts/report_parser.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/Check_Port.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/Image_Comparison.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
+          echo "All ADAS Python scripts passed syntax check."
 
   # ---------------------------------------------------------------------------
   # Job 2 – Test Simulation + HTML Report
   # ---------------------------------------------------------------------------
   simulate:
-    name: Simulate STLA Test Cases
+    name: Simulate ADAS Test Cases
     runs-on: ubuntu-latest
     needs: validate-scripts
     permissions:
@@ -86,20 +86,20 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Run STLA test simulation
+      - name: Run ADAS test simulation
         run: |
-          python OEM/Stellantis/STLA_SWTest/simulate_tests.py \
-            --root    OEM/Stellantis/STLA_SWTest \
-            --out-dir "OEM/Stellantis/STLA_SWTest/Test Reports/simulation"
+          python OEM/OEM_B/ADAS_SWTest/simulate_tests.py \
+            --root    OEM/OEM_B/ADAS_SWTest \
+            --out-dir "OEM/OEM_B/ADAS_SWTest/Test Reports/simulation"
 
       - name: Upload simulation artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: stla-simulation-artifacts
+          name: adas-simulation-artifacts
           path: |
-            OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_report.html
-            OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_summary.txt
-            OEM/Stellantis/STLA_SWTest/Test Reports/simulation/junit/*.xml
+            OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/simulation_report.html
+            OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/simulation_summary.txt
+            OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/junit/*.xml
           if-no-files-found: warn
 
   # ---------------------------------------------------------------------------
@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: simulate
     # Only attach assets when a tag was pushed (creates a Release).
-    if: startsWith(github.ref, 'refs/tags/stla-v')
+    if: startsWith(github.ref, 'refs/tags/adas-v')
     permissions:
       contents: write
 
@@ -118,7 +118,7 @@ jobs:
       - name: Download simulation artifacts
         uses: actions/download-artifact@v4.1.3
         with:
-          name: stla-simulation-artifacts
+          name: adas-simulation-artifacts
           path: release-assets
 
       - name: Attach assets to GitHub Release
@@ -143,7 +143,7 @@ jobs:
   #   name: Bench Hardware-in-Loop Test
   #   runs-on: [self-hosted, windows-bench]
   #   needs: simulate
-  #   environment: stla-bench
+  #   environment: adas-bench
   #
   #   steps:
   #     - name: Checkout repository
@@ -170,13 +170,13 @@ jobs:
   #     - name: Flash ECU – CANoe Flashing test unit
   #       run: |
   #         CANoe64.exe /Start /RunTestModules /Quit ^
-  #           "OEM/Stellantis/STLA_SWTest\BVTRBS\03_VariantDependent\Customer\CVADAS_RBS_TRSC\ME_L2H4060_DT_CVADAS_DSBus.cfg"
+  #           "OEM/OEM_B/ADAS_SWTest\BVTRBS\CVADAS_RBS_TRSC\ME_L2H4060_DT_CVADAS_DSBus.cfg"
   #
   #     - name: Upload bench report
   #       if: always()
   #       uses: actions/upload-artifact@v4
   #       with:
-  #         name: stla-bench-report
+  #         name: adas-bench-report
   #         path: |
-  #           OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/*.html
-  #           OEM/Stellantis/STLA_SWTest/BVTRBS/03_VariantDependent/Customer/CVADAS_RBS_TRSC/*.xml
+  #           OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/*.html
+  #           OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/*.xml

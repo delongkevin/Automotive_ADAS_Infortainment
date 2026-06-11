@@ -1,11 +1,11 @@
 # =============================================================================
-# STLA CVADAS ADAS SW Test – Continuous Testing (CT)
+# CVADAS ADAS SW Test – Continuous Testing (CT)
 # =============================================================================
 #
 # Project   : L2H4060 CVADAS BEV – ADAS Camera / Surround-View System
-# Folder    : OEM/Stellantis/STLA_SWTest/
+# Folder    : OEM/OEM_B/ADAS_SWTest/
 #
-# Runs the full STLA script validation and test simulation on a daily
+# Runs the full ADAS script validation and test simulation on a daily
 # schedule to catch regressions between feature commits.
 # Completely independent of the Infotainment Automation pipeline.
 #
@@ -17,16 +17,16 @@
 #
 # Jobs
 #   1. validate-scripts  – Python syntax gate
-#   2. simulate-all      – simulate every STLA test suite, generate HTML report
+#   2. simulate-all      – simulate every ADAS test suite, generate HTML report
 #   3. summary           – write a pass/fail table to the GitHub Actions summary
 #
 # Artifacts retained (30 days)
-#   stla-simulation-report-<date>   – consolidated HTML report
-#   stla-simulation-summary-<date>  – plain-text summary table
-#   stla-junit-results-<date>       – JUnit XML files
+#   adas-simulation-report-<date>   – consolidated HTML report
+#   adas-simulation-summary-<date>  – plain-text summary table
+#   adas-junit-results-<date>       – JUnit XML files
 # =============================================================================
 
-name: STLA CT – Continuous Testing
+name: ADAS CT – Continuous Testing
 
 on:
   schedule:
@@ -38,8 +38,8 @@ on:
       - main
       - develop
     paths:
-      - 'OEM/Stellantis/STLA_SWTest/**'
-      - '.github/workflows/stla-ct.yml'
+      - 'OEM/OEM_B/ADAS_SWTest/**'
+      - '.github/workflows/adas-ct.yml'
 
 # Restrict default token permissions to read-only for the whole workflow.
 permissions:
@@ -64,22 +64,22 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Syntax-check all STLA Python scripts
+      - name: Syntax-check all ADAS Python scripts
         run: |
-          python -m py_compile OEM/Stellantis/STLA_SWTest/simulate_tests.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/config/Jenkins/arg_parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/config/Scripts/report_parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/Check_Port.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/Image_Comparison.py
-          python -m py_compile OEM/Stellantis/STLA_SWTest/BVTRBS/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
-          echo "All STLA Python scripts passed syntax check."
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/simulate_tests.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/config/Jenkins/arg_parser.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/config/Scripts/report_parser.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/Check_Port.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/CPU_Load_Graph_Parser.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/Image_Comparison.py
+          python -m py_compile OEM/OEM_B/ADAS_SWTest/BVTRBS/CVADAS_RBS_TRSC/PowerSupply_Lauterbach.py
+          echo "All ADAS Python scripts passed syntax check."
 
   # ---------------------------------------------------------------------------
   # Job 2 – Full Test Simulation
   # ---------------------------------------------------------------------------
   simulate-all:
-    name: Simulate All STLA Test Suites
+    name: Simulate All ADAS Test Suites
     runs-on: ubuntu-latest
     needs: validate-scripts
     permissions:
@@ -94,11 +94,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Run full STLA test simulation
+      - name: Run full ADAS test simulation
         run: |
-          python OEM/Stellantis/STLA_SWTest/simulate_tests.py \
-            --root    OEM/Stellantis/STLA_SWTest \
-            --out-dir "OEM/Stellantis/STLA_SWTest/Test Reports/simulation"
+          python OEM/OEM_B/ADAS_SWTest/simulate_tests.py \
+            --root    OEM/OEM_B/ADAS_SWTest \
+            --out-dir "OEM/OEM_B/ADAS_SWTest/Test Reports/simulation"
 
       - name: Set date stamp for artifact names
         if: always()
@@ -108,8 +108,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stla-junit-results-${{ env.DATE }}
-          path: OEM/Stellantis/STLA_SWTest/Test Reports/simulation/junit/*.xml
+          name: adas-junit-results-${{ env.DATE }}
+          path: OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/junit/*.xml
           if-no-files-found: warn
           retention-days: 30
 
@@ -117,8 +117,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stla-simulation-report-${{ env.DATE }}
-          path: OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_report.html
+          name: adas-simulation-report-${{ env.DATE }}
+          path: OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/simulation_report.html
           if-no-files-found: warn
           retention-days: 30
 
@@ -126,8 +126,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stla-simulation-summary-${{ env.DATE }}
-          path: OEM/Stellantis/STLA_SWTest/Test Reports/simulation/simulation_summary.txt
+          name: adas-simulation-summary-${{ env.DATE }}
+          path: OEM/OEM_B/ADAS_SWTest/Test Reports/simulation/simulation_summary.txt
           if-no-files-found: warn
           retention-days: 30
 
@@ -152,14 +152,14 @@ jobs:
       - name: Download simulation summary
         uses: actions/download-artifact@v4.1.3
         with:
-          name: stla-simulation-summary-${{ env.DATE }}
+          name: adas-simulation-summary-${{ env.DATE }}
           path: summary-output
         continue-on-error: true
 
       - name: Write job summary
         if: always()
         run: |
-          echo "## STLA CVADAS ADAS SW Test – CT Run $(date -u '+%Y-%m-%d %H:%M UTC')" >> "$GITHUB_STEP_SUMMARY"
+          echo "## CVADAS ADAS SW Test – CT Run $(date -u '+%Y-%m-%d %H:%M UTC')" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Stage | Result |" >> "$GITHUB_STEP_SUMMARY"
           echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
@@ -179,5 +179,5 @@ jobs:
       - name: Fail job if simulation had errors
         if: needs.simulate-all.result == 'failure'
         run: |
-          echo "::error::STLA test simulation failed. Check the stla-simulation-report artifact."
+          echo "::error::ADAS test simulation failed. Check the adas-simulation-report artifact."
           exit 1

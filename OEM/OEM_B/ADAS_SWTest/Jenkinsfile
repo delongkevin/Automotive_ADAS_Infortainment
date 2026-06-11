@@ -1,5 +1,5 @@
 // =============================================================================
-// STLA CVADAS ADAS SW Test – Jenkins Declarative Pipeline
+// CVADAS ADAS SW Test – Jenkins Declarative Pipeline
 // =============================================================================
 //
 // Project   : L2H4060 CVADAS BEV (ADAS Camera / Surround-View System)
@@ -11,9 +11,9 @@
 // The project root directory is discovered at runtime by scanning for a
 // sentinel file (config\Packager\config_package.json).  The pipeline works
 // regardless of what the project folder is named on disk.
-//   - Everything INSIDE it is referenced as STLA_ROOT\<subpath>
-//     where STLA_ROOT is discovered at runtime in the Discover Paths stage.
-//   - STLA_REL is the relative path from the Jenkins workspace to STLA_ROOT
+//   - Everything INSIDE it is referenced as ADAS_ROOT\<subpath>
+//     where ADAS_ROOT is discovered at runtime in the Discover Paths stage.
+//   - ADAS_REL is the relative path from the Jenkins workspace to ADAS_ROOT
 //     (empty string when the workspace IS the project root, which is the
 //     most common case when the repo is checked out directly).
 //   - No drive letters or hardcoded folder names are written here.
@@ -70,11 +70,11 @@ pipeline {
 
     // -------------------------------------------------------------------------
     // Sub-paths inside the project root – no drive letters, no install paths.
-    // STLA_ROOT and STLA_REL are populated in Discover Paths.
+    // ADAS_ROOT and ADAS_REL are populated in Discover Paths.
     // -------------------------------------------------------------------------
     environment {
-        STLA_ROOT = ''   // absolute path – set dynamically in Discover Paths
-        STLA_REL  = ''   // relative path workspace→project; '' when same
+        ADAS_ROOT = ''   // absolute path – set dynamically in Discover Paths
+        ADAS_REL  = ''   // relative path workspace→project; '' when same
 
         // Sub-paths relative to the project root
         REL_CANOE_CFG    = 'BVTRBS\\CVADAS_RBS_TRSC\\ME_L2H4060_DT_CVADAS_DSBus.cfg'
@@ -265,15 +265,15 @@ pipeline {
                         // Check (b): scan immediate subdirectories for the sentinel.
                         // Workspace path is injected via withEnv – no escaping needed.
                         def findScript = '''
-$match = Get-ChildItem -Path $env:STLA_WORKSPACE -Directory -ErrorAction SilentlyContinue |
-    Where-Object { Test-Path (Join-Path $_.FullName $env:STLA_SENTINEL) } |
+$match = Get-ChildItem -Path $env:ADAS_WORKSPACE -Directory -ErrorAction SilentlyContinue |
+    Where-Object { Test-Path (Join-Path $_.FullName $env:ADAS_SENTINEL) } |
     Select-Object -First 1
 if ($match) { Write-Output $match.FullName }
 '''
                         def rawRoot = ''
                         try {
-                            withEnv(["STLA_WORKSPACE=${wsPath}",
-                                     "STLA_SENTINEL=${sentinel}"]) {
+                            withEnv(["ADAS_WORKSPACE=${wsPath}",
+                                     "ADAS_SENTINEL=${sentinel}"]) {
                                 rawRoot = powershell(returnStdout: true, script: findScript)
                             }
                         } catch (ignored) {
@@ -296,15 +296,15 @@ if ($match) { Write-Output $match.FullName }
                         }
                     }
 
-                    env.STLA_ROOT = projectRoot
-                    env.STLA_REL  = projectRel
-                    echo "STLA_ROOT        : ${env.STLA_ROOT}"
-                    echo "STLA_REL         : ${env.STLA_REL ?: '(workspace root)'}"
+                    env.ADAS_ROOT = projectRoot
+                    env.ADAS_REL  = projectRel
+                    echo "ADAS_ROOT        : ${env.ADAS_ROOT}"
+                    echo "ADAS_REL         : ${env.ADAS_REL ?: '(workspace root)'}"
 
                     // Derive full paths
-                    env.CANOE_CFG_FULL  = "${env.STLA_ROOT}\\${env.REL_CANOE_CFG}"
-                    env.REPORT_DIR_FULL = "${env.STLA_ROOT}\\${env.REL_REPORT_DIR}"
-                    env.SIM_OUT_FULL    = "${env.STLA_ROOT}\\${env.REL_SIM_OUT}"
+                    env.CANOE_CFG_FULL  = "${env.ADAS_ROOT}\\${env.REL_CANOE_CFG}"
+                    env.REPORT_DIR_FULL = "${env.ADAS_ROOT}\\${env.REL_REPORT_DIR}"
+                    env.SIM_OUT_FULL    = "${env.ADAS_ROOT}\\${env.REL_SIM_OUT}"
                     echo "CANoe cfg        : ${env.CANOE_CFG_FULL}"
                     echo "Report dir       : ${env.REPORT_DIR_FULL}"
 
@@ -347,9 +347,9 @@ if ($match) { Write-Output $match.FullName }
                     }
 
                     echo "======================================================"
-                    echo "  STLA Discovery Summary"
-                    echo "  STLA_ROOT        : ${env.STLA_ROOT}"
-                    echo "  STLA_REL         : ${env.STLA_REL ?: '(workspace root)'}"
+                    echo "  ADAS Discovery Summary"
+                    echo "  ADAS_ROOT        : ${env.ADAS_ROOT}"
+                    echo "  ADAS_REL         : ${env.ADAS_REL ?: '(workspace root)'}"
                     echo "  CANoe64.exe      : ${env.CANOE_EXE      ?: '(not in PATH)'}"
                     echo "  t32rem.exe       : ${env.T32_EXE        ?: '(not in PATH)'}"
                     echo "  OdxPdxFlasher   : ${env.FLASH_EXE       ?: '(not in PATH)'}"
@@ -370,7 +370,7 @@ if ($match) { Write-Output $match.FullName }
         //   2. Writes per-suite JUnit XMLs to Test Reports\simulation\junit\.
         //   3. Writes an HTML summary to Test Reports\simulation\.
         //
-        // This gives stakeholders a pre-flight report of all STLA test cases
+        // This gives stakeholders a pre-flight report of all ADAS test cases
         // before any bench time is consumed.
         // ---------------------------------------------------------------------
             when { expression { params.SIMULATE == true } }
@@ -378,8 +378,8 @@ if ($match) { Write-Output $match.FullName }
                 script {
                     def rc = bat(
                         script: """
-                            python "%STLA_ROOT%\\%REL_SIMULATE%" ^
-                                   --root    "%STLA_ROOT%" ^
+                            python "%ADAS_ROOT%\\%REL_SIMULATE%" ^
+                                   --root    "%ADAS_ROOT%" ^
                                    --out-dir "%SIM_OUT_FULL%"
                         """,
                         returnStatus: true
@@ -408,8 +408,8 @@ if ($match) { Write-Output $match.FullName }
                         keepAll:               true,
                         reportDir:             env.SIM_OUT_FULL,
                         reportFiles:           'simulation_report.html',
-                        reportName:            'STLA Simulation Report',
-                        reportTitles:          'STLA CVADAS Simulated Test Results'
+                        reportName:            'ADAS Simulation Report',
+                        reportTitles:          'CVADAS Simulated Test Results'
                     ])
                 }
             }
@@ -654,7 +654,7 @@ except Exception as e:
                     }
                 }
                 // Parse CPU load log and generate graphs + HTML report
-                bat "python \"%STLA_ROOT%\\%REL_CPU_PARSER%\""
+                bat "python \"%ADAS_ROOT%\\%REL_CPU_PARSER%\""
             }
         }
 
@@ -675,7 +675,7 @@ except Exception as e:
                     xcopy /E /I /Y "%CT_PYTHON_SRC%" "%REPORT_DIR_FULL%" || exit 0
                 """
                 bat """
-                    python "%STLA_ROOT%\\%REL_ARG_PARSER%"
+                    python "%ADAS_ROOT%\\%REL_ARG_PARSER%"
                 """
             }
             post {
@@ -686,7 +686,7 @@ except Exception as e:
                         keepAll:               true,
                         reportDir:             env.REPORT_DIR_FULL,
                         reportFiles:           'index.html',
-                        reportName:            'STLA CVADAS SWQT Report',
+                        reportName:            'CVADAS SWQT Report',
                         reportTitles:          'L2H4060 CVADAS SWQT Results'
                     ])
                     archiveArtifacts(
@@ -707,7 +707,7 @@ except Exception as e:
                         healthScaleFactor: 1.0
                     )
                     script {
-                        def rp = env.STLA_REL ? "${env.STLA_REL}/" : ''
+                        def rp = env.ADAS_REL ? "${env.ADAS_REL}/" : ''
                         qualityGate.executerecordCANoeTestResult(
                             CanoeTestReportName:  'Report_*',
                             CanoeTestReportsPath: "${rp}BVTRBS/CVADAS_RBS_TRSC"
@@ -727,7 +727,7 @@ except Exception as e:
                 if (params.Mail_To?.trim()) {
                     emailext(
                         mimeType:           'text/html',
-                        body:               _emailBody(currentBuild.currentResult, env.STLA_REL ?: ''),
+                        body:               _emailBody(currentBuild.currentResult, env.ADAS_REL ?: ''),
                         subject:            "${JOB_NAME} : ${params.ReleaseBuild} : ${BUILD_NUMBER} – SUCCESS",
                         to:                 params.Mail_To,
                         attachmentsPattern: '**/Software_Test_Report.html'
@@ -744,7 +744,7 @@ except Exception as e:
                 if (params.Mail_To?.trim()) {
                     emailext(
                         mimeType:           'text/html',
-                        body:               _emailBody(currentBuild.currentResult, env.STLA_REL ?: ''),
+                        body:               _emailBody(currentBuild.currentResult, env.ADAS_REL ?: ''),
                         subject:            "${JOB_NAME} : ${params.ReleaseBuild} : ${BUILD_NUMBER} – FAILED",
                         to:                 params.Mail_To,
                         attachmentsPattern: '**/Software_Test_Report.html'
@@ -760,7 +760,7 @@ except Exception as e:
 
 // =============================================================================
 // Helper – HTML e-mail body
-// relPath: value of STLA_REL ('' when project root == workspace root)
+// relPath: value of ADAS_REL ('' when project root == workspace root)
 // =============================================================================
 def _emailBody(String status, String relPath = '') {
     def color = (status == 'SUCCESS') ? 'green' : 'red'
