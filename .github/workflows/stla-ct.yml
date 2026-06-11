@@ -7,12 +7,12 @@
 #
 # Runs the full STLA script validation and test simulation on a daily
 # schedule to catch regressions between feature commits.
-# Completely independent of the GM VIP Automation pipeline.
+# Completely independent of the Infotainment Automation pipeline.
 #
 # Triggers
 # --------
 #   • Scheduled  – every day at 03:00 UTC
-#                  (offset from GM VIP CT at 02:00 to avoid runner contention)
+#                  (offset from Infotainment CT at 02:00 to avoid runner contention)
 #   • Manual     – workflow_dispatch for ad-hoc simulation runs
 #
 # Jobs
@@ -30,7 +30,7 @@ name: STLA CT – Continuous Testing
 
 on:
   schedule:
-    # Every day at 03:00 UTC (offset from GM VIP CT at 02:00)
+    # Every day at 03:00 UTC (offset from Infotainment CT at 02:00)
     - cron: '0 3 * * *'
   workflow_dispatch:
   push:

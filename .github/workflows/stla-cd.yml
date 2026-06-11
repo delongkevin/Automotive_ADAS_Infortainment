@@ -6,7 +6,7 @@
 # Folder    : OEM/Stellantis/STLA_SWTest/
 #
 # Triggered when a version tag (stla-v*) is pushed or a GitHub Release
-# is published.  Completely independent of the GM VIP Automation pipeline.
+# is published.  Completely independent of the Infotainment Automation pipeline.
 #
 # Pipeline overview
 # -----------------

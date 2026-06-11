@@ -6,7 +6,7 @@
 # Folder    : OEM/Stellantis/STLA_SWTest/
 #
 # Triggered on every push and pull-request that touches OEM/Stellantis/STLA_SWTest/.
-# Completely independent of the GM VIP Automation pipeline.
+# Completely independent of the Infotainment Automation pipeline.
 #
 # What runs here (no ADAS bench hardware required):
 #   1. Validate Scripts  – syntax-check the standalone Python utilities

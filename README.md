@@ -7,8 +7,8 @@ This repository is consolidated for a consistent OEM flow across GM and Stellant
 ```text
 Automotive_ADAS_Infortainment/
 ├── OEM/
-│   ├── GM/
-│   │   └── GM_VIP_Automation/          # GM center-stack radio automation assets
+│   ├── OEM_A/
+│   │   └── Infotainment_Automation/          # Infotainment automation assets
 │   └── Stellantis/
 │       └── STLA_SWTest/                # Stellantis ADAS/CVADAS test assets
 ├── Automation_Framework/        # Shared Python Trace32 automation framework
@@ -18,7 +18,7 @@ Automotive_ADAS_Infortainment/
 
 ## Program mapping
 
-- **GM (Infotainment / Radio):** `OEM/GM/GM_VIP_Automation`
+- **OEM A (Infotainment / Radio):** `OEM/OEM_A/Infotainment_Automation`
 - **Stellantis (ADAS / CVADAS):** `OEM/Stellantis/STLA_SWTest`
 - **Shared automation framework:** `Automation_Framework`
 
