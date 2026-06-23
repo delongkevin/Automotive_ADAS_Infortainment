@@ -1,9 +1,0 @@
-Vector Parameter	1.0
-
-ScalarSingleRecord
-
-Name	Type	Info	Value
-iterations	Auto		5
-path	Auto		.//
-waitTime	Auto		90000
-

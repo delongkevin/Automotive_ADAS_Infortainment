@@ -1,0 +1,48 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+    paths:
+      - 'backend/**'
+      - 'ADAS_SIL_System/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'ADAS_SIL_System/**'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install -r ADAS_SIL_System/requirements.txt
+
+      - name: Run ADAS SIL unit tests
+        run: |
+          python -m pytest ADAS_SIL_System/tests/test_basic.py -v --tb=short
+
+      - name: Run API tests
+        run: |
+          python -m pytest backend/tests/ -v --tb=short
+
+      - name: Lint backend code
+        run: |
+          pip install flake8
+          python -m flake8 backend/ --count --select=E9,F821,F822,F823 --show-source
