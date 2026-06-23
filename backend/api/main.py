@@ -73,19 +73,26 @@ class TestCaseResult(BaseModel):
 _simulators: dict[str, ADASSILSimulator] = {}
 
 
+_SCENARIOS_DIR = (_PROJECT_ROOT / "ADAS_SIL_System" / "scenarios").resolve()
+
+
+def _get_available_scenarios() -> dict[str, Path]:
+    """Build allow-list of scenario names to their resolved paths."""
+    scenarios: dict[str, Path] = {}
+    if _SCENARIOS_DIR.is_dir():
+        for f in _SCENARIOS_DIR.iterdir():
+            if f.suffix == ".json" and f.is_file():
+                scenarios[f.stem] = f.resolve()
+    return scenarios
+
+
 def _get_scenario_path(scenario_name: str) -> Path:
-    # Sanitize input to prevent path traversal
-    safe_name = Path(scenario_name).name
-    if safe_name != scenario_name or ".." in scenario_name or "/" in scenario_name:
-        raise HTTPException(400, "Invalid scenario name")
-    scenarios_dir = _PROJECT_ROOT / "ADAS_SIL_System" / "scenarios"
-    path = scenarios_dir / f"{safe_name}.json"
-    resolved = path.resolve()
-    if not resolved.is_relative_to(scenarios_dir.resolve()):
-        raise HTTPException(400, "Invalid scenario name")
-    if not resolved.exists():
-        raise HTTPException(404, f"Scenario '{safe_name}' not found")
-    return resolved
+    """Look up scenario by name using allow-list (prevents path injection)."""
+    available = _get_available_scenarios()
+    scenario_path = available.get(scenario_name)
+    if scenario_path is None:
+        raise HTTPException(404, f"Scenario '{scenario_name}' not found")
+    return scenario_path
 
 
 # ---------------------------------------------------------------------------
@@ -104,12 +111,12 @@ async def root():
 @app.get("/scenarios")
 async def list_scenarios():
     """List available simulation scenarios."""
-    scenarios_dir = _PROJECT_ROOT / "ADAS_SIL_System" / "scenarios"
+    available = _get_available_scenarios()
     scenarios = []
-    for f in sorted(scenarios_dir.glob("*.json")):
+    for name in sorted(available.keys()):
         scenarios.append({
-            "name": f.stem,
-            "filename": f.name,
+            "name": name,
+            "filename": f"{name}.json",
         })
     return {"scenarios": scenarios}
 
