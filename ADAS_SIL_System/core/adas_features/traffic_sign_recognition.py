@@ -3,8 +3,6 @@ Traffic Sign Recognition (TSR) System
 
 Recognizes and processes traffic signs to inform driver assistance systems.
 Supports speed limits, stop signs, warning signs, and informational signs.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 from enum import Enum

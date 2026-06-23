@@ -3,8 +3,6 @@ Automatic Emergency Braking (AEB) System
 
 Detects imminent collision and automatically applies brakes
 to prevent or mitigate impact.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

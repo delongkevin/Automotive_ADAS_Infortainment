@@ -2,8 +2,6 @@
 Main Application Entry Point
 
 Command-line interface for running ADAS SIL simulations.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import argparse

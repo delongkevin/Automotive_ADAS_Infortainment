@@ -2,8 +2,6 @@
 ADAS Features Package Initialization
 
 Exports all ADAS feature implementations.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 from .ldw import LaneDepartureWarning

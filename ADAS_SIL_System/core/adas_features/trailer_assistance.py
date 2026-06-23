@@ -3,8 +3,6 @@ Trailer Assistance System
 
 Provides active steering guidance for trailers and reverse guidance.
 Assists with trailer angle alignment and reverse maneuvering.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

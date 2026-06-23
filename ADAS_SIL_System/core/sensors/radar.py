@@ -3,8 +3,6 @@ Radar Sensor Simulator
 
 Simulates automotive radar sensor (typically 77 GHz or 24 GHz).
 Detects range, velocity, and angle of objects.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

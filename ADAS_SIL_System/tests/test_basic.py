@@ -2,8 +2,6 @@
 ADAS SIL System - Unit Tests
 
 Basic unit tests for core components.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import pytest

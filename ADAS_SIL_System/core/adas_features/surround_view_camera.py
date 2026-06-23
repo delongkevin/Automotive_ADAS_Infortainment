@@ -3,8 +3,6 @@ Surround View Camera System
 
 Multi-camera system providing 360-degree surround views with selectable perspectives.
 Supports automated view switching based on vehicle state.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

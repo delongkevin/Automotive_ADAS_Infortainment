@@ -3,8 +3,6 @@ Autonomous Parking System
 
 Provides autonomous parallel and perpendicular parking assistance.
 Detects parking spaces and automatically steers vehicle into space.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

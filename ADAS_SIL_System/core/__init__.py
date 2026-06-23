@@ -2,8 +2,6 @@
 Core Package Initialization
 
 Exports core simulation components.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 from .vehicle_dynamics import VehicleDynamics

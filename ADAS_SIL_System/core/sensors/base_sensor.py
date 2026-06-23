@@ -2,8 +2,6 @@
 Base Sensor Class
 
 Defines the abstract base class for all sensor types in the ADAS SIL system.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 from abc import ABC, abstractmethod
