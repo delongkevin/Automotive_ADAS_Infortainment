@@ -1,0 +1,58 @@
+name: Mobile App Build (APK)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mobile-app/**'
+      - '.github/workflows/mobile-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'mobile-app/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Expo
+        working-directory: mobile-app
+        run: |
+          npm install
+          npx expo install expo-dev-client
+
+      - name: Setup EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Build APK (EAS local)
+        working-directory: mobile-app
+        run: |
+          npx expo export --platform android
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Upload APK artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adas-infotainment-apk
+          path: mobile-app/android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: warn
