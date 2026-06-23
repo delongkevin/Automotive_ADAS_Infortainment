@@ -74,11 +74,18 @@ _simulators: dict[str, ADASSILSimulator] = {}
 
 
 def _get_scenario_path(scenario_name: str) -> Path:
+    # Sanitize input to prevent path traversal
+    safe_name = Path(scenario_name).name
+    if safe_name != scenario_name or ".." in scenario_name or "/" in scenario_name:
+        raise HTTPException(400, "Invalid scenario name")
     scenarios_dir = _PROJECT_ROOT / "ADAS_SIL_System" / "scenarios"
-    path = scenarios_dir / f"{scenario_name}.json"
-    if not path.exists():
-        raise HTTPException(404, f"Scenario '{scenario_name}' not found")
-    return path
+    path = scenarios_dir / f"{safe_name}.json"
+    resolved = path.resolve()
+    if not resolved.is_relative_to(scenarios_dir.resolve()):
+        raise HTTPException(400, "Invalid scenario name")
+    if not resolved.exists():
+        raise HTTPException(404, f"Scenario '{safe_name}' not found")
+    return resolved
 
 
 # ---------------------------------------------------------------------------
