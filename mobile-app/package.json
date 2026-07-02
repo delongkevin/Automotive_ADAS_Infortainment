@@ -5,6 +5,7 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
+    "ios": "expo run:ios",
     "build:apk": "eas build --platform android --profile preview",
     "build:apk-local": "expo run:android --variant release"
   },
