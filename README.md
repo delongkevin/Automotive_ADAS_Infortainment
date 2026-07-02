@@ -2,6 +2,31 @@
 
 A feature-complete vehicle simulation platform with deployable **Android (.apk)** and **Web** applications that visualize test case execution for Radio Display and ADAS Camera ECU systems.
 
+## Live Demo
+
+**Web App (GitHub Pages):** https://delongkevin.github.io/Automotive_ADAS_Infortainment/
+
+## Getting Started with Codespaces
+
+The fastest way to run all components is via GitHub Codespaces — everything is pre-configured.
+
+1. Click **Code > Codespaces > Create codespace on main** on the repository page
+2. Wait for the container to build (installs Python, Node.js 20, and Java 17 automatically)
+3. All dependencies are installed via `postCreateCommand` — no manual setup needed
+
+Once the Codespace is ready:
+
+```bash
+# Start the backend API
+uvicorn backend.api.main:app --reload --port 8000 &
+
+# Start the web app (opens in browser automatically on port 5173)
+cd web-app && npm run dev
+
+# Or start the mobile app (Expo)
+cd mobile-app && npx expo start
+```
+
 ## Architecture
 
 ```
@@ -24,6 +49,7 @@ A feature-complete vehicle simulation platform with deployable **Android (.apk)*
 
 ### Web App (GitHub Pages)
 The React web app deploys automatically to GitHub Pages on push to `main`.
+URL: https://delongkevin.github.io/Automotive_ADAS_Infortainment/
 
 ### Android App (.apk)
 The mobile app builds an APK via Expo EAS on push to `main`.

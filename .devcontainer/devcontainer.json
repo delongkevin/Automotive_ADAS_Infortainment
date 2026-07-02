@@ -1,0 +1,37 @@
+{
+  "name": "ADAS Infotainment Development",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17",
+      "installGradle": true
+    }
+  },
+  "postCreateCommand": "pip install -r backend/requirements.txt -r ADAS_SIL_System/requirements.txt && cd web-app && npm ci && cd ../mobile-app && npm ci",
+  "forwardPorts": [3000, 5173, 8000, 8081, 19000],
+  "portsAttributes": {
+    "5173": { "label": "Web App (Vite)", "onAutoForward": "openBrowser" },
+    "8000": { "label": "Backend API (FastAPI)" },
+    "8081": { "label": "Metro Bundler (React Native)" },
+    "19000": { "label": "Expo DevTools" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    }
+  }
+}
