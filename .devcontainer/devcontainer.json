@@ -13,7 +13,7 @@
       "installGradle": true
     }
   },
-  "postCreateCommand": "pip install -r backend/requirements.txt -r ADAS_SIL_System/requirements.txt && cd web-app && npm ci && cd ../mobile-app && npm install",
+  "postCreateCommand": "pip install -r backend/requirements.txt -r ADAS_SIL_System/requirements.txt && cd web-app && npm ci && cd ../mobile-app && npm ci",
   "forwardPorts": [3000, 5173, 8000, 8081, 19000],
   "portsAttributes": {
     "5173": { "label": "Web App (Vite)", "onAutoForward": "openBrowser" },
