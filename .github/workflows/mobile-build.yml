@@ -50,8 +50,7 @@ jobs:
         working-directory: mobile-app
         run: |
           npm ci
-          npx expo install expo-dev-client
-          npx expo prebuild --platform android --non-interactive
+          CI=1 npx expo prebuild --platform android
 
       - name: Setup EAS CLI
         if: env.BUILD_MODE == 'cloud'
