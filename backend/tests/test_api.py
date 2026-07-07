@@ -22,6 +22,7 @@ class TestRootEndpoint:
         data = response.json()
         assert data["service"] == "ADAS Vehicle Simulation API"
         assert data["version"] == "1.0.0"
+        assert "/test-cases/criteria" in data["endpoints"]
 
 
 class TestScenariosEndpoint:
@@ -63,12 +64,13 @@ class TestTestCasesEndpoint:
         assert response.status_code == 200
         data = response.json()
         assert "test_cases" in data
-        assert len(data["test_cases"]) == 10
+        assert len(data["test_cases"]) >= 14
         for tc in data["test_cases"]:
             assert "id" in tc
             assert "name" in tc
             assert "scenario" in tc
             assert "ecu" in tc
+            assert "default_duration" in tc
 
     def test_run_test_case(self):
         response = client.post("/test-cases/run", json={
@@ -84,6 +86,32 @@ class TestTestCasesEndpoint:
         assert "vehicle_trace" in data
         assert "camera_frames" in data
         assert "radio_display_state" in data
+        assert "validation" in data
+        assert "checks" in data["validation"]
+
+    def test_run_test_case_with_mismatched_scenario_returns_400(self):
+        response = client.post("/test-cases/run", json={
+            "test_id": "TC_AEB_Emergency",
+            "scenario": "highway_cruise",
+            "duration": 1.0,
+            "adas_features": ["aeb", "acc"],
+        })
+        assert response.status_code == 400
+
+    def test_list_test_case_criteria(self):
+        response = client.get("/test-cases/criteria")
+        assert response.status_code == 200
+        data = response.json()
+        assert "test_cases" in data
+        assert len(data["test_cases"]) >= 14
+        assert "criteria" in data["test_cases"][0]
+
+    def test_get_single_test_case_criteria(self):
+        response = client.get("/test-cases/criteria", params={"test_id": "TC_AEB_Emergency"})
+        assert response.status_code == 200
+        data = response.json()
+        assert data["test_case"]["id"] == "TC_AEB_Emergency"
+        assert "criteria" in data["test_case"]
 
 
 class TestEcuEndpoints:

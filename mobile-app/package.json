@@ -7,7 +7,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "build:apk": "eas build --platform android --profile preview",
-    "build:apk-local": "expo run:android --variant release"
+    "build:apk-cloud": "eas build --platform android --profile preview",
+    "build:apk-local": "expo prebuild --platform android --non-interactive && cd android && ./gradlew assembleRelease"
   },
   "dependencies": {
     "expo": "~50.0.0",

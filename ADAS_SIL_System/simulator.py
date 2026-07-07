@@ -134,9 +134,17 @@ class ADASSILSimulator:
             self.adas_features['parking'] = AutonomousParking(adas_config.get('parking', {}))
 
         # Trailer Assistance
-        if adas_config.get('trailer', {}).get('enabled', False):
-            self.adas_features['trailer_assistance'] = TrailerAssistance(adas_config.get('trailer', {}))
-            self.adas_features['trailer_reverse'] = TrailerReverseGuidance(adas_config.get('trailer', {}))
+        trailer_cfg = adas_config.get('trailer', {})
+        trailer_assist_cfg = adas_config.get('trailer_assistance', trailer_cfg)
+        trailer_reverse_cfg = adas_config.get('trailer_reverse', trailer_cfg)
+        trailer_enabled = (
+            trailer_cfg.get('enabled', False)
+            or trailer_assist_cfg.get('enabled', False)
+            or trailer_reverse_cfg.get('enabled', False)
+        )
+        if trailer_enabled:
+            self.adas_features['trailer_assistance'] = TrailerAssistance(trailer_assist_cfg)
+            self.adas_features['trailer_reverse'] = TrailerReverseGuidance(trailer_reverse_cfg)
 
         # Surround View Camera
         if adas_config.get('surround_view', {}).get('enabled', False):

@@ -1,24 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { getApiBaseUrl } from '../config/api';
 
-const API_BASE = 'http://10.0.2.2:8000';
-
-const TEST_CASES = [
-  { id: 'TC_AEB_Emergency', name: 'Automatic Emergency Braking', ecu: 'ADAS Camera', scenario: 'emergency_braking' },
-  { id: 'TC_ACC_Highway', name: 'Adaptive Cruise Control', ecu: 'ADAS Camera', scenario: 'highway_cruise' },
-  { id: 'TC_LDW_Departure', name: 'Lane Departure Warning', ecu: 'ADAS Camera', scenario: 'highway_cruise' },
-  { id: 'TC_BSD_LaneChange', name: 'Blind Spot Detection', ecu: 'ADAS Camera', scenario: 'blind_spot_detection' },
-  { id: 'TC_TSR_City', name: 'Traffic Sign Recognition - City', ecu: 'Radio Display', scenario: 'city_driving_tsr' },
-  { id: 'TC_TSR_Highway', name: 'Traffic Sign Recognition - Highway', ecu: 'Radio Display', scenario: 'highway_driving_tsr' },
-  { id: 'TC_SVC_Parking', name: 'Surround View Camera', ecu: 'Radio Display', scenario: 'surround_view_camera' },
-  { id: 'TC_Parking_Parallel', name: 'Parking - Parallel', ecu: 'Radio Display', scenario: 'autonomous_parking_parallel' },
-  { id: 'TC_Parking_Perpendicular', name: 'Parking - Perpendicular', ecu: 'Radio Display', scenario: 'autonomous_parking_perpendicular' },
-  { id: 'TC_Trailer_Assist', name: 'Trailer Assistance', ecu: 'Radio Display', scenario: 'trailer_assistance' },
-];
+const API_BASE = getApiBaseUrl();
 
 export default function TestCasesScreen() {
+  const [testCases, setTestCases] = useState([]);
   const [results, setResults] = useState({});
   const [running, setRunning] = useState(null);
+  const [listError, setListError] = useState(null);
+
+  useEffect(() => {
+    const loadCases = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/test-cases`);
+        if (!res.ok) {
+          throw new Error(`Catalog request failed (${res.status})`);
+        }
+        const data = await res.json();
+        setTestCases(data.test_cases || []);
+      } catch (error) {
+        setListError(error.message || 'Failed to load test catalog');
+      }
+    };
+
+    loadCases();
+  }, []);
 
   const runTest = async (tc) => {
     setRunning(tc.id);
@@ -29,26 +36,31 @@ export default function TestCasesScreen() {
         body: JSON.stringify({
           test_id: tc.id,
           scenario: tc.scenario,
-          duration: 3.0,
-          adas_features: ['ldw', 'acc', 'aeb', 'bsd', 'tsr'],
+          duration: tc.default_duration || 8.0,
+          adas_features: tc.adas_features || ['ldw', 'acc', 'aeb'],
         }),
       });
+      if (!res.ok) {
+        throw new Error(`Test request failed (${res.status})`);
+      }
       const data = await res.json();
       setResults((prev) => ({ ...prev, [tc.id]: data }));
-    } catch {
-      setResults((prev) => ({ ...prev, [tc.id]: { status: 'ERROR' } }));
+    } catch (error) {
+      setResults((prev) => ({ ...prev, [tc.id]: { status: 'ERROR', error: error.message } }));
     }
     setRunning(null);
   };
 
   const runAll = async () => {
-    for (const tc of TEST_CASES) {
+    for (const tc of testCases) {
       await runTest(tc);
     }
   };
 
   const passCount = Object.values(results).filter((r) => r.status === 'PASS').length;
   const totalRun = Object.keys(results).length;
+  const lastResult = Object.values(results).slice(-1)[0];
+  const lastChecks = lastResult?.validation?.checks || [];
 
   return (
     <ScrollView style={styles.container}>
@@ -69,7 +81,13 @@ export default function TestCasesScreen() {
         </View>
       )}
 
-      {TEST_CASES.map((tc) => (
+      {listError && (
+        <View style={styles.summaryCard}>
+          <Text style={{ color: '#ff8a80', fontSize: 12 }}>{listError}</Text>
+        </View>
+      )}
+
+      {testCases.map((tc) => (
         <View key={tc.id} style={styles.testItem}>
           <View style={{ flex: 1 }}>
             <Text style={styles.testName}>{tc.name}</Text>
@@ -93,6 +111,22 @@ export default function TestCasesScreen() {
           </View>
         </View>
       ))}
+
+      {lastChecks.length > 0 && (
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>Latest Validation Checks</Text>
+          {lastChecks.map((check) => (
+            <View key={check.name} style={{ marginTop: 6 }}>
+              <Text style={{ color: check.passed ? '#00e676' : '#ff5252', fontSize: 11, fontWeight: '700' }}>
+                {check.passed ? 'PASS' : 'FAIL'} {check.name}
+              </Text>
+              <Text style={{ color: '#7a8fa0', fontSize: 10 }}>
+                expected {check.expected} | actual {check.actual}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
     </ScrollView>
   );
 }

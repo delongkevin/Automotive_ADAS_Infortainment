@@ -1,48 +1,63 @@
 import React, { useState } from 'react';
-
-const TEST_CASES = [
-  { id: 'TC_AEB_Emergency', name: 'Automatic Emergency Braking', ecu: 'ADAS Camera', scenario: 'emergency_braking' },
-  { id: 'TC_ACC_Highway', name: 'Adaptive Cruise Control - Highway', ecu: 'ADAS Camera', scenario: 'highway_cruise' },
-  { id: 'TC_LDW_Departure', name: 'Lane Departure Warning', ecu: 'ADAS Camera', scenario: 'highway_cruise' },
-  { id: 'TC_BSD_LaneChange', name: 'Blind Spot Detection', ecu: 'ADAS Camera', scenario: 'blind_spot_detection' },
-  { id: 'TC_TSR_City', name: 'Traffic Sign Recognition - City', ecu: 'Radio Display', scenario: 'city_driving_tsr' },
-  { id: 'TC_TSR_Highway', name: 'Traffic Sign Recognition - Highway', ecu: 'Radio Display', scenario: 'highway_driving_tsr' },
-  { id: 'TC_SVC_Parking', name: 'Surround View Camera - Parking', ecu: 'Radio Display', scenario: 'surround_view_camera' },
-  { id: 'TC_Parking_Parallel', name: 'Autonomous Parking - Parallel', ecu: 'Radio Display', scenario: 'autonomous_parking_parallel' },
-  { id: 'TC_Parking_Perpendicular', name: 'Autonomous Parking - Perpendicular', ecu: 'Radio Display', scenario: 'autonomous_parking_perpendicular' },
-  { id: 'TC_Trailer_Assist', name: 'Trailer Assistance', ecu: 'Radio Display', scenario: 'trailer_assistance' },
-];
+import { useEffect } from 'react';
+import { apiRequest } from '../lib/api';
 
 export default function TestCases() {
+  const [testCases, setTestCases] = useState([]);
   const [results, setResults] = useState({});
   const [running, setRunning] = useState(null);
+  const [loadingCases, setLoadingCases] = useState(false);
+  const [listError, setListError] = useState(null);
+
+  useEffect(() => {
+    const loadCases = async () => {
+      setLoadingCases(true);
+      setListError(null);
+      try {
+        const data = await apiRequest('/test-cases');
+        setTestCases(data.test_cases || []);
+      } catch (error) {
+        setListError(error.message);
+      } finally {
+        setLoadingCases(false);
+      }
+    };
+
+    loadCases();
+  }, []);
 
   const runTest = async (tc) => {
     setRunning(tc.id);
     try {
-      const res = await fetch('/api/test-cases/run', {
+      const data = await apiRequest('/test-cases/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           test_id: tc.id,
           scenario: tc.scenario,
-          duration: 5.0,
-          adas_features: ['ldw', 'acc', 'aeb', 'bsd', 'tsr'],
+          duration: tc.default_duration || 8.0,
+          adas_features: tc.adas_features || ['ldw', 'acc', 'aeb'],
         }),
       });
-      const data = await res.json();
       setResults((prev) => ({ ...prev, [tc.id]: data }));
-    } catch {
-      setResults((prev) => ({ ...prev, [tc.id]: { status: 'ERROR' } }));
+    } catch (error) {
+      setResults((prev) => ({
+        ...prev,
+        [tc.id]: { status: 'ERROR', error: error.message },
+      }));
     }
     setRunning(null);
   };
 
   const runAll = async () => {
-    for (const tc of TEST_CASES) {
+    for (const tc of testCases) {
       await runTest(tc);
     }
   };
+
+  const lastResult = Object.values(results).slice(-1)[0];
+  const lastChecks = lastResult?.validation?.checks || [];
+  const passedChecks = lastChecks.filter((check) => check.passed).length;
 
   return (
     <div>
@@ -58,9 +73,12 @@ export default function TestCases() {
         </button>
       </div>
 
+      {loadingCases && <p className="page-subtitle">Loading test catalog...</p>}
+      {listError && <p className="page-subtitle" style={{ color: '#ff8a80' }}>{listError}</p>}
+
       <div className="card">
         <ul className="test-list">
-          {TEST_CASES.map((tc) => (
+          {testCases.map((tc) => (
             <li key={tc.id} className="test-item">
               <div>
                 <div className="test-item-name">{tc.name}</div>
@@ -71,6 +89,9 @@ export default function TestCases() {
                   <span className={`status-badge ${results[tc.id].status === 'PASS' ? 'pass' : 'fail'}`}>
                     {results[tc.id].status}
                   </span>
+                )}
+                {results[tc.id]?.error && (
+                  <span className="metric-label" style={{ color: '#ff8a80' }}>{results[tc.id].error}</span>
                 )}
                 <button
                   className="btn btn-outline"
@@ -116,6 +137,28 @@ export default function TestCases() {
                 <text x="10" y="145" fill="#7a8fa0" fontSize="8">Speed (km/h) over time</text>
               </svg>
             </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header">
+              <h3>Validation Checks</h3>
+            </div>
+            {lastChecks.length === 0 ? (
+              <div className="metric-label">Run a test to view deterministic pass/fail criteria.</div>
+            ) : (
+              <>
+                <div className="metric-value">{passedChecks}/{lastChecks.length}</div>
+                <div className="metric-label" style={{ marginBottom: '0.75rem' }}>Checks Passed</div>
+                <ul className="test-list">
+                  {lastChecks.map((check) => (
+                    <li key={check.name} className="test-item" style={{ padding: '0.4rem 0' }}>
+                      <span className={`status-badge ${check.passed ? 'pass' : 'fail'}`}>{check.passed ? 'PASS' : 'FAIL'}</span>
+                      <span className="metric-label">{check.name}: expected {check.expected}, actual {check.actual}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         </div>
       )}

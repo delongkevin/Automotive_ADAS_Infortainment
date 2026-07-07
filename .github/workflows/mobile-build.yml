@@ -11,14 +11,25 @@ on:
     paths:
       - 'mobile-app/**'
   workflow_dispatch:
+    inputs:
+      build_mode:
+        description: "Build mode: cloud (EAS) or local (Gradle debug)"
+        required: false
+        type: choice
+        options:
+          - cloud
+          - local
+        default: cloud
 
 permissions:
   contents: read
 
 jobs:
   build-apk:
-    name: Build Android APK
+    name: Build Android APK (${{ github.event.inputs.build_mode || 'cloud' }})
     runs-on: ubuntu-latest
+    env:
+      BUILD_MODE: ${{ github.event.inputs.build_mode || 'cloud' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -40,21 +51,46 @@ jobs:
         run: |
           npm ci
           npx expo install expo-dev-client
+          npx expo prebuild --platform android --non-interactive
 
       - name: Setup EAS CLI
+        if: env.BUILD_MODE == 'cloud'
         run: npm install -g eas-cli
 
-      - name: Build APK (EAS local)
+      - name: Build APK (EAS cloud)
+        if: env.BUILD_MODE == 'cloud'
         working-directory: mobile-app
         run: |
-          npx expo export --platform android
+          eas build --platform android --profile preview --non-interactive --wait --json > eas-build-result.json
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Resolve cloud artifact URL
+        if: env.BUILD_MODE == 'cloud'
+        id: cloud_artifact
+        working-directory: mobile-app
+        run: |
+          ARTIFACT_URL=$(node -e "const fs=require('fs');const data=JSON.parse(fs.readFileSync('eas-build-result.json','utf8'));console.log(data[0]?.artifacts?.buildUrl||'');")
+          echo "url=$ARTIFACT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Download cloud APK artifact
+        if: env.BUILD_MODE == 'cloud' && steps.cloud_artifact.outputs.url != ''
+        working-directory: mobile-app
+        run: |
+          mkdir -p artifacts
+          curl -L "${{ steps.cloud_artifact.outputs.url }}" -o artifacts/adas-infotainment-cloud.apk
+
+      - name: Build APK (local Gradle)
+        if: env.BUILD_MODE == 'local'
+        working-directory: mobile-app/android
+        run: ./gradlew assembleRelease
 
       - name: Upload APK artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: adas-infotainment-apk
-          path: mobile-app/android/app/build/outputs/apk/**/*.apk
+          path: |
+            mobile-app/artifacts/*.apk
+            mobile-app/android/app/build/outputs/apk/**/*.apk
           if-no-files-found: warn

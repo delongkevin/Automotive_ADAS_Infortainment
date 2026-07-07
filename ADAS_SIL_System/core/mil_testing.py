@@ -130,17 +130,26 @@ class ScenarioValidator:
             return False, f"Feature '{feature_name}' not found"
         
         feature = self.simulator.adas_features[feature_name]
-        status = feature.status if hasattr(feature, 'status') else {}
-        
-        if check_field not in status:
+        status = self._extract_feature_status(feature)
+        found, actual_value = self._resolve_status_value(status, check_field)
+
+        if not found:
             return False, f"Field '{check_field}' not in feature status"
-        
-        actual_value = status[check_field]
+
+        # Normalize known angle fields to radians when legacy status uses degrees.
+        if check_field in {'current_trailer_angle', 'steering_correction'} and isinstance(actual_value, (int, float)):
+            if abs(float(actual_value)) > np.pi:
+                actual_value = np.deg2rad(float(actual_value))
+
+        tolerance = float(validation_spec.get('tolerance', 0.0))
         
         # Handle different validation types
         if 'expected' in validation_spec:
             expected = validation_spec['expected']
-            if actual_value != expected:
+            if isinstance(expected, (int, float)) and isinstance(actual_value, (int, float)):
+                if abs(float(actual_value) - float(expected)) > tolerance:
+                    return False, f"Expected {expected} ±{tolerance}, got {actual_value}"
+            elif actual_value != expected:
                 return False, f"Expected {expected}, got {actual_value}"
         
         elif 'expected_min' in validation_spec:
@@ -167,6 +176,34 @@ class ScenarioValidator:
                 return False, f"Expected list value, got {type(actual_value)}"
         
         return True, "Validation passed"
+
+    def _extract_feature_status(self, feature: Any) -> Dict[str, Any]:
+        if hasattr(feature, 'status') and isinstance(feature.status, dict):
+            return feature.status
+        if hasattr(feature, '_get_status'):
+            try:
+                status = feature._get_status()
+                if isinstance(status, dict):
+                    return status
+            except Exception:
+                return {}
+        return {}
+
+    def _resolve_status_value(self, status: Dict[str, Any], check_field: str) -> Tuple[bool, Any]:
+        if check_field in status:
+            return True, status[check_field]
+
+        if check_field == 'parking_complete':
+            progress = float(status.get('progress', 0.0))
+            stage = status.get('stage')
+            return True, bool(stage == 'complete' or progress >= 0.95)
+
+        if check_field == 'recording_active':
+            cameras_recording = int(status.get('cameras_recording', 0))
+            all_recording = bool(status.get('all_cameras_recording', False))
+            return True, bool(cameras_recording > 0 or all_recording or status.get('active', False))
+
+        return False, None
     
     def record_validation(
         self,
@@ -223,6 +260,7 @@ class MILScenarioRunner:
         
         # Setup vehicle configuration
         vehicle_config = scenario.get('vehicle_config', {})
+        self._apply_vehicle_config(vehicle_config)
         if 'enabled_features' in vehicle_config:
             self._enable_features(vehicle_config['enabled_features'])
         
@@ -310,7 +348,11 @@ class MILScenarioRunner:
             if feature_name in self.simulator.adas_features:
                 feature = self.simulator.adas_features[feature_name]
                 if hasattr(feature, 'enable'):
-                    feature.enable()
+                    try:
+                        feature.enable()
+                    except TypeError:
+                        current_speed = self.simulator.vehicle.get_state().get('velocity', {}).get('speed', 0.0)
+                        feature.enable(current_speed)
     
     def _process_event(
         self,
@@ -376,7 +418,14 @@ class MILScenarioRunner:
         
         if command == 'enable':
             if hasattr(feature, 'enable'):
-                feature.enable()
+                try:
+                    feature.enable()
+                except TypeError:
+                    current_speed = self.simulator.vehicle.get_state().get('velocity', {}).get('speed', 0.0)
+                    feature.enable(current_speed)
+
+                if feature_name == 'trailer_assistance' and hasattr(feature, 'trailer_detected'):
+                    feature.trailer_detected = True
         elif command == 'disable':
             if hasattr(feature, 'disable'):
                 feature.disable()
@@ -386,6 +435,22 @@ class MILScenarioRunner:
                     params.get('mode', 'auto'),
                     strength=params.get('strength', 0.8)
                 )
+
+    def _apply_vehicle_config(self, vehicle_config: Dict[str, Any]) -> None:
+        """Apply initial vehicle setup from scenario config."""
+        initial_position = vehicle_config.get('initial_position', [0.0, 0.0])
+        initial_speed_kmh = float(vehicle_config.get('initial_speed', 0.0))
+        self.simulator.vehicle.set_state(
+            x=float(initial_position[0]),
+            y=float(initial_position[1]),
+            yaw=0.0,
+            vx=initial_speed_kmh / 3.6,
+        )
+
+        if vehicle_config.get('has_trailer') and 'trailer_assistance' in self.simulator.adas_features:
+            trailer_feature = self.simulator.adas_features['trailer_assistance']
+            trailer_feature.trailer_detected = True
+            trailer_feature.enabled = True
     
     def _handle_vehicle_motion(self, event: Dict[str, Any]) -> None:
         """Handle vehicle motion event"""

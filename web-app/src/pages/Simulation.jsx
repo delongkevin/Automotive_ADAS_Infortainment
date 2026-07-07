@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import VehicleVisualizer from '../components/VehicleVisualizer';
+import { apiRequest } from '../lib/api';
 
 const SCENARIOS = [
   { name: 'highway_cruise', label: 'Highway Cruise' },
@@ -22,15 +23,14 @@ export default function Simulation() {
   const runSimulation = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/simulate', {
+      const data = await apiRequest('/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dt: 0.1, duration, scenario }),
       });
-      const data = await res.json();
       setResult(data);
-    } catch {
-      setResult({ error: 'Failed to connect to API' });
+    } catch (error) {
+      setResult({ error: error.message || 'Failed to connect to API' });
     }
     setLoading(false);
   };

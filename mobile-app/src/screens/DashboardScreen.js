@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import Svg, { Rect, Circle, Line, G, Text as SvgText } from 'react-native-svg';
-
-const API_BASE = 'http://10.0.2.2:8000'; // Android emulator localhost
 
 export default function DashboardScreen() {
   const [ecuStatus, setEcuStatus] = useState({

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Svg, { Polyline, Rect, Text as SvgText } from 'react-native-svg';
+import { getApiBaseUrl } from '../config/api';
 
-const API_BASE = 'http://10.0.2.2:8000';
+const API_BASE = getApiBaseUrl();
 
 const SCENARIOS = [
   { name: 'highway_cruise', label: 'Highway Cruise' },
@@ -27,10 +28,13 @@ export default function SimulationScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dt: 0.1, duration: 5.0, scenario }),
       });
+      if (!res.ok) {
+        throw new Error(`Simulation request failed (${res.status})`);
+      }
       const data = await res.json();
       setResult(data);
-    } catch {
-      setResult({ error: 'Connection failed' });
+    } catch (error) {
+      setResult({ error: error.message || 'Connection failed' });
     }
     setLoading(false);
   };
