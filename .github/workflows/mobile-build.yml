@@ -29,7 +29,8 @@ jobs:
     name: Build Android APK (${{ github.event.inputs.build_mode || 'cloud' }})
     runs-on: ubuntu-latest
     env:
-      BUILD_MODE: ${{ github.event.inputs.build_mode || 'cloud' }}
+      REQUESTED_BUILD_MODE: ${{ github.event.inputs.build_mode || 'cloud' }}
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -52,20 +53,32 @@ jobs:
           npm ci
           CI=1 npx expo prebuild --platform android
 
+      - name: Resolve build mode
+        id: resolve_build_mode
+        run: |
+          if [[ "$REQUESTED_BUILD_MODE" == "cloud" && -n "$EXPO_TOKEN" ]]; then
+            echo "mode=cloud" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "mode=local" >> "$GITHUB_OUTPUT"
+
+          if [[ "$REQUESTED_BUILD_MODE" == "cloud" ]]; then
+            echo "::warning::EXPO_TOKEN is not configured; falling back to local Gradle APK build."
+          fi
+
       - name: Setup EAS CLI
-        if: env.BUILD_MODE == 'cloud'
+        if: steps.resolve_build_mode.outputs.mode == 'cloud'
         run: npm install -g eas-cli
 
       - name: Build APK (EAS cloud)
-        if: env.BUILD_MODE == 'cloud'
+        if: steps.resolve_build_mode.outputs.mode == 'cloud'
         working-directory: mobile-app
         run: |
           eas build --platform android --profile preview --non-interactive --wait --json > eas-build-result.json
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Resolve cloud artifact URL
-        if: env.BUILD_MODE == 'cloud'
+        if: steps.resolve_build_mode.outputs.mode == 'cloud'
         id: cloud_artifact
         working-directory: mobile-app
         run: |
@@ -73,14 +86,14 @@ jobs:
           echo "url=$ARTIFACT_URL" >> "$GITHUB_OUTPUT"
 
       - name: Download cloud APK artifact
-        if: env.BUILD_MODE == 'cloud' && steps.cloud_artifact.outputs.url != ''
+        if: steps.resolve_build_mode.outputs.mode == 'cloud' && steps.cloud_artifact.outputs.url != ''
         working-directory: mobile-app
         run: |
           mkdir -p artifacts
           curl -L "${{ steps.cloud_artifact.outputs.url }}" -o artifacts/adas-infotainment-cloud.apk
 
       - name: Build APK (local Gradle)
-        if: env.BUILD_MODE == 'local'
+        if: steps.resolve_build_mode.outputs.mode == 'local'
         working-directory: mobile-app/android
         run: ./gradlew assembleRelease
 
