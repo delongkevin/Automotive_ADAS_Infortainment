@@ -6,25 +6,94 @@ A feature-complete vehicle simulation platform with deployable **Android (.apk)*
 
 **Web App (GitHub Pages):** <https://delongkevin.github.io/Automotive_ADAS_Infortainment/>
 
-## Getting Started with Codespaces
+## Local Setup (No Codespaces Required)
 
-The fastest way to run all components is via GitHub Codespaces — everything is pre-configured.
+This project is designed to run fully on a local machine after clone.
 
-1. Click **Code > Codespaces > Create codespace on main** on the repository page
-2. Wait for the container to build (installs Python, Node.js 20, and Java 17 automatically)
-3. All dependencies are installed via `postCreateCommand` — no manual setup needed
+### One-Click Setup (Windows)
 
-Once the Codespace is ready:
+From repository root, run:
+
+```bat
+setup_local_env.bat
+```
+
+This script will:
+
+- Create/reuse `.venv`
+- Install Python dependencies from `backend/requirements.txt` and `ADAS_SIL_System/requirements.txt`
+- Install web dependencies in `web-app`
+- Install mobile dependencies in `mobile-app`
+- Optionally start backend and web app in new terminals
+
+If you are on macOS/Linux (or prefer manual setup), use the steps below.
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js 20 LTS (includes npm)
+- Git
+- Optional for Android builds: Java 17 and Android Studio SDK/Platform tools
+
+### 1. Clone Repository
 
 ```bash
-# Start the backend API
-# Run this from repository root: /workspaces/Automotive_ADAS_Infortainment
-uvicorn backend.api.main:app --reload --port 8000 &
+git clone https://github.com/delongkevin/Automotive_ADAS_Infortainment.git
+cd Automotive_ADAS_Infortainment
+```
 
-# Start the web app (opens in browser automatically on port 5173)
+### 2. Install Python Dependencies (Backend + Simulation)
+
+```bash
+# From repository root
+python -m venv .venv
+
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+
+# macOS/Linux
+# source .venv/bin/activate
+
+python -m pip install --upgrade pip
+pip install -r backend/requirements.txt -r ADAS_SIL_System/requirements.txt
+```
+
+### 3. Install Web Dependencies
+
+```bash
+cd web-app
+npm install
+cd ..
+```
+
+### 4. Install Mobile Dependencies
+
+```bash
+cd mobile-app
+npm install
+cd ..
+```
+
+### 5. Verify Install
+
+```bash
+# Run from repository root (with Python venv active)
+pytest backend/tests/ ADAS_SIL_System/tests/ -v
+
+# Optional web build check
+cd web-app && npm run build && cd ..
+```
+
+### 6. Start Components Locally
+
+```bash
+# Terminal 1 (repo root, venv active): backend API
+uvicorn backend.api.main:app --reload --port 8000
+
+# Terminal 2: web app
 cd web-app && npm run dev
 
-# Or start the mobile app (Expo)
+# Terminal 3: mobile app (Expo)
 cd mobile-app && npx expo start
 ```
 
