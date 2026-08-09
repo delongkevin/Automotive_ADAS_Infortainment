@@ -3,8 +3,6 @@ Blind Spot Detection (BSD) System
 
 Detects vehicles in blind spots and alerts the driver.
 Monitors side and rear areas that are not visible in mirrors.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

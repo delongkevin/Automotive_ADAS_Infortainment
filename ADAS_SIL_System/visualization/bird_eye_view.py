@@ -2,8 +2,6 @@
 2D Bird's Eye View Visualization
 
 Real-time 2D visualization of vehicle, environment, and sensor coverage.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

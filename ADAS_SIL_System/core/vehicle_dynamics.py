@@ -6,8 +6,6 @@ Implements realistic vehicle physics including:
 - Lateral dynamics (steering, slip angles)
 - Vertical dynamics (suspension, load transfer)
 - Tire models (friction, slip)
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

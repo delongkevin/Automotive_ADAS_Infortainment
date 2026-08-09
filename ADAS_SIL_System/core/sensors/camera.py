@@ -3,8 +3,6 @@ Camera Sensor Simulator
 
 Simulates automotive camera sensor with vision-based detection.
 Provides object detection, classification, and lane detection.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

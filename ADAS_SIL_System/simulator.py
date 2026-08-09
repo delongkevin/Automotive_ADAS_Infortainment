@@ -2,8 +2,6 @@
 Main ADAS SIL Simulator
 
 Integrates all components into a complete simulation system.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

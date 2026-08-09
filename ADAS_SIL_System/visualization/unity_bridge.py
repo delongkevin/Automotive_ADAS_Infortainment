@@ -2,8 +2,6 @@
 Unity/Unreal Engine Bridge
 
 WebSocket-based communication bridge for 3D visualization integration.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import asyncio

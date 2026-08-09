@@ -2,8 +2,6 @@
 Visualization Package Initialization
 
 Exports visualization components.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 from .bird_eye_view import BirdEyeView

@@ -3,8 +3,6 @@ Lane Departure Warning (LDW) System
 
 Monitors vehicle position relative to lane markings and warns
 driver when unintended lane departure is detected.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

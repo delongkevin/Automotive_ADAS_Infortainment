@@ -3,8 +3,6 @@ Adaptive Cruise Control (ACC) System
 
 Maintains desired speed and safe following distance from lead vehicle.
 Automatically adjusts speed to maintain safe gap.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 import numpy as np

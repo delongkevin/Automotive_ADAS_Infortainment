@@ -2,8 +2,6 @@
 Sensor Package Initialization
 
 Exports all sensor types for the ADAS SIL system.
-
-Copyright Magna Electronics. All rights reserved.
 """
 
 from .base_sensor import BaseSensor
