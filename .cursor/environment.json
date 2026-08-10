@@ -1,0 +1,20 @@
+{
+  "name": "Automotive ADAS + Infotainment Simulation",
+  "install": "./.cursor/install.sh",
+  "terminals": [
+    {
+      "name": "Backend API",
+      "command": "python3 -m uvicorn backend.api.main:app --host 0.0.0.0 --port 8000 --reload",
+      "description": "FastAPI ADAS simulation backend on port 8000."
+    },
+    {
+      "name": "Web App",
+      "command": "cd web-app && npm run dev -- --host 0.0.0.0 --port 5173",
+      "description": "Vite React dashboard on port 5173 (proxies /api to the backend)."
+    }
+  ],
+  "ports": [
+    { "name": "Backend API (FastAPI)", "port": 8000 },
+    { "name": "Web App (Vite)", "port": 5173 }
+  ]
+}
