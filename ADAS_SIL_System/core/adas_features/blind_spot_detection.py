@@ -109,48 +109,78 @@ class BlindSpotDetection:
             if sensor_type not in ['radar', 'camera']:
                 continue
 
-            classification = detection.get('classification', '')
-            if 'vehicle' not in classification.lower():
+            # Radar targets are vehicles by default; camera needs classification or vehicle type
+            classification = str(detection.get('classification', '') or detection.get('detection_type', ''))
+            if sensor_type == 'camera':
+                if classification and 'vehicle' not in classification.lower():
+                    # Skip signs / lanes / unknown camera objects
+                    if classification.lower() not in ('', 'object', 'unknown'):
+                        continue
+                elif not classification and detection.get('detection_type') == 'traffic_sign':
+                    continue
+            # Radar: treat as vehicle unless explicitly marked otherwise
+            elif classification and 'vehicle' not in classification.lower() and classification.lower() not in ('', 'object', 'unknown'):
                 continue
 
-            # Get detection position in vehicle frame
-            target_pos = np.array([detection.get('x', 0.0),
-                                  detection.get('y', 0.0)])
-
-            # Convert to ego vehicle frame
-            rel_x, rel_y = self._global_to_vehicle_frame(
-                target_pos, vehicle_pos, vehicle_yaw
-            )
-
-            # Calculate angle and range
-            angle = np.arctan2(rel_y, rel_x)
-            range_dist = np.sqrt(rel_x**2 + rel_y**2)
+            # Prefer vehicle-frame pose from range/azimuth (radar native)
+            if 'range' in detection and 'azimuth' in detection and 'x' not in detection:
+                range_dist = float(detection.get('range', 0.0))
+                angle = float(detection.get('azimuth', 0.0))
+                rel_x = range_dist * np.cos(angle)
+                rel_y = range_dist * np.sin(angle)
+            else:
+                # x/y may already be vehicle-frame or global depending on source
+                if detection.get('frame') == 'vehicle' or (
+                    'range' in detection and 'azimuth' in detection
+                ):
+                    # Derive from polar if both present for consistency
+                    if 'range' in detection and 'azimuth' in detection:
+                        range_dist = float(detection['range'])
+                        angle = float(detection['azimuth'])
+                        rel_x = range_dist * np.cos(angle)
+                        rel_y = range_dist * np.sin(angle)
+                    else:
+                        rel_x = float(detection.get('x', 0.0))
+                        rel_y = float(detection.get('y', 0.0))
+                        angle = np.arctan2(rel_y, rel_x)
+                        range_dist = np.sqrt(rel_x**2 + rel_y**2)
+                else:
+                    target_pos = np.array([
+                        float(detection.get('x', 0.0)),
+                        float(detection.get('y', 0.0)),
+                    ])
+                    # If coords look like global (far from origin relative to ego), convert
+                    rel_x, rel_y = self._global_to_vehicle_frame(
+                        target_pos, vehicle_pos, vehicle_yaw
+                    )
+                    angle = np.arctan2(rel_y, rel_x)
+                    range_dist = np.sqrt(rel_x**2 + rel_y**2)
 
             # Check blind spot zones
             if self._is_in_left_zone(angle, range_dist):
                 self.left_blind_spot_occupied = True
                 self.warning_active = True
                 self.warning_side = 'left'
-                logger.info(f"BSD: Vehicle detected in LEFT blind spot")
+                logger.debug("BSD: Vehicle detected in LEFT blind spot")
 
             elif self._is_in_right_zone(angle, range_dist):
                 self.right_blind_spot_occupied = True
                 self.warning_active = True
                 self.warning_side = 'right'
-                logger.info(f"BSD: Vehicle detected in RIGHT blind spot")
+                logger.debug("BSD: Vehicle detected in RIGHT blind spot")
 
             elif self._is_in_rear_zone(angle, range_dist):
                 self.rear_blind_spot_occupied = True
                 if not self.left_blind_spot_occupied and not self.right_blind_spot_occupied:
                     self.warning_active = True
                     self.warning_side = 'rear'
-                logger.info(f"BSD: Vehicle detected in REAR zone")
+                logger.debug("BSD: Vehicle detected in REAR zone")
 
             # Track detection
             self.detected_vehicles[obj_id] = {
                 'angle': angle,
                 'range': range_dist,
-                'velocity': detection.get('velocity', 0.0),
+                'velocity': detection.get('velocity', detection.get('radial_velocity', 0.0)),
                 'timestamp': current_time
             }
 

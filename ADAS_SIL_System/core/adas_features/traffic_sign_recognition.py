@@ -114,10 +114,10 @@ class TrafficSignRecognition:
                 - active_sign_timeout: Time to keep active sign in memory (default: 5.0s)
         """
         self.config = config or {}
-        self.enabled = False
+        self.enabled = bool(self.config.get('enabled', False))
         self.status = {
             'system': 'traffic_sign_recognition',
-            'enabled': False,
+            'enabled': self.enabled,
             'active': False,
             'signs_detected': 0,
             'current_speed_limit': None,
@@ -239,44 +239,116 @@ class TrafficSignRecognition:
         for detection in sensor_data:
             if detection.get('sensor_type') != 'camera':
                 continue
-            
-            # Check if this is a traffic sign detection
-            sign_class = detection.get('sign_class')
-            if not sign_class:
-                continue
-            
-            # Map detected class to TrafficSignType
-            sign_type = self._classify_sign(sign_class)
+
+            # Accept camera schema (sign_type/sign_value) and legacy (sign_class)
+            if detection.get('detection_type') not in (None, 'traffic_sign', 'sign'):
+                # Skip non-sign camera detections (vehicles, lanes, etc.)
+                if not detection.get('sign_class') and not detection.get('sign_type'):
+                    continue
+
+            sign_type = self._resolve_sign_type(detection)
             if not sign_type:
                 continue
-            
-            # Extract detection parameters
-            distance = detection.get('distance', 50.0)
-            confidence = detection.get('confidence', 0.9)
+
+            # Prefer range from camera detections; fall back to distance
+            distance = float(detection.get('range', detection.get('distance', 50.0)))
+            confidence = float(detection.get('confidence', 0.9))
             direction = detection.get('direction', 'ahead')
-            x = detection.get('x', vehicle_state.get('position', [0, 0])[0])
-            y = detection.get('y', vehicle_state.get('position', [0, 0])[1])
-            
-            # Apply filtering
+
+            # Safe position defaults — vehicle_state['position'] is a dict, not a list
+            pos = vehicle_state.get('position') or {}
+            if isinstance(pos, dict):
+                default_x = float(pos.get('x', 0.0))
+                default_y = float(pos.get('y', 0.0))
+            elif isinstance(pos, (list, tuple)) and len(pos) >= 2:
+                default_x, default_y = float(pos[0]), float(pos[1])
+            else:
+                default_x, default_y = 0.0, 0.0
+
+            x = float(detection.get('x', default_x))
+            y = float(detection.get('y', default_y))
+
             if confidence < self.min_confidence:
                 continue
-            
+
             if distance > self.max_detection_range:
                 continue
-            
-            # Create sign object
-            sign = TrafficSign(
-                sign_type=sign_type,
-                position=(x, y),
-                distance=distance,
-                confidence=confidence,
-                direction=direction
+
+            detected_signs.append(
+                TrafficSign(
+                    sign_type=sign_type,
+                    position=(x, y),
+                    distance=distance,
+                    confidence=confidence,
+                    direction=direction,
+                )
             )
-            
-            detected_signs.append(sign)
-        
+
         return detected_signs
-    
+
+    def _resolve_sign_type(self, detection: Dict) -> Optional[TrafficSignType]:
+        """Map camera/legacy detection fields to TrafficSignType."""
+        # Explicit class string (legacy / MIL)
+        sign_class = detection.get('sign_class')
+        if sign_class:
+            classified = self._classify_sign(str(sign_class))
+            if classified:
+                return classified
+
+        # Camera sensor emits sign_type + optional numeric sign_value
+        sign_type_raw = detection.get('sign_type')
+        sign_value = detection.get('sign_value')
+        if sign_type_raw is None and sign_value is None:
+            return None
+
+        type_str = str(sign_type_raw or '').lower().strip()
+
+        # Numeric speed limit from camera value
+        if sign_value is not None:
+            try:
+                speed = int(float(sign_value))
+                speed_key = f'speed_{speed}'
+                classified = self._classify_sign(speed_key)
+                if classified:
+                    return classified
+                # Also try enum name pattern
+                enum_name = f'SPEED_LIMIT_{speed}'
+                if hasattr(TrafficSignType, enum_name):
+                    return getattr(TrafficSignType, enum_name)
+            except (TypeError, ValueError):
+                pass
+
+        # String type aliases from scenarios / camera
+        aliases = {
+            'speed_limit': None,  # needs value
+            'speed': None,
+            'stop': TrafficSignType.STOP_SIGN,
+            'stop_sign': TrafficSignType.STOP_SIGN,
+            'yield': TrafficSignType.YIELD_SIGN,
+            'yield_sign': TrafficSignType.YIELD_SIGN,
+            'pedestrian': TrafficSignType.PEDESTRIAN_CROSSING,
+            'pedestrian_crossing': TrafficSignType.PEDESTRIAN_CROSSING,
+            'construction': TrafficSignType.CONSTRUCTION_ZONE,
+            'construction_zone': TrafficSignType.CONSTRUCTION_ZONE,
+            'school': TrafficSignType.SCHOOL_ZONE,
+            'school_zone': TrafficSignType.SCHOOL_ZONE,
+            'curve_left': TrafficSignType.CURVE_LEFT,
+            'curve_right': TrafficSignType.CURVE_RIGHT,
+            'slippery': TrafficSignType.SLIPPERY_ROAD,
+            'slippery_road': TrafficSignType.SLIPPERY_ROAD,
+            'merge': TrafficSignType.MERGE,
+            'exit': TrafficSignType.EXIT,
+        }
+        if type_str in aliases and aliases[type_str] is not None:
+            return aliases[type_str]
+
+        # Direct enum value match (e.g. "speed_limit_50")
+        for member in TrafficSignType:
+            if member.value == type_str or member.name.lower() == type_str:
+                return member
+
+        return self._classify_sign(type_str)
+
     def _classify_sign(self, sign_class: str) -> Optional[TrafficSignType]:
         """
         Classify sign from detected class string
@@ -301,6 +373,18 @@ class TrafficSignRecognition:
             'speed_110': TrafficSignType.SPEED_LIMIT_110,
             'speed_120': TrafficSignType.SPEED_LIMIT_120,
             'speed_130': TrafficSignType.SPEED_LIMIT_130,
+            'speed_limit_20': TrafficSignType.SPEED_LIMIT_20,
+            'speed_limit_30': TrafficSignType.SPEED_LIMIT_30,
+            'speed_limit_40': TrafficSignType.SPEED_LIMIT_40,
+            'speed_limit_50': TrafficSignType.SPEED_LIMIT_50,
+            'speed_limit_60': TrafficSignType.SPEED_LIMIT_60,
+            'speed_limit_70': TrafficSignType.SPEED_LIMIT_70,
+            'speed_limit_80': TrafficSignType.SPEED_LIMIT_80,
+            'speed_limit_90': TrafficSignType.SPEED_LIMIT_90,
+            'speed_limit_100': TrafficSignType.SPEED_LIMIT_100,
+            'speed_limit_110': TrafficSignType.SPEED_LIMIT_110,
+            'speed_limit_120': TrafficSignType.SPEED_LIMIT_120,
+            'speed_limit_130': TrafficSignType.SPEED_LIMIT_130,
             'stop': TrafficSignType.STOP_SIGN,
             'yield': TrafficSignType.YIELD_SIGN,
             'pedestrian': TrafficSignType.PEDESTRIAN_CROSSING,
@@ -312,8 +396,8 @@ class TrafficSignRecognition:
             'merge': TrafficSignType.MERGE,
             'exit': TrafficSignType.EXIT,
         }
-        
-        return classification_map.get(sign_class)
+
+        return classification_map.get(sign_class.lower().strip() if sign_class else '')
     
     def _update_speed_limit(self, current_time: float) -> None:
         """Extract speed limit from detected signs"""

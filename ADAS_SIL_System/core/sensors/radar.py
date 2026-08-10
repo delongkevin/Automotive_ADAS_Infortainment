@@ -137,9 +137,16 @@ class RadarSensor(BaseSensor):
         dy_ego = -dx * sin_yaw + dy * cos_yaw
 
         # Sensor frame (accounting for mounting position)
-        dx_sensor = dx_ego - self.position[0]
-        dy_sensor = dy_ego - self.position[1]
+        dx_mount = dx_ego - self.position[0]
+        dy_mount = dy_ego - self.position[1]
         dz_sensor = dz - ego_pos[2] - self.position[2]
+
+        # Rotate into sensor boresight frame for FOV-consistent angles
+        sensor_yaw = float(self.orientation[2]) if len(self.orientation) > 2 else 0.0
+        cos_s = np.cos(sensor_yaw)
+        sin_s = np.sin(sensor_yaw)
+        dx_sensor = dx_mount * cos_s + dy_mount * sin_s
+        dy_sensor = -dx_mount * sin_s + dy_mount * cos_s
 
         # Range calculation
         range_val = np.sqrt(dx_sensor**2 + dy_sensor**2 + dz_sensor**2)
@@ -149,9 +156,14 @@ class RadarSensor(BaseSensor):
         if weather_loss > 10.0:  # Too much attenuation
             return None
 
-        # Angles
-        azimuth = np.arctan2(dy_sensor, dx_sensor)
+        # Sensor-frame angles (for FOV diagnostics)
+        sensor_azimuth = np.arctan2(dy_sensor, dx_sensor)
         elevation = np.arctan2(dz_sensor, np.sqrt(dx_sensor**2 + dy_sensor**2))
+
+        # Vehicle-frame pose for ADAS features (BSD/ACC expect ego-forward frame)
+        # Use ego-frame offset from vehicle origin (not sensor mount)
+        vehicle_azimuth = np.arctan2(dy_ego, dx_ego)
+        vehicle_range = np.sqrt(dx_ego**2 + dy_ego**2)
 
         # Relative velocity (doppler)
         if is_static:
@@ -171,15 +183,21 @@ class RadarSensor(BaseSensor):
         else:
             radial_velocity = 0.0
 
-        # Create detection
+        # Create detection — azimuth/range in vehicle frame for ADAS consumers
         detection = {
             'sensor_id': self.sensor_id,
             'sensor_type': 'radar',
             'object_id': obj.get('id', -1),
             'timestamp': self.last_update_time,
-            'range': range_val,
-            'azimuth': azimuth,
+            'range': vehicle_range if vehicle_range > 0 else range_val,
+            'azimuth': vehicle_azimuth,
             'elevation': elevation,
+            'sensor_azimuth': sensor_azimuth,
+            'sensor_range': range_val,
+            'x': dx_ego,
+            'y': dy_ego,
+            'frame': 'vehicle',
+            'classification': obj.get('classification', 'vehicle'),
             'radial_velocity': radial_velocity,
             'rcs': rcs,  # Radar cross section
             'false_alarm': False

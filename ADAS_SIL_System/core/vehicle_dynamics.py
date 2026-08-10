@@ -96,6 +96,9 @@ class VehicleDynamics:
         self.brake = 0.0  # [0, 1]
         self.steering_angle = 0.0  # rad
 
+        # Transmission / drive direction (needed for reverse, SVC, trailer)
+        self.gear = 'D'  # 'P', 'R', 'N', 'D'
+
         logger.info("Vehicle state reset")
 
     def set_state(self, x: float, y: float, yaw: float, vx: float, vy: float = 0.0):
@@ -128,6 +131,22 @@ class VehicleDynamics:
         self.brake = np.clip(brake, 0.0, 1.0)
         self.steering_angle = np.clip(steering_angle, -self.max_steering_angle, self.max_steering_angle)
 
+    def set_gear(self, gear: str):
+        """Set transmission gear: P, R, N, or D."""
+        gear = str(gear).upper()
+        if gear not in ('P', 'R', 'N', 'D'):
+            raise ValueError(f"Invalid gear: {gear}")
+        self.gear = gear
+        # When shifting to reverse while nearly stopped, allow reverse kinematics
+        if gear == 'R' and abs(self.vx) < 0.5:
+            self.vx = min(self.vx, 0.0)
+        if gear == 'D' and abs(self.vx) < 0.5:
+            self.vx = max(self.vx, 0.0)
+        if gear == 'P':
+            self.vx = 0.0
+            self.vy = 0.0
+            self.yaw_rate = 0.0
+
     def update(self, dt: float):
         """
         Update vehicle state using bicycle model dynamics.
@@ -135,7 +154,16 @@ class VehicleDynamics:
         Args:
             dt: Time step (s)
         """
-        # Calculate total velocity
+        # Park lock
+        if self.gear == 'P':
+            self.vx = 0.0
+            self.vy = 0.0
+            self.yaw_rate = 0.0
+            self.ax = 0.0
+            self.ay = 0.0
+            return
+
+        # Calculate total velocity magnitude
         v = np.sqrt(self.vx**2 + self.vy**2)
 
         # Longitudinal dynamics
@@ -160,34 +188,51 @@ class VehicleDynamics:
             v: Total velocity (m/s)
         """
         # Calculate forces
-        # Engine force (simplified)
-        if self.throttle > 0:
-            F_drive = self.throttle * self.mass * self.max_acceleration
+        # Drive force direction depends on gear (reverse support for trailer/SVC)
+        drive_sign = -1.0 if self.gear == 'R' else 1.0
+        if self.gear == 'N':
+            drive_sign = 0.0
+
+        if self.throttle > 0 and drive_sign != 0.0:
+            F_drive = drive_sign * self.throttle * self.mass * self.max_acceleration
         else:
             F_drive = 0.0
 
-        # Braking force
+        # Braking force opposes current motion (and holds when stopped)
         if self.brake > 0:
-            F_brake = self.brake * self.mass * abs(self.max_deceleration)
+            if abs(self.vx) > 0.05:
+                brake_sign = -np.sign(self.vx)
+            else:
+                brake_sign = -drive_sign if drive_sign != 0 else 0.0
+            F_brake = brake_sign * self.brake * self.mass * abs(self.max_deceleration)
         else:
             F_brake = 0.0
 
-        # Aerodynamic drag
-        F_drag = 0.5 * self.air_density * self.drag_coefficient * self.frontal_area * v**2
+        # Aerodynamic drag opposes motion
+        drag_sign = -np.sign(self.vx) if abs(self.vx) > 0.01 else 0.0
+        F_drag = drag_sign * 0.5 * self.air_density * self.drag_coefficient * self.frontal_area * v**2
 
-        # Rolling resistance (simplified)
-        F_rolling = 0.015 * self.mass * 9.81
+        # Rolling resistance opposes motion
+        roll_sign = -np.sign(self.vx) if abs(self.vx) > 0.01 else 0.0
+        F_rolling = roll_sign * 0.015 * self.mass * 9.81
 
         # Net longitudinal force
-        F_x = F_drive - F_brake - F_drag - F_rolling
+        F_x = F_drive + F_brake + F_drag + F_rolling
 
         # Longitudinal acceleration
         self.ax = F_x / self.mass
 
-        # Update longitudinal velocity
+        # Update longitudinal velocity — allow reverse when in R
         self.vx += self.ax * dt
-        self.vx = max(0.0, self.vx)  # Prevent negative velocity
-
+        if self.gear == 'R':
+            # Cap reverse speed magnitude
+            self.vx = np.clip(self.vx, -15.0, 0.5)
+        elif self.gear == 'D':
+            self.vx = max(0.0, self.vx)
+        else:
+            # Neutral — allow coasting either way but damp near zero
+            if abs(self.vx) < 0.02:
+                self.vx = 0.0
     def _update_lateral(self, dt: float, v: float):
         """
         Update lateral dynamics using bicycle model.
@@ -196,8 +241,8 @@ class VehicleDynamics:
             dt: Time step (s)
             v: Total velocity (m/s)
         """
-        # Slip angles at front and rear axles
-        if v > 0.1:
+        # Slip angles at front and rear axles (use signed longitudinal velocity)
+        if abs(self.vx) > 0.1:
             alpha_f = self.steering_angle - np.arctan2(
                 self.vy + self.yaw_rate * self.cg_to_front, self.vx
             )
@@ -262,7 +307,9 @@ class VehicleDynamics:
                 'vx': self.vx,
                 'vy': self.vy,
                 'vz': 0.0,
-                'speed': np.sqrt(self.vx**2 + self.vy**2)
+                'speed': np.sqrt(self.vx**2 + self.vy**2),
+                # Signed longitudinal speed for reverse-aware features
+                'longitudinal': self.vx,
             },
             'acceleration': {'ax': self.ax, 'ay': self.ay, 'az': 0.0},
             'angular_velocity': {'roll_rate': 0.0, 'pitch_rate': 0.0, 'yaw_rate': self.yaw_rate},
@@ -271,6 +318,8 @@ class VehicleDynamics:
                 'brake': self.brake,
                 'steering_angle': self.steering_angle
             },
+            'transmission': {'gear': self.gear},
+            'gear': self.gear,
             'dimensions': {
                 'length': self.length,
                 'width': self.width,

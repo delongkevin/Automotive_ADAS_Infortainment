@@ -10,8 +10,10 @@ const SCENARIOS = [
   { name: 'emergency_braking', label: 'Emergency Braking' },
   { name: 'blind_spot_detection', label: 'Blind Spot Detection' },
   { name: 'city_driving_tsr', label: 'City Driving (TSR)' },
+  { name: 'highway_driving_tsr', label: 'Highway (TSR)' },
   { name: 'surround_view_camera', label: 'Surround View' },
   { name: 'autonomous_parking_parallel', label: 'Parking - Parallel' },
+  { name: 'autonomous_parking_perpendicular', label: 'Parking - Perpendicular' },
   { name: 'trailer_assistance', label: 'Trailer Assistance' },
 ];
 
