@@ -54,10 +54,10 @@ class AdaptiveCruiseControl:
         self.ki_distance = 0.05
         self.kd_distance = 0.15
 
-        # State
-        self.enabled = False
+        # State — honor config so API/simulator "enabled" actually activates ACC
+        self.enabled = bool(self.config.get('enabled', False))
         self.active = False
-        self.set_speed = 100.0 / 3.6  # 100 km/h default
+        self.set_speed = float(self.config.get('set_speed', 100.0 / 3.6))
         self.target_speed = self.set_speed
         self.target_acceleration = 0.0
 
@@ -105,6 +105,7 @@ class AdaptiveCruiseControl:
             # Speed control mode
             self._update_speed_control_mode(current_speed, dt)
 
+        # Active whenever enabled so longitudinal control is applied in SIL
         self.active = True
         return self._get_status()
 
@@ -260,12 +261,24 @@ class AdaptiveCruiseControl:
         Args:
             current_speed: Current vehicle speed (m/s)
         """
-        if current_speed >= self.min_speed:
-            self.enabled = True
+        # Allow enable below min_speed for SIL bootstrap; stay inactive until speed OK
+        self.enabled = True
+        configured = self.config.get('set_speed')
+        if configured is not None:
+            # Keep explicit config set-speed (do not clobber with current speed)
+            self.set_speed = float(configured)
+            logger.info(
+                f"ACC enabled with configured set_speed={self.set_speed * 3.6:.1f} km/h "
+                f"(current={current_speed * 3.6:.1f} km/h)"
+            )
+        elif current_speed >= self.min_speed:
             self.set_speed = current_speed
             logger.info(f"ACC enabled at {current_speed * 3.6:.1f} km/h")
         else:
-            logger.warning(f"ACC requires minimum speed of {self.min_speed * 3.6:.1f} km/h")
+            logger.info(
+                f"ACC enabled (below min speed {self.min_speed * 3.6:.1f} km/h); "
+                f"set_speed={self.set_speed * 3.6:.1f} km/h"
+            )
 
     def disable(self):
         """Disable ACC system."""

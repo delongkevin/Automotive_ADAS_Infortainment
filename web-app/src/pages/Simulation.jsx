@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import VehicleVisualizer from '../components/VehicleVisualizer';
+import RadioDisplay from '../components/RadioDisplay';
 import { apiRequest } from '../lib/api';
 
 const SCENARIOS = [
@@ -34,6 +35,8 @@ export default function Simulation() {
     }
     setLoading(false);
   };
+
+  const radioState = result?.radio_display || result?.radio_display_state;
 
   return (
     <div>
@@ -80,6 +83,17 @@ export default function Simulation() {
           <VehicleVisualizer trace={result?.vehicle_trace} />
         </div>
 
+        {result?.error && (
+          <div className="card">
+            <div className="card-header"><h3>Error</h3></div>
+            <p style={{ color: '#ff8a80', margin: 0 }}>{result.error}</p>
+            <p className="page-subtitle" style={{ marginTop: '0.75rem' }}>
+              Ensure the backend is running (uvicorn backend.api.main:app --port 8000)
+              and VITE_API_BASE_URL points to it in production builds.
+            </p>
+          </div>
+        )}
+
         {result && !result.error && (
           <>
             <div className="card">
@@ -98,7 +112,7 @@ export default function Simulation() {
                   <div className="metric-label">ADAS Events</div>
                 </div>
                 <div>
-                  <div className="metric-value">{result.radio_display?.warnings_triggered || 0}</div>
+                  <div className="metric-value">{radioState?.warnings_triggered || 0}</div>
                   <div className="metric-label">Warnings</div>
                 </div>
               </div>
@@ -106,18 +120,7 @@ export default function Simulation() {
 
             <div className="card">
               <div className="card-header"><h3>Radio Display State</h3></div>
-              <div className="ecu-indicator">
-                <div className="ecu-dot" />
-                <span>LDW: {result.radio_display?.adas_icons?.ldw_active ? 'ACTIVE' : 'Ready'}</span>
-              </div>
-              <div className="ecu-indicator">
-                <div className="ecu-dot" />
-                <span>ACC: {result.radio_display?.adas_icons?.acc_active ? 'ACTIVE' : 'Off'}</span>
-              </div>
-              <div className="ecu-indicator">
-                <div className="ecu-dot" style={{ background: result.radio_display?.adas_icons?.aeb_warning ? '#ff5252' : '#00e676' }} />
-                <span>AEB: {result.radio_display?.adas_icons?.aeb_warning ? 'WARNING' : 'Ready'}</span>
-              </div>
+              <RadioDisplay state={radioState} />
             </div>
           </>
         )}

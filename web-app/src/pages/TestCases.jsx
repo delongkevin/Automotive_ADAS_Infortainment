@@ -5,6 +5,7 @@ import { apiRequest } from '../lib/api';
 export default function TestCases() {
   const [testCases, setTestCases] = useState([]);
   const [results, setResults] = useState({});
+  const [lastTestId, setLastTestId] = useState(null);
   const [running, setRunning] = useState(null);
   const [loadingCases, setLoadingCases] = useState(false);
   const [listError, setListError] = useState(null);
@@ -40,11 +41,13 @@ export default function TestCases() {
         }),
       });
       setResults((prev) => ({ ...prev, [tc.id]: data }));
+      setLastTestId(tc.id);
     } catch (error) {
       setResults((prev) => ({
         ...prev,
         [tc.id]: { status: 'ERROR', error: error.message },
       }));
+      setLastTestId(tc.id);
     }
     setRunning(null);
   };
@@ -55,7 +58,7 @@ export default function TestCases() {
     }
   };
 
-  const lastResult = Object.values(results).slice(-1)[0];
+  const lastResult = lastTestId ? results[lastTestId] : null;
   const lastChecks = lastResult?.validation?.checks || [];
   const passedChecks = lastChecks.filter((check) => check.passed).length;
 

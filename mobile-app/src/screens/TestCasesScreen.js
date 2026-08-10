@@ -7,6 +7,7 @@ const API_BASE = getApiBaseUrl();
 export default function TestCasesScreen() {
   const [testCases, setTestCases] = useState([]);
   const [results, setResults] = useState({});
+  const [lastTestId, setLastTestId] = useState(null);
   const [running, setRunning] = useState(null);
   const [listError, setListError] = useState(null);
 
@@ -45,8 +46,10 @@ export default function TestCasesScreen() {
       }
       const data = await res.json();
       setResults((prev) => ({ ...prev, [tc.id]: data }));
+      setLastTestId(tc.id);
     } catch (error) {
       setResults((prev) => ({ ...prev, [tc.id]: { status: 'ERROR', error: error.message } }));
+      setLastTestId(tc.id);
     }
     setRunning(null);
   };
@@ -59,7 +62,7 @@ export default function TestCasesScreen() {
 
   const passCount = Object.values(results).filter((r) => r.status === 'PASS').length;
   const totalRun = Object.keys(results).length;
-  const lastResult = Object.values(results).slice(-1)[0];
+  const lastResult = lastTestId ? results[lastTestId] : null;
   const lastChecks = lastResult?.validation?.checks || [];
 
   return (

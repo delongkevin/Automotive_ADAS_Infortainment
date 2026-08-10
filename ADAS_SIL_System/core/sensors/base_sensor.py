@@ -110,6 +110,15 @@ class BaseSensor(ABC):
         dy_sensor = dy_ego - self.position[1]
         dz_sensor = dz_ego - self.position[2]
 
+        # Apply sensor mount yaw so side/rear radars face correctly
+        sensor_yaw = float(self.orientation[2]) if len(self.orientation) > 2 else 0.0
+        if abs(sensor_yaw) > 1e-9:
+            cos_s = np.cos(sensor_yaw)
+            sin_s = np.sin(sensor_yaw)
+            dx_local = dx_sensor * cos_s + dy_sensor * sin_s
+            dy_local = -dx_sensor * sin_s + dy_sensor * cos_s
+            dx_sensor, dy_sensor = dx_local, dy_local
+
         # Calculate range and angles
         range_xy = np.sqrt(dx_sensor**2 + dy_sensor**2)
         total_range = np.sqrt(dx_sensor**2 + dy_sensor**2 + dz_sensor**2)

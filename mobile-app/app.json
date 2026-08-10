@@ -3,17 +3,25 @@
     "name": "ADAS Infotainment",
     "slug": "adas-infotainment",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "userInterfaceStyle": "dark",
     "splash": {
       "backgroundColor": "#0f1923"
     },
     "android": {
       "package": "com.adasinfotainment.app",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [],
+      "softwareKeyboardLayoutMode": "pan",
+      "allowBackup": false,
+      "usesCleartextTraffic": true
     },
     "extra": {
-      "apiBaseUrl": "http://10.0.2.2:8000"
+      "apiBaseUrl": "http://10.0.2.2:8000",
+      "automotive": {
+        "target": "android_automotive",
+        "notes": "Manifest automotive features require a config plugin or bare android/ project. See docs/REVIEW_AND_FEEDBACK.md."
+      }
     },
     "plugins": []
   }

@@ -112,8 +112,14 @@ cd mobile-app && npx expo start
 │   └── src/                   # Components, pages, visuals
 ├── mobile-app/                # React Native / Expo Android app
 │   └── src/                   # Screens, components
+├── docs/                      # Design review & feedback documents
+│   └── REVIEW_AND_FEEDBACK.md # Bug audit, AAOS gaps, roadmap
 └── .github/workflows/         # CI/CD pipelines
 ```
+
+## Design review
+
+See [`docs/REVIEW_AND_FEEDBACK.md`](docs/REVIEW_AND_FEEDBACK.md) for the latest engineering review: fixed bugs, Android Automotive compatibility gaps, and recommended next steps.
 
 ## Deployments
 

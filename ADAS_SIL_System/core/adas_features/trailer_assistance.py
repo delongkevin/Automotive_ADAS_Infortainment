@@ -82,12 +82,18 @@ class TrailerAssistance:
             Dictionary with trailer assistance status
         """
         current_speed = vehicle_state['velocity']['speed']
+        longitudinal = vehicle_state['velocity'].get('longitudinal', vehicle_state['velocity'].get('vx', 0.0))
+        gear = (
+            vehicle_state.get('gear')
+            or (vehicle_state.get('transmission') or {}).get('gear')
+            or 'D'
+        )
 
         # Detect trailer from sensor data
         self._detect_trailer(sensor_data)
 
         # System only active if trailer is detected and reversing
-        is_reversing = current_speed < -0.5  # Negative speed = reversing
+        is_reversing = gear == 'R' or longitudinal < -0.5
         self.active = self.enabled and self.trailer_detected and is_reversing
 
         if not self.active:
@@ -302,9 +308,15 @@ class TrailerReverseGuidance:
             Dictionary with guidance status
         """
         current_speed = vehicle_state['velocity']['speed']
+        longitudinal = vehicle_state['velocity'].get('longitudinal', vehicle_state['velocity'].get('vx', 0.0))
+        gear = (
+            vehicle_state.get('gear')
+            or (vehicle_state.get('transmission') or {}).get('gear')
+            or 'D'
+        )
 
         # Only active when reversing
-        is_reversing = current_speed < -0.5
+        is_reversing = gear == 'R' or longitudinal < -0.5
         self.active = self.enabled and is_reversing and self.guidance_active
 
         if not self.active or not self.target_path:

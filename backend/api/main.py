@@ -445,7 +445,12 @@ async def list_scenarios():
 @app.post("/simulate")
 async def run_simulation(config: SimulationConfig):
     """Run a full simulation and return results with visual data."""
-    scenario_data = _load_scenario_data(config.scenario)
+    try:
+        scenario_data = _load_scenario_data(config.scenario)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Failed to load scenario: {exc}") from exc
 
     adas_config = {
         "dt": config.dt,
@@ -456,47 +461,59 @@ async def run_simulation(config: SimulationConfig):
             "bsd": {"enabled": True},
             "tsr": {"enabled": True},
             "surround_view": {"enabled": True},
+            "parking": {"enabled": True},
+            "trailer": {"enabled": True},
         },
     }
 
-    sim = ADASSILSimulator(adas_config)
-    sim.load_scenario(scenario_data)
+    try:
+        sim = ADASSILSimulator(adas_config)
+        sim.load_scenario(scenario_data)
 
-    steps = int(config.duration / config.dt)
-    vehicle_trace = []
-    camera_frames = []
+        steps = int(config.duration / config.dt)
+        vehicle_trace = []
+        camera_frames = []
 
-    for i in range(steps):
-        sim.step()
-        if i % 10 == 0:
-            state = sim.get_state()
-            vehicle_trace.append({
-                "time": state["time"],
-                "x": state["vehicle"]["position"]["x"],
-                "y": state["vehicle"]["position"]["y"],
-                "speed_kmh": state["vehicle"]["velocity"]["speed"] * 3.6,
-                "yaw": state["vehicle"]["orientation"]["yaw"],
-                "throttle": state["vehicle"]["controls"]["throttle"],
-                "brake": state["vehicle"]["controls"]["brake"],
-                "steering": state["vehicle"]["controls"]["steering_angle"],
-            })
-            camera_frames.append({
-                "time": state["time"],
-                "sensors": list(state["sensors"].keys()),
-                "detections_count": len(sim.sensors.get("front_camera", type("", (), {"detections": []})()).detections) if "front_camera" in sim.sensors else 0,
-            })
+        for i in range(steps):
+            sim.step()
+            if i % 10 == 0:
+                state = sim.get_state()
+                vehicle_trace.append({
+                    "time": state["time"],
+                    "x": state["vehicle"]["position"]["x"],
+                    "y": state["vehicle"]["position"]["y"],
+                    "speed_kmh": state["vehicle"]["velocity"]["speed"] * 3.6,
+                    "yaw": state["vehicle"]["orientation"]["yaw"],
+                    "throttle": state["vehicle"]["controls"]["throttle"],
+                    "brake": state["vehicle"]["controls"]["brake"],
+                    "steering": state["vehicle"]["controls"]["steering_angle"],
+                    "gear": state["vehicle"].get("gear", "D"),
+                })
+                front_cam = sim.sensors.get("front_camera")
+                camera_frames.append({
+                    "time": state["time"],
+                    "sensors": list(state["sensors"].keys()),
+                    "detections_count": len(getattr(front_cam, "detections", []) or []),
+                })
 
-    results = sim.get_results()
+        results = sim.get_results()
+        radio_display = _generate_radio_display_state(results, vehicle_trace)
 
-    return {
-        "scenario": config.scenario,
-        "duration": results["duration"],
-        "steps": results["steps"],
-        "adas_events": results["adas_events"][:50],
-        "vehicle_trace": vehicle_trace,
-        "camera_frames": camera_frames,
-        "radio_display": _generate_radio_display_state(results),
-    }
+        return {
+            "scenario": config.scenario,
+            "duration": results["duration"],
+            "steps": results["steps"],
+            "adas_events": results["adas_events"][:50],
+            "vehicle_trace": vehicle_trace,
+            "camera_frames": camera_frames,
+            "radio_display": radio_display,
+            # Alias for clients that expect test-case naming
+            "radio_display_state": radio_display,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Simulation failed: {exc}") from exc
 
 
 @app.post("/test-cases/run")
@@ -518,53 +535,81 @@ async def run_test_case(req: TestCaseRequest) -> TestCaseResult:
             adas_features = list(case.get("adas_features", []))
         duration = max(duration, float(case.get("default_duration", duration)))
 
-    scenario_data = _load_scenario_data(scenario_name)
+    try:
+        scenario_data = _load_scenario_data(scenario_name)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Failed to load scenario: {exc}") from exc
+
+    # Map catalog aliases to simulator feature keys
+    feature_map = {
+        "trailer": "trailer",
+        "surround_view": "surround_view",
+        "parking": "parking",
+        "tsr": "tsr",
+        "bsd": "bsd",
+        "acc": "acc",
+        "aeb": "aeb",
+        "ldw": "ldw",
+    }
+    adas_enabled = {}
+    for feat in adas_features:
+        key = feature_map.get(feat, feat)
+        adas_enabled[key] = {"enabled": True}
 
     adas_config = {
         "dt": 0.01,
-        "adas": {feat: {"enabled": True} for feat in adas_features},
+        "adas": adas_enabled,
     }
 
-    sim = ADASSILSimulator(adas_config)
-    sim.load_scenario(scenario_data)
+    try:
+        sim = ADASSILSimulator(adas_config)
+        sim.load_scenario(scenario_data)
 
-    steps = int(duration / 0.01)
-    vehicle_trace = []
-    camera_frames = []
+        steps = int(duration / 0.01)
+        vehicle_trace = []
+        camera_frames = []
 
-    for i in range(steps):
-        sim.step()
-        if i % 50 == 0:
-            state = sim.get_state()
-            vehicle_trace.append({
-                "time": state["time"],
-                "x": state["vehicle"]["position"]["x"],
-                "y": state["vehicle"]["position"]["y"],
-                "speed_kmh": state["vehicle"]["velocity"]["speed"] * 3.6,
-                "yaw": state["vehicle"]["orientation"]["yaw"],
-                "throttle": state["vehicle"]["controls"]["throttle"],
-                "brake": state["vehicle"]["controls"]["brake"],
-            })
-            camera_frames.append({
-                "time": state["time"],
-                "active_cameras": list(state["sensors"].keys()),
-            })
+        for i in range(steps):
+            sim.step()
+            if i % 50 == 0:
+                state = sim.get_state()
+                vehicle_trace.append({
+                    "time": state["time"],
+                    "x": state["vehicle"]["position"]["x"],
+                    "y": state["vehicle"]["position"]["y"],
+                    "speed_kmh": state["vehicle"]["velocity"]["speed"] * 3.6,
+                    "yaw": state["vehicle"]["orientation"]["yaw"],
+                    "throttle": state["vehicle"]["controls"]["throttle"],
+                    "brake": state["vehicle"]["controls"]["brake"],
+                    "gear": state["vehicle"].get("gear", "D"),
+                })
+                camera_frames.append({
+                    "time": state["time"],
+                    "active_cameras": list(state["sensors"].keys()),
+                })
 
-    results = sim.get_results()
-    validation = _evaluate_test_case(case, duration, results, vehicle_trace)
+        results = sim.get_results()
+        validation = _evaluate_test_case(case, duration, results, vehicle_trace)
+        radio_state = _generate_radio_display_state(results, vehicle_trace)
 
-    return TestCaseResult(
-        test_id=req.test_id,
-        scenario=scenario_name,
-        status=validation["status"],
-        duration=results["duration"],
-        steps=results["steps"],
-        adas_events=results["adas_events"][:20],
-        vehicle_trace=vehicle_trace,
-        radio_display_state=_generate_radio_display_state(results),
-        camera_frames=camera_frames,
-        validation=validation,
-    )
+        return TestCaseResult(
+            test_id=req.test_id,
+            scenario=scenario_name,
+            status=validation["status"],
+            duration=results["duration"],
+            steps=results["steps"],
+            adas_events=results["adas_events"][:20],
+            vehicle_trace=vehicle_trace,
+            radio_display_state=radio_state,
+            camera_frames=camera_frames,
+            validation=validation,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Test case execution failed: {exc}") from exc
 
 
 @app.get("/test-cases")
@@ -628,26 +673,69 @@ async def get_camera_info():
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _generate_radio_display_state(results: dict) -> dict:
-    """Generate simulated Radio Display ECU state from results."""
+def _generate_radio_display_state(results: dict, vehicle_trace: list | None = None) -> dict:
+    """Generate Radio Display ECU state from simulation results."""
     events = results.get("adas_events", [])
     warnings = [e for e in events if "warning" in e.get("event", "")]
     braking = [e for e in events if "braking" in e.get("event", "")]
 
+    # Speed from last trace sample or final vehicle state
+    current_speed_kmh = 0.0
+    if vehicle_trace:
+        current_speed_kmh = float(vehicle_trace[-1].get("speed_kmh", 0.0))
+    else:
+        final_vehicle = results.get("final_vehicle") or {}
+        velocity = final_vehicle.get("velocity") or {}
+        current_speed_kmh = float(velocity.get("speed", 0.0)) * 3.6
+
+    final_adas = results.get("final_adas") or {}
+
+    # Prefer live final ADAS status; fall back to event history
+    acc_status = final_adas.get("acc") or {}
+    bsd_status = final_adas.get("bsd") or {}
+    tsr_status = final_adas.get("tsr") or {}
+    ldw_status = final_adas.get("ldw") or {}
+    aeb_status = final_adas.get("aeb") or {}
+    parking_status = final_adas.get("parking") or {}
+    svc_status = final_adas.get("surround_view") or {}
+
+    bsd_left = bool(bsd_status.get("left_occupied")) or any(
+        e.get("feature") == "BSD" and e.get("side") == "left" for e in events
+    )
+    bsd_right = bool(bsd_status.get("right_occupied")) or any(
+        e.get("feature") == "BSD" and e.get("side") == "right" for e in events
+    )
+    tsr_limit = tsr_status.get("speed_limit_kmh") or tsr_status.get("current_speed_limit")
+    tsr_detected = tsr_limit is not None or any(e.get("feature") == "TSR" for e in events)
+
+    camera_view = "front"
+    if svc_status.get("current_view"):
+        camera_view = str(svc_status.get("current_view")).lower()
+    elif parking_status.get("active"):
+        camera_view = "surround"
+
     return {
         "speed_display": {
-            "current_speed_kmh": 0,
+            "current_speed_kmh": round(current_speed_kmh, 1),
             "unit": "km/h",
+            "speed_limit_kmh": tsr_limit,
         },
         "adas_icons": {
-            "ldw_active": any(e["feature"] == "LDW" for e in events),
-            "acc_active": True,
-            "aeb_warning": len(braking) > 0,
-            "bsd_left": False,
-            "bsd_right": False,
-            "tsr_detected": False,
+            "ldw_active": bool(ldw_status.get("warning_active"))
+            or any(e.get("feature") == "LDW" for e in events),
+            "acc_active": bool(acc_status.get("active") or acc_status.get("enabled")),
+            "aeb_warning": bool(aeb_status.get("braking_active")) or len(braking) > 0,
+            "bsd_left": bsd_left,
+            "bsd_right": bsd_right,
+            "tsr_detected": tsr_detected,
+            "parking_active": bool(parking_status.get("active")),
         },
         "warnings_triggered": len(warnings),
         "emergency_events": len(braking),
-        "camera_view": "front",
+        "camera_view": camera_view,
+        "tsr": {
+            "speed_limit_kmh": tsr_limit,
+            "signs_detected": tsr_status.get("signs_detected", 0),
+            "warning_signs": tsr_status.get("warning_signs", []),
+        },
     }
